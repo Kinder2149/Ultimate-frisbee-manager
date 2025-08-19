@@ -19,52 +19,63 @@ Rendre l'application Ultimate Frisbee Manager accessible en ligne pour une dizai
 
 ## ⚙️ ÉTAPES DE DÉPLOIEMENT
 
-### **ÉTAPE 1 : PRÉPARATION DU PROJET (LOCAL)** 🔧
+### **ÉTAPE 1 : PRÉPARATION DU PROJET (LOCAL)** ✅ **TERMINÉ**
 
 #### **1.1 Configuration Backend**
-- [ ] Vérifier que le backend écoute sur `0.0.0.0` (et pas uniquement localhost)
-- [ ] Ajouter gestion CORS pour autoriser les appels depuis le domaine du front
-- [ ] Configurer lecture de `DATABASE_URL` via variable d'environnement
-- [ ] Tester compatibilité PostgreSQL avec Prisma
+- [x] Vérifier que le backend écoute sur `0.0.0.0` (et pas uniquement localhost) ✅
+- [x] Ajouter gestion CORS pour autoriser les appels depuis le domaine du front ✅
+- [x] Configurer lecture de `DATABASE_URL` via variable d'environnement ✅
+- [x] Tester compatibilité PostgreSQL avec Prisma ✅
 
 #### **1.2 Configuration Frontend**
-- [ ] Créer `environment.prod.ts` avec URL de production :
+- [x] Créer `environment.prod.ts` avec URL de production : ✅
 ```typescript
 export const environment = {
   production: true,
   apiUrl: 'https://ultimate-frisbee-manager-api.onrender.com/api'
 };
 ```
-- [ ] Vérifier configuration build Angular pour production
-- [ ] Tester build local : `ng build --configuration production`
+- [x] Vérifier configuration build Angular pour production ✅
+- [x] Tester build local : `ng build --configuration production` ✅
 
 ### **ÉTAPE 2 : DÉPLOIEMENT BACKEND SUR RENDER** 🚀
 
 #### **2.1 Configuration Render**
-- [ ] Créer compte sur Render
-- [ ] Créer service web et connecter le repo GitHub du backend
-- [ ] Définir build command : `npm install`
-- [ ] Définir start command : `npm start`
-- [ ] Ajouter service PostgreSQL via Render
+- [x] Créer compte sur Render ✅
+- [x] Créer service web et connecter le repo GitHub du backend ✅
+- [x] Définir build command : `npm install` ✅
+- [x] Définir start command : `npm start` ✅
+- [x] Ajouter service PostgreSQL via Render ✅
+
+**Service ID Backend** : `srv-d2i95m15pdvs73f0gnhg`
+**Repository** : `https://github.com/Kinder2149/Ultimate-frisbee-manager.git`
 
 #### **2.2 Variables d'environnement**
-- [ ] Configurer `DATABASE_URL` (fournie par PostgreSQL Render)
-- [ ] Configurer `PORT` (automatique sur Render)
+- [x] Configurer `DATABASE_URL` (fournie par PostgreSQL Render) ✅
+- [x] Configurer `PORT` (automatique sur Render) ✅
+- [x] Configurer `NODE_ENV=production` ✅
 - [ ] Tester que l'API est accessible via l'URL publique Render
 
+**Variables configurées** :
+- `DATABASE_URL` : Fournie automatiquement par PostgreSQL Render
+- `PORT` : Automatique
+- `NODE_ENV` : `production`
+
 #### **2.3 Migration base de données**
-- [ ] Adapter schema Prisma pour PostgreSQL
+- [x] Adapter schema Prisma pour PostgreSQL ✅
 - [ ] Exécuter migrations Prisma en production
 - [ ] Exécuter seed pour données initiales
 
 ### **ÉTAPE 3 : DÉPLOIEMENT FRONTEND** 🌐
 
 #### **Option A : Vercel (Recommandé)**
-- [ ] Créer projet sur Vercel
-- [ ] Connecter repo GitHub du frontend
-- [ ] Définir commande de build : `ng build --configuration production`
-- [ ] Configurer dossier de sortie : `dist/`
-- [ ] Activer redéploiement automatique sur git push
+- [x] Créer projet sur Vercel ✅
+- [x] Connecter repo GitHub du frontend ✅
+- [x] Définir commande de build : `ng build --configuration production` ✅
+- [x] Configurer dossier de sortie : `dist/` ✅
+- [x] Activer redéploiement automatique sur git push ✅
+
+**URL Frontend** : `https://ultimate-frisbee-manager-nyvni7xiv-kinder2149s-projects.vercel.app`
 
 #### **Option B : GitHub Pages**
 - [ ] Créer workflow GitHub Action pour build Angular
@@ -74,8 +85,8 @@ export const environment = {
 ### **ÉTAPE 4 : COMMUNICATION FRONT ↔ BACK** 🔗
 
 #### **4.1 Configuration CORS**
-- [ ] Configurer CORS backend pour accepter uniquement le domaine du front
-- [ ] Exemple : `https://ultimate-frisbee-manager.vercel.app`
+- [x] Configurer CORS backend pour accepter uniquement le domaine du front ✅
+- [x] URL configurée : `https://ultimate-frisbee-manager-nyvni7xiv-kinder2149s-projects.vercel.app` ✅
 - [ ] Tester communication en ligne
 
 #### **4.2 Validation fonctionnelle**
@@ -134,6 +145,33 @@ export const environment = {
 - [ ] Sauvegarde régulière base de données
 - [ ] Tests de charge pour 10+ utilisateurs
 
+## 🛠️ OUTILS ET SCRIPTS CRÉÉS
+
+### **Scripts de déploiement**
+- [x] `backend/scripts/migrate-to-postgresql.js` - Migration SQLite → PostgreSQL ✅
+- [x] `backend/scripts/deploy-render.js` - Vérification et préparation Render ✅
+- [x] Scripts NPM ajoutés dans `package.json` ✅
+  - `npm run migrate:postgresql`
+  - `npm run deploy:prepare`
+  - `npm run deploy:render`
+
+### **Configuration environnements**
+- [x] `backend/.env.example` - Template variables d'environnement ✅
+- [x] `backend/.env.development` - Configuration développement ✅
+- [x] `frontend/src/environments/environment.prod.ts` - Configuration production ✅
+
+### **Documentation**
+- [x] `DEPLOYMENT.md` - Guide complet de déploiement ✅
+- [x] `projet.md` - Documentation technique complète ✅
+- [x] `.gitignore` - Configuration adaptée pour déploiement ✅
+
+### **Dépendances ajoutées**
+- [x] `pg` et `@types/pg` - Support PostgreSQL ✅
+- [x] Configuration Prisma pour PostgreSQL ✅
+- [x] Budgets Angular ajustés pour build production ✅
+
+---
+
 ## 🎯 OBJECTIFS FINAUX DU DÉPLOIEMENT
 
 ### **Résultat attendu :**
@@ -149,6 +187,12 @@ export const environment = {
 - Données persistantes et sécurisées
 - Mises à jour simples via git push
 - Interface responsive sur mobile/desktop
+
+### **État actuel :**
+- ✅ **Préparation locale** : TERMINÉE
+- ⏳ **Déploiement backend** : Prêt pour Render
+- ⏳ **Déploiement frontend** : Prêt pour Vercel
+- ⏳ **Tests production** : À effectuer après déploiement
 
 ---
 
