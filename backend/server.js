@@ -18,8 +18,29 @@ const prisma = new PrismaClient();
 const app = express();
 const PORT = process.env.PORT || 3002; // Port modifié pour éviter les conflits EADDRINUSE
 
+// Configuration CORS pour production et développement
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Autoriser les requêtes sans origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = process.env.CORS_ORIGINS 
+      ? process.env.CORS_ORIGINS.split(',')
+      : ['http://localhost:4200']; // Fallback pour développement
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Non autorisé par CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
 // Middleware
-app.use(cors()); // Permet les requêtes CORS
+app.use(cors(corsOptions)); // CORS sécurisé
 app.use(express.json()); // Parse les requêtes JSON
 app.use(express.urlencoded({ extended: true })); // Parse les requêtes avec formulaires
 
@@ -39,8 +60,9 @@ if (!fs.existsSync(path.join(__dirname, 'uploads'))) {
 }
 
 // Démarrage du serveur
-app.listen(PORT, () => {
-  console.log(`Serveur démarré sur http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Serveur démarré sur http://0.0.0.0:${PORT}`);
+  console.log(`Accessible localement sur http://localhost:${PORT}`);
 });
 
 // Gestion de la fermeture propre du serveur
