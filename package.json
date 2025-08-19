@@ -3,9 +3,8 @@
   "version": "1.0.0",
   "description": "Application de gestion d'entraînements d'ultimate frisbee",
   "scripts": {
-    "build": "cd frontend && npm install && ng build --configuration production",
-    "start": "cd frontend && ng serve",
-    "install": "cd frontend && npm install"
+    "build": "npm install --prefix frontend && cd frontend && ng build --configuration production",
+    "start": "cd frontend && ng serve"
   },
   "keywords": [
     "ultimate",
