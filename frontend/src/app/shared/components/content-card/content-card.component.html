@@ -1,0 +1,53 @@
+<div 
+  class="content-card"
+  [class.elevated]="elevation"
+  [class.card-primary]="theme === 'primary'"
+  [class.card-success]="theme === 'success'"
+  [class.card-warning]="theme === 'warning'"
+  [class.card-danger]="theme === 'danger'"
+  [class.collapsed]="isCollapsed"
+  [ngClass]="additionalClasses"
+  [style.width]="width"
+  (click)="onCardClick($event)"
+>
+  <!-- En-tête de la carte -->
+  <div class="card-header" *ngIf="title || subtitle || headerImageUrl || collapsible">
+    <!-- Image d'en-tête (si présente) -->
+    <div class="header-image" *ngIf="headerImageUrl">
+      <img [src]="headerImageUrl" [alt]="headerImageAlt">
+    </div>
+    
+    <div class="header-content">
+      <!-- Titre et sous-titre -->
+      <div class="header-text">
+        <h3 class="card-title" *ngIf="title">{{ title }}</h3>
+        <p class="card-subtitle" *ngIf="subtitle">{{ subtitle }}</p>
+      </div>
+      
+      <!-- Bouton de repli (si collapsible) -->
+      <button 
+        *ngIf="collapsible" 
+        class="collapse-button"
+        [class.collapsed]="isCollapsed"
+        (click)="toggleCollapsed($event)"
+        title="{{isCollapsed ? 'Déplier' : 'Replier'}}"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor">
+          <path d="M0 0h24v24H0z" fill="none"/>
+          <path *ngIf="!isCollapsed" d="M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z"/>
+          <path *ngIf="isCollapsed" d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+  
+  <!-- Corps de la carte -->
+  <div class="card-body" [class.hidden]="isCollapsed">
+    <ng-content></ng-content>
+  </div>
+  
+  <!-- Pied de la carte (optionnel) -->
+  <div class="card-footer" *ngIf="!isCollapsed">
+    <ng-content select="[card-footer]"></ng-content>
+  </div>
+</div>

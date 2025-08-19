@@ -1,0 +1,104 @@
+<div class="exercice-card" [class.expanded]="expanded">
+  <!-- Nouvelle barre d'actions uniformisée -->
+  <div class="action-bar">
+    <button mat-icon-button (click)="editExercice($event)" matTooltip="Modifier">
+      <mat-icon>edit</mat-icon>
+    </button>
+    
+    <app-duplicate-button 
+      [entityId]="exercice.id!" 
+      entityType="exercice"
+      [loading]="duplicating"
+      (duplicate)="duplicateExercice($event)">
+    </app-duplicate-button>
+    
+    <button mat-icon-button (click)="deleteExercice($event)" matTooltip="Supprimer" class="delete-btn">
+      <mat-icon>delete</mat-icon>
+    </button>
+    
+    <button mat-icon-button (click)="toggleExpand()" [matTooltip]="expanded ? 'Réduire' : 'Développer'">
+      <mat-icon>{{ expanded ? 'expand_less' : 'expand_more' }}</mat-icon>
+    </button>
+  </div>
+  
+  <div class="card-header" (click)="toggleExpand()">
+    <div class="title-section">
+      <h3>{{ exercice.nom }}</h3>
+    </div>
+    <!-- Toujours afficher l'objectif et le travail spécifique en haut de la carte -->
+    <div class="essential-tags">
+      <!-- Objectif tag -->
+      <div class="tag-badge objectif-badge" *ngIf="objectifTag" 
+           [style.background-color]="objectifTag.color || '#4285F4'">
+        {{ objectifTag.label }}
+      </div>
+      
+      <!-- Travail spécifique tags -->
+      <div class="tag-badge travail-badge" *ngFor="let tag of travailSpecifiqueTags" 
+           [style.background-color]="tag.color || '#FBBC05'">
+        {{ tag.label }}
+      </div>
+    </div>
+  </div>
+  
+  <div class="card-content" [class.visible]="expanded">
+    <!-- Description de l'exercice -->
+    <p class="description">{{ exercice.description }}</p>
+    
+    <!-- Variables text si présent -->
+    <div class="variables-text" *ngIf="exercice.variablesText">
+      <h4>Variables:</h4>
+      <p>{{ exercice.variablesText }}</p>
+    </div>
+    
+    <!-- Schéma si présent -->
+    <div class="schema" *ngIf="exercice.schemaUrl">
+      <img [src]="exercice.schemaUrl" alt="Schéma de l'exercice" />
+    </div>
+    
+    <!-- Section des tags organisée par catégorie - uniquement visible quand étendu -->
+    <div class="tags-section">
+      <!-- Niveau tags -->
+      <div class="tag-group" *ngIf="niveauTags.length > 0">
+        <h4>Niveau:</h4>
+        <div class="tags-container">
+          <span class="tag niveau-tag" *ngFor="let tag of niveauTags" [style.background-color]="tag.color || '#34A853'">
+            {{ tag.level ? '★'.repeat(tag.level) : tag.label }}
+          </span>
+        </div>
+      </div>
+      
+      <!-- Temps tags - nouvelle section -->
+      <div class="tag-group" *ngIf="tempsTags && tempsTags.length > 0">
+        <h4>Temps:</h4>
+        <div class="tags-container">
+          <span class="tag temps-tag" *ngFor="let tag of tempsTags" [style.background-color]="tag.color || '#9C27B0'">
+            {{ tag.label }}
+          </span>
+        </div>
+      </div>
+      
+      <!-- Format tags - nouvelle section -->
+      <div class="tag-group" *ngIf="formatTags && formatTags.length > 0">
+        <h4>Format:</h4>
+        <div class="tags-container">
+          <span class="tag format-tag" *ngFor="let tag of formatTags" [style.background-color]="tag.color || '#00BCD4'">
+            {{ tag.label }}
+          </span>
+        </div>
+      </div>
+      
+      <!-- Section Variables tags supprimée car la catégorie n'existe plus -->
+    </div>
+    
+    <!-- Footer avec date et bouton -->
+    <div class="card-footer">
+      <div class="d-flex justify-content-between align-items-center">
+        <span class="created-at" *ngIf="exercice.createdAt">
+          Créé le: {{ exercice.createdAt | date:'dd/MM/yyyy' }}
+        </span>
+        <!-- Les boutons d'action ont été déplacés vers la barre d'actions en haut à droite -->
+      </div>
+    </div>
+  </div>
+</div>

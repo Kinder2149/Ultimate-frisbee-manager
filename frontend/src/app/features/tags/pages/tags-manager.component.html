@@ -1,0 +1,60 @@
+<div class="tags-manager-container">
+  <h1>Gestionnaire de Tags</h1>
+  
+  <!-- Messages de succès et d'erreur -->
+  <div *ngIf="successMessage" class="success-message">
+    <mat-icon>check_circle</mat-icon>
+    {{ successMessage }}
+  </div>
+  
+  <div *ngIf="errorMessage" class="error-message">
+    <mat-icon>error</mat-icon>
+    {{ errorMessage }}
+  </div>
+
+  <mat-tab-group class="tags-tabs" animationDuration="300ms">
+    <!-- Onglet par catégorie -->
+    <mat-tab *ngFor="let category of categories" [label]="getCategoryDisplayName(category)">
+      <div class="category-content">
+        <!-- Statistiques de la catégorie -->
+        <div class="category-stats">
+          <div class="stat-card">
+            <mat-icon>label</mat-icon>
+            <div class="stat-info">
+              <span class="stat-number">{{ tagsByCategory[category].length || 0 }}</span>
+              <span class="stat-label">Tags</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section d'ajout/édition de tag -->
+        <div class="tag-form-section">
+          <h3>{{ selectedTag ? 'Modifier le tag' : 'Nouveau tag ' + getCategoryDisplayName(category).toLowerCase() }}</h3>
+          
+          <app-tag-form 
+            [category]="category"
+            [editTag]="selectedTag"
+            (tagSaved)="onTagSaved($event)"
+            (cancel)="cancelEdit()">
+          </app-tag-form>
+        </div>
+        
+        <!-- Liste des tags de cette catégorie -->
+        <div class="tags-list-section">
+          <h3>Tags {{ getCategoryDisplayName(category).toLowerCase() }} existants</h3>
+          
+          <app-tag-list
+            [tags]="tagsByCategory[category] || []"
+            [category]="category"
+            (editTag)="editTag($event)"
+            (deleteTag)="deleteTag($event)">
+          </app-tag-list>
+        </div>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+  
+  <div class="back-link">
+    <a routerLink="/exercices/ajouter">Retour à l'ajout d'exercice</a>
+  </div>
+</div>

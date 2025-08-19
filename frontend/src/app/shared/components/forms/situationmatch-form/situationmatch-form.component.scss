@@ -1,0 +1,159 @@
+@import '../../../styles/form-base.css';
+
+.situationmatch-form-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.form-section {
+  padding: 32px;
+  border-bottom: 1px solid #e9ecef;
+  position: relative;
+}
+
+.form-section:last-child {
+  border-bottom: none;
+}
+
+.form-section-title {
+  margin: 0 0 24px 0;
+  color: #2c3e50;
+  font-size: 1.4rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.form-section-title::before {
+  content: '';
+  width: 4px;
+  height: 24px;
+  background: linear-gradient(135deg, #27ae60, #229954);
+  border-radius: 2px;
+}
+
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.form-header h1 {
+  margin: 0;
+  font-size: 1.5em;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.close-button {
+  color: var(--text-muted);
+}
+
+.situationmatch-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.full-width {
+  width: 100%;
+}
+
+.tags-section {
+  margin: var(--spacing-xl) 0;
+}
+
+.tags-section h3 {
+  margin: 0 0 var(--spacing-lg) 0;
+  font-size: 1.2em;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.tags-section h4 {
+  margin: var(--spacing-lg) 0 var(--spacing-sm) 0;
+  font-size: 1em;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.available-tags,
+.selected-tags {
+  margin-bottom: 16px;
+}
+
+.tags-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.selectable-tag {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.selectable-tag:hover {
+  transform: scale(1.05);
+}
+
+.selected-tag {
+  position: relative;
+}
+
+.no-tags {
+  padding: 16px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  text-align: center;
+  color: #666;
+}
+
+.no-tags p {
+  margin: 0;
+  font-style: italic;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #e0e0e0;
+}
+
+@media (max-width: 768px) {
+  .situationmatch-form-container {
+    padding: 10px;
+  }
+  
+  .form-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .close-button {
+    align-self: flex-end;
+  }
+  
+  .tags-grid {
+    justify-content: center;
+  }
+  
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+  
+  .form-actions button {
+    width: 100%;
+  }
+}

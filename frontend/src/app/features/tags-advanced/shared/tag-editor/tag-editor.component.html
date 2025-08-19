@@ -1,0 +1,70 @@
+<form [formGroup]="tagForm" (ngSubmit)="onSubmit()">
+  <div class="form-container">
+    <div class="form-header">
+      <div class="tag-preview" [style.backgroundColor]="previewColor">
+        {{ tagForm.get('label')?.value || 'Tag' }}
+        <span class="tag-category" *ngIf="tagForm.get('category')?.value">
+          ({{ tagForm.get('category')?.value }})
+        </span>
+      </div>
+    </div>
+    
+    <div class="form-fields">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Libellé</mat-label>
+        <input matInput formControlName="label" placeholder="Nom du tag">
+        <mat-error *ngIf="isFieldInvalid('label')">
+          {{ getErrorMessage('label') }}
+        </mat-error>
+      </mat-form-field>
+      
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Catégorie</mat-label>
+        <mat-select formControlName="category">
+          <mat-option *ngFor="let cat of categories" [value]="cat">
+            {{ cat }}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="isFieldInvalid('category')">
+          {{ getErrorMessage('category') }}
+        </mat-error>
+      </mat-form-field>
+      
+      <ng-container *ngIf="tagForm.get('category')?.value === 'niveau'">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Niveau (1-5)</mat-label>
+          <input matInput formControlName="level" type="number" min="1" max="5">
+          <mat-error *ngIf="isFieldInvalid('level')">
+            {{ getErrorMessage('level') }}
+          </mat-error>
+        </mat-form-field>
+      </ng-container>
+      
+      <div class="color-section">
+        <label class="color-label">Couleur</label>
+        
+        <div class="color-picker">
+          <input type="color" formControlName="color" class="color-input">
+          <div class="color-presets">
+            <button 
+              type="button" 
+              *ngFor="let color of colorPresets" 
+              class="color-preset" 
+              [style.backgroundColor]="color"
+              (click)="selectColor(color)">
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="form-actions">
+      <button mat-button type="button" (click)="onCancel()">
+        Annuler
+      </button>
+      <button mat-raised-button color="primary" type="submit" [disabled]="tagForm.invalid">
+        {{ submitLabel }}
+      </button>
+    </div>
+  </div>
+</form>

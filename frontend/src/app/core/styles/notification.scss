@@ -1,0 +1,55 @@
+// Styles personnalisés pour les notifications MatSnackBar
+
+// Style de base pour toutes les notifications
+.mat-mdc-snack-bar-container {
+  margin: 16px;
+  border-radius: 4px !important;
+  
+  .mdc-snackbar__surface {
+    border-radius: 4px !important;
+  }
+
+  .mat-mdc-snack-bar-actions {
+    margin-left: 8px;
+  }
+}
+
+// Style pour les notifications de succès
+.success-snackbar {
+  --mdc-snackbar-container-color: #4caf50;
+  --mdc-snackbar-supporting-text-color: white;
+  
+  .mat-mdc-button {
+    color: white;
+  }
+}
+
+// Style pour les notifications d'erreur
+.error-snackbar {
+  --mdc-snackbar-container-color: #f44336;
+  --mdc-snackbar-supporting-text-color: white;
+  
+  .mat-mdc-button {
+    color: white;
+  }
+}
+
+// Style pour les notifications d'information
+.info-snackbar {
+  --mdc-snackbar-container-color: #2196f3;
+  --mdc-snackbar-supporting-text-color: white;
+  
+  .mat-mdc-button {
+    color: white;
+  }
+}
+
+// Style pour les notifications d'avertissement
+.warning-snackbar {
+  --mdc-snackbar-container-color: #ff9800;
+  --mdc-snackbar-supporting-text-color: white;
+  
+  .mat-mdc-button {
+    color: white;
+  }
+}

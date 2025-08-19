@@ -1,0 +1,74 @@
+<h2 mat-dialog-title>
+  {{ mode === 'select' ? 'Sélectionner une situation/match' : 'Créer une situation/match' }}
+</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    
+    <!-- Mode sélection -->
+    <div *ngIf="mode === 'select'">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Situation/Match</mat-label>
+        <mat-select formControlName="situationMatchId" [disabled]="isLoading">
+          <mat-option value="">Aucune situation/match</mat-option>
+          <mat-option *ngFor="let situationMatch of situationsMatchs" [value]="situationMatch.id">
+            <span class="option-type">{{ situationMatch.type }}</span>
+            <span *ngIf="situationMatch.description" class="option-description">
+              - {{ situationMatch.description | slice:0:50 }}{{ situationMatch.description!.length > 50 ? '...' : '' }}
+            </span>
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="form.get('situationMatchId')?.hasError('required')">
+          Veuillez sélectionner une situation/match
+        </mat-error>
+      </mat-form-field>
+
+      <div *ngIf="isLoading" class="loading-container">
+        <mat-spinner diameter="30"></mat-spinner>
+        <span>Chargement des situations/matchs...</span>
+      </div>
+
+      <div *ngIf="!isLoading && situationsMatchs.length === 0" class="no-data">
+        <p>Aucune situation/match disponible.</p>
+        <button type="button" mat-stroked-button (click)="switchMode()">
+          Créer une nouvelle situation/match
+        </button>
+      </div>
+    </div>
+
+    <!-- Mode création -->
+    <div *ngIf="mode === 'create'" class="create-mode">
+      <app-situationmatch-form
+        [isEditMode]="false"
+        [loading]="isLoading"
+        [availableTags]="availableTags"
+        (formSubmit)="onSituationMatchFormSubmit($event)"
+        (formCancel)="onCancel()">
+      </app-situationmatch-form>
+    </div>
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" *ngIf="mode === 'select'">
+  <button mat-button (click)="onCancel()" [disabled]="isLoading">
+    Annuler
+  </button>
+  
+  <button type="button" mat-stroked-button (click)="switchMode()" [disabled]="isLoading">
+    Créer nouveau
+  </button>
+  
+  <button mat-raised-button color="primary" 
+          (click)="onSubmit()" 
+          [disabled]="form.invalid || isLoading">
+    <mat-spinner *ngIf="isLoading" diameter="20" class="button-spinner"></mat-spinner>
+    Sélectionner
+  </button>
+</mat-dialog-actions>
+
+<mat-dialog-actions align="end" *ngIf="mode === 'create'">
+  <button type="button" mat-stroked-button (click)="switchMode()" [disabled]="isLoading">
+    Sélectionner existant
+  </button>
+</mat-dialog-actions>

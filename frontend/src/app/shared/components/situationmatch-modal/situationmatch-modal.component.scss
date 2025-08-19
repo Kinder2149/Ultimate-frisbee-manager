@@ -1,0 +1,88 @@
+.full-width {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.loading-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  justify-content: center;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.no-data {
+  text-align: center;
+  padding: 24px;
+  color: rgba(0, 0, 0, 0.6);
+  
+  p {
+    margin-bottom: 16px;
+  }
+}
+
+.option-type {
+  font-weight: 500;
+  color: #1976d2;
+}
+
+.option-description {
+  font-size: 0.9em;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.button-spinner {
+  margin-right: 8px;
+}
+
+.tags-section {
+  margin-top: 16px;
+  
+  h4 {
+    margin: 0 0 12px 0;
+    font-size: 1rem;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.87);
+  }
+}
+
+.tags-container {
+  .mat-mdc-chip-set {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .mat-mdc-chip {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      transform: scale(1.05);
+    }
+    
+    &.selected {
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+  }
+}
+
+mat-dialog-content {
+  min-width: 450px;
+  max-width: 600px;
+  min-height: 250px;
+}
+
+mat-dialog-actions {
+  padding: 16px 24px;
+  gap: 8px;
+}
+
+// Responsive design
+@media (max-width: 600px) {
+  mat-dialog-content {
+    min-width: 300px;
+    max-width: 90vw;
+  }
+}

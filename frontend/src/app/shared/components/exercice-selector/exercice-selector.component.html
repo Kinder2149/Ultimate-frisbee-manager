@@ -1,0 +1,94 @@
+<div class="exercice-selector-overlay" *ngIf="visible" (click)="cancel()">
+  <div class="exercice-selector-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ title }}</h3>
+      <button type="button" class="close-button" (click)="cancel()" title="Fermer">
+        <i class="material-icons">close</i>
+      </button>
+    </div>
+
+    <div class="modal-content">
+      <!-- Message de chargement -->
+      <div *ngIf="loading" class="loading">
+        <p>Chargement des exercices...</p>
+      </div>
+
+      <!-- Message d'erreur -->
+      <div *ngIf="error" class="error-message">
+        {{ error }}
+      </div>
+
+      <!-- Contenu principal -->
+      <div *ngIf="!loading && !error">
+        <!-- Barre de recherche et filtres -->
+        <app-search-filter
+          [searchPlaceholder]="'Rechercher un exercice...'"
+          [showSearch]="true"
+          [filterOptions]="filterOptions"
+          [filtersCollapsed]="false"
+          (search)="onSearch($event)"
+          (reset)="onReset()">
+        </app-search-filter>
+
+        <!-- Liste des exercices -->
+        <div class="exercices-container">
+          <div class="exercices-count">
+            {{ filteredExercices.length }} exercice(s) trouvé(s)
+          </div>
+
+          <div class="exercices-grid" *ngIf="filteredExercices.length > 0">
+            <div 
+              *ngFor="let exercice of filteredExercices" 
+              class="exercice-card"
+              (click)="selectExercice(exercice)">
+              
+              <div class="exercice-header">
+                <h4>{{ exercice.nom }}</h4>
+              </div>
+              
+              <div class="exercice-content">
+                <p class="exercice-description">
+                  {{ exercice.description | slice:0:120 }}
+                  <span *ngIf="exercice.description.length > 120">...</span>
+                </p>
+                
+                <!-- Tags de l'exercice -->
+                <div class="exercice-tags" *ngIf="exercice.tags && exercice.tags.length > 0">
+                  <span 
+                    *ngFor="let tag of exercice.tags | slice:0:3" 
+                    class="tag"
+                    [style.background-color]="tag.color || '#e0e0e0'">
+                    {{ tag.label }}
+                  </span>
+                  <span *ngIf="exercice.tags.length > 3" class="tag-more">
+                    +{{ exercice.tags.length - 3 }}
+                  </span>
+                </div>
+              </div>
+              
+              <div class="exercice-actions">
+                <button type="button" class="select-button">
+                  <i class="material-icons">add</i>
+                  Sélectionner
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Message si aucun exercice trouvé -->
+          <div *ngIf="filteredExercices.length === 0" class="no-results">
+            <i class="material-icons">search_off</i>
+            <p>Aucun exercice ne correspond à vos critères de recherche.</p>
+            <p>Essayez de modifier vos filtres ou votre terme de recherche.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="cancel()">
+        Annuler
+      </button>
+    </div>
+  </div>
+</div>

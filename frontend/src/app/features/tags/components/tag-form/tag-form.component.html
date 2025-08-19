@@ -1,0 +1,90 @@
+<div class="tag-form">
+  <form [formGroup]="tagForm" (ngSubmit)="onSubmit()">
+    <!-- Message d'erreur -->
+    <div *ngIf="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
+    
+    <!-- Label du tag -->
+    <div class="form-group">
+      <label for="tag-label">Libellé du tag:</label>
+      <input 
+        type="text" 
+        id="tag-label" 
+        formControlName="label" 
+        placeholder="Nom du tag"
+        autocomplete="off">
+      
+      <div class="validation-error" *ngIf="tagForm.get('label')?.invalid && (tagForm.get('label')?.dirty || tagForm.get('label')?.touched)">
+        <mat-icon>error_outline</mat-icon>
+        <div class="error-messages">
+          <span *ngIf="tagForm.get('label')?.errors?.['required']">Le libellé est requis.</span>
+          <span *ngIf="tagForm.get('label')?.errors?.['minlength']">
+            Le libellé doit contenir au moins {{ tagForm.get('label')?.errors?.['minlength']?.requiredLength }} caractères.
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Catégorie du tag -->
+    <div class="form-group">
+      <label for="tag-category">Catégorie:</label>
+      <select 
+        id="tag-category" 
+        formControlName="category"
+        (change)="onCategoryChange()">
+        <option *ngFor="let cat of [TagCategory.OBJECTIF, TagCategory.TRAVAIL_SPECIFIQUE, TagCategory.NIVEAU, TagCategory.TEMPS, TagCategory.FORMAT, TagCategory.THEME_ENTRAINEMENT]" [value]="cat">
+          {{ cat === TagCategory.OBJECTIF ? 'Objectif' : 
+             cat === TagCategory.TRAVAIL_SPECIFIQUE ? 'Travail Spécifique' : 
+             cat === TagCategory.NIVEAU ? 'Niveau' :
+             cat === TagCategory.TEMPS ? 'Temps' : 
+             cat === TagCategory.FORMAT ? 'Format' : 'Thème Entraînement' }}
+        </option>
+      </select>
+    </div>
+    
+    <!-- Couleur du tag -->
+    <div class="form-group">
+      <label for="tag-color">Couleur:</label>
+      <div class="color-input-container">
+        <input 
+          type="color" 
+          id="tag-color" 
+          formControlName="color">
+        <div class="color-preview">
+          <div class="color-circle" [style.background-color]="tagForm.get('color')?.value"></div>
+          <span class="color-value">{{ tagForm.get('color')?.value }}</span>
+          <div class="tag-preview" [style.background-color]="tagForm.get('color')?.value">
+            {{ tagForm.get('label')?.value || 'Aperçu' }}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Niveau (nombre d'étoiles) - uniquement visible pour la catégorie "niveau" -->
+    <div class="form-group" *ngIf="tagForm.get('category')?.value === TagCategory.NIVEAU">
+      <label for="tag-level">Nombre d'étoiles:</label>
+      <select id="tag-level" formControlName="level" class="form-select">
+        <option *ngFor="let n of niveaux" [value]="n">{{ n }} étoile{{ n > 1 ? 's' : '' }} - {{ niveauLabels[n] }}</option>
+      </select>
+      
+      <div class="validation-error" *ngIf="tagForm.get('level')?.invalid && (tagForm.get('level')?.dirty || tagForm.get('level')?.touched)">
+        <mat-icon>error_outline</mat-icon>
+        <div class="error-messages">
+          <span *ngIf="tagForm.get('level')?.errors?.['required']">Le niveau est requis pour la catégorie "niveau".</span>
+          <span *ngIf="tagForm.get('level')?.errors?.['min'] || tagForm.get('level')?.errors?.['max']">
+            Le niveau doit être compris entre 1 et 5.
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Actions -->
+    <div class="form-actions">
+      <button type="submit" [disabled]="tagForm.invalid">
+        {{ editTag ? 'Mettre à jour' : 'Ajouter' }}
+      </button>
+      <button type="button" *ngIf="editTag" (click)="cancelEdit()">Annuler</button>
+    </div>
+  </form>
+</div>

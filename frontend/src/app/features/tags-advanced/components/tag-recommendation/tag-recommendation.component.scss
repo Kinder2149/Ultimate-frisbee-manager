@@ -1,0 +1,126 @@
+.recommendation-container {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 16px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.recommendation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  
+  .recommendation-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+    margin: 0;
+  }
+}
+
+.recommendation-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.recommendation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.recommendation-item {
+  background-color: white;
+  border-radius: 4px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  }
+  
+  .recommendation-tag {
+    display: flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 16px;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    
+    .recommendation-category {
+      font-size: 12px;
+      opacity: 0.8;
+      margin-left: 8px;
+      font-style: italic;
+    }
+  }
+  
+  .recommendation-confidence {
+    font-size: 14px;
+    font-weight: 500;
+    padding: 2px 6px;
+    border-radius: 4px;
+    
+    &.high-confidence {
+      color: #4caf50;
+      background-color: rgba(76, 175, 80, 0.1);
+    }
+    
+    &.medium-confidence {
+      color: #ff9800;
+      background-color: rgba(255, 152, 0, 0.1);
+    }
+    
+    &.low-confidence {
+      color: #f44336;
+      background-color: rgba(244, 67, 54, 0.1);
+    }
+  }
+  
+  .recommendation-source {
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.5);
+  }
+}
+
+.no-recommendations, .recommendations-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  color: rgba(0, 0, 0, 0.5);
+  text-align: center;
+  font-style: italic;
+}
+
+.recommendations-loading {
+  gap: 12px;
+  
+  span {
+    margin-top: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .recommendation-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    
+    .recommendation-confidence,
+    .recommendation-source {
+      margin-left: auto;
+    }
+  }
+}

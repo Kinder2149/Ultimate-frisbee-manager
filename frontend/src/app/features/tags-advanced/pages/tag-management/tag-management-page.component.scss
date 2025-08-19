@@ -1,0 +1,143 @@
+.page-container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 500;
+  margin: 0;
+  color: #333;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+}
+
+.content-section {
+  margin-bottom: 24px;
+}
+
+.filters {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  align-items: center;
+  
+  mat-form-field {
+    flex: 1;
+  }
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    
+    button {
+      align-self: flex-end;
+    }
+  }
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.tags-table {
+  width: 100%;
+  
+  .tag-cell {
+    display: flex;
+    align-items: center;
+    
+    .tag-color {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+  }
+  
+  .category-chip {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 16px;
+    color: white;
+    font-size: 12px;
+    text-transform: capitalize;
+  }
+  
+  .usage-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    
+    .usage-count {
+      min-width: 30px;
+    }
+    
+    .usage-bar {
+      width: 100%;
+      max-width: 150px;
+    }
+  }
+}
+
+.no-data {
+  padding: 24px 0;
+  
+  .no-data-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: rgba(0, 0, 0, 0.4);
+    
+    mat-icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+      margin-bottom: 8px;
+    }
+  }
+}
+
+.category-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.category-group {
+  .category-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    
+    h3 {
+      margin: 0;
+      font-size: 18px;
+      text-transform: capitalize;
+    }
+    
+    .tag-count {
+      margin-left: 12px;
+      font-size: 14px;
+      color: rgba(0, 0, 0, 0.6);
+    }
+  }
+  
+  .category-tags {
+    padding: 12px;
+    background-color: rgba(0, 0, 0, 0.02);
+    border-radius: 8px;
+  }
+}

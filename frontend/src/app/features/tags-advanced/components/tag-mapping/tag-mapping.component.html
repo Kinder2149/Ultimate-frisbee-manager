@@ -1,0 +1,139 @@
+<div class="mapping-container">
+  <div class="mapping-header">
+    <h3 class="mapping-title">Mapping de Tags</h3>
+    <div class="mapping-stats">
+      <span class="stat validated">{{ validatedCount }}/{{ activeMappingsCount }} validés</span>
+      <span *ngIf="ignoredCount > 0" class="stat ignored">{{ ignoredCount }} ignorés</span>
+    </div>
+  </div>
+  
+  <div class="mapping-filter">
+    <div class="search-box">
+      <mat-form-field appearance="outline">
+        <mat-label>Rechercher un tag</mat-label>
+        <input matInput [(ngModel)]="searchText" (input)="filterAvailableTags()" placeholder="Saisir un mot-clé...">
+        <button *ngIf="searchText" matSuffix mat-icon-button aria-label="Clear" (click)="searchText=''; filterAvailableTags()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
+    </div>
+    
+    <div class="category-filter">
+      <mat-button-toggle-group>
+        <mat-button-toggle 
+          [checked]="selectedCategory === null"
+          (change)="selectCategory(null)">
+          Tous
+        </mat-button-toggle>
+        <mat-button-toggle 
+          *ngFor="let category of categories"
+          [checked]="selectedCategory === category"
+          (change)="selectCategory(category)">
+          {{ category }}
+        </mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
+  </div>
+  
+  <div class="mapping-content">
+    <div class="mapping-list">
+      <div *ngFor="let mapping of mappings" 
+           class="mapping-item"
+           [ngClass]="{'validated': mapping.validated, 'ignored': mapping.ignored}">
+        
+        <!-- Source Tag -->
+        <div class="source-tag">
+          <div class="tag-chip" 
+               [style.backgroundColor]="mapping.sourceTag.color || '#e0e0e0'">
+            {{ mapping.sourceTag.label }}
+          </div>
+          <div *ngIf="showConfidence" 
+               class="confidence-indicator" 
+               [ngClass]="getConfidenceClass(mapping.confidence)">
+            {{ (mapping.confidence * 100) | number:'1.0-0' }}%
+          </div>
+        </div>
+        
+        <!-- Mapped Tag -->
+        <div class="mapped-tag">
+          <ng-container *ngIf="mapping.validated; else unmappedTemplate">
+            <div *ngIf="mapping.mappedTag" class="tag-chip" 
+                 [style.backgroundColor]="mapping.mappedTag.color || '#e0e0e0'">
+              {{ mapping.mappedTag.label }}
+              <span class="tag-category">{{ mapping.mappedTag.category }}</span>
+            </div>
+            <div *ngIf="!mapping.mappedTag" class="no-mapping-chip">
+              Sans équivalent
+            </div>
+          </ng-container>
+          
+          <ng-template #unmappedTemplate>
+            <div *ngIf="!mapping.ignored" class="unmapped-placeholder">
+              Non validé
+            </div>
+            <div *ngIf="mapping.ignored" class="ignored-placeholder">
+              Ignoré
+            </div>
+          </ng-template>
+        </div>
+        
+        <!-- Actions -->
+        <div *ngIf="showActions" class="mapping-actions">
+          <ng-container *ngIf="!mapping.ignored">
+            <ng-container *ngIf="!mapping.validated">
+              <button mat-icon-button color="primary" 
+                      [matMenuTriggerFor]="tagMenu"
+                      matTooltip="Sélectionner un tag existant">
+                <mat-icon>link</mat-icon>
+              </button>
+              <mat-menu #tagMenu="matMenu" class="tag-selection-menu">
+                <div class="menu-header">
+                  <span>Sélectionnez un tag</span>
+                </div>
+                <div class="menu-content">
+                  <button mat-menu-item 
+                          *ngFor="let tag of filteredAvailableTags" 
+                          (click)="validateMapping(mapping, tag)">
+                    <div class="tag-menu-item">
+                      <div class="tag-chip mini" [style.backgroundColor]="tag.color || '#e0e0e0'">
+                        {{ tag.label }}
+                      </div>
+                      <span class="tag-category mini">{{ tag.category }}</span>
+                    </div>
+                  </button>
+                </div>
+                <div class="menu-footer">
+                  <button mat-button color="warn" (click)="validateMapping(mapping, null)">
+                    Sans équivalent
+                  </button>
+                </div>
+              </mat-menu>
+              
+              <button mat-icon-button color="warn" 
+                      (click)="ignoreMapping(mapping)"
+                      matTooltip="Ignorer ce mapping">
+                <mat-icon>remove_circle_outline</mat-icon>
+              </button>
+            </ng-container>
+            
+            <ng-container *ngIf="mapping.validated">
+              <button mat-icon-button 
+                      (click)="invalidateMapping(mapping)"
+                      matTooltip="Annuler la validation">
+                <mat-icon>edit</mat-icon>
+              </button>
+            </ng-container>
+          </ng-container>
+          
+          <ng-container *ngIf="mapping.ignored">
+            <button mat-icon-button color="accent" 
+                    (click)="restoreMapping(mapping)"
+                    matTooltip="Restaurer ce mapping">
+              <mat-icon>restore</mat-icon>
+            </button>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

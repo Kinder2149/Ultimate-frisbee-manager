@@ -1,0 +1,246 @@
+.mapping-container {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 16px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.mapping-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  
+  .mapping-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+    margin: 0;
+  }
+  
+  .mapping-stats {
+    display: flex;
+    gap: 12px;
+    
+    .stat {
+      font-size: 14px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      
+      &.validated {
+        color: #4caf50;
+        background-color: rgba(76, 175, 80, 0.1);
+      }
+      
+      &.ignored {
+        color: #9e9e9e;
+        background-color: rgba(158, 158, 158, 0.1);
+      }
+    }
+  }
+}
+
+.mapping-filter {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  
+  .search-box {
+    mat-form-field {
+      width: 100%;
+    }
+  }
+  
+  .category-filter {
+    mat-button-toggle-group {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      
+      mat-button-toggle {
+        flex: 1;
+        min-width: 90px;
+        
+        ::ng-deep .mat-button-toggle-label-content {
+          line-height: 36px;
+        }
+      }
+    }
+  }
+}
+
+.mapping-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.mapping-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mapping-item {
+  background-color: white;
+  border-radius: 4px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: background-color 0.2s ease;
+  
+  &.validated {
+    background-color: rgba(76, 175, 80, 0.05);
+    border-left: 4px solid #4caf50;
+  }
+  
+  &.ignored {
+    opacity: 0.6;
+    border-left: 4px solid #9e9e9e;
+  }
+  
+  .source-tag, .mapped-tag {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .source-tag {
+    min-width: 120px;
+  }
+  
+  .mapped-tag {
+    flex: 1;
+  }
+  
+  .tag-chip {
+    display: flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 16px;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    
+    &.mini {
+      padding: 2px 8px;
+      font-size: 12px;
+    }
+    
+    .tag-category {
+      font-size: 12px;
+      opacity: 0.8;
+      margin-left: 8px;
+      font-style: italic;
+      
+      &.mini {
+        font-size: 10px;
+      }
+    }
+  }
+  
+  .confidence-indicator {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 2px 6px;
+    border-radius: 4px;
+    
+    &.high-confidence {
+      color: #4caf50;
+      background-color: rgba(76, 175, 80, 0.1);
+    }
+    
+    &.medium-confidence {
+      color: #ff9800;
+      background-color: rgba(255, 152, 0, 0.1);
+    }
+    
+    &.low-confidence {
+      color: #f44336;
+      background-color: rgba(244, 67, 54, 0.1);
+    }
+  }
+  
+  .unmapped-placeholder, .ignored-placeholder, .no-mapping-chip {
+    font-size: 13px;
+    font-style: italic;
+    padding: 4px 10px;
+    border-radius: 16px;
+  }
+  
+  .unmapped-placeholder {
+    color: #ff9800;
+    background-color: rgba(255, 152, 0, 0.1);
+  }
+  
+  .ignored-placeholder {
+    color: #9e9e9e;
+    background-color: rgba(158, 158, 158, 0.1);
+  }
+  
+  .no-mapping-chip {
+    color: #f44336;
+    background-color: rgba(244, 67, 54, 0.1);
+  }
+  
+  .mapping-actions {
+    display: flex;
+    gap: 4px;
+  }
+}
+
+.tag-selection-menu {
+  ::ng-deep .mat-menu-content {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  
+  .menu-header, .menu-footer {
+    padding: 8px 16px;
+    background-color: #f5f5f5;
+    font-weight: 500;
+  }
+  
+  .menu-content {
+    max-height: 250px;
+    overflow-y: auto;
+    
+    .tag-menu-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .mapping-item {
+    flex-direction: column;
+    align-items: flex-start;
+    
+    .source-tag, .mapped-tag {
+      width: 100%;
+    }
+    
+    .mapping-actions {
+      align-self: flex-end;
+      margin-top: 8px;
+    }
+  }
+  
+  .mapping-filter {
+    .category-filter {
+      mat-button-toggle-group {
+        flex-wrap: wrap;
+        
+        mat-button-toggle {
+          flex-basis: 50%;
+        }
+      }
+    }
+  }
+}

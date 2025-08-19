@@ -1,0 +1,82 @@
+.tag-list {
+  margin-bottom: 20px;
+}
+
+.no-tags {
+  font-style: italic;
+  color: #999;
+  padding: 10px;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tag-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: 20px;
+  background-color: #eee;
+  font-size: 0.9rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  min-width: 100px;
+}
+
+.tag-content {
+  display: flex;
+  flex-direction: column;
+  margin-right: 10px;
+}
+
+.tag-label {
+  font-weight: bold;
+}
+
+.tag-stars {
+  margin-top: 2px;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+}
+
+.star {
+  color: inherit;
+}
+
+.niveau-label {
+  margin-left: 5px;
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+.tag-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.edit-btn,
+.delete-btn {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.edit-btn:hover,
+.delete-btn:hover {
+  opacity: 1;
+}

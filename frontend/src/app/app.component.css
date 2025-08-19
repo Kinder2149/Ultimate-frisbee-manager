@@ -1,0 +1,315 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow: visible !important;
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
+  overflow: visible !important;
+}
+
+.main-header {
+  background: linear-gradient(135deg, #2c3e50, #34495e);
+  color: white;
+  padding: 0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  border-bottom: 3px solid #3498db;
+  overflow: visible !important;
+  z-index: 1000;
+}
+
+.main-header .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 30px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.main-header h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  letter-spacing: 0.5px;
+}
+
+.main-nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  overflow: visible !important;
+}
+
+.main-nav li {
+  position: relative;
+  border-radius: 8px 8px 0 0;
+  overflow: visible !important;
+}
+
+.main-nav a {
+  display: block;
+  padding: 16px 24px;
+  color: white;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border-bottom: 4px solid transparent;
+  font-weight: 500;
+  font-size: 15px;
+  position: relative;
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(10px);
+}
+
+.main-nav a:hover,
+.main-nav a.active {
+  background: rgba(255,255,255,0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* Styles pour les menus déroulants */
+.main-nav .dropdown {
+  position: relative !important;
+}
+
+/* Couleurs de référence par type */
+.dropdown.exercices .dropdown-toggle {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  border-bottom-color: #e74c3c;
+}
+
+.dropdown.exercices .dropdown-toggle:hover,
+.dropdown.exercices .dropdown-toggle.active {
+  background: linear-gradient(135deg, #c0392b, #a93226);
+  border-bottom-color: #e74c3c;
+}
+
+.dropdown.entrainements .dropdown-toggle {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  border-bottom-color: #3498db;
+}
+
+.dropdown.entrainements .dropdown-toggle:hover,
+.dropdown.entrainements .dropdown-toggle.active {
+  background: linear-gradient(135deg, #2980b9, #1f5f8b);
+  border-bottom-color: #3498db;
+}
+
+.dropdown.echauffements .dropdown-toggle {
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+  border-bottom-color: #f39c12;
+}
+
+.dropdown.echauffements .dropdown-toggle:hover,
+.dropdown.echauffements .dropdown-toggle.active {
+  background: linear-gradient(135deg, #e67e22, #d35400);
+  border-bottom-color: #f39c12;
+}
+
+.dropdown.situations .dropdown-toggle {
+  background: linear-gradient(135deg, #27ae60, #229954);
+  border-bottom-color: #27ae60;
+}
+
+.dropdown.situations .dropdown-toggle:hover,
+.dropdown.situations .dropdown-toggle.active {
+  background: linear-gradient(135deg, #229954, #1e8449);
+  border-bottom-color: #27ae60;
+}
+
+.dropdown.add .dropdown-toggle {
+  background: linear-gradient(135deg, #9b59b6, #8e44ad);
+  border-bottom-color: #9b59b6;
+}
+
+.dropdown.add .dropdown-toggle:hover,
+.dropdown.add .dropdown-toggle.active {
+  background: linear-gradient(135deg, #8e44ad, #7d3c98);
+  border-bottom-color: #9b59b6;
+}
+
+.dropdown-toggle {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  border-radius: 8px 8px 0 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.dropdown-toggle::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255,255,255,0.1);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.dropdown-toggle:hover::before {
+  opacity: 1;
+}
+
+.dropdown-icon {
+  margin-left: 5px;
+  font-size: 18px;
+  transition: transform 0.3s ease;
+}
+
+.dropdown.open .dropdown-icon {
+  transform: rotate(180deg);
+}
+
+.dropdown-menu {
+  position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+  background: white !important;
+  border: 2px solid #e9ecef !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  min-width: 250px !important;
+  z-index: 99999 !important;
+  transition: all 0.3s ease !important;
+  display: block !important;
+  pointer-events: auto !important;
+}
+
+
+
+.dropdown-menu li {
+  margin: 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.dropdown-menu a {
+  display: block;
+  padding: 18px 24px;
+  color: #2c3e50;
+  text-decoration: none;
+  border-bottom: none;
+  border-radius: 0;
+  transition: all 0.3s ease;
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  position: relative;
+  background: transparent;
+}
+
+.dropdown-menu a:hover,
+.dropdown-menu a.active {
+  background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(52, 152, 219, 0.2));
+  color: #2c3e50;
+  border-bottom: none;
+  transform: translateX(8px);
+  border-left: 4px solid #3498db;
+  padding-left: 20px;
+}
+
+.dropdown-menu li:first-child a {
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.dropdown-menu li:last-child a {
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+.dropdown-menu li:last-child {
+  border-bottom: none;
+}
+
+/* Les styles inline dans le HTML gèrent maintenant l'affichage */
+
+/* Règles spécifiques pour chaque type avec bordures colorées */
+.dropdown.exercices.open .dropdown-menu {
+  border-top: 3px solid #e74c3c;
+}
+
+.dropdown.entrainements.open .dropdown-menu {
+  border-top: 3px solid #3498db;
+}
+
+.dropdown.echauffements.open .dropdown-menu {
+  border-top: 3px solid #f39c12;
+}
+
+.dropdown.situations.open .dropdown-menu {
+  border-top: 3px solid #9b59b6;
+}
+
+.dropdown.add.open .dropdown-menu {
+  border-top: 3px solid #27ae60;
+}
+
+.main-content {
+  flex: 1;
+  padding: 30px 0;
+}
+
+.main-footer {
+  background-color: #f5f5f5;
+  padding: 15px 0;
+  margin-top: auto;
+  text-align: center;
+  color: #7f8c8d;
+}
+
+/* Styles pour la page d'accueil épurée */
+.home-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.home-content {
+  text-align: center;
+}
+
+.app-title {
+  font-size: 3.5rem;
+  font-weight: 300;
+  color: white;
+  margin: 0;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  letter-spacing: 2px;
+}
+
+@media (max-width: 768px) {
+  .main-nav ul {
+    flex-direction: column;
+  }
+  
+  .main-nav li {
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
+
+  .app-title {
+    font-size: 2.5rem;
+    letter-spacing: 1px;
+  }
+}

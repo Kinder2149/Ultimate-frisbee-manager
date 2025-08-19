@@ -1,0 +1,26 @@
+<div class="tag-list">
+  <div *ngIf="!tags || tags.length === 0" class="no-tags">
+    Aucun tag dans cette catégorie
+  </div>
+  
+  <ul *ngIf="tags && tags.length > 0">
+    <li *ngFor="let tag of tags" class="tag-item" [ngStyle]="getTagStyle(tag)">
+      <div class="tag-content">
+        <span class="tag-label">{{ tag.label }}</span>
+        
+        <!-- Afficher les étoiles pour les tags de niveau -->
+        <span class="tag-stars" *ngIf="tag.category === TagCategory.NIVEAU && tag.level">
+          <span class="star" *ngFor="let i of [1, 2, 3, 4, 5]">
+            {{ i <= tag.level! ? '★' : '☆' }}
+          </span>
+          <span class="niveau-label">({{ getNiveauLabel(tag.level) }})</span>
+        </span>
+      </div>
+      
+      <div class="tag-actions">
+        <button class="edit-btn" (click)="editTag.emit(tag)" title="Modifier">✏️</button>
+        <button class="delete-btn" (click)="deleteTag.emit(tag)" title="Supprimer">🗑️</button>
+      </div>
+    </li>
+  </ul>
+</div>

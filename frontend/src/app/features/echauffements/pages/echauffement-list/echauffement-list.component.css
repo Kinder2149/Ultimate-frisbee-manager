@@ -1,0 +1,167 @@
+.echauffement-list-container {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.header h2 {
+  margin: 0;
+  color: #333;
+  font-weight: 500;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.loading-container p {
+  margin-top: 20px;
+  color: #666;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 64px;
+  width: 64px;
+  height: 64px;
+  color: #ccc;
+  margin-bottom: 20px;
+}
+
+.empty-state h3 {
+  margin: 0 0 10px 0;
+  color: #666;
+}
+
+.empty-state p {
+  margin: 0 0 30px 0;
+  color: #999;
+}
+
+.echauffements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 20px;
+}
+
+.echauffement-card {
+  height: fit-content;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.echauffement-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.subtitle-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.blocs-count {
+  font-weight: 500;
+  color: #3f51b5;
+}
+
+.date {
+  font-size: 0.85em;
+  color: #999;
+}
+
+.description {
+  margin: 15px 0;
+  line-height: 1.5;
+  color: #555;
+}
+
+.blocs-preview {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.blocs-preview h4 {
+  margin: 0 0 10px 0;
+  font-size: 0.9em;
+  font-weight: 500;
+  color: #666;
+}
+
+.blocs-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bloc-tag {
+  background-color: #f5f5f5;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  color: #666;
+  border: 1px solid #e0e0e0;
+}
+
+mat-card-actions {
+  padding: 8px 16px 16px 16px;
+}
+
+mat-card-actions button {
+  margin-right: 8px;
+}
+
+/* Styles responsives */
+@media (max-width: 768px) {
+  .echauffement-list-container {
+    margin: 10px;
+    padding: 10px;
+  }
+  
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+  }
+  
+  .echauffements-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .blocs-list {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  mat-card-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  mat-card-actions button {
+    flex: 1;
+    margin: 0;
+  }
+}

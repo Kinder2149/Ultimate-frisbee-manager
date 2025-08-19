@@ -1,0 +1,148 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title">Gestion des Tags</h1>
+    <div class="actions">
+      <button mat-raised-button color="primary" (click)="openCreateTagDialog()">
+        <mat-icon>add</mat-icon>
+        Créer un tag
+      </button>
+      <button mat-stroked-button (click)="exportTags()">
+        <mat-icon>download</mat-icon>
+        Exporter
+      </button>
+      <button mat-icon-button (click)="loadTags()">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+  </div>
+  
+  <mat-progress-bar *ngIf="isLoading" mode="indeterminate"></mat-progress-bar>
+  
+  <div class="content-section">
+    <mat-card>
+      <mat-card-content>
+        <div class="filters">
+          <mat-form-field appearance="outline">
+            <mat-label>Rechercher</mat-label>
+            <input matInput [(ngModel)]="searchTerm" (keyup)="applyFilter()" placeholder="Rechercher un tag...">
+            <button *ngIf="searchTerm" matSuffix mat-icon-button aria-label="Clear" (click)="searchTerm=''; applyFilter()">
+              <mat-icon>close</mat-icon>
+            </button>
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline">
+            <mat-label>Catégorie</mat-label>
+            <mat-select [(ngModel)]="selectedCategory" (selectionChange)="applyFilter()">
+              <mat-option value="all">Toutes les catégories</mat-option>
+              <mat-option *ngFor="let category of categories" [value]="category">
+                {{ category }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          
+          <button mat-button (click)="resetFilters()">
+            Réinitialiser
+          </button>
+        </div>
+        
+        <div class="table-container">
+          <table mat-table [dataSource]="dataSource" matSort class="tags-table">
+            <!-- Label Column -->
+            <ng-container matColumnDef="label">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Tag</th>
+              <td mat-cell *matCellDef="let tag">
+                <div class="tag-cell">
+                  <div class="tag-color" [style.backgroundColor]="tag.color"></div>
+                  <span>{{ tag.label }}</span>
+                </div>
+              </td>
+            </ng-container>
+            
+            <!-- Category Column -->
+            <ng-container matColumnDef="category">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Catégorie</th>
+              <td mat-cell *matCellDef="let tag">
+                <div class="category-chip" [style.backgroundColor]="getCategoryColor(tag.category)">
+                  {{ tag.category }}
+                </div>
+              </td>
+            </ng-container>
+            
+            <!-- Usage Count Column -->
+            <ng-container matColumnDef="usageCount">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Utilisations</th>
+              <td mat-cell *matCellDef="let tag">
+                <div class="usage-cell">
+                  <span class="usage-count">{{ tag.usageCount || 0 }}</span>
+                  <mat-progress-bar
+                    class="usage-bar"
+                    mode="determinate"
+                    [value]="tag.usagePercentage || 0">
+                  </mat-progress-bar>
+                </div>
+              </td>
+            </ng-container>
+            
+            <!-- Actions Column -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Actions</th>
+              <td mat-cell *matCellDef="let tag">
+                <button mat-icon-button [matMenuTriggerFor]="menu">
+                  <mat-icon>more_vert</mat-icon>
+                </button>
+                <mat-menu #menu="matMenu">
+                  <button mat-menu-item (click)="openEditTagDialog(tag)">
+                    <mat-icon>edit</mat-icon>
+                    <span>Modifier</span>
+                  </button>
+                  <!-- Autres actions possibles comme supprimer ou fusionner des tags -->
+                </mat-menu>
+              </td>
+            </ng-container>
+            
+            <!-- Header and Row Declarations -->
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            
+            <!-- No Data Row -->
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell no-data" colspan="4">
+                <div class="no-data-content">
+                  <mat-icon>search_off</mat-icon>
+                  <span>Aucun tag trouvé{{searchTerm ? ' pour "'+searchTerm+'"' : ''}}</span>
+                </div>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  
+  <div class="content-section">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Organisation par catégorie</mat-card-title>
+        <mat-card-subtitle>Aperçu des tags regroupés par catégorie</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="category-groups">
+          <div *ngFor="let category of categories" class="category-group">
+            <div class="category-header">
+              <h3 [style.color]="getCategoryColor(category)">{{ category }}</h3>
+              <span class="tag-count">{{ getTagsForCategory(category).length }} tags</span>
+            </div>
+            <div class="category-tags">
+              <app-tag-visualization
+                [tags]="getTagsForCategory(category)"
+                [interactive]="true"
+                [maxTagsToShow]="20"
+                (tagClicked)="openEditTagDialog($event)">
+              </app-tag-visualization>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

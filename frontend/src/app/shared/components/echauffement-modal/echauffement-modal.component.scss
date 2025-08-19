@@ -1,0 +1,51 @@
+.full-width {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.loading-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  justify-content: center;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.no-data {
+  text-align: center;
+  padding: 24px;
+  color: rgba(0, 0, 0, 0.6);
+  
+  p {
+    margin-bottom: 16px;
+  }
+}
+
+.option-description {
+  font-size: 0.9em;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.button-spinner {
+  margin-right: 8px;
+}
+
+mat-dialog-content {
+  min-width: 400px;
+  max-width: 500px;
+  min-height: 200px;
+}
+
+mat-dialog-actions {
+  padding: 16px 24px;
+  gap: 8px;
+}
+
+// Responsive design
+@media (max-width: 600px) {
+  mat-dialog-content {
+    min-width: 300px;
+    max-width: 90vw;
+  }
+}

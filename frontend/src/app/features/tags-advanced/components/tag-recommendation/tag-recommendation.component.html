@@ -1,0 +1,51 @@
+<div class="recommendation-container">
+  <div class="recommendation-header">
+    <h3 class="recommendation-title">Recommandations de tags</h3>
+    <button *ngIf="!autoUpdate" mat-icon-button color="primary" 
+            (click)="updateRecommendations()" 
+            [disabled]="loading || !inputText">
+      <mat-icon>refresh</mat-icon>
+    </button>
+  </div>
+  
+  <div class="recommendation-content">
+    <ng-container *ngIf="!loading; else loadingTemplate">
+      <ng-container *ngIf="recommendations.length > 0; else noRecommendationsTemplate">
+        <div class="recommendation-list">
+          <div *ngFor="let rec of recommendations" 
+               class="recommendation-item"
+               (click)="selectRecommendation(rec)">
+            <div class="recommendation-tag" 
+                 [style.backgroundColor]="rec.tag.color || '#e0e0e0'">
+              {{ rec.tag.label }}
+              <span class="recommendation-category">{{ rec.tag.category }}</span>
+            </div>
+            <div *ngIf="showConfidence" 
+                 class="recommendation-confidence" 
+                 [ngClass]="getConfidenceClass(rec.confidence)">
+              {{ (rec.confidence * 100) | number:'1.0-0' }}%
+            </div>
+            <div class="recommendation-source">
+              {{ rec.source }}
+            </div>
+          </div>
+        </div>
+      </ng-container>
+      <ng-template #noRecommendationsTemplate>
+        <div class="no-recommendations" *ngIf="inputText">
+          Aucune recommandation disponible pour ce texte.
+        </div>
+        <div class="no-recommendations" *ngIf="!inputText">
+          Entrez du texte pour obtenir des recommandations de tags.
+        </div>
+      </ng-template>
+    </ng-container>
+    
+    <ng-template #loadingTemplate>
+      <div class="recommendations-loading">
+        <mat-spinner diameter="30"></mat-spinner>
+        <span>Recherche de tags pertinents...</span>
+      </div>
+    </ng-template>
+  </div>
+</div>

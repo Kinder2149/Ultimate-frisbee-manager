@@ -1,0 +1,106 @@
+.exercice-variables-container {
+  margin-bottom: 1rem;
+}
+
+.variables-section {
+  margin-bottom: 1.5rem;
+}
+
+.full-width {
+  width: 100%;
+}
+
+/* Styles pour les chips */
+mat-chip-row, mat-chip-option {
+  margin: 2px;
+}
+
+mat-chip-row.plus {
+  background-color: rgba(40, 167, 69, 0.1) !important;
+}
+
+mat-chip-row.minus {
+  background-color: rgba(220, 53, 69, 0.1) !important;
+}
+
+.variable-chip {
+  margin: 4px;
+}
+
+.variable-chip.plus {
+  background-color: rgba(40, 167, 69, 0.1) !important;
+}
+
+.variable-chip.minus {
+  background-color: rgba(220, 53, 69, 0.1) !important;
+}
+
+.chip-list-readonly {
+  padding: 8px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+/* Styles pour le mode lecture */
+.variables-view-container {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.variables-title {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.variables-title.plus {
+  color: #28a745;
+}
+
+.variables-title.minus {
+  color: #dc3545;
+}
+
+.variables-list {
+  list-style-type: none;
+  padding-left: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.variables-list li {
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: flex-start;
+}
+
+.variable-marker {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  text-align: center;
+  line-height: 20px;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+  font-weight: bold;
+}
+
+.variable-marker.plus {
+  background-color: rgba(40, 167, 69, 0.2);
+  color: #28a745;
+}
+
+.variable-marker.minus {
+  background-color: rgba(220, 53, 69, 0.2);
+  color: #dc3545;
+}
+
+.no-variables {
+  color: #6c757d;
+  font-style: italic;
+  text-align: center;
+  padding: 1rem;
+}

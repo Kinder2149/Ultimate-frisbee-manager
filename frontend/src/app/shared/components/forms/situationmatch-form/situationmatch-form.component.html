@@ -1,0 +1,115 @@
+<div class="situationmatch-form-container">
+  <mat-card class="form-card">
+    <!-- En-tête -->
+    <div class="form-header">
+      <h1>{{ pageTitle }}</h1>
+      <button mat-icon-button (click)="onCancel()" class="close-button">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <!-- Formulaire -->
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="situationmatch-form">
+      
+      <!-- Type (obligatoire) -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Type *</mat-label>
+        <mat-select formControlName="type" required>
+          <mat-option *ngFor="let option of typeOptions" [value]="option.value">
+            {{ option.label }}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="form.get('type')?.hasError('required')">
+          Le type est obligatoire
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Description -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Description</mat-label>
+        <textarea 
+          matInput 
+          formControlName="description" 
+          rows="4"
+          placeholder="Décrivez la situation ou le match...">
+        </textarea>
+      </mat-form-field>
+
+      <!-- Temps -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Temps</mat-label>
+        <input 
+          matInput 
+          formControlName="temps" 
+          placeholder="Ex: 10 minutes, 2x5 min, etc.">
+      </mat-form-field>
+
+      <!-- Sélection des tags -->
+      <div class="tags-section">
+        <h3>Tags (Format, Temps, Niveau)</h3>
+        
+        <!-- Tags disponibles -->
+        <div class="available-tags" *ngIf="availableTags.length > 0">
+          <h4>Tags disponibles :</h4>
+          <div class="tags-grid">
+            <mat-chip-listbox>
+              <mat-chip 
+                *ngFor="let tag of availableTags" 
+                (click)="onTagSelect(tag)"
+                [style.background-color]="tag.color || '#e0e0e0'"
+                [style.color]="tag.color ? '#fff' : '#333'"
+                class="selectable-tag">
+                {{ tag.label }}
+                <mat-icon>add</mat-icon>
+              </mat-chip>
+            </mat-chip-listbox>
+          </div>
+        </div>
+
+        <!-- Tags sélectionnés -->
+        <div class="selected-tags" *ngIf="selectedTags.length > 0">
+          <h4>Tags sélectionnés :</h4>
+          <div class="tags-grid">
+            <mat-chip-listbox>
+              <mat-chip 
+                *ngFor="let tag of selectedTags" 
+                (removed)="removeTag(tag)"
+                [style.background-color]="tag.color || '#e0e0e0'"
+                [style.color]="tag.color ? '#fff' : '#333'"
+                class="selected-tag">
+                {{ tag.label }}
+                <mat-icon matChipRemove>cancel</mat-icon>
+              </mat-chip>
+            </mat-chip-listbox>
+          </div>
+        </div>
+
+        <!-- Message si aucun tag sélectionné -->
+        <div class="no-tags" *ngIf="selectedTags.length === 0">
+          <p>Aucun tag sélectionné. Vous pouvez ajouter des tags pour catégoriser votre situation/match.</p>
+        </div>
+      </div>
+
+      <!-- Boutons d'action -->
+      <div class="form-actions">
+        <button 
+          type="button" 
+          mat-button 
+          (click)="onCancel()"
+          [disabled]="loading">
+          Annuler
+        </button>
+        <button 
+          type="submit" 
+          mat-raised-button 
+          color="primary"
+          [disabled]="form.invalid || loading">
+          <mat-icon *ngIf="loading">hourglass_empty</mat-icon>
+          <mat-icon *ngIf="!loading && !isEditMode">add</mat-icon>
+          <mat-icon *ngIf="!loading && isEditMode">save</mat-icon>
+          {{ loading ? 'En cours...' : submitButtonText }}
+        </button>
+      </div>
+    </form>
+  </mat-card>
+</div>

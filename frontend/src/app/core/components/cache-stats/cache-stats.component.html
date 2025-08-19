@@ -1,0 +1,118 @@
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Statistiques du cache</h5>
+    <div>
+      <button class="btn btn-sm btn-outline-danger" (click)="triggerEviction()">
+        Nettoyer le cache
+      </button>
+    </div>
+  </div>
+  <div class="card-body">
+    <div *ngIf="stats; else loading">
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <div class="mb-2">
+            <div class="d-flex justify-content-between mb-1">
+              <span>Utilisation du cache</span>
+              <span class="badge" [ngClass]="getProgressBarClass(stats.usageRatio)">
+                {{ stats.hits }} hits / {{ stats.hits + stats.misses }} accès
+              </span>
+            </div>
+            <div class="progress">
+              <div class="progress-bar" 
+                   [ngClass]="getProgressBarClass(stats.usageRatio)" 
+                   role="progressbar" 
+                   [style.width]="getPercentage(stats.usageRatio)"
+                   aria-valuemin="0" 
+                   aria-valuemax="100">
+                {{ getPercentage(stats.usageRatio) }}
+              </div>
+            </div>
+          </div>
+          
+          <div class="mb-2">
+            <div class="d-flex justify-content-between mb-1">
+              <span>Capacité utilisée</span>
+              <span class="badge" [ngClass]="getProgressBarClass(stats.fillRatio)">
+                {{ stats.size }} / {{ stats.maxSize }} entrées
+              </span>
+            </div>
+            <div class="progress">
+              <div class="progress-bar" 
+                   [ngClass]="getProgressBarClass(stats.fillRatio)" 
+                   role="progressbar" 
+                   [style.width]="getPercentage(stats.fillRatio)"
+                   aria-valuemin="0" 
+                   aria-valuemax="100">
+                {{ getPercentage(stats.fillRatio) }}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-6">
+          <ul class="list-group">
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              Hits
+              <span class="badge bg-success">{{ stats.hits }}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              Misses
+              <span class="badge bg-warning">{{ stats.misses }}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              Évictions
+              <span class="badge bg-danger">{{ stats.evictions }}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              Dernière modification
+              <span class="badge bg-info">{{ stats.lastUpdated | date:'short' }}</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="table-responsive" *ngIf="stats.prefixStats.length > 0">
+        <table class="table table-sm table-striped">
+          <thead>
+            <tr>
+              <th>Préfixe</th>
+              <th class="text-center">Entrées</th>
+              <th class="text-center">Hits</th>
+              <th class="text-center">Misses</th>
+              <th class="text-center">Ratio</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let prefixStat of stats.prefixStats">
+              <td>{{ prefixStat.prefix }}</td>
+              <td class="text-center">{{ prefixStat.count }}</td>
+              <td class="text-center">{{ prefixStat.hits }}</td>
+              <td class="text-center">{{ prefixStat.misses }}</td>
+              <td class="text-center">
+                <div class="progress" style="height: 10px;">
+                  <div class="progress-bar" 
+                       [ngClass]="getProgressBarClass(prefixStat.hitRatio)" 
+                       role="progressbar" 
+                       [style.width]="getPercentage(prefixStat.hitRatio)">
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <ng-template #loading>
+      <div class="d-flex justify-content-center">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Chargement...</span>
+        </div>
+      </div>
+    </ng-template>
+  </div>
+  <div class="card-footer text-muted">
+    <small>Dernière mise à jour: {{ stats?.lastUpdated | date:'medium' }}</small>
+  </div>
+</div>

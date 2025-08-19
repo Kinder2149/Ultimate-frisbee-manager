@@ -1,0 +1,247 @@
+.exercice-card {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 25px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid #e0e0e0;
+  position: relative; /* Position relative pour que la barre d'actions puisse être positionnée en absolu */
+}
+
+.exercice-card:hover {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.exercice-card.expanded {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.card-header {
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background-color: #f8f9fa;
+  cursor: pointer;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.title-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.title-section h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+  font-weight: 600;
+}
+
+/* Nouveau style pour la section des tags essentiels */
+.essential-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 5px;
+}
+
+.tag-badge {
+  color: white;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Icône d'expansion */
+.expand-icon {
+  cursor: pointer;
+  color: #555;
+  transition: transform 0.3s ease;
+  background: #f0f0f0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.expanded .expand-icon {
+  transform: rotate(180deg);
+}
+
+/* Contenu de la carte (visible quand déplié) */
+.card-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s ease;
+  background-color: white;
+}
+
+.card-content.visible {
+  max-height: 2000px; /* Valeur arbitraire suffisamment grande */
+  padding: 20px;
+}
+
+/* Description de l'exercice */
+.description {
+  margin: 0 0 15px;
+  line-height: 1.5;
+  color: #444;
+}
+
+/* Section des variables */
+.variables-text {
+  background-color: #f5f5f5;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.variables-text h4 {
+  margin-top: 0;
+  color: #333;
+  font-size: 16px;
+}
+
+/* Organisation des tags par catégorie */
+.tags-section {
+  margin: 20px 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.tag-group h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #555;
+  font-size: 15px;
+  font-weight: 500;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 5px;
+}
+
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Styles des tags individuels */
+.tag {
+  padding: 5px 10px;
+  border-radius: 16px;
+  color: white;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Card footer */
+.card-footer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  opacity: 0;
+}
+
+.card-content.visible {
+  max-height: 1000px; /* Ajustez selon vos besoins */
+  padding: 20px;
+  opacity: 1;
+  transition: max-height 0.5s ease, opacity 0.3s ease 0.2s;
+}
+
+.description {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #555;
+  line-height: 1.5;
+}
+
+.schema {
+  margin: 15px 0;
+  text-align: center;
+}
+
+.schema img {
+  max-width: 100%;
+  max-height: 250px;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.tags-section {
+  margin: 15px 0;
+}
+
+.tag-group {
+  margin-bottom: 15px;
+}
+
+.tag-group h4 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag {
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: flex-end;
+  color: #999;
+  font-size: 12px;
+  margin-top: 10px;
+}
+
+/* Styles pour la barre d'actions */
+.action-bar {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 20px;
+  padding: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.action-bar button {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  line-height: 32px;
+}
+
+.delete-btn {
+  color: #f44336;
+}
+
+.delete-btn:hover {
+  background-color: rgba(244, 67, 54, 0.1);
+}

@@ -1,0 +1,109 @@
+<div class="container">
+  <div class="header">
+    <h1>Entraînements</h1>
+    <button class="btn btn-primary" (click)="creerEntrainement()">
+      <i class="material-icons">add</i>
+      Nouvel entraînement
+    </button>
+  </div>
+
+  <!-- Message de chargement -->
+  <div *ngIf="loading" class="loading">
+    <p>Chargement des entraînements...</p>
+  </div>
+
+  <!-- Message d'erreur -->
+  <div *ngIf="error" class="error-message">
+    {{ error }}
+    <button class="btn btn-secondary" (click)="loadEntrainements()">Réessayer</button>
+  </div>
+
+  <!-- Liste des entraînements -->
+  <div *ngIf="!loading && !error" class="entrainements-grid">
+    <!-- Message si aucun entraînement -->
+    <div *ngIf="entrainements.length === 0" class="no-entrainements">
+      <p>Aucun entraînement trouvé.</p>
+      <button class="btn btn-primary" (click)="creerEntrainement()">
+        Créer le premier entraînement
+      </button>
+    </div>
+
+    <!-- Cartes des entraînements -->
+    <div *ngFor="let entrainement of entrainements" class="card">
+      <div class="card-header">
+        <h3 (click)="voirEntrainement(entrainement.id!)">{{ entrainement.titre }}</h3>
+        <div class="actions">
+          <button class="btn-icon" (click)="voirEntrainement(entrainement.id!)" title="Voir">
+            <i class="material-icons">visibility</i>
+          </button>
+          <button class="btn-icon" (click)="modifierEntrainement(entrainement.id!)" title="Modifier">
+            <i class="material-icons">edit</i>
+          </button>
+          <app-duplicate-button 
+            [entityId]="entrainement.id!" 
+            entityType="entraînement"
+            [loading]="duplicatingIds.has(entrainement.id!)"
+            (duplicate)="dupliquerEntrainement($event)">
+          </app-duplicate-button>
+          <button class="btn-icon danger" (click)="supprimerEntrainement(entrainement)" title="Supprimer">
+            <i class="material-icons">delete</i>
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <!-- Informations de base -->
+        <div class="info-row" *ngIf="entrainement.date">
+          <span class="label">Date :</span>
+          <span class="value">{{ formatDate(entrainement.date) }}</span>
+        </div>
+
+        <div class="info-row" *ngIf="entrainement.tags && entrainement.tags.length > 0">
+          <span class="label">Thèmes :</span>
+          <div class="tags-display">
+            <span *ngFor="let tag of entrainement.tags" 
+                  class="tag"
+                  [style.background-color]="tag.color || '#e0e0e0'">
+              {{ tag.label }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Durée totale -->
+        <div class="info-row" *ngIf="entrainement.dureeTotal && entrainement.dureeTotal > 0">
+          <span class="label">Durée totale :</span>
+          <span class="value duration">{{ formatDuree(entrainement.dureeTotal) }}</span>
+        </div>
+
+        <!-- Nombre d'exercices -->
+        <div class="info-row" *ngIf="entrainement.exercices && entrainement.exercices.length > 0">
+          <span class="label">Exercices :</span>
+          <span class="value">{{ entrainement.exercices.length }} exercice{{ entrainement.exercices.length > 1 ? 's' : '' }}</span>
+        </div>
+
+        <!-- Échauffement -->
+        <div class="info-row" *ngIf="entrainement.echauffement">
+          <span class="label">Échauffement :</span>
+          <span class="value echauffement">
+            <i class="material-icons">fitness_center</i>
+            {{ entrainement.echauffement.nom }}
+          </span>
+        </div>
+
+        <!-- Situation/Match -->
+        <div class="info-row" *ngIf="entrainement.situationMatch">
+          <span class="label">Situation/Match :</span>
+          <span class="value situation-match">
+            <i class="material-icons">sports</i>
+            {{ entrainement.situationMatch.nom || entrainement.situationMatch.type }}
+          </span>
+        </div>
+
+        <!-- Date de création -->
+        <div class="created-at" *ngIf="entrainement.createdAt">
+          Créé le {{ formatDate(entrainement.createdAt) }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

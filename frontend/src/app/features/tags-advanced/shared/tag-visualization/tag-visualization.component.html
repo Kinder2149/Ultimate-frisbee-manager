@@ -1,0 +1,56 @@
+<ng-container *ngIf="!groupByCategory">
+  <div class="tags-container">
+    <div class="tag" *ngFor="let tag of displayedTags"
+         [ngClass]="{'interactive': interactive, 'selectable': selectable, 'selected': isSelected(tag)}"
+         [style.backgroundColor]="getColor(tag)"
+         [matTooltip]="showTooltip ? getTooltipText(tag) : ''"
+         matTooltipPosition="above"
+         (click)="interactive ? onTagClick(tag) : null"
+         (dblclick)="selectable ? onTagSelect(tag) : null">
+
+      <span class="tag-label">{{ getLabel(tag) }}</span>
+      <span class="tag-category" *ngIf="showCategory">({{ getCategory(tag) }})</span>
+      
+      <span class="tag-confidence" *ngIf="showConfidence && isTagSuggestion(tag)">
+        {{ formatConfidence(getConfidence(tag)) }}
+      </span>
+      
+      <button *ngIf="showRemove" class="remove-button" mat-icon-button (click)="onTagRemove($event, tag)">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div *ngIf="hasHiddenTags" class="tag more-tag">
+      <span>+{{ hiddenTagsCount }} plus</span>
+    </div>
+  </div>
+</ng-container>
+
+<ng-container *ngIf="groupByCategory">
+  <div class="tags-by-category">
+    <div class="category-group" *ngFor="let category of uniqueCategories">
+      <div class="category-header">{{ category }}</div>
+      
+      <div class="tags-container">
+        <div class="tag" *ngFor="let tag of getTagsForCategory(category)"
+             [ngClass]="{'interactive': interactive, 'selectable': selectable, 'selected': isSelected(tag)}"
+             [style.backgroundColor]="getColor(tag)"
+             [matTooltip]="showTooltip ? getTooltipText(tag) : ''"
+             matTooltipPosition="above"
+             (click)="interactive ? onTagClick(tag) : null"
+             (dblclick)="selectable ? onTagSelect(tag) : null">
+    
+          <span class="tag-label">{{ getLabel(tag) }}</span>
+          
+          <span class="tag-confidence" *ngIf="showConfidence && isTagSuggestion(tag)">
+            {{ formatConfidence(getConfidence(tag)) }}
+          </span>
+          
+          <button *ngIf="showRemove" class="remove-button" mat-icon-button (click)="onTagRemove($event, tag)">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>

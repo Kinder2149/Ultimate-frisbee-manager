@@ -1,0 +1,146 @@
+@import '../../../../shared/styles/form-base.css';
+
+.echauffement-form-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.form-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  border: 1px solid #e9ecef;
+  margin-bottom: 20px;
+}
+
+.section {
+  padding: 32px;
+  border-bottom: 1px solid #e9ecef;
+  position: relative;
+}
+
+.section:last-child {
+  border-bottom: none;
+}
+
+.section h3 {
+  margin: 0 0 24px 0;
+  color: #2c3e50;
+  font-size: 1.4rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section h3::before {
+  content: '';
+  width: 4px;
+  height: 24px;
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+  border-radius: 2px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.half-width {
+  flex: 1;
+}
+
+.blocs-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.bloc-item {
+  position: relative;
+}
+
+.bloc-card {
+  border-left: 4px solid #3f51b5;
+  background-color: #fafafa;
+}
+
+.bloc-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.1em;
+  font-weight: 500;
+}
+
+.bloc-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.bloc-form {
+  padding-top: 10px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+/* Styles responsives */
+@media (max-width: 768px) {
+  .echauffement-form-container {
+    margin: 10px;
+    padding: 10px;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+  }
+  
+  .row {
+    flex-direction: column;
+    gap: 0;
+  }
+  
+  .half-width {
+    width: 100%;
+  }
+  
+  .bloc-title {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .bloc-actions {
+    align-self: flex-end;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+}

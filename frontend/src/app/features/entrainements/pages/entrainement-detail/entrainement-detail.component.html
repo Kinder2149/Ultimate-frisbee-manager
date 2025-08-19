@@ -1,0 +1,192 @@
+<div class="container">
+  <!-- En-tête -->
+  <div class="header">
+    <button class="btn btn-secondary" (click)="retourListe()">
+      <i class="material-icons">arrow_back</i>
+      Retour à la liste
+    </button>
+    <h1>Détail de l'entraînement</h1>
+    <button 
+      *ngIf="entrainement" 
+      class="btn btn-primary" 
+      (click)="modifierEntrainement()">
+      <i class="material-icons">edit</i>
+      Modifier
+    </button>
+  </div>
+
+  <!-- Message de chargement -->
+  <div *ngIf="loading" class="loading">
+    <p>Chargement de l'entraînement...</p>
+  </div>
+
+  <!-- Message d'erreur -->
+  <div *ngIf="error" class="error-message">
+    {{ error }}
+    <button class="btn btn-secondary" (click)="loadEntrainement(entrainementId!)">Réessayer</button>
+  </div>
+
+  <!-- Détails de l'entraînement -->
+  <div *ngIf="!loading && !error && entrainement" class="entrainement-detail">
+    
+    <!-- Informations générales -->
+    <div class="section">
+      <h2>Informations générales</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="label">Titre :</span>
+          <span class="value">{{ entrainement.titre }}</span>
+        </div>
+        
+        <div class="info-item" *ngIf="entrainement.date">
+          <span class="label">Date :</span>
+          <span class="value">{{ formatDate(entrainement.date) }}</span>
+        </div>
+        
+        <div class="info-item" *ngIf="entrainement.tags && entrainement.tags.length > 0">
+          <span class="label">Thèmes :</span>
+          <div class="tags-display">
+            <span *ngFor="let tag of entrainement.tags" 
+                  class="tag"
+                  [style.background-color]="tag.color || '#e0e0e0'">
+              {{ tag.label }}
+            </span>
+          </div>
+        </div>
+        
+        <div class="info-item" *ngIf="entrainement.createdAt">
+          <span class="label">Créé le :</span>
+          <span class="value">{{ formatDate(entrainement.createdAt) }}</span>
+        </div>
+        
+        <div class="info-item">
+          <span class="label">Durée totale :</span>
+          <span class="value total-duration">{{ calculateTotalDuration() }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Échauffement -->
+    <div class="section echauffement-theme" *ngIf="entrainement.echauffement">
+      <h2>Échauffement</h2>
+      <div class="card themed-card">
+        <div class="themed-header">
+          <h3>{{ entrainement.echauffement.nom }}</h3>
+          <i class="material-icons">fitness_center</i>
+        </div>
+        <div class="themed-content" *ngIf="entrainement.echauffement.description">
+          <p>{{ entrainement.echauffement.description }}</p>
+        </div>
+        <div class="blocs-list" *ngIf="entrainement.echauffement.blocs && entrainement.echauffement.blocs.length > 0">
+          <h4>Blocs d'échauffement :</h4>
+          <div *ngFor="let bloc of entrainement.echauffement.blocs; let i = index" class="bloc-item">
+            <span class="bloc-number">{{ i + 1 }}</span>
+            <div class="bloc-content">
+              <h5>{{ bloc.titre }}</h5>
+              <div class="bloc-details">
+                <span *ngIf="bloc.repetitions" class="detail">Répétitions: {{ bloc.repetitions }}</span>
+                <span *ngIf="bloc.temps" class="detail">Temps: {{ bloc.temps }}</span>
+              </div>
+              <p *ngIf="bloc.informations" class="bloc-info">{{ bloc.informations }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Liste des exercices -->
+    <div class="section exercice-theme">
+      <h2>Exercices de l'entraînement</h2>
+      
+      <div *ngIf="!entrainement.exercices || entrainement.exercices.length === 0" class="no-exercices">
+        <p>Aucun exercice associé à cet entraînement.</p>
+      </div>
+
+      <div *ngIf="entrainement.exercices && entrainement.exercices.length > 0" class="exercices-list">
+        <div 
+          *ngFor="let exerciceEntrainement of entrainement.exercices; let i = index" 
+          class="card themed-card">
+          
+          <div class="themed-header">
+            <span class="exercice-number">{{ i + 1 }}</span>
+            <h3>{{ exerciceEntrainement.exercice?.nom || 'Exercice sans nom' }}</h3>
+            <div class="exercice-meta">
+              <span *ngIf="exerciceEntrainement.duree" class="duree">
+                <i class="material-icons">schedule</i>
+                {{ formatDuree(exerciceEntrainement.duree) }}
+              </span>
+            </div>
+          </div>
+
+          <div class="themed-content">
+            <!-- Description de l'exercice -->
+            <div *ngIf="exerciceEntrainement.exercice?.description" class="description">
+              <h4>Description :</h4>
+              <p>{{ exerciceEntrainement.exercice?.description }}</p>
+            </div>
+
+            <!-- Notes spécifiques à cet entraînement -->
+            <div *ngIf="exerciceEntrainement.notes" class="notes">
+              <h4>Notes pour cet entraînement :</h4>
+              <p>{{ exerciceEntrainement.notes }}</p>
+            </div>
+
+            <!-- Tags de l'exercice -->
+            <div *ngIf="exerciceEntrainement.exercice?.tags && (exerciceEntrainement.exercice?.tags || []).length > 0" class="tags">
+              <h4>Tags :</h4>
+              <div class="tag-list">
+                <span 
+                  *ngFor="let tag of exerciceEntrainement.exercice?.tags" 
+                  class="tag"
+                  [style.background-color]="tag.color || '#e0e0e0'">
+                  {{ tag.label }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Variables de l'exercice -->
+            <div *ngIf="exerciceEntrainement.exercice?.variablesPlus && getVariablesArray(exerciceEntrainement.exercice?.variablesPlus).length > 0" class="variables">
+              <h4>Variables :</h4>
+              <ul>
+                <li *ngFor="let variable of getVariablesArray(exerciceEntrainement.exercice?.variablesPlus)">
+                  {{ variable }}
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Situation/Match -->
+    <div class="section situation-theme" *ngIf="entrainement.situationMatch">
+      <h2>Situation/Match</h2>
+      <div class="card themed-card">
+        <div class="themed-header">
+          <h3>{{ entrainement.situationMatch.nom || entrainement.situationMatch.type }}</h3>
+          <span class="situation-type">{{ entrainement.situationMatch.type }}</span>
+          <i class="material-icons">sports</i>
+        </div>
+        <div class="themed-content">
+          <p *ngIf="entrainement.situationMatch.description">{{ entrainement.situationMatch.description }}</p>
+          <div class="situation-meta" *ngIf="entrainement.situationMatch.temps">
+            <span class="temps">
+              <i class="material-icons">schedule</i>
+              {{ entrainement.situationMatch.temps }}
+            </span>
+          </div>
+          <div class="tags" *ngIf="entrainement.situationMatch.tags && entrainement.situationMatch.tags.length > 0">
+            <h4>Tags :</h4>
+            <div class="tag-list">
+              <span *ngFor="let tag of entrainement.situationMatch.tags" 
+                    class="tag"
+                    [style.background-color]="tag.color || '#e0e0e0'">
+                {{ tag.label }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,329 @@
+<div class="container">
+  <h2 *ngIf="!editMode">Ajouter un exercice d'ultimate frisbee</h2>
+  <h2 *ngIf="editMode">Modifier l'exercice</h2>
+
+  <form [formGroup]="exerciceForm" (ngSubmit)="onSubmit()">
+    <!-- Nom de l'exercice -->
+    <div class="form-group">
+      <label for="nom">Nom</label>
+      <input 
+        type="text" 
+        id="nom" 
+        formControlName="nom" 
+        class="form-control"
+        [class.invalid]="submitted && f['nom'].errors"
+      >
+      <div *ngIf="submitted && f['nom'].errors" class="error-message">
+        <div *ngIf="f['nom'].errors && f['nom'].errors['required']">Le nom est requis</div>
+      </div>
+    </div>
+
+    <!-- Description -->
+    <div class="form-group">
+      <label for="description">Description</label>
+      <textarea 
+        id="description" 
+        formControlName="description" 
+        class="form-control"
+        [class.invalid]="submitted && f['description'].errors"
+        rows="4"
+      ></textarea>
+      <div *ngIf="submitted && f['description'].errors" class="error-message">
+        <div *ngIf="f['description'].errors && f['description'].errors['required']">La description est requise</div>
+      </div>
+    </div>
+
+    <!-- Objectif (tags colorés) -->
+    <div class="form-group">
+      <label for="objectif">Objectif</label>
+      <div *ngIf="submitted && !selectedObjectifTag" class="error-message">
+        L'objectif est requis
+      </div>
+      
+      <!-- Tags d'objectif -->
+      <div class="tag-selection">
+        <p class="tag-section-hint">Sélectionnez un tag d'objectif:</p>
+        <div class="tag-options">
+          <div 
+            *ngFor="let tag of objectifTags" 
+            class="tag-option"
+            [ngStyle]="{'background-color': tag.color || '#e0e0e0'}"
+            [ngClass]="{'selected': selectedObjectifTag?.id === tag.id}"
+            (click)="selectObjectifTag(tag)">
+            {{ tag.label }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Travail Spécifique (tags/chips) avec sélection dynamique -->
+    <div class="form-group">
+      <label>Travail Spécifique</label>
+      
+      <!-- Tags sélectionnés (repositionnés entre le titre et le champ) -->
+      <div class="selected-tags-container">
+        <div 
+          *ngFor="let tag of selectedTravailSpecifiqueTags; let i = index" 
+          class="tag-badge"
+          [style.background-color]="tag.color || '#e0e0e0'">
+          {{ tag.label }}
+          <button 
+            type="button" 
+            class="remove-tag-btn"
+            (click)="removeTravailSpecifiqueTag(i)">
+            ×
+          </button>
+        </div>
+      </div>
+      
+      <!-- Conteneur principal pour l'autocomplete -->
+      <div class="autocomplete-container">
+        <!-- Champ de recherche -->
+        <input 
+          type="text"
+          class="tag-search"
+          id="travailSpecifiqueSearch"
+          placeholder="Rechercher un travail spécifique..."
+          [(ngModel)]="travailSpecifiqueFilter"
+          [ngModelOptions]="{standalone: true}"
+          (input)="filterTravailSpecifiqueTags(travailSpecifiqueFilter)"
+          (focus)="showTravailSpecifiqueDropdown = true"
+          (click)="showTravailSpecifiqueDropdown = true"
+          autocomplete="off"
+        >
+        
+        <!-- Dropdown des suggestions -->
+        <div 
+          class="dropdown-menu" 
+          [class.show]="showTravailSpecifiqueDropdown">
+          
+          <!-- Message si aucune suggestion -->
+          <div *ngIf="filteredTravailSpecifiqueTags.length === 0" class="dropdown-item no-results">
+            Aucun travail spécifique trouvé
+          </div>
+          
+          <!-- Liste des suggestions -->
+          <div 
+            *ngFor="let tag of filteredTravailSpecifiqueTags" 
+            class="dropdown-item"
+            (mousedown)="selectTravailSpecifiqueTag(tag)">
+            <span 
+              class="color-dot" 
+              [style.background-color]="tag.color || '#e0e0e0'">
+            </span>
+            {{ tag.label }}
+          </div>
+        </div>
+      </div>
+      
+      <!-- Message d'erreur si aucun tag sélectionné -->
+      <div *ngIf="submitted && selectedTravailSpecifiqueTags.length === 0" class="error-message">
+        Au moins un travail spécifique est requis
+      </div>
+    </div>
+
+    <!-- Variables sous forme de composant réutilisable -->
+    <div class="form-group">
+      <h3>Variables de l'exercice</h3>
+      <app-exercice-variables formControlName="variables"></app-exercice-variables>
+    </div>
+
+    <!-- Niveau (tags/chips) - lecture seule avec tags préenregistrés -->
+    <div class="form-group">
+      <label>Niveau</label>
+      
+      <!-- Tags sélectionnés (affichage uniquement) -->
+      <div class="selected-tags-container">
+        <div 
+          *ngFor="let tag of selectedNiveauTags; let i = index" 
+          class="tag-badge readonly"
+          [style.background-color]="tag.color || '#e0e0e0'">
+          {{ tag.level ? '★'.repeat(tag.level) : tag.label }}
+          <button 
+            type="button" 
+            class="remove-tag-btn"
+            (click)="removeNiveauTag(i)">
+            ×
+          </button>
+        </div>
+      </div>
+      
+      <!-- Sélection parmi les niveaux préenregistrés -->
+      <div class="predefined-tags-container">
+        <div 
+          *ngFor="let tag of niveauTags" 
+          class="predefined-tag"
+          [class.selected]="isNiveauTagSelected(tag)"
+          [style.background-color]="tag.color || '#e0e0e0'"
+          (click)="toggleNiveauTag(tag)">
+          {{ tag.level ? '★'.repeat(tag.level) : tag.label }}
+        </div>
+      </div>
+    </div>
+    
+    <!-- Temps (tags/chips) avec sélection dynamique -->
+    <div class="form-group">
+      <label>Temps</label>
+      
+      <!-- Tags sélectionnés (repositionnés entre le titre et le champ) -->
+      <div class="selected-tags-container">
+        <div 
+          *ngFor="let tag of selectedTempsTags; let i = index" 
+          class="tag-badge"
+          [style.background-color]="tag.color || '#e0e0e0'">
+          {{ tag.label }}
+          <button 
+            type="button" 
+            class="remove-tag-btn"
+            (click)="removeTempsTag(i)">
+            ×
+          </button>
+        </div>
+      </div>
+      
+      <!-- Conteneur principal pour l'autocomplete -->
+      <div class="autocomplete-container">
+        <!-- Champ de recherche -->
+        <input 
+          type="text"
+          class="tag-search"
+          id="tempsSearch"
+          placeholder="Rechercher une durée..."
+          [(ngModel)]="tempsFilter"
+          [ngModelOptions]="{standalone: true}"
+          (input)="filterTempsTags(tempsFilter)"
+          (focus)="showTempsDropdown = true"
+          (click)="showTempsDropdown = true"
+          autocomplete="off"
+        >
+        
+        <!-- Dropdown des suggestions -->
+        <div 
+          class="dropdown-menu" 
+          [class.show]="showTempsDropdown">
+          
+          <!-- Message si aucune suggestion -->
+          <div *ngIf="filteredTempsTags.length === 0" class="dropdown-item no-results">
+            Aucune durée trouvée
+          </div>
+          
+          <!-- Liste des suggestions -->
+          <div 
+            *ngFor="let tag of filteredTempsTags" 
+            class="dropdown-item"
+            (mousedown)="selectTempsTag(tag)">
+            <span 
+              class="color-dot" 
+              [style.background-color]="tag.color || '#e0e0e0'">
+            </span>
+            {{ tag.label }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Format (tags/chips) avec sélection dynamique -->
+    <div class="form-group">
+      <label>Format / Nombre de joueurs</label>
+      
+      <!-- Tags sélectionnés (repositionnés entre le titre et le champ) -->
+      <div class="selected-tags-container">
+        <div 
+          *ngFor="let tag of selectedFormatTags; let i = index" 
+          class="tag-badge"
+          [style.background-color]="tag.color || '#e0e0e0'">
+          {{ tag.label }}
+          <button 
+            type="button" 
+            class="remove-tag-btn"
+            (click)="removeFormatTag(i)">
+            ×
+          </button>
+        </div>
+      </div>
+      
+      <!-- Conteneur principal pour l'autocomplete -->
+      <div class="autocomplete-container">
+        <!-- Champ de recherche -->
+        <input 
+          type="text"
+          class="tag-search"
+          id="formatSearch"
+          placeholder="Rechercher un format..."
+          [(ngModel)]="formatFilter"
+          [ngModelOptions]="{standalone: true}"
+          (input)="filterFormatTags(formatFilter)"
+          (focus)="showFormatDropdown = true"
+          (click)="showFormatDropdown = true"
+          autocomplete="off"
+        >
+        
+        <!-- Dropdown des suggestions -->
+        <div 
+          class="dropdown-menu" 
+          [class.show]="showFormatDropdown">
+          
+          <!-- Message si aucune suggestion -->
+          <div *ngIf="filteredFormatTags.length === 0" class="dropdown-item no-results">
+            Aucun format trouvé
+          </div>
+          
+          <!-- Liste des suggestions -->
+          <div 
+            *ngFor="let tag of filteredFormatTags" 
+            class="dropdown-item"
+            (mousedown)="selectFormatTag(tag)">
+            <span 
+              class="color-dot" 
+              [style.background-color]="tag.color || '#e0e0e0'">
+            </span>
+            {{ tag.label }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- URL de l'image (facultatif) -->
+    <div class="form-group">
+      <label for="imageUrl">URL de l'image (facultatif)</label>
+      <input 
+        type="text" 
+        id="imageUrl" 
+        formControlName="imageUrl" 
+        class="form-control"
+        placeholder="https://exemple.com/image.jpg"
+      >
+    </div>
+
+    <!-- URL du schéma (facultatif) -->
+    <div class="form-group">
+      <label for="schemaUrl">URL du schéma tactique (facultatif)</label>
+      <input 
+        type="text" 
+        id="schemaUrl" 
+        formControlName="schemaUrl" 
+        class="form-control"
+        placeholder="https://exemple.com/schema.jpg"
+      >
+    </div>
+
+    <!-- Boutons d'action -->
+    <div class="form-group submit-section">
+      <div class="d-flex justify-content-between">
+        <button type="submit" class="btn btn-primary" *ngIf="!editMode">Ajouter l'exercice</button>
+        <div *ngIf="editMode" class="d-flex gap-3">
+          <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+          <button type="button" class="btn btn-secondary" (click)="onCancel()">Annuler</button>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <!-- Message de confirmation/erreur -->
+  <div *ngIf="successMessage" class="success-message">
+    {{ successMessage }}
+  </div>
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+</div>

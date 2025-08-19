@@ -1,0 +1,98 @@
+<div class="exercice-variables-container">
+  <!-- Mode édition -->
+  <ng-container *ngIf="mode === 'edit'">
+    <!-- Variables Plus (+) avec chips -->
+    <div class="form-group variables-section">
+      <h3 class="variables-title plus">Variables pour augmenter la difficulté</h3>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Ajouter une variable (+)</mat-label>
+        <mat-chip-grid #chipListPlus aria-label="Variables d'augmentation de difficulté">
+          <mat-chip-row 
+            *ngFor="let variable of variablesPlusArray" 
+            [removable]="!disabled"
+            (removed)="removeVariablePlus(variable)"
+            [editable]="false">
+            {{variable}}
+            <button matChipRemove [attr.aria-label]="'Supprimer ' + variable" *ngIf="!disabled">
+              <mat-icon>cancel</mat-icon>
+            </button>
+          </mat-chip-row>
+          <input 
+            placeholder="Nouvelle variable..." 
+            #variablePlusInput
+            [formControl]="newVariablePlusCtrl"
+            [matChipInputFor]="chipListPlus"
+            [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+            (matChipInputTokenEnd)="addVariablePlus($event)">
+        </mat-chip-grid>
+        <mat-hint>Ex: ajouter un défenseur, réduire l'espace, limiter le temps...</mat-hint>
+      </mat-form-field>
+    </div>
+
+    <!-- Variables Minus (-) avec chips -->
+    <div class="form-group variables-section">
+      <h3 class="variables-title minus">Variables pour diminuer la difficulté</h3>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Ajouter une variable (-)</mat-label>
+        <mat-chip-grid #chipListMinus aria-label="Variables de diminution de difficulté">
+          <mat-chip-row 
+            *ngFor="let variable of variablesMinusArray" 
+            [removable]="!disabled"
+            (removed)="removeVariableMinus(variable)"
+            [editable]="false">
+            {{variable}}
+            <button matChipRemove [attr.aria-label]="'Supprimer ' + variable" *ngIf="!disabled">
+              <mat-icon>cancel</mat-icon>
+            </button>
+          </mat-chip-row>
+          <input 
+            placeholder="Nouvelle variable..." 
+            #variableMinusInput
+            [formControl]="newVariableMinusCtrl"
+            [matChipInputFor]="chipListMinus"
+            [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+            (matChipInputTokenEnd)="addVariableMinus($event)">
+        </mat-chip-grid>
+        <mat-hint>Ex: sans défenseur, augmenter l'espace, donner plus de temps...</mat-hint>
+      </mat-form-field>
+    </div>
+  </ng-container>
+
+  <!-- Mode lecture -->
+  <ng-container *ngIf="mode === 'view'">
+    <div class="variables-view-container">
+      <!-- Variables Plus (+) en mode lecture -->
+      <div *ngIf="variablesPlusArray && variablesPlusArray.length > 0" class="variables-section">
+        <h3 class="variables-title plus">Variables pour augmenter la difficulté</h3>
+        <mat-chip-set class="chip-list-readonly">
+          <mat-chip-option 
+            *ngFor="let variable of variablesPlusArray" 
+            [selectable]="false" 
+            [removable]="false"
+            class="variable-chip plus">
+            <span class="variable-marker plus">+</span> {{ variable }}
+          </mat-chip-option>
+        </mat-chip-set>
+      </div>
+
+      <!-- Variables Minus (-) en mode lecture -->
+      <div *ngIf="variablesMinusArray && variablesMinusArray.length > 0" class="variables-section">
+        <h3 class="variables-title minus">Variables pour diminuer la difficulté</h3>
+        <mat-chip-set class="chip-list-readonly">
+          <mat-chip-option 
+            *ngFor="let variable of variablesMinusArray" 
+            [selectable]="false" 
+            [removable]="false"
+            class="variable-chip minus">
+            <span class="variable-marker minus">-</span> {{ variable }}
+          </mat-chip-option>
+        </mat-chip-set>
+      </div>
+
+      <!-- Message quand aucune variable n'est définie -->
+      <div *ngIf="(!variablesPlusArray || variablesPlusArray.length === 0) && (!variablesMinusArray || variablesMinusArray.length === 0)" class="no-variables">
+        <p>Aucune variable définie pour cet exercice</p>
+      </div>
+    </div>
+  </ng-container>
+</div>

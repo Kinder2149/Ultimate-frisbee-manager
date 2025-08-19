@@ -1,0 +1,95 @@
+<div class="situationmatch-list-container">
+  <!-- En-tête avec bouton d'ajout -->
+  <div class="header">
+    <h1>Situations & Matchs</h1>
+    <button mat-raised-button color="primary" (click)="creerSituationMatch()" class="add-button">
+      <mat-icon>add</mat-icon>
+      Nouvelle Situation/Match
+    </button>
+  </div>
+
+  <!-- Indicateur de chargement -->
+  <div *ngIf="loading" class="loading-container">
+    <p>Chargement des situations/matchs...</p>
+  </div>
+
+  <!-- Liste des situations/matchs -->
+  <div *ngIf="!loading" class="situationsMatchs-grid">
+    <mat-card *ngFor="let situationMatch of situationsMatchs" class="situationmatch-card">
+      <!-- En-tête de la carte -->
+      <div class="card-header">
+        <div class="title-section">
+          <h3 class="card-title">{{ situationMatch.type }}</h3>
+          <span class="type-badge" [class]="'type-' + situationMatch.type.toLowerCase()">
+            {{ situationMatch.type }}
+          </span>
+        </div>
+        
+        <!-- Actions -->
+        <div class="card-actions">
+          <button class="btn-icon" (click)="modifierSituationMatch(situationMatch.id!)" title="Modifier">
+            <i class="material-icons">edit</i>
+          </button>
+          <app-duplicate-button 
+            [entityId]="situationMatch.id!" 
+            entityType="situation/match"
+            [loading]="duplicatingIds.has(situationMatch.id!)"
+            (duplicate)="dupliquerSituationMatch($event)">
+          </app-duplicate-button>
+          <button class="btn-icon danger" (click)="onDeleteSituationMatch(situationMatch)" title="Supprimer">
+            <i class="material-icons">delete</i>
+          </button>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <!-- Description -->
+        <div class="info-row" *ngIf="situationMatch.description">
+          <span class="label">Description :</span>
+          <span class="value">{{ getDescriptionTruncated(situationMatch.description) }}</span>
+        </div>
+
+        <!-- Temps -->
+        <div class="info-row" *ngIf="situationMatch.temps">
+          <span class="label">Temps :</span>
+          <span class="value">{{ situationMatch.temps }}</span>
+        </div>
+
+        <!-- Tags -->
+        <div class="info-row" *ngIf="situationMatch.tags && situationMatch.tags.length > 0">
+          <span class="label">Tags :</span>
+          <div class="tags-container">
+            <mat-chip-listbox>
+              <mat-chip *ngFor="let tag of situationMatch.tags" 
+                       [style.background-color]="tag.color || '#e0e0e0'"
+                       [style.color]="tag.color ? '#fff' : '#333'">
+                {{ tag.label }}
+              </mat-chip>
+            </mat-chip-listbox>
+          </div>
+        </div>
+
+        <!-- Informations de création -->
+        <div class="meta-info">
+          <small class="creation-date">
+            Créé le {{ formatDate(situationMatch.createdAt) }}
+          </small>
+          <small class="tags-count">
+            {{ getTagsText(situationMatch) }}
+          </small>
+        </div>
+      </div>
+    </mat-card>
+  </div>
+
+  <!-- Message si aucune situation/match -->
+  <div *ngIf="!loading && situationsMatchs.length === 0" class="empty-state">
+    <mat-icon class="empty-icon">sports_soccer</mat-icon>
+    <h2>Aucune situation ou match</h2>
+    <p>Commencez par créer votre première situation ou match d'entraînement.</p>
+    <button mat-raised-button color="primary" (click)="creerSituationMatch()">
+      <mat-icon>add</mat-icon>
+      Créer une Situation/Match
+    </button>
+  </div>
+</div>

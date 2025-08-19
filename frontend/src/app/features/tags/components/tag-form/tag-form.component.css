@@ -1,0 +1,148 @@
+.tag-form {
+  width: 100%;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #555;
+}
+
+.form-group input[type="text"],
+.form-group select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.color-input-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+input[type="color"] {
+  width: 50px;
+  height: 40px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.color-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.color-circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid #ddd;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.color-value {
+  font-family: monospace;
+  color: #666;
+  font-size: 0.9rem;
+  min-width: 70px;
+}
+
+.tag-preview {
+  padding: 4px 12px;
+  border-radius: 16px;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  min-width: 80px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.validation-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background-color: #ffeaea;
+  border-left: 4px solid #dc3545;
+  border-radius: 4px;
+}
+
+.validation-error mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+}
+
+.error-messages {
+  flex: 1;
+}
+
+.error-messages span {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.error-messages span:last-child {
+  margin-bottom: 0;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.form-actions button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.form-actions button[type="submit"] {
+  background-color: #3f51b5;
+  color: white;
+}
+
+.form-actions button[type="submit"]:disabled {
+  background-color: #b3b7d6;
+  cursor: not-allowed;
+}
+
+.form-actions button[type="button"] {
+  background-color: #f8f9fa;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+.stars-preview {
+  margin-top: 10px;
+  font-size: 1.5rem;
+  color: #ffc107;
+}
+
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 10px 15px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}

@@ -1,0 +1,41 @@
+<div class="action-bar">
+  <!-- Bouton Étendre/Réduire -->
+  <app-action-button
+    [icon]="expanded ? 'expand_less' : 'expand_more'"
+    iconType="material"
+    buttonColor="transparent"
+    iconColor="#6c757d"
+    [tooltip]="expanded ? 'Réduire' : 'Étendre'"
+    (click)="onToggleExpand($event)"
+  ></app-action-button>
+  
+  <!-- Bouton Modifier -->
+  <app-action-button
+    icon="edit"
+    iconType="material"
+    buttonColor="transparent"
+    iconColor="#007bff"
+    tooltip="Modifier"
+    (click)="onEdit($event)"
+  ></app-action-button>
+  
+  <!-- Bouton Dupliquer -->
+  <app-action-button
+    icon="content_copy"
+    iconType="material"
+    buttonColor="transparent"
+    iconColor="#28a745"
+    tooltip="Dupliquer"
+    (click)="onDuplicate($event)"
+  ></app-action-button>
+  
+  <!-- Bouton Supprimer -->
+  <app-action-button
+    icon="delete"
+    iconType="material"
+    buttonColor="transparent"
+    iconColor="#dc3545"
+    tooltip="Supprimer"
+    (click)="onDelete($event)"
+  ></app-action-button>
+</div>

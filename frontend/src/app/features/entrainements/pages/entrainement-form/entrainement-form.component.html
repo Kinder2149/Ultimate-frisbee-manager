@@ -1,0 +1,263 @@
+<div class="container">
+  <div class="header">
+    <h1>{{ isEditMode ? 'Modifier l\'entraînement' : 'Nouvel entraînement' }}</h1>
+  </div>
+
+  <!-- Message de chargement -->
+  <div *ngIf="loading" class="loading">
+    <p>{{ isEditMode ? 'Chargement de l\'entraînement...' : 'Sauvegarde en cours...' }}</p>
+  </div>
+
+  <!-- Message d'erreur -->
+  <div *ngIf="error" class="error-message">
+    {{ error }}
+  </div>
+
+  <!-- Formulaire simplifié -->
+  <form *ngIf="!loading" [formGroup]="entrainementForm" (ngSubmit)="onSubmit()" class="form">
+    
+    <!-- Informations générales -->
+    <div class="section">
+      <h2><i class="material-icons">info</i>Informations de l'entraînement</h2>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="titre">Titre *</label>
+          <input 
+            type="text" 
+            id="titre" 
+            formControlName="titre" 
+            placeholder="Nom de l'entraînement"
+            [class.error]="hasError('titre')">
+          <div *ngIf="hasError('titre', 'required')" class="error-text">
+            Le titre est obligatoire
+          </div>
+          <div *ngIf="hasError('titre', 'minlength')" class="error-text">
+            Le titre doit contenir au moins 3 caractères
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="date">Date (optionnelle)</label>
+          <input 
+            type="date" 
+            id="date" 
+            formControlName="date">
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Section Tags Thèmes Entraînements -->
+    <div class="section">
+      <div class="section-header">
+        <h2><i class="material-icons">label</i>Thèmes Entraînements (optionnel)</h2>
+        <div class="section-actions">
+          <a routerLink="/tags" class="link-action">Gérer les tags</a>
+        </div>
+      </div>
+      
+      <div class="tags-container">
+        <div 
+          *ngFor="let tag of availableThemeTags" 
+          class="tag-selector"
+          [class.selected]="isThemeTagSelected(tag)"
+          (click)="toggleThemeTag(tag)">
+          <span class="tag-color" [style.background-color]="tag.color"></span>
+          <span class="tag-label">{{ tag.label }}</span>
+        </div>
+        <div *ngIf="availableThemeTags.length === 0" class="no-tags">
+          <p>Aucun tag thème entraînement disponible. <a routerLink="/tags">Créer des tags thème entraînement</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section Échauffement -->
+    <div class="section">
+      <div class="section-header">
+        <h2><i class="material-icons">fitness_center</i>Échauffement (optionnel)</h2>
+        <div class="section-actions">
+          <button type="button" class="btn btn-primary" (click)="openEchauffementModal()">
+            <i class="material-icons">add_circle</i>
+            {{ selectedEchauffement ? 'Modifier l\'échauffement' : 'Ajouter un échauffement' }}
+          </button>
+          <button 
+            *ngIf="selectedEchauffement" 
+            type="button" 
+            class="btn btn-secondary" 
+            (click)="removeEchauffement()">
+            <i class="material-icons">remove</i>
+            Retirer
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="selectedEchauffement" class="selected-item">
+        <div class="item-header">
+          <h4>{{ selectedEchauffement.nom }}</h4>
+        </div>
+        <p *ngIf="selectedEchauffement.description" class="item-description">
+          {{ selectedEchauffement.description }}
+        </p>
+      </div>
+
+      <div *ngIf="!selectedEchauffement" class="no-selection">
+        <p>Aucun échauffement sélectionné. Cliquez sur "Ajouter un échauffement" pour en choisir un.</p>
+      </div>
+    </div>
+
+    <!-- Section Exercices -->
+    <div class="section">
+      <div class="section-header">
+        <h2><i class="material-icons">sports</i>Exercices de l'entraînement</h2>
+        <div class="section-actions">
+          <button type="button" class="btn btn-outline-primary" (click)="toggleExerciceSelector()">
+            <i class="material-icons">library_add</i>
+            Ajouter un exercice existant
+          </button>
+          <button type="button" class="btn btn-primary" (click)="openExerciceFormModal()">
+            <i class="material-icons">add_circle</i>
+            Créer un nouvel exercice
+          </button>
+        </div>
+      </div>
+
+      <!-- Nouveau sélecteur d'exercices avec filtres -->
+      <app-exercice-selector
+        [visible]="showExerciceSelector"
+        [title]="'Sélectionner un exercice'"
+        [excludedExercices]="getSelectedExerciceIds()"
+        (exerciceSelected)="ajouterExercice($event)"
+        (cancelled)="toggleExerciceSelector()">
+      </app-exercice-selector>
+
+      <!-- Liste des exercices sélectionnés -->
+      <div formArrayName="exercices" class="exercices-container">
+        <div 
+          *ngFor="let exerciceControl of exercicesFormArray.controls; let i = index" 
+          [formGroupName]="i" 
+          class="exercice-item">
+          
+          <div class="exercice-header">
+            <span class="exercice-number">{{ i + 1 }}</span>
+            <h4>{{ exerciceControl.get('exercice')?.value?.nom }}</h4>
+            <div class="exercice-actions">
+              <button 
+                type="button" 
+                class="btn-icon" 
+                (click)="monterExercice(i)"
+                [disabled]="i === 0"
+                title="Monter">
+                <i class="material-icons">keyboard_arrow_up</i>
+              </button>
+              <button 
+                type="button" 
+                class="btn-icon" 
+                (click)="descendreExercice(i)"
+                [disabled]="i === exercicesFormArray.length - 1"
+                title="Descendre">
+                <i class="material-icons">keyboard_arrow_down</i>
+              </button>
+              <button 
+                type="button" 
+                class="btn-icon danger" 
+                (click)="supprimerExercice(i)"
+                title="Supprimer">
+                <i class="material-icons">delete</i>
+              </button>
+            </div>
+          </div>
+
+          <div class="exercice-content">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Durée (minutes)</label>
+                <input 
+                  type="number" 
+                  formControlName="duree" 
+                  placeholder="15"
+                  min="1">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Notes spécifiques</label>
+              <textarea 
+                formControlName="notes" 
+                rows="2"
+                placeholder="Notes particulières pour cet exercice dans cet entraînement"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="exercicesFormArray.length === 0" class="no-exercices">
+          <p>Aucun exercice ajouté. Cliquez sur "Ajouter un exercice" pour commencer.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section Situation/Match -->
+    <div class="section">
+      <div class="section-header">
+        <h2><i class="material-icons">sports_soccer</i>Situation/Match (optionnel)</h2>
+        <div class="section-actions">
+          <button type="button" class="btn btn-primary" (click)="openSituationMatchModal()">
+            <i class="material-icons">add_circle</i>
+            {{ selectedSituationMatch ? 'Modifier la situation/match' : 'Ajouter une situation/match' }}
+          </button>
+          <button 
+            *ngIf="selectedSituationMatch" 
+            type="button" 
+            class="btn btn-secondary" 
+            (click)="removeSituationMatch()">
+            <i class="material-icons">remove</i>
+            Retirer
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="selectedSituationMatch" class="selected-item">
+        <div class="item-header">
+          <h4>{{ selectedSituationMatch.type }}</h4>
+          <span class="item-type">{{ selectedSituationMatch.temps }}</span>
+        </div>
+        <p *ngIf="selectedSituationMatch.description" class="item-description">
+          {{ selectedSituationMatch.description }}
+        </p>
+        <div *ngIf="selectedSituationMatch.tags && selectedSituationMatch.tags.length > 0" class="item-tags">
+          <span *ngFor="let tag of selectedSituationMatch.tags" 
+                class="tag" 
+                [style.background-color]="tag.color">
+            {{ tag.label }}
+          </span>
+        </div>
+      </div>
+
+      <div *ngIf="!selectedSituationMatch" class="no-selection">
+        <p>Aucune situation/match sélectionnée. Cliquez sur "Ajouter une situation/match" pour en choisir une.</p>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" (click)="onCancel()">
+        Annuler
+      </button>
+      <button 
+        type="submit" 
+        class="btn btn-primary" 
+        [disabled]="entrainementForm.invalid || loading">
+        <i class="material-icons">save</i>
+        {{ isEditMode ? 'Modifier' : 'Créer' }}
+      </button>
+    </div>
+  </form>
+
+  <!-- Modal de création d'exercice -->
+  <app-exercice-form-modal
+    [visible]="showExerciceFormModal"
+    [title]="'Créer un nouvel exercice'"
+    (exerciceCreated)="onNewExerciceCreated($event)"
+    (cancelled)="closeExerciceFormModal()">
+  </app-exercice-form-modal>
+</div>

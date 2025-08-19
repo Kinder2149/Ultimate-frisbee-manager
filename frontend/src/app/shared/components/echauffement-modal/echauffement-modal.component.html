@@ -1,0 +1,73 @@
+<h2 mat-dialog-title>
+  {{ mode === 'select' ? 'Sélectionner un échauffement' : 'Créer un échauffement' }}
+</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    
+    <!-- Mode sélection -->
+    <div *ngIf="mode === 'select'">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Échauffement</mat-label>
+        <mat-select formControlName="echauffementId" [disabled]="isLoading">
+          <mat-option value="">Aucun échauffement</mat-option>
+          <mat-option *ngFor="let echauffement of echauffements" [value]="echauffement.id">
+            {{ echauffement.nom }}
+            <span *ngIf="echauffement.description" class="option-description">
+              - {{ echauffement.description }}
+            </span>
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="form.get('echauffementId')?.hasError('required')">
+          Veuillez sélectionner un échauffement
+        </mat-error>
+      </mat-form-field>
+
+      <div *ngIf="isLoading" class="loading-container">
+        <mat-spinner diameter="30"></mat-spinner>
+        <span>Chargement des échauffements...</span>
+      </div>
+
+      <div *ngIf="!isLoading && echauffements.length === 0" class="no-data">
+        <p>Aucun échauffement disponible.</p>
+        <button type="button" mat-stroked-button (click)="switchMode()">
+          Créer un nouvel échauffement
+        </button>
+      </div>
+    </div>
+
+    <!-- Mode création -->
+    <div *ngIf="mode === 'create'" class="create-mode">
+      <app-echauffement-form
+        [isEditMode]="false"
+        [isLoading]="isLoading"
+        (formSubmit)="onEchauffementFormSubmit($event)"
+        (formCancel)="onCancel()">
+      </app-echauffement-form>
+    </div>
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" *ngIf="mode === 'select'">
+  <button mat-button (click)="onCancel()" [disabled]="isLoading">
+    Annuler
+  </button>
+  
+  <button type="button" mat-stroked-button (click)="switchMode()" [disabled]="isLoading">
+    Créer nouveau
+  </button>
+  
+  <button mat-raised-button color="primary" 
+          (click)="onSubmit()" 
+          [disabled]="form.invalid || isLoading">
+    <mat-spinner *ngIf="isLoading" diameter="20" class="button-spinner"></mat-spinner>
+    Sélectionner
+  </button>
+</mat-dialog-actions>
+
+<mat-dialog-actions align="end" *ngIf="mode === 'create'">
+  <button type="button" mat-stroked-button (click)="switchMode()" [disabled]="isLoading">
+    Sélectionner existant
+  </button>
+</mat-dialog-actions>

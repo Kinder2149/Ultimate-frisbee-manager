@@ -1,0 +1,140 @@
+<div class="echauffement-form-container">
+  <mat-card class="form-card">
+    <mat-card-header>
+      <mat-card-title>
+        {{ isEditMode ? 'Modifier l\'échauffement' : 'Créer un nouvel échauffement' }}
+      </mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="echauffementForm" (ngSubmit)="onSubmit()">
+        
+        <!-- Informations générales -->
+        <div class="section">
+          <h3>Informations générales</h3>
+          
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nom de l'échauffement</mat-label>
+            <input matInput formControlName="nom" placeholder="Ex: Échauffement technique">
+            <mat-error *ngIf="echauffementForm.get('nom')?.invalid && echauffementForm.get('nom')?.touched">
+              {{ getErrorMessage('nom') }}
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Description</mat-label>
+            <textarea matInput formControlName="description" 
+                      placeholder="Description générale de l'échauffement..." 
+                      rows="3"></textarea>
+            <mat-error *ngIf="echauffementForm.get('description')?.invalid && echauffementForm.get('description')?.touched">
+              {{ getErrorMessage('description') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <!-- Blocs d'échauffement -->
+        <div class="section">
+          <div class="section-header">
+            <h3>Blocs d'échauffement</h3>
+            <button type="button" mat-raised-button color="primary" (click)="ajouterBloc()">
+              <mat-icon>add</mat-icon>
+              Ajouter un bloc
+            </button>
+          </div>
+
+          <div formArrayName="blocs" class="blocs-container">
+            <div *ngFor="let blocControl of blocsFormArray.controls; let i = index" 
+                 [formGroupName]="i" 
+                 class="bloc-item">
+              
+              <mat-card class="bloc-card">
+                <mat-card-header>
+                  <mat-card-title class="bloc-title">
+                    Bloc {{ i + 1 }}
+                    <div class="bloc-actions">
+                      <button type="button" mat-icon-button (click)="monterBloc(i)" 
+                              [disabled]="i === 0" title="Monter">
+                        <mat-icon>keyboard_arrow_up</mat-icon>
+                      </button>
+                      <button type="button" mat-icon-button (click)="descendreBloc(i)" 
+                              [disabled]="i === blocsFormArray.length - 1" title="Descendre">
+                        <mat-icon>keyboard_arrow_down</mat-icon>
+                      </button>
+                      <button type="button" mat-icon-button color="warn" (click)="supprimerBloc(i)" 
+                              [disabled]="blocsFormArray.length === 1" title="Supprimer">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </div>
+                  </mat-card-title>
+                </mat-card-header>
+
+                <mat-card-content>
+                  <div class="bloc-form">
+                    <!-- Titre du bloc (obligatoire) -->
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>Titre du bloc</mat-label>
+                      <input matInput formControlName="titre" placeholder="Ex: Mobilisation articulaire">
+                      <mat-error *ngIf="blocsFormArray.at(i).get('titre')?.invalid && blocsFormArray.at(i).get('titre')?.touched">
+                        {{ getBlocErrorMessage(i, 'titre') }}
+                      </mat-error>
+                    </mat-form-field>
+
+                    <!-- Ligne avec répétitions et temps -->
+                    <div class="row">
+                      <mat-form-field appearance="outline" class="half-width">
+                        <mat-label>Répétitions</mat-label>
+                        <input matInput formControlName="repetitions" placeholder="Ex: 3x10, 5 fois">
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline" class="half-width">
+                        <mat-label>Temps</mat-label>
+                        <input matInput formControlName="temps" placeholder="Ex: 5 min, 30 sec">
+                      </mat-form-field>
+                    </div>
+
+                    <!-- Informations supplémentaires -->
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>Informations supplémentaires</mat-label>
+                      <textarea matInput formControlName="informations" 
+                                placeholder="Informations complémentaires..." 
+                                rows="2"></textarea>
+                    </mat-form-field>
+
+                    <!-- Fonctionnement -->
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>Fonctionnement</mat-label>
+                      <textarea matInput formControlName="fonctionnement" 
+                                placeholder="Description du fonctionnement de l'exercice..." 
+                                rows="2"></textarea>
+                    </mat-form-field>
+
+                    <!-- Notes particulières -->
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>Notes particulières</mat-label>
+                      <textarea matInput formControlName="notes" 
+                                placeholder="Notes spécifiques pour ce bloc..." 
+                                rows="2"></textarea>
+                    </mat-form-field>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions du formulaire -->
+        <div class="form-actions">
+          <button type="button" mat-button (click)="onCancel()" [disabled]="isLoading">
+            Annuler
+          </button>
+          <button type="submit" mat-raised-button color="primary" [disabled]="isLoading || echauffementForm.invalid">
+            <mat-icon *ngIf="isLoading">hourglass_empty</mat-icon>
+            {{ isEditMode ? 'Modifier' : 'Créer' }}
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

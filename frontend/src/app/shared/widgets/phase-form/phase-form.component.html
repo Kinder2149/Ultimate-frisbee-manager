@@ -1,0 +1,78 @@
+<form [formGroup]="phaseForm" (ngSubmit)="onSubmit()">
+  <div class="form-container">
+    <!-- Type de phase -->
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Type de phase</mat-label>
+        <mat-select formControlName="type" required>
+          <mat-option *ngFor="let type of phaseTypes" [value]="type.value">
+            {{ type.label }}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="phaseForm.get('type')?.hasError('required')">
+          Le type de phase est obligatoire
+        </mat-error>
+      </mat-form-field>
+    </div>
+    
+    <!-- Titre -->
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Titre</mat-label>
+        <input matInput formControlName="titre" placeholder="Titre de la phase">
+      </mat-form-field>
+    </div>
+    
+    <!-- Durée -->
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Durée (minutes)</mat-label>
+        <input 
+          matInput 
+          formControlName="duree" 
+          type="number" 
+          min="1" 
+          placeholder="Durée en minutes">
+        <mat-error *ngIf="phaseForm.get('duree')?.hasError('min')">
+          La durée doit être supérieure à 0
+        </mat-error>
+      </mat-form-field>
+    </div>
+    
+    <!-- Notes -->
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Notes</mat-label>
+        <textarea 
+          matInput 
+          formControlName="notes" 
+          placeholder="Notes explicatives pour la phase"
+          rows="3"></textarea>
+      </mat-form-field>
+    </div>
+    
+    <!-- Notes pour l'entraîneur -->
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Notes pour l'entraîneur</mat-label>
+        <textarea 
+          matInput 
+          formControlName="notesOrales" 
+          placeholder="Notes réservées à l'entraîneur"
+          rows="3"></textarea>
+      </mat-form-field>
+    </div>
+  </div>
+  
+  <!-- Boutons d'action -->
+  <div class="actions-container">
+    <button type="button" mat-button (click)="onCancel()">Annuler</button>
+    <button 
+      mat-raised-button 
+      color="primary" 
+      type="submit" 
+      [disabled]="phaseForm.invalid">
+      {{ isEditMode ? 'Mettre à jour' : 'Ajouter' }}
+    </button>
+  </div>
+</form>

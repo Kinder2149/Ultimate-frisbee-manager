@@ -1,0 +1,11 @@
+/**
+ * Routes pour le dashboard
+ */
+const express = require('express');
+const router = express.Router();
+const dashboardController = require('../controllers/dashboard.controller');
+
+// GET /api/dashboard/stats - Récupérer les statistiques du dashboard
+router.get('/stats', dashboardController.getDashboardStats);
+
+module.exports = router;
