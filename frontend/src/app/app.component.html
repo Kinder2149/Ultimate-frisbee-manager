@@ -4,12 +4,16 @@
       <h1>{{ title }}</h1>
       <nav class="main-nav" (click)="$event.stopPropagation()">
         <ul>
-          <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Tableau de bord</a></li>
+          <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" matTooltip="Tableau de bord">
+            <mat-icon>dashboard</mat-icon>
+            <span class="nav-text">Tableau de bord</span>
+          </a></li>
           
           <!-- Menu déroulant Ajouter -->
           <li class="dropdown add" [class.open]="isDropdownOpen.add">
-            <a href="#" class="dropdown-toggle" (click)="toggleDropdown('add', $event)">
-              Ajouter
+            <a href="#" class="dropdown-toggle" (click)="toggleDropdown('add', $event)" matTooltip="Ajouter">
+              <mat-icon>add_circle</mat-icon>
+              <span class="nav-text">Ajouter</span>
               <mat-icon class="dropdown-icon">expand_more</mat-icon>
             </a>
             <ul class="dropdown-menu" *ngIf="isDropdownOpen.add" style="position: absolute; top: 100%; left: 0; background: white; border: 2px solid #e9ecef; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); min-width: 250px; z-index: 99999; display: block;">
@@ -22,8 +26,9 @@
 
           <!-- Menu déroulant Exercices -->
           <li class="dropdown exercices" [class.open]="isDropdownOpen.exercices">
-            <a href="#" class="dropdown-toggle" (click)="toggleDropdown('exercices', $event)">
-              Exercices
+            <a href="#" class="dropdown-toggle" (click)="toggleDropdown('exercices', $event)" matTooltip="Exercices">
+              <mat-icon>fitness_center</mat-icon>
+              <span class="nav-text">Exercices</span>
               <mat-icon class="dropdown-icon">expand_more</mat-icon>
             </a>
             <ul class="dropdown-menu" *ngIf="isDropdownOpen.exercices" style="position: absolute; top: 100%; left: 0; background: white; border: 2px solid #e9ecef; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); min-width: 250px; z-index: 99999; display: block;">
@@ -35,8 +40,9 @@
 
           <!-- Menu déroulant Entraînements -->
           <li class="dropdown entrainements" [class.open]="isDropdownOpen.entrainements">
-            <a href="#" class="dropdown-toggle" (click)="toggleDropdown('entrainements', $event)">
-              Entraînements
+            <a href="#" class="dropdown-toggle" (click)="toggleDropdown('entrainements', $event)" matTooltip="Entraînements">
+              <mat-icon>sports</mat-icon>
+              <span class="nav-text">Entraînements</span>
               <mat-icon class="dropdown-icon">expand_more</mat-icon>
             </a>
             <ul class="dropdown-menu" *ngIf="isDropdownOpen.entrainements" style="position: absolute; top: 100%; left: 0; background: white; border: 2px solid #e9ecef; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); min-width: 250px; z-index: 99999; display: block;">
@@ -47,8 +53,9 @@
 
           <!-- Menu déroulant Échauffements -->
           <li class="dropdown echauffements" [class.open]="isDropdownOpen.echauffements">
-            <a href="#" class="dropdown-toggle" (click)="toggleDropdown('echauffements', $event)">
-              Échauffements
+            <a href="#" class="dropdown-toggle" (click)="toggleDropdown('echauffements', $event)" matTooltip="Échauffements">
+              <mat-icon>directions_run</mat-icon>
+              <span class="nav-text">Échauffements</span>
               <mat-icon class="dropdown-icon">expand_more</mat-icon>
             </a>
             <ul class="dropdown-menu" *ngIf="isDropdownOpen.echauffements" style="position: absolute; top: 100%; left: 0; background: white; border: 2px solid #e9ecef; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); min-width: 250px; z-index: 99999; display: block;">
@@ -59,8 +66,9 @@
 
           <!-- Menu déroulant Situations/Matchs -->
           <li class="dropdown situations" [class.open]="isDropdownOpen.situations">
-            <a href="#" class="dropdown-toggle" (click)="toggleDropdown('situations', $event)">
-              Situations/Matchs
+            <a href="#" class="dropdown-toggle" (click)="toggleDropdown('situations', $event)" matTooltip="Situations/Matchs">
+              <mat-icon>sports_soccer</mat-icon>
+              <span class="nav-text">Situations/Matchs</span>
               <mat-icon class="dropdown-icon">expand_more</mat-icon>
             </a>
             <ul class="dropdown-menu" *ngIf="isDropdownOpen.situations" style="position: absolute; top: 100%; left: 0; background: white; border: 2px solid #e9ecef; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); min-width: 250px; z-index: 99999; display: block;">

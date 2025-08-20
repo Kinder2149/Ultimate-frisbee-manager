@@ -56,8 +56,8 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 6px;
-    padding: 0;
+    gap: 12px;
+    padding: 8px 0;
     margin: 0;
   }
   
@@ -65,23 +65,48 @@
     margin: 0;
   }
   
-  /* Bulles principales - raccourcis compacts */
+  /* Vraies petites bulles - icônes uniquement */
   .main-nav > ul > li > a:not(.dropdown-toggle),
   .main-nav .dropdown-toggle {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 8px 12px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    min-height: 36px;
-    border-radius: 18px;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 50%;
     text-decoration: none;
     transition: all 0.2s ease;
-    white-space: nowrap;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.2);
+    border: 2px solid rgba(255,255,255,0.3);
+    position: relative;
+  }
+  
+  /* Masquer le texte sur mobile */
+  .main-nav .nav-text {
+    display: none;
+  }
+  
+  /* Icônes dans les bulles */
+  .main-nav mat-icon:not(.dropdown-icon) {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: white;
+  }
+  
+  /* Icône dropdown repositionnée */
+  .main-nav .dropdown-icon {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    font-size: 14px !important;
+    width: 16px !important;
+    height: 16px !important;
+    background: rgba(0,0,0,0.6);
+    border-radius: 50%;
+    padding: 1px;
   }
   
   /* Couleurs spécifiques pour chaque bulle */
