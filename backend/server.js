@@ -14,6 +14,9 @@ dotenv.config();
 // Initialisation de Prisma Client
 const prisma = new PrismaClient();
 
+// Import du script d'initialisation
+const { initializeDatabase } = require('./scripts/init-database');
+
 // Initialisation de l'application Express
 const app = express();
 const PORT = process.env.PORT || 3002; // Port modifié pour éviter les conflits EADDRINUSE
@@ -59,10 +62,15 @@ if (!fs.existsSync(path.join(__dirname, 'uploads'))) {
   console.log('Dossier uploads créé');
 }
 
-// Démarrage du serveur
-app.listen(PORT, '0.0.0.0', () => {
+// Démarrage du serveur avec initialisation automatique
+app.listen(PORT, '0.0.0.0', async () => {
   console.log(`Serveur démarré sur http://0.0.0.0:${PORT}`);
   console.log(`Accessible localement sur http://localhost:${PORT}`);
+  
+  // Initialiser la base de données en production
+  if (process.env.NODE_ENV === 'production') {
+    await initializeDatabase();
+  }
 });
 
 // Gestion de la fermeture propre du serveur

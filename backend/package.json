@@ -10,6 +10,7 @@
     "prisma:migrate": "npx prisma migrate dev --name init",
     "prisma:migrate:deploy": "npx prisma migrate deploy",
     "prisma:studio": "npx prisma studio",
+    "db:init": "node scripts/standalone-init.js",
     "migrate:postgresql": "node scripts/migrate-to-postgresql.js",
     "deploy:prepare": "node scripts/deploy-render.js",
     "deploy:render": "npm run prisma:generate && npm run prisma:migrate:deploy"

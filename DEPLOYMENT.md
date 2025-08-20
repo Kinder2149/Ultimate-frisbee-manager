@@ -54,7 +54,7 @@ Dans les settings du Web Service :
 ```
 DATABASE_URL=<Internal Database URL de PostgreSQL>
 NODE_ENV=production
-CORS_ORIGINS=https://ultimate-frisbee-manager.vercel.app
+CORS_ORIGINS=https://ultimate-frisbee-manager-nyvni7xiv-kinder2149s-projects.vercel.app
 ```
 
 ### 2.4 Premier déploiement
@@ -177,7 +177,7 @@ npm run prisma:generate
 - Tester build local : `ng build --configuration production`
 
 ### URLs de production
-- **Frontend** : `https://ultimate-frisbee-manager.vercel.app`
+- **Frontend** : `https://ultimate-frisbee-manager-nyvni7xiv-kinder2149s-projects.vercel.app`
 - **Backend** : `https://ultimate-frisbee-manager-api.onrender.com`
 - **API** : `https://ultimate-frisbee-manager-api.onrender.com/api`
 

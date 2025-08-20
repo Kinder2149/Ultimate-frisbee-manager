@@ -190,9 +190,13 @@ export const environment = {
 
 ### **État actuel :**
 - ✅ **Préparation locale** : TERMINÉE
-- ⏳ **Déploiement backend** : Prêt pour Render
-- ⏳ **Déploiement frontend** : Prêt pour Vercel
-- ⏳ **Tests production** : À effectuer après déploiement
+- ✅ **Déploiement backend** : RENDER DÉPLOYÉ
+- ✅ **Déploiement frontend** : VERCEL DÉPLOYÉ
+- ⚠️ **Tests production** : EN COURS - Configuration finale requise
+
+### **URLs de production :**
+- **Frontend** : `https://ultimate-frisbee-manager-nyvni7xiv-kinder2149s-projects.vercel.app`
+- **Backend** : `https://ultimate-frisbee-manager-api.onrender.com`
 
 ---
 
