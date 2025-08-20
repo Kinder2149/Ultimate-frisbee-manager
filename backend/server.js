@@ -28,13 +28,19 @@ const corsOptions = {
     if (!origin) return callback(null, true);
     
     const allowedOrigins = process.env.CORS_ORIGINS 
-      ? process.env.CORS_ORIGINS.split(',')
+      ? process.env.CORS_ORIGINS.split(',').map(url => url.trim())
       : ['http://localhost:4200']; // Fallback pour développement
     
+    console.log(`🔍 CORS Check - Origin: ${origin}`);
+    console.log(`🔍 CORS Check - Allowed origins: ${allowedOrigins.join(', ')}`);
+    
     if (allowedOrigins.indexOf(origin) !== -1) {
+      console.log(`✅ CORS autorisé pour: ${origin}`);
       callback(null, true);
     } else {
-      callback(new Error('Non autorisé par CORS'));
+      console.log(`❌ CORS refusé pour: ${origin}`);
+      console.log(`📋 Origines autorisées: ${allowedOrigins.join(', ')}`);
+      callback(new Error(`CORS: Origin ${origin} non autorisé`));
     }
   },
   credentials: true,
