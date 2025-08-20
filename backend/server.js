@@ -34,7 +34,21 @@ const corsOptions = {
     console.log(`🔍 CORS Check - Origin: ${origin}`);
     console.log(`🔍 CORS Check - Allowed origins: ${allowedOrigins.join(', ')}`);
     
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    // Vérifier correspondance exacte ou pattern Vercel
+    const isAllowed = allowedOrigins.some(allowedOrigin => {
+      // Correspondance exacte
+      if (allowedOrigin === origin) return true;
+      
+      // Pattern Vercel: ultimate-frisbee-manager-*.vercel.app
+      if (allowedOrigin.includes('vercel.app') && origin.includes('vercel.app')) {
+        const basePattern = 'ultimate-frisbee-manager';
+        return origin.includes(basePattern) && origin.endsWith('.vercel.app');
+      }
+      
+      return false;
+    });
+    
+    if (isAllowed) {
       console.log(`✅ CORS autorisé pour: ${origin}`);
       callback(null, true);
     } else {

@@ -192,7 +192,9 @@ export const environment = {
 - ✅ **Préparation locale** : TERMINÉE
 - ✅ **Déploiement backend** : RENDER DÉPLOYÉ
 - ✅ **Déploiement frontend** : VERCEL DÉPLOYÉ
-- ⚠️ **Tests production** : EN COURS - Configuration finale requise
+- ✅ **Configuration CORS** : CORRIGÉE - Support wildcards Vercel
+- ✅ **Migrations Prisma** : AMÉLIORÉES - Script force-migrate optimisé
+- ⚠️ **Tests production** : EN COURS - Attente redéploiement
 
 ### **URLs de production :**
 - **Frontend** : `https://ultimate-frisbee-manager-nyvni7xiv-kinder2149s-projects.vercel.app`
