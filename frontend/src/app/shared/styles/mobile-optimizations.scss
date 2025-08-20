@@ -23,48 +23,62 @@
    =========================================== */
 
 @media (max-width: 768px) {
-  /* Header mobile - layout horizontal compact */
+  /* Header mobile - layout horizontal ultra-compact */
   .main-header {
     position: sticky;
     top: 0;
     z-index: 1000;
-    padding: var(--mobile-padding) 0;
+    padding: 8px 0;
   }
   
   .main-header .container {
     padding: 0 var(--mobile-padding);
-    flex-direction: row;
+    display: flex !important;
+    flex-direction: row !important;
     justify-content: space-between;
     align-items: center;
     gap: var(--mobile-gap);
-    min-height: 60px;
+    height: 48px;
+    max-height: 48px;
   }
   
   .main-header h1 {
-    font-size: 1.1rem;
+    font-size: 1rem;
     margin: 0;
     flex: 1;
     text-align: left;
     order: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   
-  /* Navigation - alignement horizontal à droite */
+  /* Navigation - alignement horizontal strict à droite */
   .main-nav {
     order: 2;
     flex-shrink: 0;
+    height: 32px;
+    display: flex;
+    align-items: center;
   }
   
   .main-nav ul {
     display: flex;
-    flex-wrap: nowrap;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
     justify-content: flex-end;
-    gap: 8px;
+    align-items: center;
+    gap: 4px;
     padding: 0;
     margin: 0;
+    height: 32px;
+    width: auto;
   }
   
   .main-nav li {
     margin: 0;
+    display: inline-block;
+    float: none !important;
   }
   
   /* Vraies petites bulles - icônes uniquement */
@@ -73,8 +87,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     padding: 0;
     border-radius: 50%;
     text-decoration: none;
@@ -83,6 +97,7 @@
     backdrop-filter: blur(10px);
     border: 2px solid rgba(255,255,255,0.3);
     position: relative;
+    flex-shrink: 0;
   }
   
   /* Masquer le texte sur mobile */
@@ -92,9 +107,9 @@
   
   /* Icônes dans les bulles */
   .main-nav mat-icon:not(.dropdown-icon) {
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
     color: white;
   }
   
