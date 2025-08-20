@@ -23,7 +23,7 @@
    =========================================== */
 
 @media (max-width: 768px) {
-  /* Header mobile - compact avec titre centré */
+  /* Header mobile - layout horizontal compact */
   .main-header {
     position: sticky;
     top: 0;
@@ -33,31 +33,33 @@
   
   .main-header .container {
     padding: 0 var(--mobile-padding);
-    flex-direction: column;
-    gap: var(--mobile-gap);
+    flex-direction: row;
+    justify-content: space-between;
     align-items: center;
+    gap: var(--mobile-gap);
+    min-height: 60px;
   }
   
   .main-header h1 {
-    font-size: 1.3rem;
-    text-align: center;
+    font-size: 1.1rem;
     margin: 0;
+    flex: 1;
+    text-align: left;
     order: 1;
   }
   
-  /* Navigation - transformation en bulles de raccourcis */
+  /* Navigation - alignement horizontal à droite */
   .main-nav {
-    width: 100%;
     order: 2;
-    margin-top: var(--mobile-gap);
+    flex-shrink: 0;
   }
   
   .main-nav ul {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 12px;
-    padding: 8px 0;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 0;
     margin: 0;
   }
   
@@ -71,8 +73,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 44px;
-    height: 44px;
+    width: 36px;
+    height: 36px;
     padding: 0;
     border-radius: 50%;
     text-decoration: none;
@@ -90,9 +92,9 @@
   
   /* Icônes dans les bulles */
   .main-nav mat-icon:not(.dropdown-icon) {
-    font-size: 20px;
-    width: 20px;
-    height: 20px;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
     color: white;
   }
   
