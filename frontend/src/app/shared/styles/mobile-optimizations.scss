@@ -1,0 +1,421 @@
+/* Optimisations mobiles pour Ultimate Frisbee Manager */
+/* Approche progressive - réorganise l'existant sans refonte */
+
+/* Variables mobiles spécifiques */
+:root {
+  /* Breakpoints */
+  --mobile-breakpoint: 768px;
+  --tablet-breakpoint: 1024px;
+  
+  /* Espacements mobiles */
+  --mobile-padding: 0.75rem;
+  --mobile-margin: 0.5rem;
+  --mobile-gap: 0.5rem;
+  
+  /* Tailles tactiles */
+  --touch-target-min: 44px;
+  --mobile-font-base: 16px;
+  --mobile-font-small: 14px;
+}
+
+/* ===========================================
+   NAVIGATION MOBILE
+   =========================================== */
+
+@media (max-width: 768px) {
+  /* Header mobile - transformation du header existant */
+  .main-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+  
+  .main-header .container {
+    padding: var(--mobile-padding);
+    flex-direction: column;
+    gap: var(--mobile-gap);
+  }
+  
+  .main-header h1 {
+    font-size: 1.5rem;
+    text-align: center;
+    margin-bottom: var(--mobile-margin);
+  }
+  
+  /* Navigation - transformation en menu mobile */
+  .main-nav {
+    width: 100%;
+    order: 2;
+  }
+  
+  .main-nav ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: var(--mobile-gap);
+    padding: 0;
+  }
+  
+  .main-nav li {
+    margin: 0;
+  }
+  
+  .main-nav a,
+  .dropdown-toggle {
+    padding: var(--mobile-padding);
+    font-size: var(--mobile-font-small);
+    min-height: var(--touch-target-min);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  
+  /* Dropdowns mobiles - transformation en accordéons */
+  .dropdown-menu {
+    position: static !important;
+    width: 100% !important;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1) !important;
+    margin-top: 0 !important;
+    border-radius: 0 0 8px 8px !important;
+  }
+  
+  .dropdown-menu a {
+    padding: var(--mobile-padding) !important;
+    font-size: var(--mobile-font-small) !important;
+  }
+}
+
+/* ===========================================
+   CARTES D'EXERCICES MOBILES
+   =========================================== */
+
+@media (max-width: 768px) {
+  /* Container principal */
+  .exercice-list-container {
+    padding: var(--mobile-padding);
+  }
+  
+  .exercice-list-container h1 {
+    font-size: 1.5rem;
+    text-align: center;
+    margin-bottom: var(--mobile-margin);
+  }
+  
+  /* Grille d'exercices - une colonne sur mobile */
+  .exercices-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--mobile-gap);
+  }
+  
+  /* Cartes d'exercices compactes */
+  .exercice-card {
+    margin-bottom: var(--mobile-margin);
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+  }
+  
+  /* Header de carte optimisé */
+  .exercice-card .card-header {
+    padding: var(--mobile-padding);
+    cursor: pointer;
+    position: relative;
+  }
+  
+  .exercice-card .title-section h3 {
+    font-size: 1.1rem;
+    margin: 0;
+    line-height: 1.3;
+  }
+  
+  /* Tags essentiels - affichage prioritaire */
+  .essential-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: var(--mobile-gap);
+  }
+  
+  .tag-badge {
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    border-radius: 12px;
+    white-space: nowrap;
+  }
+  
+  /* Barre d'actions mobile */
+  .action-bar {
+    position: absolute;
+    top: var(--mobile-gap);
+    right: var(--mobile-gap);
+    display: flex;
+    gap: 4px;
+    background: rgba(255,255,255,0.9);
+    border-radius: 20px;
+    padding: 4px;
+    backdrop-filter: blur(10px);
+  }
+  
+  .action-bar button {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    padding: 0;
+  }
+  
+  .action-bar mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+  
+  /* Contenu de carte - optimisé pour lecture */
+  .card-content {
+    padding: var(--mobile-padding);
+  }
+  
+  .card-content.visible {
+    display: block;
+  }
+  
+  .description {
+    font-size: var(--mobile-font-small);
+    line-height: 1.4;
+    margin-bottom: var(--mobile-margin);
+  }
+  
+  /* Tags détaillés - masqués par défaut, visibles en expansion */
+  .tags-section {
+    margin-top: var(--mobile-margin);
+  }
+  
+  .tag-group {
+    margin-bottom: var(--mobile-gap);
+  }
+  
+  .tag-group h4 {
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+    color: var(--text-secondary);
+  }
+  
+  .tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  
+  .tag {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+  }
+}
+
+/* ===========================================
+   FILTRES MOBILES
+   =========================================== */
+
+@media (max-width: 768px) {
+  /* Section filtres - compacte */
+  .card {
+    margin-bottom: var(--mobile-margin);
+  }
+  
+  .card-header h2 {
+    font-size: 1.2rem;
+  }
+  
+  /* Barre de recherche */
+  .search-bar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--mobile-gap);
+    margin-bottom: var(--mobile-margin);
+  }
+  
+  .search-input {
+    width: 100%;
+    padding: var(--mobile-padding);
+    font-size: var(--mobile-font-base);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    min-height: var(--touch-target-min);
+  }
+  
+  /* Filtres par tags - layout mobile */
+  .tag-filters {
+    display: flex;
+    flex-direction: column;
+    gap: var(--mobile-margin);
+  }
+  
+  .filter-group {
+    width: 100%;
+  }
+  
+  .filter-group h3 {
+    font-size: 1rem;
+    margin-bottom: var(--mobile-gap);
+  }
+  
+  /* Dropdowns filtres - optimisés tactile */
+  .dropdown-toggle {
+    width: 100%;
+    min-height: var(--touch-target-min);
+    padding: var(--mobile-padding);
+    font-size: var(--mobile-font-base);
+    justify-content: space-between;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    background: white;
+  }
+  
+  .dropdown-menu {
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  
+  .dropdown-item {
+    padding: var(--mobile-padding) !important;
+    min-height: var(--touch-target-min);
+    display: flex;
+    align-items: center;
+    gap: var(--mobile-gap);
+  }
+  
+  /* Tags sélectionnés - affichage compact */
+  .selected-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: var(--mobile-gap);
+  }
+  
+  .selected-tag-badge {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  .remove-tag {
+    cursor: pointer;
+    font-size: 0.7rem;
+    opacity: 0.8;
+  }
+}
+
+/* ===========================================
+   MODE TERRAIN - Affichage optimisé consultation
+   =========================================== */
+
+@media (max-width: 768px) {
+  /* Mode lecture terrain - cartes ultra-compactes */
+  .terrain-mode .exercice-card {
+    border-left: 4px solid var(--primary-color);
+  }
+  
+  .terrain-mode .card-header {
+    padding: var(--mobile-gap) var(--mobile-padding);
+  }
+  
+  .terrain-mode .title-section h3 {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  
+  .terrain-mode .essential-tags {
+    margin-top: 4px;
+  }
+  
+  .terrain-mode .tag-badge {
+    font-size: 0.7rem;
+    padding: 1px 4px;
+  }
+  
+  /* Actions simplifiées en mode terrain */
+  .terrain-mode .action-bar {
+    display: none;
+  }
+  
+  /* Contenu essentiel uniquement */
+  .terrain-mode .card-content {
+    padding: var(--mobile-gap) var(--mobile-padding);
+  }
+  
+  .terrain-mode .description {
+    font-size: 0.9rem;
+    line-height: 1.3;
+  }
+  
+  .terrain-mode .tags-section {
+    display: none;
+  }
+}
+
+/* ===========================================
+   UTILITAIRES MOBILES
+   =========================================== */
+
+@media (max-width: 768px) {
+  /* Classes utilitaires mobiles */
+  .mobile-hidden {
+    display: none !important;
+  }
+  
+  .mobile-full-width {
+    width: 100% !important;
+  }
+  
+  .mobile-center {
+    text-align: center !important;
+  }
+  
+  .mobile-stack {
+    flex-direction: column !important;
+    gap: var(--mobile-gap) !important;
+  }
+  
+  /* Amélioration des interactions tactiles */
+  .touch-friendly {
+    min-height: var(--touch-target-min);
+    min-width: var(--touch-target-min);
+  }
+  
+  /* Espacement amélioré pour le pouce */
+  .thumb-zone {
+    padding-bottom: 60px;
+  }
+}
+
+/* ===========================================
+   ANIMATIONS MOBILES
+   =========================================== */
+
+@media (max-width: 768px) {
+  /* Animations douces pour mobile */
+  .exercice-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .exercice-card:active {
+    transform: scale(0.98);
+  }
+  
+  .dropdown-menu {
+    transition: max-height 0.3s ease, opacity 0.2s ease;
+  }
+  
+  .card-content {
+    transition: max-height 0.3s ease;
+    overflow: hidden;
+  }
+  
+  .card-content:not(.visible) {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}

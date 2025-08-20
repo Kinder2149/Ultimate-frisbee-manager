@@ -6,6 +6,9 @@
 /* Import du thème global unifié */
 @import './app/shared/styles/global-theme.scss';
 
+/* Import des optimisations mobiles */
+@import './app/shared/styles/mobile-optimizations.scss';
+
 /* Reset CSS de base */
 * {
   margin: 0;
