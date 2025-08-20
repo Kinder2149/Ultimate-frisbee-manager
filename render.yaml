@@ -2,7 +2,7 @@ services:
   - type: web
     name: ultimate-frisbee-manager-api
     env: node
-    buildCommand: cd backend && npm install
+    buildCommand: cd backend && npm install && npm run db:force-migrate
     startCommand: cd backend && npm start
     plan: free
     region: frankfurt
