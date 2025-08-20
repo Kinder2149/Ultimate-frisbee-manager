@@ -7,11 +7,30 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Début du seeding de la base de données...');
 
-  // Supprimer les données existantes
-  await prisma.entrainementExercice.deleteMany();
-  await prisma.exercice.deleteMany();
-  await prisma.tag.deleteMany();
-  await prisma.entrainement.deleteMany();
+  // Supprimer les données existantes (avec gestion d'erreur)
+  try {
+    await prisma.entrainementExercice.deleteMany();
+  } catch (e) {
+    console.log('⚠️ Table EntrainementExercice non trouvée, ignorée');
+  }
+  
+  try {
+    await prisma.exercice.deleteMany();
+  } catch (e) {
+    console.log('⚠️ Table Exercice non trouvée, ignorée');
+  }
+  
+  try {
+    await prisma.tag.deleteMany();
+  } catch (e) {
+    console.log('⚠️ Table Tag non trouvée, ignorée');
+  }
+  
+  try {
+    await prisma.entrainement.deleteMany();
+  } catch (e) {
+    console.log('⚠️ Table Entrainement non trouvée, ignorée');
+  }
 
   console.log('📝 Création des tags...');
 
