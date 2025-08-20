@@ -89,8 +89,8 @@ backend/prisma/test.db*
 backend/prisma/prod.db*
 
 # Prisma
-backend/prisma/migrations/*
-!backend/prisma/migrations/.gitkeep
+backend/prisma/migrations/.gitkeep
+# Note: Les migrations sont maintenant incluses pour le déploiement
 
 # Frontend specific (Angular)
 frontend/node_modules/
