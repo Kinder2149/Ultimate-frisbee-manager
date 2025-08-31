@@ -6,14 +6,13 @@ services:
     startCommand: cd backend && npm start
     plan: free
     region: frankfurt
-    branch: main
     rootDir: ./
     envVars:
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
         fromDatabase:
-          name: ultimate-frisbee-db
+          name: ultimate-frisbee-manager-db
           property: connectionString
       - key: CORS_ORIGINS
         value: https://ultimate-frisbee-manager-kinder.vercel.app,https://ultimate-frisbee-manager-*.vercel.app,https://*-kinder2149s-projects.vercel.app
