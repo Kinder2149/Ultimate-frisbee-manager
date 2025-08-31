@@ -22,6 +22,10 @@ const { initializeDatabase } = require('./scripts/init-database');
 const app = express();
 const PORT = process.env.PORT || 3002; // Port modifié pour éviter les conflits EADDRINUSE
 
+// Faire confiance au proxy (Render/NGINX) pour utiliser X-Forwarded-* correctement
+// Nécessaire pour express-rate-limit afin d'identifier l'IP cliente derrière le proxy
+app.set('trust proxy', 1);
+
 // Configuration CORS pour production et développement
 const corsOptions = {
   origin: function (origin, callback) {
