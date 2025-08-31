@@ -39,11 +39,12 @@ function main() {
     return;
   }
 
+  console.log(`[baseline] CWD: ${root}`);
   console.log(`[baseline] Migrations détectées: ${entries.map((e) => e.name).join(', ')}`);
 
   for (const e of entries) {
     console.log(`[baseline] Applying resolve --applied ${e.name} ...`);
-    const res = spawnSync('npx', ['prisma', 'migrate', 'resolve', '--applied', e.name], {
+    const res = spawnSync('npx', ['prisma', '--schema', 'prisma/schema.prisma', 'migrate', 'resolve', '--applied', e.name], {
       cwd: root,
       stdio: 'inherit',
       shell: process.platform === 'win32',
