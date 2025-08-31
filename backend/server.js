@@ -35,18 +35,19 @@ const corsOptions = {
     console.log(`🔍 CORS Check - Origin: ${origin}`);
     console.log(`🔍 CORS Check - Allowed origins: ${allowedOrigins.join(', ')}`);
     
-    // Vérifier correspondance exacte ou pattern Vercel
-    const isAllowed = allowedOrigins.some(allowedOrigin => {
-      // Correspondance exacte
-      if (allowedOrigin === origin) return true;
-      
-      // Pattern Vercel: ultimate-frisbee-manager-*.vercel.app
-      if (allowedOrigin.includes('vercel.app') && origin.includes('vercel.app')) {
-        const basePattern = 'ultimate-frisbee-manager';
-        return origin.includes(basePattern) && origin.endsWith('.vercel.app');
+    // Vérifier correspondance exacte ou motif avec joker (*)
+    const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const toRegex = (pattern) => {
+      // Supporte des motifs simples du type https://*-domain.vercel.app ou https://sub-*.*
+      const escaped = escapeRegex(pattern).replace(/\\\*/g, '.*');
+      return new RegExp(`^${escaped}$`);
+    };
+
+    const isAllowed = allowedOrigins.some((allowedOrigin) => {
+      if (allowedOrigin.includes('*')) {
+        return toRegex(allowedOrigin).test(origin);
       }
-      
-      return false;
+      return allowedOrigin === origin;
     });
     
     if (isAllowed) {
@@ -68,6 +69,8 @@ app.use(helmet()); // Sécurité HTTP de base
 app.use(cors(corsOptions)); // CORS sécurisé
 app.use(express.json()); // Parse les requêtes JSON
 app.use(express.urlencoded({ extended: true })); // Parse les requêtes avec formulaires
+// Gérer explicitement les préflight CORS pour toutes les routes
+app.options('*', cors(corsOptions));
 // Servir les fichiers statiques (avatars, etc.)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
