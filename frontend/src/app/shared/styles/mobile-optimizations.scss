@@ -19,6 +19,88 @@
 }
 
 /* ===========================================
+   CARTES UNIFIÉES (entity-card) - Styles partagés
+   Appliqués aux listes: entraînements, échauffements, situations/matchs, exercices
+   =========================================== */
+
+.entity-card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.entity-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+
+.entity-card-header,
+.entity-card .card-header,
+.entity-card mat-card-header {
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.entity-card-header h3,
+.entity-card .card-header h3,
+.entity-card mat-card-title { margin: 0; color: #333; font-size: 18px; }
+
+.entity-card-actions,
+.entity-card .actions,
+.entity-card .card-actions,
+.entity-card mat-card-actions { display: flex; gap: 8px; align-items: center; padding: 8px 16px; }
+
+.entity-card-body,
+.entity-card .card-body,
+.entity-card .card-content,
+.entity-card mat-card-content { padding: 20px; }
+
+/* Lignes info réutilisables */
+.entity-card .info-row { display: flex; align-items: center; margin-bottom: 12px; }
+.entity-card .info-row:last-child { margin-bottom: 0; }
+.entity-card .label { font-weight: 600; color: #555; min-width: 80px; margin-right: 10px; }
+.entity-card .value { font-weight: 500; color: #333; flex: 1; }
+.entity-card .value.duration { color: #2196F3; font-weight: 600; background: #E3F2FD; padding: 2px 8px; border-radius: 12px; font-size: 0.9em; }
+
+/* Tags (pastilles) */
+.entity-card .tags-display, .entity-card .tags-container { display: flex; flex-wrap: wrap; gap: 8px; }
+.entity-card .tag { display: inline-block; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 500; color: #fff; background-color: #e0e0e0; }
+
+.entity-card .created-at, .entity-card .meta-info { margin-top: 10px; padding-top: 10px; border-top: 1px solid #e9ecef; font-size: 12px; color: #666; }
+
+/* Boutons icônes unifiés */
+.entity-card .btn-icon,
+.entity-card button.mat-mdc-button,
+.entity-card button[mat-button],
+.entity-card button[mat-icon-button] {
+  background: none;
+  border: none;
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+.entity-card .btn-icon:hover,
+.entity-card button[mat-icon-button]:hover,
+.entity-card button[mat-button]:hover { background-color: rgba(0,0,0,0.06); }
+.entity-card .btn-icon.danger:hover { background-color: rgba(220,53,69,0.1); color: #dc3545; }
+
+/* Responsive: pile sur mobile */
+@media (max-width: 768px) {
+  .entity-card-header,
+  .entity-card .card-header,
+  .entity-card mat-card-header { flex-direction: column; gap: 12px; align-items: stretch; }
+  .entity-card .entity-card-actions,
+  .entity-card .actions,
+  .entity-card .card-actions,
+  .entity-card mat-card-actions { justify-content: center; }
+}
+
+/* ===========================================
    NAVIGATION MOBILE - BULLES DE RACCOURCIS
    =========================================== */
 
@@ -194,7 +276,10 @@
     min-width: 200px !important;
     max-width: 280px !important;
     z-index: 99999 !important;
-    overflow: hidden !important;
+    max-height: 70vh !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain !important;
     animation: slideInUp 0.2s ease !important;
   }
   
@@ -251,6 +336,281 @@
       opacity: 1;
       transform: translateX(-50%) translateY(0);
     }
+  }
+}
+
+/* ===========================================
+   RESTAURATION DESKTOP - Désactiver les styles mobiles
+   =========================================== */
+
+@media (min-width: 769px) {
+  /* Restaurer le layout desktop propre (sans toucher au mobile) */
+  .main-header .container {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 20px 30px !important;
+    max-width: 1400px !important;
+    margin: 0 auto !important;
+  }
+
+  .main-header h1 {
+    margin: 0 !important;
+    font-size: 28px !important;
+    font-weight: 700 !important;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
+    letter-spacing: 0.5px !important;
+    color: white !important;
+  }
+
+  .main-nav ul {
+    list-style: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    gap: 4px !important;
+    align-items: center !important;
+    overflow: visible !important;
+  }
+
+  .main-nav li {
+    position: relative !important;
+    border-radius: 8px 8px 0 0 !important;
+    overflow: visible !important;
+  }
+
+  .main-nav a,
+  .main-nav .dropdown-toggle {
+    display: flex !important;
+    align-items: center !important;
+    padding: 16px 24px !important;
+    color: white !important;
+    text-decoration: none !important;
+    transition: all 0.3s ease !important;
+    border-bottom: 4px solid transparent !important;
+    font-weight: 500 !important;
+    font-size: 15px !important;
+    position: relative !important;
+    background: rgba(255,255,255,0.05) !important;
+    backdrop-filter: blur(10px) !important;
+    border-radius: 8px 8px 0 0 !important;
+  }
+
+  .main-nav .nav-text {
+    display: inline !important;
+  }
+
+  /* Assurer le rendu des icônes Material (évite add_circle/expand_more en texte) */
+  .main-nav mat-icon {
+    font-family: 'Material Icons' !important;
+    font-weight: normal !important;
+    font-style: normal !important;
+    line-height: 1 !important;
+    letter-spacing: normal !important;
+    text-transform: none !important;
+    display: inline-block !important;
+    white-space: nowrap !important;
+    word-wrap: normal !important;
+    direction: ltr !important;
+    font-feature-settings: 'liga' !important;
+    -webkit-font-feature-settings: 'liga' !important;
+    -webkit-font-smoothing: antialiased !important;
+  }
+
+  .main-nav mat-icon:not(.dropdown-icon) {
+    font-size: 24px !important;
+    width: 24px !important;
+    height: 24px !important;
+    color: white !important;
+    margin-right: 8px !important;
+  }
+
+  .main-nav .dropdown-icon {
+    font-size: 18px !important;
+    width: 18px !important;
+    height: 18px !important;
+    margin-left: 5px !important;
+    position: static !important;
+  }
+  
+  /* Restaurer les couleurs desktop par catégorie */
+  .main-nav .dropdown.exercices .dropdown-toggle {
+    background: linear-gradient(135deg, #e74c3c, #c0392b) !important;
+    border-bottom-color: #e74c3c !important;
+  }
+  
+  .main-nav .dropdown.exercices .dropdown-toggle:hover,
+  .main-nav .dropdown.exercices .dropdown-toggle.active {
+    background: linear-gradient(135deg, #c0392b, #a93226) !important;
+    border-bottom-color: #e74c3c !important;
+  }
+  
+  .main-nav .dropdown.entrainements .dropdown-toggle {
+    background: linear-gradient(135deg, #3498db, #2980b9) !important;
+    border-bottom-color: #3498db !important;
+  }
+  
+  .main-nav .dropdown.entrainements .dropdown-toggle:hover,
+  .main-nav .dropdown.entrainements .dropdown-toggle.active {
+    background: linear-gradient(135deg, #2980b9, #1f5f8b) !important;
+    border-bottom-color: #3498db !important;
+  }
+  
+  .main-nav .dropdown.echauffements .dropdown-toggle {
+    background: linear-gradient(135deg, #f39c12, #e67e22) !important;
+    border-bottom-color: #f39c12 !important;
+  }
+  
+  .main-nav .dropdown.echauffements .dropdown-toggle:hover,
+  .main-nav .dropdown.echauffements .dropdown-toggle.active {
+    background: linear-gradient(135deg, #e67e22, #d35400) !important;
+    border-bottom-color: #f39c12 !important;
+  }
+  
+  .main-nav .dropdown.situations .dropdown-toggle {
+    background: linear-gradient(135deg, #27ae60, #229954) !important;
+    border-bottom-color: #27ae60 !important;
+  }
+  
+  .main-nav .dropdown.situations .dropdown-toggle:hover,
+  .main-nav .dropdown.situations .dropdown-toggle.active {
+    background: linear-gradient(135deg, #229954, #1e8449) !important;
+    border-bottom-color: #27ae60 !important;
+  }
+  
+  .main-nav .dropdown.add .dropdown-toggle {
+    background: linear-gradient(135deg, #9b59b6, #8e44ad) !important;
+    border-bottom-color: #9b59b6 !important;
+  }
+  
+  .main-nav .dropdown.add .dropdown-toggle:hover,
+  .main-nav .dropdown.add .dropdown-toggle.active {
+    background: linear-gradient(135deg, #8e44ad, #7d3c98) !important;
+    border-bottom-color: #9b59b6 !important;
+  }
+  
+  /* Lien tableau de bord */
+  .main-nav > ul > li > a[routerLink="/"] {
+    background: rgba(255,255,255,0.05) !important;
+    color: white !important;
+  }
+  
+  .main-nav > ul > li > a[routerLink="/"]:hover,
+  .main-nav > ul > li > a[routerLink="/"].active {
+    background: rgba(255,255,255,0.15) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+  }
+  
+  /* États hover et active desktop génériques */
+  .main-nav a:hover,
+  .main-nav .dropdown-toggle:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+  }
+  
+  .main-nav a.active {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+  }
+  
+  /* Effet overlay hover */
+  .main-nav .dropdown-toggle::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background: rgba(255,255,255,0.1) !important;
+    opacity: 0 !important;
+    transition: opacity 0.3s ease !important;
+  }
+  
+  .main-nav .dropdown-toggle:hover::before {
+    opacity: 1 !important;
+  }
+  
+  /* Rotation icône dropdown */
+  .main-nav .dropdown.open .dropdown-icon {
+    transform: rotate(180deg) !important;
+  }
+  
+  /* Dropdowns desktop normaux */
+  .dropdown-menu {
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+    transform: none !important;
+    background: white !important;
+    border: 2px solid #e9ecef !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    min-width: 250px !important;
+    max-width: none !important;
+    z-index: 99999 !important;
+    overflow: visible !important;
+    animation: none !important;
+    transition: all 0.3s ease !important;
+    display: block !important;
+    pointer-events: auto !important;
+  }
+  
+  .dropdown-menu::before {
+    display: none !important;
+  }
+  
+  .dropdown-menu li {
+    margin: 0 !important;
+    border-bottom: 1px solid #f0f0f0 !important;
+  }
+  
+  .dropdown-menu li:last-child {
+    border-bottom: none !important;
+  }
+  
+  .dropdown-menu a {
+    display: block !important;
+    padding: 18px 24px !important;
+    color: #2c3e50 !important;
+    text-decoration: none !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    transition: all 0.3s ease !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+    border-bottom: none !important;
+    position: relative !important;
+  }
+  
+  .dropdown-menu a:hover,
+  .dropdown-menu a.active {
+    background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(52, 152, 219, 0.2)) !important;
+    color: #2c3e50 !important;
+    transform: translateX(8px) !important;
+    padding-left: 20px !important;
+    border-left: 4px solid #3498db !important;
+  }
+  
+  /* Bordures colorées des dropdowns */
+  .dropdown.exercices.open .dropdown-menu {
+    border-top: 3px solid #e74c3c !important;
+  }
+  
+  .dropdown.entrainements.open .dropdown-menu {
+    border-top: 3px solid #3498db !important;
+  }
+  
+  .dropdown.echauffements.open .dropdown-menu {
+    border-top: 3px solid #f39c12 !important;
+  }
+  
+  .dropdown.situations.open .dropdown-menu {
+    border-top: 3px solid #27ae60 !important;
+  }
+  
+  .dropdown.add.open .dropdown-menu {
+    border-top: 3px solid #9b59b6 !important;
   }
 }
 

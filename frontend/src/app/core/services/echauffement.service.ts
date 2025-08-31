@@ -94,6 +94,14 @@ export class EchauffementService {
   private transformBeforeSend(data: CreateEchauffementRequest | UpdateEchauffementRequest): any {
     const prepared = { ...data };
     
+    // Description optionnelle: convertir les chaînes vides en null
+    if (prepared.hasOwnProperty('description')) {
+      const desc: any = (prepared as any).description;
+      if (typeof desc === 'string' && desc.trim().length === 0) {
+        (prepared as any).description = null;
+      }
+    }
+
     // Préparation des blocs pour l'API
     if (prepared.blocs && prepared.blocs.length > 0) {
       prepared.blocs = prepared.blocs.map((bloc, index) => ({

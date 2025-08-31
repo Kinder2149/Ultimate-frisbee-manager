@@ -3,13 +3,19 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Entrainement } from '../../../../core/models/entrainement.model';
 import { EntrainementService } from '../../../../core/services/entrainement.service';
+import { ExerciceCardComponent } from '../../../exercices/components/exercice-card.component';
+import { DialogService } from '../../../../shared/components/dialog/dialog.service';
+import { EchauffementViewComponent } from '../../../../shared/components/echauffement-view/echauffement-view.component';
+import { ExerciceViewComponent } from '../../../../shared/components/exercice-view/exercice-view.component';
+import { SituationMatchViewComponent } from '../../../../shared/components/situationmatch-view/situationmatch-view.component';
+import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
 
 @Component({
   selector: 'app-entrainement-detail',
   templateUrl: './entrainement-detail.component.html',
   styleUrls: ['./entrainement-detail.component.css'],
   standalone: true,
-  imports: [CommonModule]
+  imports: [CommonModule, ExerciceCardComponent, ActionButtonComponent]
 })
 export class EntrainementDetailComponent implements OnInit {
   entrainement: Entrainement | null = null;
@@ -20,7 +26,8 @@ export class EntrainementDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private entrainementService: EntrainementService
+    private entrainementService: EntrainementService,
+    private dialogService: DialogService
   ) {}
 
   ngOnInit(): void {
@@ -30,6 +37,15 @@ export class EntrainementDetailComponent implements OnInit {
     } else {
       this.error = 'ID d\'entraînement manquant';
     }
+  }
+
+  /**
+   * Mise à jour de la durée d'un exercice depuis la carte enfant
+   */
+  onExerciceDureeChange(index: number, newDuree: number): void {
+    if (!this.entrainement || !this.entrainement.exercices) return;
+    if (index < 0 || index >= this.entrainement.exercices.length) return;
+    this.entrainement.exercices[index].duree = newDuree;
   }
 
   /**
@@ -44,6 +60,14 @@ export class EntrainementDetailComponent implements OnInit {
         this.entrainement = entrainement;
         this.loading = false;
         console.log('Entraînement chargé:', entrainement);
+        // Scroll vers la section d'échauffement si demandée via le fragment
+        const fragment = this.route.snapshot.fragment;
+        if (fragment === 'echauffement') {
+          setTimeout(() => {
+            const el = document.getElementById('echauffement');
+            el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 0);
+        }
       },
       error: (err) => {
         console.error('Erreur lors du chargement de l\'entraînement:', err);
@@ -67,6 +91,47 @@ export class EntrainementDetailComponent implements OnInit {
     if (this.entrainement?.id) {
       this.router.navigate(['/entrainements/modifier', this.entrainement.id]);
     }
+  }
+
+  // Ouvre l'échauffement dans une vue modale réutilisable
+  openEchauffementView(): void {
+    const echauffement = this.entrainement?.echauffement;
+    if (!echauffement) return;
+    this.dialogService.open(EchauffementViewComponent, {
+      title: echauffement.nom || 'Échauffement',
+      width: '720px',
+      maxWidth: '90vw',
+      disableClose: false,
+      panelClass: 'entity-view-dialog',
+      customData: { echauffement }
+    }).subscribe();
+  }
+
+  // Ouvre un exercice dans la vue modale réutilisable
+  openExerciceView(exercice: any): void {
+    if (!exercice) return;
+    this.dialogService.open(ExerciceViewComponent, {
+      title: exercice.nom || 'Exercice',
+      width: '720px',
+      maxWidth: '90vw',
+      disableClose: false,
+      panelClass: 'entity-view-dialog',
+      customData: { exercice }
+    }).subscribe();
+  }
+
+  // Ouvre la situation/match dans la vue modale réutilisable
+  openSituationView(): void {
+    const situationMatch = this.entrainement?.situationMatch;
+    if (!situationMatch) return;
+    this.dialogService.open(SituationMatchViewComponent, {
+      title: situationMatch.nom || situationMatch.type || 'Situation/Match',
+      width: '720px',
+      maxWidth: '90vw',
+      disableClose: false,
+      panelClass: 'entity-view-dialog',
+      customData: { situationMatch }
+    }).subscribe();
   }
 
   /**
@@ -135,6 +200,23 @@ export class EntrainementDetailComponent implements OnInit {
     }
 
     return this.formatDurationDisplay(totalMinutes);
+  }
+
+  /**
+   * Récupère les tags d'un exercice, quel que soit le format retourné par l'API
+   * Supporte soit `exercice.tags`, soit `exercice.exerciceTags: { tag }[]`
+   */
+  getExerciceTags(exercice: any): any[] {
+    if (!exercice) return [];
+    if (Array.isArray(exercice.tags) && exercice.tags.length > 0) {
+      return exercice.tags;
+    }
+    if (Array.isArray(exercice.exerciceTags) && exercice.exerciceTags.length > 0) {
+      return exercice.exerciceTags
+        .map((et: any) => et && et.tag)
+        .filter((t: any) => !!t);
+    }
+    return [];
   }
 
   /**

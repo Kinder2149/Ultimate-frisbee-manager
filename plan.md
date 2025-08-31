@@ -172,6 +172,52 @@ export const environment = {
 
 ---
 
+## 🔍 ANALYSE DU SYSTÈME D'EXERCICES
+
+### Problèmes identifiés
+1. **Chargement des tags**
+   - Les tags ne s'affichent pas dans le formulaire de création
+   - Les catégories sont visibles mais pas les tags associés
+
+2. **Formulaire d'édition**
+   - La page "Voir un exercice" affiche un formulaire d'édition
+   - Les données de l'exercice (nom, description, tags) ne sont pas correctement chargées
+   - Les tags existants ne sont pas présélectionnés
+
+3. **Persistance des données**
+   - Perte des tags lors de la modification d'un exercice
+   - Données non sauvegardées correctement après édition
+
+### Analyse technique
+
+#### Backend (Node.js/Prisma)
+- **Modèle d'exercice** : Relation many-to-many avec les tags via `tags: Tag[]`
+- **Contrôleur** : Gère CRUD avec support des tags
+- **Routes** : Endpoints pour la gestion des exercices et des tags
+
+#### Frontend (Angular)
+- **Modèle Exercice** : Interface TypeScript avec propriétés optionnelles
+- **Service Exercice** : Gère les appels API avec transformation des données
+- **Composant Formulaire** : Gère l'affichage et la soumission du formulaire
+
+### Prochaines étapes
+1. **Examiner le composant de formulaire**
+   - Vérifier le chargement des tags
+   - Analyser la présélection des tags existants
+   - Examiner la soumission du formulaire
+
+2. **Vérifier le service des tags**
+   - S'assurer que les tags sont correctement récupérés depuis l'API
+   - Vérifier la transformation des données
+
+3. **Analyser la méthode de sauvegarde**
+   - Comprendre pourquoi les tags ne sont pas enregistrés
+   - Vérifier la transformation des données avant envoi
+
+4. **Tests de validation**
+   - Tester le cycle complet de création/modification avec les outils de développement
+   - Vérifier les appels réseau et les réponses du serveur
+
 ## 🎯 OBJECTIFS FINAUX DU DÉPLOIEMENT
 
 ### **Résultat attendu :**
@@ -361,3 +407,211 @@ Application de gestion d'entraînements d'ultimate frisbee avec backend Node.js/
 - ✅ **Composants** : Formulaires, listes, widgets réutilisables
 - ✅ **Modèles TypeScript** : Interfaces strictement typées
 - ✅ **Routing** : Navigation complète entre modules avec lazy loading
+
+## 🔐 SYSTÈME D'AUTHENTIFICATION
+
+### **OBJECTIF**
+Implémenter un système d'authentification JWT basique avec utilisateur unique par défaut, évolutif vers multi-utilisateurs.
+
+### **SPÉCIFICATIONS**
+- **Utilisateur par défaut** : Admin / Ultim@t+ / admin@ultimate.com
+- **Technologie** : JWT avec session persistante (7 jours)
+- **Sécurité** : Niveau basique, prêt pour évolution
+- **Données utilisateur** : ID, email, mot de passe, icône
+
+### **ARCHITECTURE AUTHENTIFICATION**
+
+#### **Backend - Modifications**
+- [x] **Modèle User** : Ajout dans schema.prisma avec utilisateur Admin par défaut
+- [x] **Routes auth** : `/api/auth/login`, `/api/auth/profile`, `/api/auth/refresh`
+- [x] **Middleware JWT** : Protection des routes existantes
+- [x] **Dépendances** : bcryptjs, jsonwebtoken, express-rate-limit
+
+#### **Frontend - Modifications**
+- [x] **AuthService** : Gestion login/logout/tokens avec localStorage
+- [x] **AuthGuard** : Protection des routes principales
+- [x] **Login Component** : Interface de connexion simple
+- [x] **HTTP Interceptor** : Ajout automatique token Authorization
+- [x] **Routing** : Redirection vers login si non authentifié
+
+### **IMPLÉMENTATION**
+
+#### **Étape 1 : Backend Auth**
+- [x] Modèle User dans Prisma
+- [x] Seed utilisateur Admin par défaut
+- [x] Routes d'authentification
+- [x] Middleware de protection JWT
+- [x] Migration base de données
+
+#### **Étape 2 : Frontend Auth**
+- [x] Service d'authentification Angular
+- [x] Composant de connexion
+- [x] Guards et intercepteurs
+- [x] Mise à jour du routing principal
+
+#### **Étape 3 : Intégration**
+- [x] Protection de toutes les routes existantes
+- [x] Gestion des erreurs d'authentification
+- [x] Tests de connexion/déconnexion
+- [x] Validation session persistante
+
+### **ROUTES PROTÉGÉES**
+Toutes les routes existantes seront protégées :
+- `/exercices` → Nécessite authentification
+- `/entrainements` → Nécessite authentification  
+- `/echauffements` → Nécessite authentification
+- `/situations-matchs` → Nécessite authentification
+- `/dashboard` → Nécessite authentification
+
+### **EXPÉRIENCE UTILISATEUR**
+- **Page d'accueil** : Redirection automatique vers login
+- **Session active** : Accès direct aux fonctionnalités
+- **Session expirée** : Redirection vers login avec message
+- **Déconnexion** : Nettoyage session et retour login
+
+### **DÉPLOIEMENT PRODUCTION - MODIFICATIONS REQUISES**
+
+#### **⚠️ IMPORTANT : Modifications à effectuer avant déploiement Render**
+
+**1. Remettre PostgreSQL dans schema.prisma :**
+```prisma
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+```
+
+**2. Migrations et utilisateur Admin en production :**
+```bash
+# Sur Render (après déploiement)
+npx prisma migrate deploy
+node prisma/seed-auth.js
+```
+
+**3. Variables d'environnement Render :**
+- `DATABASE_URL` : Fournie automatiquement par PostgreSQL Render
+- `NODE_ENV` : `production`
+- `JWT_SECRET` : Générer une clé sécurisée pour la production
+- `CORS_ORIGINS` : URL Vercel de production
+
+**4. Identifiants production :**
+- **Email** : `admin@ultimate.com`
+- **Mot de passe** : `Ultim@t+`
+
+#### **Configuration locale vs Production**
+- **Local** : SQLite (`provider = "sqlite"`) + `.env` avec `DATABASE_URL="file:./dev.db"`
+- **Production** : PostgreSQL (`provider = "postgresql"`) + Variables Render
+
+---
+
+## 📂 Nouveau Plan Fonctionnel: Onglet « Paramètres », déplacement « Gestionnaire de tags » et Page Admin
+
+### 🎯 Objectifs
+- **Créer un onglet "Paramètres"** regroupant les pages d’administration.
+- **Déplacer** le « Gestionnaire de tags » sous cet onglet.
+- **Ajouter** une page « Aperçu des données » accessible **uniquement** à l’admin avec un inventaire structuré (exercices, échauffements, situations/matchs, tags, utilisateurs).
+
+### 🧭 Architecture impactée
+- Frontend Angular (`frontend/src/app/`): routing, module feature `settings`, `RoleGuard`, navigation.
+- Backend Node/Express (`backend/`): middleware rôle admin, nouvelle route `/api/admin/overview`.
+
+### ✅ Étapes Frontend
+- __[settings module]__ Créer `features/settings/settings.module.ts` (lazy) avec routes enfants:
+  - `parametres/tags` → réutilise `TagsManagerComponent`.
+  - `parametres/admin` → nouveau `DataOverviewComponent` (admin-only).
+  - `parametres` → redirect `tags`.
+- **RoleGuard (admin)**: `core/guards/role.guard.ts` vérifie `user.role==='admin'` via `AuthService`.
+- **Routing racine** (`app.module.ts`): ajouter `{ path: 'parametres', loadChildren: ... , canActivate: [AuthGuard] }`.
+- **Navigation** (`app.component.html`):
+  - Retirer « Gérer les tags » du menu « Exercices ».
+  - Ajouter un menu « Paramètres » avec:
+    - « Gestionnaire de tags » → `/parametres/tags`.
+    - « Aperçu des données (Admin) » → `/parametres/admin` (affiché seulement si admin).
+- **DataOverviewComponent** (`features/settings/pages/data-overview/`):
+  - UI Material (onglets ou tables) pour Exercices, Entraînements, Échauffements, Situations/Matchs, Tags, Utilisateurs.
+  - Utiliser services existants (`ExerciceService`, `EntrainementService`, `EchauffementService`, `SituationMatchService`, `TagService`).
+  - Pagination/tri (`MatTableDataSource`, `MatSort`, `MatPaginator`).
+- **AuthService**: exposer l’utilisateur courant/son rôle (`currentUser$`) si besoin pour RoleGuard et affichage conditionnel.
+- **Compat route /tags**: rediriger proprement vers `/parametres/tags` (temporaire) pour éviter les liens cassés.
+
+### ✅ Étapes Backend
+- **Middleware rôle admin** (`backend/middleware/auth.middleware.js`): ajouter `requireAdmin` (403 si `req.user.role!=='admin'`).
+- **Contrôleur admin** (`backend/controllers/admin.controller.js`): `GET /api/admin/overview` renvoyant compteurs + listes paginées (champ filtrés, sans données sensibles).
+- **Routes** (`backend/routes/admin.routes.js`): protéger par `authenticateToken` + `requireAdmin`.
+
+### 🔒 Sécurité
+- Vérification rôle côté **frontend** (RoleGuard) et **backend** (requireAdmin).
+- Pagination et champs sélectionnés pour éviter retours massifs/sensibles.
+- Jamais exposer mots de passe ni tokens.
+
+### ⚠️ Pièges à éviter
+- Oublier la double protection (front et back) des pages admin.
+- Casser la navigation mobile: ajouter la bulle « Paramètres » en respectant `shared/styles/mobile-optimizations.scss`.
+- Confusion entre `tags` et `tags-advanced`: ne déplacer que le gestionnaire standard.
+- Risque de performance: implémenter pagination/tri et chargement à la demande.
+
+### 📁 Arborescence à créer
+- `frontend/src/app/features/settings/`
+  - `settings.module.ts`
+  - `pages/data-overview/data-overview.component.{ts,html,scss}`
+- `frontend/src/app/core/guards/role.guard.ts`
+- `backend/controllers/admin.controller.js`
+- `backend/routes/admin.routes.js`
+
+### 🧪 Tests
+- Cypress: non-admin → accès refusé `/parametres/admin` (redirect), admin → accès OK.
+- Smoke tests: chargement paginé de chaque entité, export CSV (optionnel).
+
+### 🎯 Critères d’acceptation
+- Menu « Paramètres » présent, « Gestionnaire de tags » déplacé.
+- `/parametres/admin` accessible uniquement pour admin.
+- Endpoint `/api/admin/overview` sécurisé et fonctionnel.
+
+---
+
+## ✅ Plan UI: Fusion menu Utilisateur/Paramètres et Harmonisation formulaire Exercices
+
+### 🎯 Objectifs
+- Unifier les menus « Profil » et « Paramètres » en un seul bouton utilisateur dans la barre d’app (`app.component.html`).
+- Corriger l’ouverture permanente des dropdowns dans le formulaire d’exercice.
+- Harmoniser l’UI/UX de sélection des tags pour toutes les catégories (objectif, travail_spécifique, niveau, temps, format).
+
+### 🔎 Diagnostic (résumé)
+- Fuite CSS du header: `.dropdown-menu { display: block !important; ... }` dans `frontend/src/app/app.component.css` s’applique globalement et force l’affichage des menus du formulaire.
+- Incohérence « Niveau »: UI différente (grille cliquable) vs autres catégories (autocomplete + chips).
+- Valeurs de formulaire hétérogènes (strings concaténées vs arrays), complexifiant la maintenance.
+
+### 🛠️ Étapes techniques
+1) Scoper les styles du header
+   - Modifier `app.component.css`: cibler `.main-nav .dropdown-menu` et retirer `display: block !important` et `pointer-events: auto !important`.
+   - Laisser la logique d’affichage au template (`*ngIf`, classes `open`).
+
+2) Harmoniser la sélection des tags dans le formulaire d’exercice
+   - Option rapide: rendre « Niveau » identique aux autres (pattern autocomplete + chips) et conserver l’affichage d’étoiles dans les badges via `displayFn`.
+   - Option durable: créer `shared/components/tag-select/TagSelectComponent` réutilisable.
+     - Inputs: `category`, `multiple`, `selected`, `placeholder`, `displayFn?`.
+     - Outputs: `selectedChange`.
+     - Comportement: input de recherche, dropdown filtrée, chips sélectionnées, fermeture au blur/clic extérieur.
+
+3) Standardiser les valeurs du formulaire
+   - Utiliser des arrays d’IDs (`string[]`) ou de `Tag` côté form state.
+   - Mapper proprement vers `tagIds: string[]` au `submit`.
+
+4) QA visuelle et mobile
+   - Vérifier fermeture des dropdowns (focus/blur, clic extérieur, escape).
+   - Vérifier tailles et espacements, et comportement mobile.
+
+### 📋 Tâches
+- [ ] CSS header scoping `.main-nav .dropdown-menu` (supprimer `display: block !important`).
+- [ ] Vérifier fermeture des dropdowns dans `exercice-form`.
+- [ ] Choix de l’option d’harmonisation (« rapide » ou « durable »).
+- [ ] Implémenter `TagSelectComponent` si option durable retenue.
+- [ ] Migrer « Niveau » vers pattern unifié.
+- [ ] Standardiser form values (arrays) et adapter `onSubmit()`.
+- [ ] Tests desktop + mobile.
+
+### ✅ Critères d’acceptation
+- Le menu utilisateur/paramètres est unique et fonctionne sur desktop et mobile.
+- Les dropdowns des tags s’ouvrent/se ferment correctement sans rester affichés.
+- « Niveau », « Travail spécifique », « Temps », « Format » partagent le même pattern d’UI.
+- Les valeurs envoyées au backend pour les tags sont cohérentes (arrays d’IDs) et testées.

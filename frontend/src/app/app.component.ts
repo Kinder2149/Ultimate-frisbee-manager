@@ -1,22 +1,39 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectorRef, OnInit } from '@angular/core';
+import { Observable } from 'rxjs';
+import { AuthService } from './core/services/auth.service';
+import { User } from './core/models/user.model';
+import { BackendStatusService } from './core/services/backend-status.service';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'Ultimate Frisbee Manager';
+  currentUser$!: Observable<User | null>;
+  isAuthenticated$ = this.authService.isAuthenticated$;
   
   isDropdownOpen = {
-    add: false,
     exercices: false,
     entrainements: false,
     echauffements: false,
-    situations: false
+    situations: false,
+    parametres: false
   };
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(private cdr: ChangeDetectorRef, private authService: AuthService, private backendStatus: BackendStatusService) {
+    this.currentUser$ = this.authService.currentUser$;
+  }
+
+  ngOnInit(): void {
+    // Si l'utilisateur est authentifié, vérifier la santé du backend au démarrage
+    this.isAuthenticated$.subscribe((auth) => {
+      if (auth) {
+        this.backendStatus.checkHealthOnce();
+      }
+    });
+  }
 
   toggleDropdown(menu: string, event: Event): void {
     event.preventDefault();
@@ -52,6 +69,13 @@ export class AppComponent {
   closeAllDropdowns(): void {
     Object.keys(this.isDropdownOpen).forEach(key => {
       (this.isDropdownOpen as any)[key] = false;
+    });
+  }
+
+  onLogout(): void {
+    this.authService.logout().subscribe({
+      next: () => {},
+      error: () => {}
     });
   }
 }

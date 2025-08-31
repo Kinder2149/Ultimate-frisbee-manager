@@ -8,6 +8,16 @@
     </button>
   </div>
 
+  <!-- Filtres: recherche + (Temps, Format) -->
+  <app-exercice-filters
+    [hideTagSections]="false"
+    [show]="{ objectif: false, travail: false, niveau: false, themeEntrainement: false, temps: true, format: true }"
+    [tempsTags]="tempsTags"
+    [formatTags]="formatTags"
+    [allTags]="allTags"
+    (filtersChange)="onFiltersChange($event)"
+  ></app-exercice-filters>
+
   <!-- Indicateur de chargement -->
   <div *ngIf="loading" class="loading-container">
     <p>Chargement des situations/matchs...</p>
@@ -15,7 +25,7 @@
 
   <!-- Liste des situations/matchs -->
   <div *ngIf="!loading" class="situationsMatchs-grid">
-    <mat-card *ngFor="let situationMatch of situationsMatchs" class="situationmatch-card">
+    <mat-card *ngFor="let situationMatch of filteredSituationsMatchs" class="situationmatch-card entity-card">
       <!-- En-tête de la carte -->
       <div class="card-header">
         <div class="title-section">
@@ -27,6 +37,9 @@
         
         <!-- Actions -->
         <div class="card-actions">
+          <button class="btn-icon" (click)="ouvrirVueSituationMatch(situationMatch)" title="Voir">
+            <i class="material-icons">visibility</i>
+          </button>
           <button class="btn-icon" (click)="modifierSituationMatch(situationMatch.id!)" title="Modifier">
             <i class="material-icons">edit</i>
           </button>
@@ -83,7 +96,7 @@
   </div>
 
   <!-- Message si aucune situation/match -->
-  <div *ngIf="!loading && situationsMatchs.length === 0" class="empty-state">
+  <div *ngIf="!loading && filteredSituationsMatchs.length === 0" class="empty-state">
     <mat-icon class="empty-icon">sports_soccer</mat-icon>
     <h2>Aucune situation ou match</h2>
     <p>Commencez par créer votre première situation ou match d'entraînement.</p>

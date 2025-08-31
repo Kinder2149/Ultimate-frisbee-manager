@@ -1,0 +1,76 @@
+<mat-card>
+  <mat-card-header>
+    <mat-icon>account_circle</mat-icon>
+    <div class="title">Mon profil</div>
+  </mat-card-header>
+  <mat-card-content>
+    <div *ngIf="loading" style="display:flex; align-items:center; gap:8px;">
+      <mat-progress-spinner diameter="22" mode="indeterminate"></mat-progress-spinner>
+      <span>Chargement du profil...</span>
+    </div>
+
+    <div *ngIf="!loading">
+      <app-user-profile-card [user]="(user$ | async)"></app-user-profile-card>
+
+      <!-- Upload avatar -->
+      <div style="display:flex; align-items:center; gap:12px; margin-top:12px;">
+        <img *ngIf="(user$ | async)?.iconUrl" [src]="(user$ | async)?.iconUrl" alt="avatar" style="width:48px; height:48px; border-radius:50%; object-fit:cover; border:1px solid rgba(0,0,0,0.1)" />
+        <input type="file" accept="image/*" (change)="onFileSelected($event)" />
+        <button mat-stroked-button color="primary" type="button" (click)="uploadIcon()" [disabled]="!selectedFile || loading">
+          <mat-icon style="margin-right:6px;">upload</mat-icon>
+          Mettre à jour l'avatar
+        </button>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" class="profile-form" style="margin-top:16px; display:grid; gap:12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));">
+        <mat-form-field appearance="outline">
+          <mat-label>Prénom</mat-label>
+          <input matInput formControlName="prenom" placeholder="Votre prénom" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Nom</mat-label>
+          <input matInput formControlName="nom" placeholder="Votre nom" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" style="grid-column: span 2; max-width: 520px;">
+          <mat-label>Email</mat-label>
+          <input matInput formControlName="email" type="email" placeholder="nom@domaine.com" />
+          <mat-error *ngIf="form.get('email')?.hasError('email')">Email invalide</mat-error>
+          <mat-error *ngIf="form.get('email')?.hasError('required')">Email requis</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" style="grid-column: span 2;">
+          <mat-label>URL de l'icône (avatar)</mat-label>
+          <input matInput formControlName="iconUrl" placeholder="https://..." />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" style="grid-column: span 2; max-width: 520px;">
+          <mat-label>Nouveau mot de passe</mat-label>
+          <input matInput formControlName="password" type="password" placeholder="Laissez vide pour ne pas changer" />
+          <mat-hint>Au moins 6 caractères</mat-hint>
+        </mat-form-field>
+
+        <ng-container *ngIf="isAdmin">
+          <mat-form-field appearance="outline">
+            <mat-label>Rôle</mat-label>
+            <mat-select formControlName="role">
+              <mat-option value="user">Utilisateur</mat-option>
+              <mat-option value="admin">Administrateur</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-slide-toggle formControlName="isActive" style="align-self:center;">Compte actif</mat-slide-toggle>
+        </ng-container>
+
+        <div style="grid-column: 1 / -1; display:flex; gap:12px; justify-content:flex-end; margin-top:8px;">
+          <button mat-stroked-button type="button" (click)="resetForm()" [disabled]="loading">Réinitialiser</button>
+          <button mat-flat-button color="primary" type="submit" [disabled]="loading || form.invalid">
+            <mat-icon style="margin-right:6px;">save</mat-icon>
+            Enregistrer
+          </button>
+        </div>
+      </form>
+    </div>
+  </mat-card-content>
+</mat-card>

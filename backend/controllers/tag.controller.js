@@ -187,31 +187,62 @@ exports.updateTag = async (req, res) => {
 exports.deleteTag = async (req, res) => {
   try {
     const { id } = req.params;
-    
-    // Vérifier si le tag existe
+    const force = String(req.query.force || '').toLowerCase() === 'true';
+
+    // Vérifier si le tag existe et récupérer les décomptes d'utilisation
     const tag = await prisma.tag.findUnique({
       where: { id },
-      include: { exercices: true }
+      select: {
+        id: true,
+        label: true,
+        _count: {
+          select: {
+            exercices: true,
+            entrainements: true,
+            situationsMatchs: true
+          }
+        }
+      }
     });
-    
+
     if (!tag) {
       return res.status(404).json({ error: 'Tag non trouvé' });
     }
-    
-    // Vérifier si le tag est utilisé par des exercices
-    if (tag.exercices.length > 0) {
+
+    const usages = tag._count;
+    const totalUsages = usages.exercices + usages.entrainements + usages.situationsMatchs;
+
+    if (totalUsages > 0 && !force) {
       return res.status(409).json({
-        error: 'Ce tag est utilisé par des exercices. Veuillez d\'abord retirer ce tag des exercices concernés.',
-        exercicesCount: tag.exercices.length
+        error: 'Ce tag est utilisé par des entités. Vous pouvez retirer le tag des entités ou forcer la suppression.',
+        exercicesCount: usages.exercices,
+        entrainementsCount: usages.entrainements,
+        situationsCount: usages.situationsMatchs
       });
     }
-    
-    // Supprimer le tag
+
+    if (totalUsages > 0 && force) {
+      // Détacher toutes les relations puis supprimer dans une transaction
+      await prisma.$transaction(async (tx) => {
+        // Déconnecter des relations M-N en vidant les sets
+        await tx.tag.update({
+          where: { id },
+          data: {
+            exercices: { set: [] },
+            entrainements: { set: [] },
+            situationsMatchs: { set: [] }
+          }
+        });
+        await tx.tag.delete({ where: { id } });
+      });
+      return res.status(204).send();
+    }
+
+    // Aucun usage: suppression simple
     await prisma.tag.delete({ where: { id } });
-    
-    res.status(204).send(); // No Content
+    return res.status(204).send();
   } catch (error) {
     console.error('Erreur lors de la suppression du tag:', error);
-    res.status(500).json({ error: 'Erreur serveur lors de la suppression du tag' });
+    return res.status(500).json({ error: 'Erreur serveur lors de la suppression du tag', details: error.message });
   }
 };

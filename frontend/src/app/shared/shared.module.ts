@@ -16,6 +16,10 @@ import { MapperService } from './services/mapper.service';
 import { ErrorHandlerService } from './services/error-handler.service';
 import { ValidationService } from './services/validation.service';
 
+// Composants et interfaces exportés
+export { ConfirmationDialogComponent } from './components/confirmation-dialog/confirmation-dialog.component';
+export { ConfirmationDialogData } from './components/confirmation-dialog/confirmation-dialog.component';
+
 /**
  * Module partagé regroupant tous les composants, directives, pipes et services réutilisables
  * Ce module doit être importé dans chaque module de fonctionnalité ayant besoin

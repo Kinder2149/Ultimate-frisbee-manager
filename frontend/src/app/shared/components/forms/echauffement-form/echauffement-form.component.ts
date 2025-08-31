@@ -7,6 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatSelectModule } from '@angular/material/select';
 
 import { Echauffement, BlocEchauffement } from '../../../../core/models/echauffement.model';
 
@@ -27,7 +28,8 @@ export interface EchauffementFormData {
     MatInputModule,
     MatButtonModule,
     MatIconModule,
-    MatDividerModule
+    MatDividerModule,
+    MatSelectModule
   ],
   templateUrl: './echauffement-form.component.html',
   styleUrls: ['./echauffement-form.component.scss']
@@ -47,10 +49,7 @@ export class EchauffementFormComponent implements OnInit, OnChanges {
   }
 
   ngOnInit(): void {
-    if (!this.isEditMode) {
-      // Ajouter un bloc par défaut pour un nouvel échauffement
-      this.ajouterBloc();
-    }
+    // Ne pas ajouter de bloc par défaut
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -62,7 +61,8 @@ export class EchauffementFormComponent implements OnInit, OnChanges {
   private createForm(): FormGroup {
     return this.fb.group({
       nom: ['', [Validators.required, Validators.minLength(3)]],
-      description: ['', [Validators.required, Validators.minLength(10)]],
+      // Description optionnelle, pas de contrainte de longueur minimale
+      description: [''],
       blocs: this.fb.array([])
     });
   }
@@ -72,16 +72,37 @@ export class EchauffementFormComponent implements OnInit, OnChanges {
   }
 
   private createBlocFormGroup(bloc?: BlocEchauffement): FormGroup {
+    const parsedTemps = this.parseTemps(bloc?.temps || '');
     return this.fb.group({
       id: [bloc?.id || ''],
       ordre: [bloc?.ordre || this.blocsFormArray.length + 1],
       titre: [bloc?.titre || '', [Validators.required]],
       repetitions: [bloc?.repetitions || ''],
-      temps: [bloc?.temps || ''],
+      // UI controls for numeric time and unit (min/sec)
+      tempsValeur: [parsedTemps.valeur, [Validators.min(0)]],
+      tempsUnite: [parsedTemps.unite],
       informations: [bloc?.informations || ''],
       fonctionnement: [bloc?.fonctionnement || ''],
       notes: [bloc?.notes || '']
     });
+  }
+
+  private parseTemps(temps: string): { valeur: number | null; unite: 'min' | 'sec' } {
+    if (!temps || typeof temps !== 'string') {
+      return { valeur: null, unite: 'min' };
+    }
+    const trimmed = temps.trim().toLowerCase();
+    // Try patterns like "5 min", "30 sec", "5m", "30s", or pure number defaults to min
+    const regex = /^(\d+(?:[\.,]\d+)?)\s*(min|m|sec|s)?$/i;
+    const match = trimmed.match(regex);
+    if (match) {
+      const rawVal = match[1]?.replace(',', '.') || '';
+      const num = rawVal ? Number(rawVal) : NaN;
+      const unitRaw = (match[2] || 'min').toLowerCase();
+      const unit: 'min' | 'sec' = unitRaw.startsWith('s') ? 'sec' : 'min';
+      return { valeur: isNaN(num) ? null : num, unite: unit };
+    }
+    return { valeur: null, unite: 'min' };
   }
 
   ajouterBloc(): void {
@@ -90,7 +111,7 @@ export class EchauffementFormComponent implements OnInit, OnChanges {
   }
 
   supprimerBloc(index: number): void {
-    if (this.blocsFormArray.length > 1) {
+    if (this.blocsFormArray.length > 0) {
       this.blocsFormArray.removeAt(index);
       this.updateOrdreBlocs();
     }
@@ -135,9 +156,6 @@ export class EchauffementFormComponent implements OnInit, OnChanges {
       echauffement.blocs.forEach(bloc => {
         this.blocsFormArray.push(this.createBlocFormGroup(bloc));
       });
-    } else {
-      // Ajouter un bloc par défaut si aucun bloc n'existe
-      this.ajouterBloc();
     }
   }
 
@@ -148,10 +166,22 @@ export class EchauffementFormComponent implements OnInit, OnChanges {
       const echauffementData: EchauffementFormData = {
         nom: formData.nom,
         description: formData.description,
-        blocs: formData.blocs.map((bloc: any, index: number) => ({
-          ...bloc,
-          ordre: index + 1
-        }))
+        blocs: formData.blocs.map((bloc: any, index: number) => {
+          const valeur = bloc.tempsValeur;
+          const unite = bloc.tempsUnite as ('min'|'sec');
+          const temps = (valeur === null || valeur === undefined || valeur === '')
+            ? ''
+            : `${valeur} ${unite}`;
+          const {
+            tempsValeur, tempsUnite,
+            ...rest
+          } = bloc;
+          return {
+            ...rest,
+            temps,
+            ordre: index + 1
+          };
+        })
       };
 
       this.formSubmit.emit(echauffementData);

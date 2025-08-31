@@ -147,26 +147,19 @@ export class HttpGenericService {
    * @returns Observable d'erreur
    */
   private handleError(error: HttpErrorResponse): Observable<never> {
-    let errorMessage = '';
-    
-    if (error.error instanceof ErrorEvent) {
-      // Erreur côté client
-      errorMessage = `Erreur: ${error.error.message}`;
-    } else {
-      // Erreur côté serveur
-      errorMessage = `Code: ${error.status}, Message: ${error.message}`;
-      
-      // Ajouter des détails supplémentaires si disponibles
-      if (error.error && typeof error.error === 'object') {
-        const serverError = error.error;
-        if (serverError.message) {
-          errorMessage += ` - ${serverError.message}`;
-        }
-      }
+    // Log détaillé mais on relance l'objet HttpErrorResponse pour préserver status, error, headers, etc.
+    try {
+      const details = {
+        status: error.status,
+        statusText: error.statusText,
+        url: error.url,
+        error: error.error
+      };
+      console.error('Erreur HTTP:', details);
+    } catch {
+      console.error('Erreur HTTP:', error);
     }
-    
-    console.error('Erreur HTTP:', errorMessage);
-    return throwError(() => new Error(errorMessage));
+    return throwError(() => error);
   }
 
   /**

@@ -16,22 +16,36 @@ const situationMatchRoutes = require('./situationmatch.routes');
 // Routes pour le dashboard
 const dashboardRoutes = require('./dashboard.routes');
 
+// Routes d'authentification
+const authRoutes = require('./auth.routes');
+
+// Routes admin
+const adminRoutes = require('./admin.routes');
+
+// Routes d'import
+const importRoutes = require('./import.routes');
+ 
+ // Route de santé (publique)
+ const healthRoutes = require('./health.routes');
+
+// Middleware d'authentification
+const { authenticateToken } = require('../middleware/auth.middleware');
+
 module.exports = (app) => {
-  // Préfixe /api pour toutes les routes
-  app.use('/api/exercices', exerciceRoutes);
-  app.use('/api/tags', tagRoutes);
+  // Routes publiques (authentification)
+  app.use('/api/auth', authRoutes);
+  // Route publique de santé
+  app.use('/api/health', healthRoutes);
   
-  // Routes pour les entraînements simplifiés
-  app.use('/api/entrainements', entrainementRoutes);
-  
-  // Routes pour les échauffements
-  app.use('/api/echauffements', echauffementRoutes);
-  
-  // Routes pour les situations/matchs
-  app.use('/api/situations-matchs', situationMatchRoutes);
-  
-  // Routes pour le dashboard
-  app.use('/api/dashboard', dashboardRoutes);
+  // Routes protégées (nécessitent authentification)
+  app.use('/api/exercices', authenticateToken, exerciceRoutes);
+  app.use('/api/tags', authenticateToken, tagRoutes);
+  app.use('/api/entrainements', authenticateToken, entrainementRoutes);
+  app.use('/api/echauffements', authenticateToken, echauffementRoutes);
+  app.use('/api/situations-matchs', authenticateToken, situationMatchRoutes);
+  app.use('/api/dashboard', authenticateToken, dashboardRoutes);
+  app.use('/api/import', authenticateToken, importRoutes);
+  app.use('/api/admin', adminRoutes);
   
   // Route d'accueil de l'API
   app.get('/api', (req, res) => {
@@ -44,7 +58,9 @@ module.exports = (app) => {
         entrainements: '/api/entrainements',
         echauffements: '/api/echauffements',
         situationsMatchs: '/api/situations-matchs',
-        dashboard: '/api/dashboard'
+        dashboard: '/api/dashboard',
+        admin: '/api/admin',
+        import: '/api/import'
       }
     });
   });

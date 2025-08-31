@@ -1,42 +1,80 @@
-import { Component, OnInit, ElementRef, HostListener, Input, Output, EventEmitter, ViewChild } from '@angular/core';
+// Angular Core
+import { Component, ElementRef, EventEmitter, Inject, Input, OnDestroy, OnInit, Optional, Output, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ExerciceService } from '../../../../core/services/exercice.service';
-import { TagService } from '../../../../core/services/tag.service';
-import { Exercice } from '../../../../core/models/exercice.model';
-import { Tag, TagCategory } from '../../../../core/models/tag.model';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormArray, FormControl } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
 
-// Import du composant personnalisé de variables d'exercice
-import { ExerciceVariablesComponent, ExerciceVariables } from '../../../../shared/components/exercice-variables/exercice-variables.component';
-
-// Material Imports
+// Angular Material
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
+
+// RxJS
+import { Observable, of, Subject, throwError } from 'rxjs';
+import { catchError, map, startWith, switchMap, takeUntil, tap } from 'rxjs/operators';
+
+// Modèles
+import { Exercice } from '../../../../core/models/exercice.model';
+import { Tag, TagCategory } from '../../../../core/models/tag.model';
+
+// Services
+import { ApiUrlService } from '../../../../core/services/api-url.service';
+import { ExerciceService } from '../../../../core/services/exercice.service';
+import { TagService } from '../../../../core/services/tag.service';
+
+// Composants partagés
+import { ConfirmationDialogComponent, ConfirmationDialogData } from '../../../../shared/shared.module';
+import { ExerciceVariablesComponent } from '../../../../shared/components/exercice-variables/exercice-variables.component';
+
+interface ExerciceVariables {
+  nbJoueurs?: string;
+  nbEquipes?: string;
+  duree?: string;
+  espace?: string;
+  materiel?: string;
+  consignes?: string;
+  variantes?: string;
+  pointsAttention?: string;
+  objectifsPedagogiques?: string;
+  variablesPlus?: any[];
+  variablesMinus?: any[];
+  [key: string]: any; // Pour permettre l'accès par index
+}
+
+// Interface pour les propriétés du tag
+interface TagProperties {
+  id: string;
+  label: string;
+  description?: string;
+  [key: string]: any;
+}
 
 /**
  * Composant de formulaire de création et édition d'exercices
  * Permet d'ajouter un nouvel exercice ou de modifier un exercice existant avec des tags associés
- * Fonctionne en deux modes : création et édition
+ * Fonctionne en trois modes : création, édition et visualisation
  */
 @Component({
   selector: 'app-exercice-form',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     ReactiveFormsModule,
     RouterModule,
     MatButtonModule,
     MatCardModule,
     MatChipsModule,
+    MatDialogModule,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
@@ -46,876 +84,792 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     ExerciceVariablesComponent
   ],
   templateUrl: './exercice-form.component.html',
-  styleUrls: ['./exercice-form.component.css']
+  styleUrls: ['./exercice-form.component.css'],
+  host: {
+    class: 'block h-full overflow-auto p-4'
+  }
 })
-export class ExerciceFormComponent implements OnInit {
-  exerciceForm: FormGroup = this.formBuilder.group({
-    nom: ['', Validators.required],
-    description: ['', Validators.required],
-    objectif: ['', Validators.required],
-    imageUrl: [''],
-    schemaUrl: [''],
-    variables: [{ variablesPlus: [], variablesMinus: [] }],
-    // Ajout de contrôles pour les autres catégories de tags pour assurer la détection des changements
-    niveauTags: [''],
-    tempsTags: [''], 
-    formatTags: ['']
-  });
-  submitted = false;
-  successMessage: string = '';
-  errorMessage: string = '';
+export class ExerciceFormComponent implements OnInit, OnDestroy {
+  // Propriétés du formulaire
+  exerciceForm!: FormGroup;
   
-  // Mode édition - peut être contrôlé depuis l'extérieur ou en interne
-  @Input() editMode: boolean = false;
+  // Propriétés d'entrée et de sortie
+  @Input() mode: 'create' | 'edit' | 'view' = 'create';
+  @Input() exercice: Partial<Exercice> = {};
   @Input() exerciceToEdit: Exercice | null = null;
-  @Input() ignoreRouteParams: boolean = false;
-  exerciceId: string | null = null;
+  @Input() isSubmitDisabled = false;
+  @Input() ignoreRouteParams = false;
   
-  // Référence au composant de variables pour migration si nécessaire
-  @ViewChild(ExerciceVariablesComponent) variablesComponent?: ExerciceVariablesComponent;
+  /**
+   * Getter pour accéder facilement aux contrôles du formulaire
+   */
+  get f() { 
+    return this.exerciceForm.controls; 
+  }
+
+  /**
+   * Alias pour la compatibilité avec le template
+   */
+  get editMode(): boolean { 
+    return this.mode === 'edit'; 
+  }
   
-  // Événements pour notifier le parent
+  // Événements de sortie
+  @Output() cancel = new EventEmitter<void>();
+  @Output() submit = new EventEmitter<Exercice>();
   @Output() exerciceCreated = new EventEmitter<Exercice>();
   @Output() exerciceUpdated = new EventEmitter<Exercice>();
   @Output() formCancelled = new EventEmitter<void>();
   
-  // Tableaux pour les tags sélectionnés
+  // Variables de l'exercice
+  private exerciceVars: ExerciceVariables = {};
+  exerciceId: string | null = null;
+  
+  // Propriétés pour la gestion des tags
+  allTags: Tag[] = [];
+  objectifTags: Tag[] = [];
+  selectedTags: Tag[] = [];
+  filteredTags: Tag[] = [];
+  selectedTagCategory: TagCategory | 'all' = 'all';
+  tagSearchQuery = '';
+  
+  // Propriétés pour la gestion des tags sélectionnés
+  selectedObjectifTag: Tag | null = null;
   selectedTravailSpecifiqueTags: Tag[] = [];
   selectedNiveauTags: Tag[] = [];
-  selectedObjectifTag: Tag | null = null;
   selectedTempsTags: Tag[] = [];
   selectedFormatTags: Tag[] = [];
   
-  // Listes des tags disponibles par catégorie
-  objectifTags: Tag[] = [];
-  travailSpecifiqueTags: Tag[] = [];
-  niveauTags: Tag[] = [];
-  tempsTags: Tag[] = [];
-  formatTags: Tag[] = [];
+  // Propriétés pour la gestion des images
+  selectedImageFile: File | null = null;
+  uploading = false;
+  imagePreview: string | ArrayBuffer | null = null;
   
-  // Filtres pour l'autocomplétion
-  travailSpecifiqueFilter: string = '';
-  niveauFilter: string = '';
-  tempsFilter: string = '';
-  formatFilter: string = '';
+  // Propriétés pour les dropdowns
+  showTravailSpecifiqueDropdown = false;
+  showObjectifDropdown = false;
+  showNiveauDropdown = false;
+  showTempsDropdown = false;
+  showFormatDropdown = false;
   
-  // Interface pour gérer l'affichage des options filtrées
+  // Filtres pour les tags
   filteredTravailSpecifiqueTags: Tag[] = [];
+  filteredObjectifTags: Tag[] = [];
   filteredNiveauTags: Tag[] = [];
   filteredTempsTags: Tag[] = [];
   filteredFormatTags: Tag[] = [];
   
-  // État des dropdowns
-  showTravailSpecifiqueDropdown: boolean = false;
-  showNiveauDropdown: boolean = false;
-  showTempsDropdown: boolean = false;
-  showFormatDropdown: boolean = false;
-
-  /**
-   * Gestionnaire de clics sur le document pour fermer les dropdowns
-   * @param event L'événement de clic
-   */
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent): void {
-    // Vérifier si le clic est en dehors des conteneurs d'autocomplete
-    const travailSpecifiqueContainer = document.querySelector('#travailSpecifiqueSearch')?.closest('.autocomplete-container');
-    // Variable container supprimé
-    const niveauContainer = document.querySelector('#niveauSearch')?.closest('.autocomplete-container');
-    const tempsContainer = document.querySelector('#tempsSearch')?.closest('.autocomplete-container');
-    const formatContainer = document.querySelector('#formatSearch')?.closest('.autocomplete-container');
-    
-    // Fermer la dropdown des éléments si le clic est en dehors
-    if (travailSpecifiqueContainer && !travailSpecifiqueContainer.contains(event.target as Node)) {
-      this.showTravailSpecifiqueDropdown = false;
-    }
-    
-    // Dropdown des variables supprimée
-    
-    // Fermer la dropdown des niveaux si le clic est en dehors
-    if (niveauContainer && !niveauContainer.contains(event.target as Node)) {
-      this.showNiveauDropdown = false;
-    }
-    
-    // Fermer la dropdown des temps si le clic est en dehors
-    if (tempsContainer && !tempsContainer.contains(event.target as Node)) {
-      this.showTempsDropdown = false;
-    }
-    
-    // Fermer la dropdown des formats si le clic est en dehors
-    if (formatContainer && !formatContainer.contains(event.target as Node)) {
-      this.showFormatDropdown = false;
-    }
-  }
+  // Mode lecture seule
+  readonlyMode = false;
   
+  // États supplémentaires
+  submitted = false;
+  loading = false;
+  loadingTags = false;
+  submitting = false;
+  schemaPreview: string | ArrayBuffer | null = null;
+  
+  // Références aux éléments du DOM
+  @ViewChild('imageInput') imageInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('schemaInput') schemaInput!: ElementRef<HTMLInputElement>;
+  
+  // Sujet pour la gestion des abonnements
+  private destroy$ = new Subject<void>();
+  
+  // Messages et états
+  isSubmitted = false;
+  successMessage = '';
+  errorMessage: string | null = null;
+
   constructor(
-    private formBuilder: FormBuilder,
     private exerciceService: ExerciceService,
     private tagService: TagService,
     private route: ActivatedRoute,
-    private router: Router
-  ) { }
+    private router: Router,
+    private apiUrlService: ApiUrlService,
+    private snackBar: MatSnackBar,
+    private fb: FormBuilder,
+    private http: HttpClient,
+    private dialog: MatDialog,
+    @Optional() public dialogRef?: MatDialogRef<ExerciceFormComponent>,
+    @Optional() @Inject(MAT_DIALOG_DATA) public data?: any
+  ) {
+    
+    // Initialiser le formulaire
+    this.exerciceForm = this.fb.group({
+      nom: ['', [Validators.required]],
+      description: ['', [Validators.required]],
+      objectif: [''],
+      imageUrl: [''],
+      schemaUrl: [''],
+      materiel: [''],
+      notes: [''],
+      // 'variables' est un FormControl pour fonctionner avec le CVA <app-exercice-variables>
+      variables: new FormControl({ variablesPlus: [], variablesMinus: [] })
+    });
+    
+    // Initialiser le mode et les données en fonction des paramètres
+    if (this.data && this.data.customData) {
+      const cd = this.data.customData as { mode?: 'create'|'edit'|'view'; exercice?: any };
+      this.mode = cd.mode || 'create';
+      // Lorsqu'on ouvre via un dialogue, on doit ignorer les paramètres de route
+      this.ignoreRouteParams = true;
+      // Définir immédiatement le mode lecture seule si besoin
+      this.readonlyMode = this.mode === 'view';
+      
+      if (cd.exercice) {
+        this.exercice = { ...cd.exercice };
+        this.exerciceId = this.exercice.id || null;
+      }
+    }
+  }
+
+  // plus de FormArray internes: le CVA gère l'état des variables
 
   ngOnInit(): void {
+    // Mettre à jour le mode lecture seule en fonction du mode
+    this.readonlyMode = this.mode === 'view';
+    
     // Initialiser le formulaire
     this.initForm();
     
-    // Charger les tags pour les autocompletes
-    this.loadAllTags();
+    // Charger les tags
+    this.loadTags();
     
-    // Vérifier si on est en mode édition
-    if (this.exerciceToEdit) {
-      // Mode intégré avec @Input
-      this.exerciceId = this.exerciceToEdit.id as string;
-      this.editMode = true;
-      this.populateFormWithExercice(this.exerciceToEdit);
-    } else if (!this.editMode && !this.ignoreRouteParams) {
-      // Mode autonome, utiliser les paramètres de l'URL seulement si pas en mode modal
-      this.route.paramMap.subscribe(params => {
+    // Lire les paramètres de route si applicable
+    if (!this.ignoreRouteParams) {
+      // Déterminer le mode depuis les route data (ex: { formMode: 'edit' })
+      this.route.data.pipe(takeUntil(this.destroy$)).subscribe((data) => {
+        const formMode = data && (data as any)['formMode'];
+        if (formMode === 'edit') {
+          this.mode = 'edit';
+          this.readonlyMode = false;
+        } else if (formMode === 'add') {
+          this.mode = 'create';
+          this.readonlyMode = false;
+        } else if (formMode === 'view') {
+          this.mode = 'view';
+          this.readonlyMode = true;
+        }
+      });
+
+      // Récupérer l'ID depuis l'URL /exercices/modifier/:id
+      this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((params) => {
         const id = params.get('id');
-        if (id) {
-          this.exerciceId = id as string;
-          this.editMode = true;
+        if (id && id !== this.exerciceId) {
+          this.exerciceId = id;
           this.loadExercice(id);
         }
       });
+    } else if (this.exerciceId) {
+      // Mode intégration par Input/Data: charger si déjà connu
+      this.loadExercice(this.exerciceId);
     }
-  }
-  
-  /**
-   * Charge un exercice existant pour édition
-   * @param id Identifiant de l'exercice à modifier
-   */
-  loadExercice(id: string): void {
-    this.exerciceService.getExerciceById(id).subscribe({
-      next: (exercice: any) => { // Type temporaire any pour éviter les erreurs de compilation
-        if (!exercice) {
-          this.errorMessage = 'Exercice non trouvé';
-          // Rediriger vers la liste des exercices si l'exercice n'existe pas
-          setTimeout(() => {
-            this.router.navigate(['/exercices']);
-          }, 2000);
-          return;
-        }
-        
-        this.populateFormWithExercice(exercice);
-      },
-      error: (err) => {
-        console.error('Erreur lors du chargement de l\'exercice', err);
-        this.errorMessage = 'Exercice non trouvé - Redirection vers la liste...';
-        // Rediriger vers la liste des exercices en cas d'erreur 404
-        setTimeout(() => {
-          this.router.navigate(['/exercices']);
-        }, 2000);
-      }
-    });
   }
 
   /**
-   * Remplit le formulaire avec les données d'un exercice
-   * @param exercice L'exercice à utiliser pour remplir le formulaire
+   * Charge les tags disponibles depuis le service
    */
-  populateFormWithExercice(exercice: any): void {
-    console.log('Remplissage du formulaire avec exercice:', exercice);
-    
-    // Stocker une copie de l'exercice courant pour référence ultérieure
-    this.exerciceService.setCurrentExercice(exercice);
-    
-    // Définir le mode édition et stocker l'ID
-    this.editMode = true;
-    this.exerciceId = exercice.id;
-    
-    // Réinitialiser les tableaux de tags sélectionnés pour éviter les doublons
-    this.selectedTravailSpecifiqueTags = [];
-    this.selectedNiveauTags = [];
-    this.selectedObjectifTag = null;
-    this.selectedTempsTags = [];
-    this.selectedFormatTags = [];
-    
-    // Préparation des variables (traitement spécial pour garantir la persistance)
-    let variablesPlus = [];
-    let variablesMinus = [];
-    
-    // Vérifier si variablesPlus existe et traiter selon son type
-    if (exercice.variablesPlus) {
-      if (Array.isArray(exercice.variablesPlus)) {
-        variablesPlus = [...exercice.variablesPlus];
-      } else if (typeof exercice.variablesPlus === 'string') {
-        // Convertir la chaîne en tableau si c'est une chaîne
-        variablesPlus = exercice.variablesPlus
-          .split('\n')
-          .map((v: string) => v.trim())
-          .filter((v: string) => v !== '');
-      }
-    }
-    
-    // Vérifier si variablesMinus existe et traiter selon son type
-    if (exercice.variablesMinus) {
-      if (Array.isArray(exercice.variablesMinus)) {
-        variablesMinus = [...exercice.variablesMinus];
-      } else if (typeof exercice.variablesMinus === 'string') {
-        // Convertir la chaîne en tableau si c'est une chaîne
-        variablesMinus = exercice.variablesMinus
-          .split('\n')
-          .map((v: string) => v.trim())
-          .filter((v: string) => v !== '');
-      }
-    }
-    
-    // Remplir les valeurs du formulaire
+  private loadTags(): void {
+    this.loadingTags = true;
+    this.tagService.getTags()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (tags: Tag[]) => {
+          this.allTags = tags;
+          this.filteredTags = [...tags];
+
+          // Répartition par catégories pour les dropdowns
+          this.objectifTags = this.allTags.filter(t => t.category === TagCategory.OBJECTIF);
+          const travailTags = this.allTags.filter(t => t.category === TagCategory.TRAVAIL_SPECIFIQUE);
+          const niveauTags = this.allTags.filter(t => t.category === TagCategory.NIVEAU);
+          const tempsTags = this.allTags.filter(t => t.category === TagCategory.TEMPS);
+          const formatTags = this.allTags.filter(t => t.category === TagCategory.FORMAT);
+
+          // Initialiser les listes filtrées affichées dans les menus
+          this.filteredTravailSpecifiqueTags = [...travailTags];
+          this.filteredObjectifTags = [...this.objectifTags];
+          this.filteredNiveauTags = [...niveauTags];
+          this.filteredTempsTags = [...tempsTags];
+          this.filteredFormatTags = [...formatTags];
+
+          // Si un exercice est déjà chargé mais ne contient que des tagIds, mapper maintenant
+          if (this.exercice) {
+            const ex: any = this.exercice as any;
+            if ((!this.selectedTags || this.selectedTags.length === 0)) {
+              if (Array.isArray(ex.tags) && ex.tags.length) {
+                this.selectedTags = [...ex.tags];
+                this.distributeTagsByCategory();
+              } else if (Array.isArray(ex.tagIds) && ex.tagIds.length) {
+                this.selectedTags = this.allTags.filter(t => ex.tagIds.includes(t.id));
+                this.distributeTagsByCategory();
+              }
+            }
+            // Déduire l'objectif à partir du champ texte si nécessaire
+            if (!this.selectedObjectifTag && ex['objectif']) {
+              const match = this.objectifTags.find(t => (t as any).label === ex['objectif']);
+              if (match) {
+                this.selectedObjectifTag = match;
+                this.syncSelectedTags();
+              }
+            }
+          }
+
+          this.loadingTags = false;
+        },
+        error: (error) => {
+          this.handleHttpError(error);
+          this.loadingTags = false;
+        }
+      });
+  }
+
+  /**
+   * Charge un exercice existant par son ID
+   * @param id L'identifiant de l'exercice à charger
+   */
+  private loadExercice(id: string): void {
+    this.loading = true;
+    this.exerciceService.getExerciceById(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (exercice) => {
+          this.exercice = exercice;
+          this.updateFormWithExercice(exercice);
+          this.loading = false;
+        },
+        error: (error) => {
+          this.handleHttpError(error);
+          this.loading = false;
+        }
+      });
+  }
+
+  /**
+   * Met à jour le formulaire avec les données d'un exercice existant
+   */
+  private updateFormWithExercice(exercice: Exercice): void {
+    // Construire l'état des variables à partir des champs renvoyés par le backend
+    this.exerciceVars = {
+      ...(exercice as any).variables, // rétrocompat éventuelle
+      variablesPlus: Array.isArray((exercice as any).variablesPlus) ? (exercice as any).variablesPlus : [],
+      variablesMinus: Array.isArray((exercice as any).variablesMinus) ? (exercice as any).variablesMinus : []
+    } as any;
+
+    // Mettre à jour les champs simples
     this.exerciceForm.patchValue({
       nom: exercice.nom || '',
       description: exercice.description || '',
+      objectif: (exercice as any)['objectif'] || '',
       imageUrl: exercice.imageUrl || '',
-      schemaUrl: exercice.schemaUrl || '',
-      // Passage des variables pré-traitées au ControlValueAccessor
-      variables: {
-        variablesPlus: variablesPlus,
-        variablesMinus: variablesMinus
+      schemaUrl: (exercice as any).schemaUrl || '',
+      materiel: (exercice as any).materiel || '',
+      notes: (exercice as any).notes || ''
+    });
+
+    // Mettre à jour le FormControl 'variables' pour le CVA
+    const variablesControl = this.exerciceForm.get('variables') as FormControl;
+    variablesControl.setValue({
+      variablesPlus: Array.isArray(this.exerciceVars.variablesPlus) ? this.exerciceVars.variablesPlus : [],
+      variablesMinus: Array.isArray(this.exerciceVars.variablesMinus) ? this.exerciceVars.variablesMinus : []
+    }, { emitEvent: false });
+
+    // Tags sélectionnés
+    if ((exercice as any).tags && (exercice as any).tags.length) {
+      // Cas où l'API renvoie directement les objets Tag
+      this.selectedTags = [...(exercice as any).tags];
+      this.distributeTagsByCategory();
+    } else if (Array.isArray((exercice as any).tagIds) && (exercice as any).tagIds.length && this.allTags.length) {
+      // Mapper les IDs -> objets Tag si les tags sont déjà chargés
+      const tagIds: string[] = (exercice as any).tagIds;
+      this.selectedTags = this.allTags.filter(t => !!t.id && tagIds.includes(t.id as string));
+      this.distributeTagsByCategory();
+    } else {
+      // Tags non encore disponibles: seront mappés après loadTags()
+      // Tenter aussi de déduire l'objectif à partir du champ texte
+      const objectifText = (exercice as any)['objectif'];
+      if (objectifText && this.objectifTags.length && !this.selectedObjectifTag) {
+        const match = this.objectifTags.find(t => (t as any).label === objectifText);
+        if (match) {
+          this.selectedObjectifTag = match;
+          this.syncSelectedTags();
+        }
       }
-    });
-    
-    // Log pour débogage
-    console.log('État initial du formulaire après chargement:', {
-      nom: this.exerciceForm.get('nom')?.value,
-      description: this.exerciceForm.get('description')?.value,
-      variables: this.exerciceForm.get('variables')?.value
-    });
-    
-    // Stocker l'ancien texte de variables pour migration ultérieure
-    if (exercice.variablesText && (!exercice.variablesPlus && !exercice.variablesMinus)) {
-      console.log('Migration des anciennes variables détectée:', exercice.variablesText);
-      // On effectuera la migration après l'initialisation de la vue
-      setTimeout(() => {
-        if (this.variablesComponent) {
-          this.variablesComponent.migrateOldVariables(exercice.variablesText);
-        }
-      });
-    }
-    
-    // Récupérer et définir les tags associés à l'exercice
-    if (exercice.exerciceTags) {
-      exercice.exerciceTags.forEach((exerciceTag: any) => {
-        const tag = exerciceTag.tag;
-        if (tag) {
-          // Déterminer la catégorie du tag et l'ajouter au tableau approprié
-          switch (tag.category) {
-            case 'travail_specifique':
-              this.selectedTravailSpecifiqueTags.push(tag);
-              break;
-            case 'objectif':
-              this.selectedObjectifTag = tag;
-              // Mettre à jour le formulaire immédiatement avec la valeur du tag objectif
-              this.exerciceForm.patchValue({
-                objectif: tag.label
-              });
-              console.log('Tag objectif défini:', tag.label);
-              break;
-            case 'niveau':
-              this.selectedNiveauTags.push(tag);
-              break;
-            case 'temps':
-              this.selectedTempsTags.push(tag);
-              break;
-            case 'format':
-              this.selectedFormatTags.push(tag);
-              break;
-            default:
-              console.log(`Tag de catégorie inconnue: ${tag.category}`);
-          }
-        }
-      });
-    } else if (exercice.tagIds && exercice.tags) {
-      // Si l'exercice vient avec des tags dans un format différent (mode intégré)
-      exercice.tags.forEach((tag: Tag) => {
-        switch (tag.category) {
-          case 'travail_specifique':
-            this.selectedTravailSpecifiqueTags.push(tag);
-            break;
-          case 'objectif':
-            this.selectedObjectifTag = tag;
-            // Mettre à jour le formulaire immédiatement avec la valeur du tag objectif
-            this.exerciceForm.patchValue({
-              objectif: tag.label
-            });
-            console.log('Tag objectif défini:', tag.label);
-            break;
-          case 'niveau':
-            this.selectedNiveauTags.push(tag);
-            break;
-          case 'temps':
-            this.selectedTempsTags.push(tag);
-            break;
-          case 'format':
-            this.selectedFormatTags.push(tag);
-            break;
-          default:
-            console.log(`Tag de catégorie inconnue: ${tag.category}`);
-        }
-      });
     }
 
-    // Mettre à jour les listes filtrées en fonction des sélections
-    this.filteredTravailSpecifiqueTags = this.travailSpecifiqueTags.filter(
-      tag => !this.selectedTravailSpecifiqueTags.some(selected => selected.id === tag.id)
-    );
-    
-    this.filteredNiveauTags = this.niveauTags.filter(
-      tag => !this.selectedNiveauTags.some(selected => selected.id === tag.id)
-    );
-    
-    this.filteredTempsTags = this.tempsTags.filter(
-      tag => !this.selectedTempsTags.some(selected => selected.id === tag.id)
-    );
-    
-    this.filteredFormatTags = this.formatTags.filter(
-      tag => !this.selectedFormatTags.some(selected => selected.id === tag.id)
-    );
-    
-    // Afficher l'état initial du formulaire après chargement
-    console.log('État initial du formulaire après chargement:', {
-      niveauTags: this.selectedNiveauTags.length,
-      tempsTags: this.selectedTempsTags.length,
-      formatTags: this.selectedFormatTags.length
-    });
-    
-    // Synchroniser les tableaux de tags avec les contrôles du formulaire
-    this.exerciceForm.patchValue({
-      niveauTags: this.selectedNiveauTags.length > 0 ? this.selectedNiveauTags[0].id : '',
-      tempsTags: this.selectedTempsTags.length > 0 ? this.selectedTempsTags[0].id : '',
-      formatTags: this.selectedFormatTags.length > 0 ? this.selectedFormatTags[0].id : ''
-    });
-    
-    // Vérifier spécifiquement les tags de format
-    if (this.selectedFormatTags.length > 0) {
-      console.log('Format tag synchronisé avec le formulaire:', 
-        this.selectedFormatTags[0].label, 
-        '- Valeur du contrôle:', 
-        this.exerciceForm.get('formatTags')?.value);
-    }
-  }
-  
-  /**
-   * Charge tous les tags depuis l'API et les organise par catégorie
-   */
-  loadAllTags(): void {
-    this.tagService.getTags().subscribe({
-      next: (tags) => {
-        // Répartir les tags par catégorie
-        this.objectifTags = tags.filter(tag => tag.category === 'objectif');
-        this.travailSpecifiqueTags = tags.filter(tag => tag.category === 'travail_specifique');
-        this.niveauTags = tags.filter(tag => tag.category === 'niveau');
-        this.tempsTags = tags.filter(tag => tag.category === 'temps');
-        this.formatTags = tags.filter(tag => tag.category === 'format');
-        
-        // Initialiser les filtres
-        this.filteredTravailSpecifiqueTags = [...this.travailSpecifiqueTags];
-        this.filteredNiveauTags = [...this.niveauTags];
-        this.filteredTempsTags = [...this.tempsTags];
-        this.filteredFormatTags = [...this.formatTags];
-      },
-      error: (err) => {
-        console.error('Erreur lors du chargement des tags:', err);
-        this.errorMessage = 'Impossible de charger les tags. Certaines fonctionnalités peuvent être limitées.';
-      }
-    });
+    // Prévisualisations d'images (utiliser URL résolues pour les chemins relatifs)
+    if (exercice.imageUrl) this.imagePreview = this.apiUrlService.getMediaUrl(exercice.imageUrl);
+    if ((exercice as any).schemaUrl) this.schemaPreview = this.apiUrlService.getMediaUrl((exercice as any).schemaUrl);
   }
 
   /**
-   * Initialiser le formulaire
+   * Initialise le formulaire avec les valeurs par défaut
    */
-  initForm(): void {
-    // Le formulaire est déjà initialisé dans la déclaration de la propriété
-    // On pourrait ajouter d'autres initialisations ici si nécessaire
+  private initForm(): void {
+    // Créer le formulaire avec des valeurs par défaut
+    this.exerciceForm = this.fb.group({
+      nom: [this.exercice?.nom || '', Validators.required],
+      description: [this.exercice?.description || '', Validators.required],
+      objectif: [this.exercice?.['objectif'] || ''],
+      imageUrl: [this.exercice?.imageUrl || ''],
+      schemaUrl: [this.exercice?.schemaUrl || ''],
+      materiel: [(this.exercice as any)?.materiel || ''],
+      notes: [(this.exercice as any)?.notes || ''],
+      variables: new FormControl({
+        variablesPlus: Array.isArray(this.exerciceVars['variablesPlus']) ? this.exerciceVars['variablesPlus'] : [],
+        variablesMinus: Array.isArray(this.exerciceVars['variablesMinus']) ? this.exerciceVars['variablesMinus'] : []
+      })
+    });
+
+    // Mettre à jour les tags sélectionnés
+    if (this.exercice?.tags) {
+      this.selectedTags = [...this.exercice.tags];
+      this.distributeTagsByCategory();
+    }
   }
-  
+
   /**
-   * Getter pour faciliter l'accès aux champs du formulaire dans le template
+   * Synchronise la liste des tags sélectionnés à partir des tableaux par catégorie
    */
-  get f() { return this.exerciceForm.controls; }
-  
-  /**
-   * Filtre les tags de travail spécifique selon la saisie utilisateur
-   * @param filterValue Texte de recherche
-   */
-  filterTravailSpecifiqueTags(filterValue: string): void {
-    const filter = filterValue.toLowerCase();
-    this.filteredTravailSpecifiqueTags = this.travailSpecifiqueTags.filter(tag => 
-      tag.label.toLowerCase().includes(filter)
-    );
+  private syncSelectedTags(): void {
+    // Réinitialiser la liste des tags sélectionnés
+    this.selectedTags = [];
     
-    // Afficher la dropdown quand l'utilisateur tape quelque chose
-    this.showTravailSpecifiqueDropdown = true;
+    // Ajouter le tag objectif s'il existe
+    if (this.selectedObjectifTag) {
+      this.selectedTags.push(this.selectedObjectifTag);
+    }
+    
+    // Ajouter les tags travail spécifique
+    this.selectedTags = [...this.selectedTags, ...this.selectedTravailSpecifiqueTags];
+    
+    // Ajouter les tags niveau
+    this.selectedTags = [...this.selectedTags, ...this.selectedNiveauTags];
+    
+    // Ajouter les tags temps
+    this.selectedTags = [...this.selectedTags, ...this.selectedTempsTags];
+    
+    // Ajouter les tags format
+    this.selectedTags = [...this.selectedTags, ...this.selectedFormatTags];
+    
+    // Éliminer les doublons basés sur l'ID
+    const uniqueTags: {[key: string]: Tag} = {};
+    this.selectedTags.forEach(tag => {
+      if (tag && tag.id) {
+        uniqueTags[tag.id] = tag;
+      }
+    });
+    
+    this.selectedTags = Object.values(uniqueTags);
   }
-  
-  // Méthode filterVariableTags supprimée car la catégorie Variable n'existe plus
-  
+
   /**
-   * Filtre les tags de niveau selon la saisie utilisateur
-   * @param filterValue Texte de recherche
+   * Construit une URL média complète à partir d'un chemin ou URL partielle
    */
-  filterNiveauTags(filterValue: string): void {
-    this.filteredNiveauTags = this.niveauTags.filter(tag => 
-      tag.label.toLowerCase().includes(filterValue.toLowerCase())
-    );
+  mediaUrl(path?: string | null): string | null {
+    return this.apiUrlService.getMediaUrl(path ?? undefined);
   }
-  
+
   /**
-   * Filtre les tags de temps selon la saisie utilisateur
-   * @param filterValue Texte de recherche
+   * Navigation depuis la vue lecture seule
    */
-  filterTempsTags(filterValue: string): void {
-    this.filteredTempsTags = this.tempsTags.filter(tag => 
-      tag.label.toLowerCase().includes(filterValue.toLowerCase())
-    );
+  goBackToList(): void {
+    this.router.navigate(['/exercices']);
   }
-  
-  /**
-   * Filtre les tags de format selon la saisie utilisateur
-   * @param filterValue Texte de recherche
-   */
-  filterFormatTags(filterValue: string): void {
-    this.filteredFormatTags = this.formatTags.filter(tag => 
-      tag.label.toLowerCase().includes(filterValue.toLowerCase())
-    );
+
+  goToEdit(): void {
+    this.mode = 'edit';
+    this.readonlyMode = false;
   }
-  
-  /**
-   * Sélectionne un tag de travail spécifique
-   * @param tag Le tag à ajouter
-   */
+
+  // ---------- Gestion des dropdowns de tags ----------
+  toggleTravailDropdown(): void {
+    this.showTravailSpecifiqueDropdown = !this.showTravailSpecifiqueDropdown;
+  }
+
+  toggleObjectifDropdown(): void {
+    this.showObjectifDropdown = !this.showObjectifDropdown;
+  }
+
+  toggleNiveauDropdown(): void {
+    this.showNiveauDropdown = !this.showNiveauDropdown;
+  }
+
+  toggleTempsDropdown(): void {
+    this.showTempsDropdown = !this.showTempsDropdown;
+  }
+
+  toggleFormatDropdown(): void {
+    this.showFormatDropdown = !this.showFormatDropdown;
+  }
+
+  // ---------- Sélection / retrait des tags par catégorie ----------
   selectTravailSpecifiqueTag(tag: Tag): void {
-    // Ajouter le tag s'il n'est pas déjà présent
+    if (!tag) return;
     if (!this.selectedTravailSpecifiqueTags.some(t => t.id === tag.id)) {
       this.selectedTravailSpecifiqueTags.push(tag);
+      this.syncSelectedTags();
     }
-    
-    // Réinitialiser le champ de recherche
-    this.travailSpecifiqueFilter = '';
-    this.filteredTravailSpecifiqueTags = [...this.travailSpecifiqueTags];
-    
-    // Fermer la dropdown après sélection
     this.showTravailSpecifiqueDropdown = false;
   }
-  
-  /**
-   * Supprime un tag de travail spécifique
-   * @param index L'index du tag à supprimer
-   */
+
   removeTravailSpecifiqueTag(index: number): void {
-    this.selectedTravailSpecifiqueTags.splice(index, 1);
-  }
-  
-  // Méthode selectVariableTag supprimée car la catégorie Variable n'existe plus
-
-  // Méthode removeVariableTag supprimée car la catégorie Variable n'existe plus
-  
-  /**
-   * Vérifie si un tag de niveau est sélectionné
-   * @param tag Le tag à vérifier
-   */
-  isNiveauTagSelected(tag: Tag): boolean {
-    return this.selectedNiveauTags.some(t => t.id === tag.id);
-  }
-
-  /**
-   * Toggle la sélection d'un tag de niveau (préenregistré uniquement)
-   * @param tag Le tag à ajouter/retirer
-   */
-  toggleNiveauTag(tag: Tag): void {
-    const index = this.selectedNiveauTags.findIndex(t => t.id === tag.id);
-    
-    if (index > -1) {
-      // Retirer le tag s'il est déjà sélectionné
-      this.selectedNiveauTags.splice(index, 1);
-      console.log('Niveau tag retiré:', tag.label);
-    } else {
-      // Ajouter le tag s'il n'est pas sélectionné
-      this.selectedNiveauTags.push(tag);
-      console.log('Niveau tag ajouté:', tag.label);
+    if (index >= 0 && index < this.selectedTravailSpecifiqueTags.length) {
+      this.selectedTravailSpecifiqueTags.splice(index, 1);
+      this.syncSelectedTags();
     }
-    
-    // Mettre à jour le contrôle du formulaire
-    this.exerciceForm.patchValue({
-      niveauTags: this.selectedNiveauTags.map(t => t.id).join(',')
-    });
   }
 
-  /**
-   * Supprime un tag de niveau
-   * @param index L'index du tag à supprimer
-   */
-  removeNiveauTag(index: number): void {
-    this.selectedNiveauTags.splice(index, 1);
-    
-    // Mettre à jour le contrôle du formulaire pour déclencher la détection de changement
-    this.exerciceForm.patchValue({
-      niveauTags: this.selectedNiveauTags.map(t => t.id).join(',') 
-    });
-    
-    console.log('Niveau tag supprimé - Total restant:', this.selectedNiveauTags.length);
+  selectNiveauTag(tag: Tag): void {
+    if (!tag) return;
+    if (!this.selectedNiveauTags.some(t => t.id === tag.id)) {
+      this.selectedNiveauTags.push(tag);
+      this.syncSelectedTags();
+    }
+    this.showNiveauDropdown = false;
   }
-  
-  /**
-   * Sélectionne un tag de temps
-   * @param tag Le tag à ajouter
-   */
+
+  removeNiveauTag(index: number): void {
+    if (index >= 0 && index < this.selectedNiveauTags.length) {
+      this.selectedNiveauTags.splice(index, 1);
+      this.syncSelectedTags();
+    }
+  }
+
   selectTempsTag(tag: Tag): void {
-    // Ajouter le tag s'il n'est pas déjà présent
+    if (!tag) return;
     if (!this.selectedTempsTags.some(t => t.id === tag.id)) {
       this.selectedTempsTags.push(tag);
-      
-      // Mettre à jour le contrôle du formulaire pour déclencher la détection de changement
-      this.exerciceForm.patchValue({
-        tempsTags: this.selectedTempsTags.map(t => t.id).join(',') // Format string pour simplicité
-      });
-      
-      console.log('Temps tag ajouté:', tag.label, '- Total:', this.selectedTempsTags.length);
+      this.syncSelectedTags();
     }
-    
-    // Réinitialiser le champ de recherche
-    this.tempsFilter = '';
-    this.filteredTempsTags = [...this.tempsTags];
-    
-    // Fermer la dropdown après sélection
     this.showTempsDropdown = false;
   }
 
-  /**
-   * Supprime un tag de temps
-   * @param index L'index du tag à supprimer
-   */
   removeTempsTag(index: number): void {
-    this.selectedTempsTags.splice(index, 1);
-    
-    // Mettre à jour le contrôle du formulaire pour déclencher la détection de changement
-    this.exerciceForm.patchValue({
-      tempsTags: this.selectedTempsTags.map(t => t.id).join(',') 
-    });
-    
-    console.log('Temps tag supprimé - Total restant:', this.selectedTempsTags.length);
+    if (index >= 0 && index < this.selectedTempsTags.length) {
+      this.selectedTempsTags.splice(index, 1);
+      this.syncSelectedTags();
+    }
   }
-  
-  /**
-   * Sélectionne un tag de format
-   * @param tag Le tag à ajouter
-   */
+
   selectFormatTag(tag: Tag): void {
-    // Ajouter le tag s'il n'est pas déjà présent
+    if (!tag) return;
     if (!this.selectedFormatTags.some(t => t.id === tag.id)) {
       this.selectedFormatTags.push(tag);
-      
-      // Mettre à jour le contrôle du formulaire pour déclencher la détection de changement
-      this.exerciceForm.patchValue({
-        formatTags: this.selectedFormatTags.map(t => t.id).join(',') // Format string pour simplicité
-      });
-      
-      console.log('Format tag ajouté:', tag.label, '- Total:', this.selectedFormatTags.length);
+      this.syncSelectedTags();
     }
-    
-    // Réinitialiser le champ de recherche
-    this.formatFilter = '';
-    this.filteredFormatTags = [...this.formatTags];
-    
-    // Fermer la dropdown après sélection
     this.showFormatDropdown = false;
   }
 
-  /**
-   * Supprime un tag de format
-   * @param index L'index du tag à supprimer
-   */
   removeFormatTag(index: number): void {
-    this.selectedFormatTags.splice(index, 1);
-    
-    // Mettre à jour le contrôle du formulaire pour déclencher la détection de changement
-    this.exerciceForm.patchValue({
-      formatTags: this.selectedFormatTags.map(t => t.id).join(',') 
-    });
-    
-    console.log('Format tag supprimé - Total restant:', this.selectedFormatTags.length);
+    if (index >= 0 && index < this.selectedFormatTags.length) {
+      this.selectedFormatTags.splice(index, 1);
+      this.syncSelectedTags();
+    }
   }
-  
-  /**
-   * Sélectionne un tag d'objectif
-   * @param tag Le tag d'objectif à sélectionner
-   */
-  selectObjectifTag(tag: Tag): void {
-    this.selectedObjectifTag = tag;
-    // Mettre à jour le formulaire pour la compatibilité
-    this.exerciceForm.patchValue({
-      objectif: tag.label
-    });
-  }
-  
-  /**
-   * Gère la soumission du formulaire (création ou modification)
-   */
-  onSubmit(): void {
-    this.submitted = true;
-    
-    // Vérifier l'état global du formulaire pour le débogage
-    console.log('Soumission du formulaire - état actuel:', {
-      formStatus: this.exerciceForm.status,
-      formErrors: this.exerciceForm.errors,
-      editMode: this.editMode,
-      exerciceId: this.exerciceId,
-      currentExerciceInService: this.exerciceService.currentExercice ? 'présent' : 'absent'
-    });
-    
-    // Forcer la synchronisation des tags avec le formulaire
-    if (this.selectedFormatTags.length > 0) {
-      this.exerciceForm.patchValue({
-        formatTags: this.selectedFormatTags[0].id
-      });
-    }
-    
-    // Arrêter si le formulaire est invalide
-    if (this.exerciceForm.invalid) {
-      console.error('Formulaire invalide, champs requis manquants');
-      this.errorMessage = 'Veuillez remplir tous les champs obligatoires.';
-      return;
-    }
-    
-    // Préparer les données pour l'API
-    const formValues = this.exerciceForm.value;
-    
-    // Collecter les IDs de tags (peut contenir undefined pour objectif)
-    const tagIdsWithUndefined = [
-      this.selectedObjectifTag?.id,
-      ...this.selectedTravailSpecifiqueTags.map(tag => tag.id),
-      ...this.selectedNiveauTags.map(tag => tag.id),
-      ...this.selectedTempsTags.map(tag => tag.id),
-      ...this.selectedFormatTags.map(tag => tag.id)
-    ];
-    
-    // Filtrer les éventuelles valeurs undefined
-    const tagIds = tagIdsWithUndefined.filter((id): id is string => id !== undefined);
-    
-    // Récupérer les variables depuis le sous-formulaire variables
-    const variablesFormValue = this.exerciceForm.get('variables')?.value || {};
-    
-    console.log('Valeurs du formulaire variables avant soumission:', variablesFormValue);
-    
-    // Extraire et nettoyer les variables du formulaire
-    let variablesPlus: string[] = [];
-    let variablesMinus: string[] = [];
-    
-    // 1. D'abord essayer de récupérer les valeurs depuis le formulaire
-    if (variablesFormValue) {
-      // Traiter variablesPlus
-      if (variablesFormValue.variablesPlus) {
-        if (Array.isArray(variablesFormValue.variablesPlus)) {
-          variablesPlus = variablesFormValue.variablesPlus
-            .filter((v: any) => v !== null && v !== undefined && (typeof v === 'string' ? v.trim() !== '' : true))
-            .map((v: any) => String(v));
-        } else if (typeof variablesFormValue.variablesPlus === 'string') {
-          variablesPlus = variablesFormValue.variablesPlus
-            .split('\n')
-            .map((v: string) => v.trim())
-            .filter((v: string) => v !== '');
-        }
-      }
-      
-      // Traiter variablesMinus
-      if (variablesFormValue.variablesMinus) {
-        if (Array.isArray(variablesFormValue.variablesMinus)) {
-          variablesMinus = variablesFormValue.variablesMinus
-            .filter((v: any) => v !== null && v !== undefined && (typeof v === 'string' ? v.trim() !== '' : true))
-            .map((v: any) => String(v));
-        } else if (typeof variablesFormValue.variablesMinus === 'string') {
-          variablesMinus = variablesFormValue.variablesMinus
-            .split('\n')
-            .map((v: string) => v.trim())
-            .filter((v: string) => v !== '');
-        }
-      }
-    }
-    
-    // 2. Si nous sommes en mode édition et que le formulaire ne contient pas de variables,
-    // mais qu'un exercice existe dans le service, utiliser ses valeurs
-    if (this.editMode && this.exerciceService.currentExercice) {
-      // Conserver les variables existantes si elles ne sont pas modifiées
-      if ((!variablesPlus || variablesPlus.length === 0) && this.exerciceService.currentExercice.variablesPlus) {
-        console.log('Préservation des variablesPlus existantes:', this.exerciceService.currentExercice.variablesPlus);
-        
-        if (Array.isArray(this.exerciceService.currentExercice.variablesPlus)) {
-          variablesPlus = [...this.exerciceService.currentExercice.variablesPlus];
-        } else if (typeof this.exerciceService.currentExercice.variablesPlus === 'string') {
-          variablesPlus = this.exerciceService.currentExercice.variablesPlus
-            .split('\n')
-            .map((v: string) => v.trim())
-            .filter((v: string) => v !== '');
-        }
-      }
-      
-      if ((!variablesMinus || variablesMinus.length === 0) && this.exerciceService.currentExercice.variablesMinus) {
-        console.log('Préservation des variablesMinus existantes:', this.exerciceService.currentExercice.variablesMinus);
-        
-        if (Array.isArray(this.exerciceService.currentExercice.variablesMinus)) {
-          variablesMinus = [...this.exerciceService.currentExercice.variablesMinus];
-        } else if (typeof this.exerciceService.currentExercice.variablesMinus === 'string') {
-          variablesMinus = this.exerciceService.currentExercice.variablesMinus
-            .split('\n')
-            .map((v: string) => v.trim())
-            .filter((v: string) => v !== '');
-        }
-      }
-    }
 
-    console.log('Variables après conversion/vérification et préservation:', {
-      variablesPlus,
-      variablesMinus
-    });
-      
-    // Créer l'objet exercice
-    const exerciceData: any = {
-      nom: formValues.nom,
-      description: formValues.description || '', // S'assurer que description n'est jamais null/undefined
-      objectif: this.selectedObjectifTag ? this.selectedObjectifTag.label : '',
-      imageUrl: formValues.imageUrl || '',
-      schemaUrl: formValues.schemaUrl || '',
-      variablesPlus: variablesPlus,
-      variablesMinus: variablesMinus,
-      tags: [
-        ...(this.selectedObjectifTag ? [this.selectedObjectifTag] : []),
-        ...this.selectedTravailSpecifiqueTags,
-        ...this.selectedNiveauTags,
-        ...this.selectedTempsTags,
-        ...this.selectedFormatTags
-      ]
+  // ---------- Gestion image (input file) ----------
+  onImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input?.files || input.files.length === 0) return;
+    const file = input.files[0];
+    this.selectedImageFile = file;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.imagePreview = reader.result;
     };
-    
-    console.log('Données de l\'exercice à soumettre:', exerciceData);
-    
-    if (this.editMode && this.exerciceId) {
-      // Mode édition
-      this.updateExercice(this.exerciceId, exerciceData);
-    } else {
-      // Mode création
-      this.createExercice(exerciceData);
+    reader.readAsDataURL(file);
+  }
+
+  clearSelectedImage(): void {
+    this.selectedImageFile = null;
+    this.imagePreview = null;
+    if (this.imageInput?.nativeElement) {
+      this.imageInput.nativeElement.value = '';
     }
   }
   
   /**
-   * Crée un nouvel exercice
-   * @param exerciceData Les données de l'exercice à créer
+   * Répartit les tags sélectionnés dans les tableaux par catégorie
    */
-  createExercice(exerciceData: any): void {
-    this.exerciceService.ajouterExercice(exerciceData).subscribe({
-      next: (createdExercice: Exercice) => {
-        console.log('Exercice créé avec succès:', createdExercice);
-        this.successMessage = 'Exercice créé avec succès!';
-        this.errorMessage = '';
-        
-        // Réinitialiser le formulaire
-        this.resetForm();
-        
-        // Notifier le composant parent en mode intégré
-        this.exerciceCreated.emit(createdExercice);
-        
-        // En mode autonome, rediriger vers la liste des exercices après un délai
-        if (this.exerciceCreated.observers.length === 0) {
-          setTimeout(() => {
-            this.router.navigate(['/exercices']);
-          }, 2000);
-        }
-      },
-      error: (err: any) => {
-        console.error('Erreur lors de la création de l\'exercice:', err);
-        this.errorMessage = 'Erreur lors de la création de l\'exercice';
-        this.successMessage = '';
-      }
-    });
-  }
-  
-  /**
-   * Met à jour un exercice existant
-   * @param id L'identifiant de l'exercice à modifier
-   * @param exerciceData Les nouvelles données de l'exercice
-   */
-  updateExercice(id: string, exerciceData: any): void {
-    this.exerciceService.updateExercice(id, exerciceData).subscribe({
-      next: (updatedExercice: Exercice) => {
-        console.log('Exercice mis à jour avec succès:', updatedExercice);
-        this.successMessage = 'Exercice mis à jour avec succès!';
-        this.errorMessage = '';
-        
-        // Émettre l'événement de mise à jour
-        this.exerciceUpdated.emit(updatedExercice);
-        
-        // En mode autonome, rediriger vers la liste des exercices après un délai
-        if (this.exerciceUpdated.observers.length === 0) {
-          setTimeout(() => {
-            this.router.navigate(['/exercices']);
-          }, 2000);
-        }
-      },
-      error: (err: any) => {
-        console.error('Erreur lors de la mise à jour de l\'exercice:', err);
-        
-        // Si l'exercice n'existe pas (404), rediriger vers la liste
-        if (err.status === 404 || err.message?.includes('introuvable')) {
-          this.errorMessage = 'Exercice non trouvé - Redirection vers la liste...';
-          setTimeout(() => {
-            this.router.navigate(['/exercices']);
-          }, 2000);
-        } else {
-          this.errorMessage = 'Erreur lors de la mise à jour de l\'exercice';
-        }
-        
-        this.successMessage = '';
-      }
-    });
-  }
-
-  /**
-   * Réinitialise le formulaire et les sélections de tags
-   */
-  resetForm(): void {
-    this.submitted = false;
-    this.exerciceForm.reset();
-    
-    // Réinitialiser les tags sélectionnés
+  private distributeTagsByCategory(): void {
+    // Réinitialiser les tableaux de tags
+    this.selectedObjectifTag = null;
     this.selectedTravailSpecifiqueTags = [];
     this.selectedNiveauTags = [];
-    this.selectedObjectifTag = null;
     this.selectedTempsTags = [];
     this.selectedFormatTags = [];
-    
-    // Réinitialiser les filtres
-    this.travailSpecifiqueFilter = '';
-    this.niveauFilter = '';
-    this.tempsFilter = '';
-    this.formatFilter = '';
-    
-    // Réinitialiser les listes filtrées
-    this.filteredTravailSpecifiqueTags = [...this.travailSpecifiqueTags];
-    this.filteredNiveauTags = [...this.niveauTags];
-    this.filteredTempsTags = [...this.tempsTags];
-    this.filteredFormatTags = [...this.formatTags];
-    
-    // Masquer toutes les dropdowns
-    this.showTravailSpecifiqueDropdown = false;
-    this.showNiveauDropdown = false;
-    this.showTempsDropdown = false;
-    this.showFormatDropdown = false;
-  }
-  
 
+    // Répartir les tags dans les tableaux correspondants
+    this.selectedTags.forEach(tag => {
+      switch (tag.category) {
+        case TagCategory.OBJECTIF:
+          this.selectedObjectifTag = tag;
+          break;
+        case TagCategory.TRAVAIL_SPECIFIQUE:
+          if (!this.selectedTravailSpecifiqueTags.some(t => t.id === tag.id)) {
+            this.selectedTravailSpecifiqueTags.push(tag);
+          }
+          break;
+        case TagCategory.NIVEAU:
+          if (!this.selectedNiveauTags.some(t => t.id === tag.id)) {
+            this.selectedNiveauTags.push(tag);
+          }
+          break;
+        case TagCategory.TEMPS:
+          if (!this.selectedTempsTags.some(t => t.id === tag.id)) {
+            this.selectedTempsTags.push(tag);
+          }
+          break;
+        case TagCategory.FORMAT:
+          if (!this.selectedFormatTags.some(t => t.id === tag.id)) {
+            this.selectedFormatTags.push(tag);
+          }
+          break;
+      }
+    });
+  }
+
+
+/**
+ * Filtre les tags en fonction de la recherche
+ */
+private filterTags(): void {
+  if (!this.tagSearchQuery) {
+    this.filteredTags = [...this.allTags];
+    return;
+  }
+
+  const query = this.tagSearchQuery.toLowerCase();
+  this.filteredTags = this.allTags.filter(tag => {
+    const tagProps = tag as unknown as TagProperties;
+    return (
+      tagProps.label?.toLowerCase().includes(query) || 
+      (tagProps.description && tagProps.description.toLowerCase().includes(query))
+    );
+  });
+}
+
+/**
+ * Sélectionne un tag objectif
+ * @param tag Le tag objectif à sélectionner
+ */
+selectObjectifTag(tag: Tag): void {
+  if (!tag || !tag.id) return;
   
+  // Mettre à jour le tag objectif sélectionné
+  this.selectedObjectifTag = tag;
+  
+  // Mettre à jour le formulaire
+  const tagProps = tag as unknown as TagProperties;
+  this.exerciceForm.patchValue({
+    objectif: tagProps.label
+  });
+  
+  // Mettre à jour la liste des tags sélectionnés
+  this.syncSelectedTags();
+  // Fermer le dropdown
+  this.showObjectifDropdown = false;
+}
+
+removeObjectifTag(): void {
+  this.selectedObjectifTag = null;
+  this.exerciceForm.patchValue({ objectif: '' });
+  this.syncSelectedTags();
+}
+
+/**
+ * Gère la soumission du formulaire
+ */
+onSubmit(): void {
+  this.submitted = true;
+  this.errorMessage = null;
+  this.successMessage = '';
+
+  // S'assurer que les tags sont synchronisés avant la soumission
+  this.syncSelectedTags();
+
+  if (this.exerciceForm.invalid) {
+    return;
+  }
+
+  this.submitting = true;
+  
+  // Préparer les données du formulaire
+  const formData: any = { 
+    ...this.exerciceForm.value,
+    // Inclure les tags sélectionnés dans les données du formulaire
+    tags: [...this.selectedTags] // Utiliser directement les tags synchronisés
+  };
+
+  // Extraire les variables depuis le FormControl (CVA) et aplatir
+  const vars = (this.exerciceForm.get('variables') as FormControl)?.value || {};
+  const variablesPlusArray = Array.isArray(vars?.variablesPlus) ? vars.variablesPlus : [];
+  const variablesMinusArray = Array.isArray(vars?.variablesMinus) ? vars.variablesMinus : [];
+  formData.variablesPlus = variablesPlusArray;
+  formData.variablesMinus = variablesMinusArray;
+  // Nettoyage éventuel
+  delete formData.variables;
+
+  // Si une image est sélectionnée, on l'upload d'abord
+  if (this.selectedImageFile) {
+    const uploadSubscription = this.uploadSelectedImage().subscribe({
+      next: (imageUrl: string) => {
+        formData.imageUrl = imageUrl;
+        this.saveExercice(formData);
+        uploadSubscription.unsubscribe();
+      },
+      error: (error: any) => {
+        this.handleHttpError(error);
+        this.submitting = false;
+        uploadSubscription.unsubscribe();
+      }
+    });
+  } else {
+    this.saveExercice(formData);
+  }
+}
+
+  private saveExercice(formData: any): void {
+    const saveObservable = this.exerciceId
+      ? this.exerciceService.updateExercice(this.exerciceId, formData)
+      : this.exerciceService.ajouterExercice(formData);
+
+    const saveSubscription = saveObservable.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (savedExercice) => {
+        this.submitting = false;
+        this.snackBar.open(
+          `Exercice ${this.exerciceId ? 'mis à jour' : 'créé'} avec succès`,
+          'Fermer',
+          { 
+            duration: 5000,
+            panelClass: ['success-snackbar']
+          }
+        );
+        
+        if (this.dialogRef) {
+          this.dialogRef.close(savedExercice);
+        } else {
+          this.router.navigate(['/exercices', savedExercice.id]);
+        }
+
+        // Émettre l'événement approprié
+        if (this.exerciceId) {
+          this.exerciceUpdated.emit(savedExercice);
+        } else {
+          this.exerciceCreated.emit(savedExercice);
+        }
+        
+        saveSubscription.unsubscribe();
+      },
+      error: (error) => {
+        this.handleHttpError(error);
+        this.submitting = false;
+        saveSubscription.unsubscribe();
+      }
+    });
+  }
+
   /**
-   * Annule l'édition et retourne à la liste des exercices ou notifie le parent
+   * Upload l'image sélectionnée
    */
+  uploadSelectedImage(): Observable<string> {
+    if (!this.selectedImageFile) {
+      return of('');
+    }
+
+    this.uploading = true;
+    return this.exerciceService.uploadImage(this.selectedImageFile).pipe(
+      tap(() => this.uploading = false),
+      map((response: { imageUrl: string }) => response.imageUrl),
+      catchError((error: any) => {
+        this.uploading = false;
+        this.handleHttpError(error);
+        return throwError(() => error);
+      })
+    );
+  }
+
   /**
-   * Annule l'édition/création et émet un événement pour le composant parent
+   * Gestion centralisée des erreurs HTTP
+   */
+  private handleHttpError(error: any): void {
+    // Logging console pour debug
+    console.error('Erreur HTTP:', error);
+    let errorMessage = 'Une erreur est survenue. Veuillez réessayer plus tard.';
+    if (error?.status === 401) {
+      this.router.navigate(['/login']);
+      errorMessage = 'Votre session a expiré. Veuillez vous reconnecter.';
+    } else if (error?.status === 403) {
+      errorMessage = "Vous n'avez pas les droits pour effectuer cette action.";
+    } else if (error?.status === 404) {
+      errorMessage = 'La ressource demandée est introuvable.';
+    } else if (error?.error && error.error.message) {
+      errorMessage = error.error.message;
+    }
+    this.snackBar.open(errorMessage, 'Fermer', { duration: 5000, panelClass: ['error-snackbar'] });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  /**
+   * Gère l'annulation du formulaire
    */
   onCancel(): void {
-    this.formCancelled.emit();
+    if (this.exerciceForm.dirty) {
+      const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+        width: '400px',
+        data: {
+          title: 'Annuler les modifications',
+          message: 'Voulez-vous vraiment annuler ? Toutes les modifications non enregistrées seront perdues.',
+          confirmText: 'Oui, annuler',
+          cancelText: 'Non, continuer',
+          warn: true
+        } as ConfirmationDialogData
+      });
+
+      const subscription = dialogRef.afterClosed().subscribe((result: boolean) => {
+        if (result) {
+          this.doCancel();
+        }
+        subscription.unsubscribe();
+      });
+    } else {
+      this.doCancel();
+    }
+  }
+
+  /**
+   * Effectue l'annulation du formulaire
+   */
+  private doCancel(): void {
+    // Réinitialiser l'état du formulaire
+    this.submitted = false;
+    this.errorMessage = null;
     
-    // Si utilisé en mode autonome, rediriger vers la liste des exercices
-    // Vérifier si quelqu'un écoute l'événement formCancelled
-    if (this.formCancelled.observers.length === 0) {
+    // Fermer la boîte de dialogue si elle est ouverte
+    if (this.dialogRef) {
+      this.dialogRef.close();
+    } 
+    // Sinon, naviguer vers la liste des exercices
+    else {
       this.router.navigate(['/exercices']);
     }
+    
+    // Émettre les événements d'annulation
+    this.formCancelled.emit();
+    this.cancel.emit();
+    
+    // Afficher un message de confirmation
+    this.snackBar.open('Modifications annulées', 'Fermer', { 
+      duration: 3000,
+      panelClass: ['info-snackbar']
+    });
   }
 }

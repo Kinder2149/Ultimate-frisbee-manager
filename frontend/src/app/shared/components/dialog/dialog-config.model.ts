@@ -20,6 +20,7 @@ export interface DialogConfig {
   height?: string;
   maxHeight?: string;
   minHeight?: string;
+  panelClass?: string | string[]; // Classe(s) CSS appliquées au MatDialog
   
   // Comportement
   disableClose?: boolean; // Désactive la fermeture en cliquant à l'extérieur
@@ -30,21 +31,22 @@ export interface DialogConfig {
 }
 
 /**
- * Interface pour les résultats du dialogue
+ * Interface pour le résultat d'un dialogue
  * @template T Type des données retournées par le dialogue
  */
-export interface DialogResult<T = unknown> {
+export interface DialogResult<T = any> {
   /**
    * Action réalisée par l'utilisateur
    * - submit: validation du formulaire
    * - cancel: annulation explicite
+   * - delete: suppression d'un élément
    * - close: fermeture du dialogue (clic extérieur, ESC)
    */
-  action: 'submit' | 'cancel' | 'close';
+  action: 'submit' | 'cancel' | 'delete' | 'close' | string;
   
   /**
    * Données retournées par le dialogue
-   * Présent uniquement si action === 'submit'
+   * Présent uniquement si action === 'submit' ou 'delete'
    */
   data?: T;
 }

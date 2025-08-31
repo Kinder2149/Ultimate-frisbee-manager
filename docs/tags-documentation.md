@@ -212,7 +212,7 @@ Le système de tags est organisé en catégories principales :
 2. **Travail Spécifique** : Décrit les compétences ou aspects travaillés dans l'exercice
 3. **Variable** : Représente les paramètres qui peuvent être ajustés dans l'exercice
 4. **Niveau** : Indique le niveau de difficulté ou de progression (avec système d'étoiles)
-5. **Temps** : Indique la durée approximative de l'exercice
+5. **Temps moyen** : Indique la durée approximative de l'exercice
 6. **Format** : Précise le nombre de joueurs ou la configuration de l'exercice
 
 Ces catégories sont utilisées pour organiser les tags dans l'interface et permettent aux entraîneurs de catégoriser et rechercher efficacement les exercices.

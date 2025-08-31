@@ -4,28 +4,139 @@ import { Router } from '@angular/router';
 import { Entrainement } from '../../../../core/models/entrainement.model';
 import { EntrainementService } from '../../../../core/services/entrainement.service';
 import { DuplicateButtonComponent } from '../../../../shared/components/duplicate-button/duplicate-button.component';
+import { ExerciceFiltersComponent, ExerciceFiltersValue } from '../../../exercices/components/exercice-filters.component';
+import { TagService } from '../../../../core/services/tag.service';
+import { Tag, TagCategory } from '../../../../core/models/tag.model';
 
 @Component({
   selector: 'app-entrainement-list',
   templateUrl: './entrainement-list.component.html',
   styleUrls: ['./entrainement-list.component.css'],
   standalone: true,
-  imports: [CommonModule, DuplicateButtonComponent]
+  imports: [CommonModule, DuplicateButtonComponent, ExerciceFiltersComponent]
 })
 export class EntrainementListComponent implements OnInit {
   entrainements: Entrainement[] = [];
+  filteredEntrainements: Entrainement[] = [];
   loading: boolean = false;
   error: string | null = null;
   duplicatingIds: Set<string> = new Set();
 
+  // Filtres
+  searchTerm = '';
+  themeEntrainementTags: Tag[] = [];
+  allTags: Tag[] = [];
+  selectedThemeEntrainementTags: string[] = [];
+
   constructor(
     private entrainementService: EntrainementService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private tagService: TagService
   ) {}
 
   ngOnInit(): void {
+    this.loadTags();
     this.loadEntrainements();
+  }
+
+  // --- Calcul du temps total de l'échauffement lié ---
+  private parseTempsToSeconds(temps: string | undefined): number {
+    if (!temps) return 0;
+    const t = temps.trim().toLowerCase();
+    const regex = /^(\d+(?:[\.,]\d+)?)\s*(min|m|sec|s)?$/i;
+    const m = t.match(regex);
+    if (!m) return 0;
+    const rawVal = (m[1] || '').replace(',', '.');
+    const num = Number(rawVal);
+    if (isNaN(num)) return 0;
+    const unit = (m[2] || 'min').toLowerCase();
+    return unit.startsWith('s') ? Math.round(num) : Math.round(num * 60);
+  }
+
+  private formatSeconds(totalSec: number): string {
+    if (totalSec <= 0) return '0 min';
+    const minutes = Math.floor(totalSec / 60);
+    const seconds = totalSec % 60;
+    return seconds === 0 ? `${minutes} min` : `${minutes} min ${seconds}s`;
+  }
+
+  formatTotalTempsEchauffement(entrainement: Entrainement): string {
+    const blocs = entrainement.echauffement?.blocs || [];
+    const total = blocs
+      .map(b => this.parseTempsToSeconds((b as any).temps))
+      .reduce((acc, v) => acc + v, 0);
+    return this.formatSeconds(total);
+  }
+
+  // --- Calcul de la durée totale réelle de l'entraînement (exercices + échauffement + situation/match) ---
+  private computeTotalSeconds(entrainement: Entrainement): number {
+    if (!entrainement) return 0;
+
+    // Exercices: champ duree est en minutes
+    const secExercices = (entrainement.exercices || [])
+      .map(e => (e.duree ? e.duree * 60 : 0))
+      .reduce((a, b) => a + b, 0);
+
+    // Échauffement: sommer les blocs `temps` (chaînes)
+    const secEchauffement = (entrainement.echauffement?.blocs || [])
+      .map(b => this.parseTempsToSeconds((b as any).temps))
+      .reduce((a, b) => a + b, 0);
+
+    // Situation/Match: un seul champ `temps` (chaîne)
+    const secSituation = this.parseTempsToSeconds((entrainement.situationMatch as any)?.temps);
+
+    return secExercices + secEchauffement + secSituation;
+  }
+
+  formatDureeTotaleEntrainement(entrainement: Entrainement): string {
+    const totalSec = this.computeTotalSeconds(entrainement);
+    const totalMin = Math.round(totalSec / 60);
+    return this.formatDuree(totalMin);
+  }
+
+  private loadTags(): void {
+    // Charger uniquement les tags de thème d'entraînement
+    this.tagService.getTags(TagCategory.THEME_ENTRAINEMENT).subscribe({
+      next: (tags) => {
+        this.themeEntrainementTags = [...tags].sort((a, b) => a.label.localeCompare(b.label));
+        this.allTags = tags;
+      },
+      error: () => {
+        // En cas d'erreur, garder les filtres fonctionnels (search-only)
+        this.themeEntrainementTags = [];
+        this.allTags = [];
+      }
+    });
+  }
+
+  // Gestion des filtres
+  onFiltersChange(value: ExerciceFiltersValue): void {
+    this.searchTerm = value.searchTerm || '';
+    this.selectedThemeEntrainementTags = value.selectedThemeEntrainementTags || [];
+    this.applyFilters();
+  }
+
+  private applyFilters(): void {
+    let list = [...this.entrainements];
+
+    // Recherche texte dans titre et tags
+    if (this.searchTerm) {
+      const s = this.searchTerm.toLowerCase();
+      list = list.filter(e =>
+        (e.titre && e.titre.toLowerCase().includes(s)) ||
+        (e.tags && e.tags.some(t => t.label.toLowerCase().includes(s)))
+      );
+    }
+
+    // Filtre par thèmes d'entraînement (si présents)
+    if (this.selectedThemeEntrainementTags.length > 0) {
+      list = list.filter(e =>
+        e.tags?.some(t => t.category === TagCategory.THEME_ENTRAINEMENT && this.selectedThemeEntrainementTags.includes(t.id || ''))
+      );
+    }
+
+    this.filteredEntrainements = list;
   }
 
   /**
@@ -38,6 +149,7 @@ export class EntrainementListComponent implements OnInit {
     this.entrainementService.getEntrainements().subscribe({
       next: (entrainements) => {
         this.entrainements = entrainements;
+        this.applyFilters();
         this.loading = false;
         console.log('Entraînements chargés:', entrainements);
       },
@@ -61,6 +173,13 @@ export class EntrainementListComponent implements OnInit {
    */
   voirEntrainement(id: string): void {
     this.router.navigate(['/entrainements', id]);
+  }
+
+  /**
+   * Navigue vers la section Échauffement du détail d'un entraînement
+   */
+  voirEchauffement(id: string): void {
+    this.router.navigate(['/entrainements', id], { fragment: 'echauffement' });
   }
 
   /**

@@ -4,11 +4,26 @@ import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Exercice } from '../../../core/models/exercice.model';
 import { ExerciceService } from '../../../core/services/exercice.service';
 import { TagService } from '../../../core/services/tag.service';
 import { Tag, TagCategory } from '../../../core/models/tag.model';
 import { DuplicateButtonComponent } from '../../../shared/components/duplicate-button/duplicate-button.component';
+import { ExerciceDialogService } from '../services/exercice-dialog.service';
+
+// Type d'entrée précis pour couvrir les champs utilisés dans le template
+// et éviter les erreurs strictes de template (TS4111, pipes, etc.).
+export interface ExerciceInput {
+  id?: string;
+  nom?: string;
+  createdAt?: string | number | Date | null | undefined;
+  description?: string;
+  variablesText?: string;
+  schemaUrl?: string;
+  tagIds?: string[];
+  tags?: any[];
+}
 
 /**
  * Composant affichant un exercice sous forme de carte
@@ -21,10 +36,22 @@ import { DuplicateButtonComponent } from '../../../shared/components/duplicate-b
   imports: [CommonModule, MatButtonModule, MatIconModule, MatTooltipModule, DuplicateButtonComponent]
 })
 export class ExerciceCardComponent implements OnInit {
-  @Input() exercice!: Exercice;
+  @Input() exercice!: ExerciceInput;
+  @Input() selected: boolean = false;
+  // Optionnels pour l'usage dans la page d'entraînement
+  @Input() index?: number;
+  @Input() duree?: number | string; // minutes ou libellé
+  @Input() notes?: string;
+  @Input() leftTime: boolean = false; // affiche un rail de temps à gauche
+  // Mode d'affichage: 'default' (liste d'exercices) ou 'entrainement'
+  @Input() mode: 'default' | 'entrainement' = 'default';
+  // Autoriser l'édition de la durée (uniquement pertinent pour le mode entraînement)
+  @Input() allowEditDuration: boolean = false;
   @Output() exerciceDeleted = new EventEmitter<string>();
   @Output() exerciceDuplicated = new EventEmitter<Exercice>();
   @Output() exerciceUpdated = new EventEmitter<Exercice>();
+  @Output() selectedChange = new EventEmitter<boolean>();
+  @Output() dureeChange = new EventEmitter<number>();
   
   // État de duplication
   duplicating: boolean = false;
@@ -38,65 +65,137 @@ export class ExerciceCardComponent implements OnInit {
   
   // Pour l'affichage conditionnel
   expanded: boolean = false;
+  showImage: boolean = false;
   
   constructor(
     private tagService: TagService,
     private exerciceService: ExerciceService,
-    private router: Router
+    private router: Router,
+    private snackBar: MatSnackBar,
+    private exerciceDialogService: ExerciceDialogService
   ) {}
   
   ngOnInit(): void {
-    // Si l'exercice a des tags, on les récupère
-    if (this.exercice.tagIds && this.exercice.tagIds.length > 0) {
-      this.loadExerciceTags();
+    // 1) Si l'exercice contient déjà les tags (exercice.tags ou exercice.exerciceTags), on les utilise directement
+    const preloadedTags = this.extractTagsFromExercice();
+    if (preloadedTags && preloadedTags.length > 0) {
+      this.populateTagCategories(preloadedTags);
+    } else {
+      // 2) Sinon, fallback: charger via tagIds si disponibles
+      const tagIds = this.exercice?.tagIds as string[] | undefined;
+      if (Array.isArray(tagIds) && tagIds.length > 0) {
+        this.loadExerciceTags(tagIds);
+      }
+    }
+    // Comportement par défaut en mode entraînement: autoriser le dépliage au clic
+    if (this.mode === 'entrainement') {
+      // rien d'obligatoire ici, mais on garde expanded à false par défaut
+    }
+  }
+
+  // Durée formatée
+  get dureeDisplay(): string | null {
+    if (this.duree === undefined || this.duree === null || this.duree === '') return null;
+    if (typeof this.duree === 'number') return `${this.duree} min`;
+    // chaîne déjà formatée
+    return this.duree;
+  }
+
+  /**
+   * Ouvre l'exercice en lecture seule (view=true)
+   * @param event L'événement de clic optionnel (pour arrêter la propagation)
+   */
+  viewExercice(event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    if (this.exercice.id) {
+      this.exerciceDialogService.openViewDialog(this.exercice as Exercice).subscribe();
+    }
+  }
+  
+  /**
+   * Navigue vers le formulaire d'édition de l'exercice
+   * @param event L'événement de clic optionnel (pour arrêter la propagation)
+   */
+  editExercice(event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    if (this.exercice.id) {
+      // Navigation vers la page complète d'édition
+      this.router.navigate(['/exercices/modifier', this.exercice.id]);
     }
   }
   
   /**
    * Charge les tags associés à l'exercice
    */
-  loadExerciceTags(): void {
+  loadExerciceTags(tagIds: string[]): void {
     this.tagService.getTags().subscribe({
       next: (tags: Tag[]) => {
         // Filtrer les tags qui sont associés à cet exercice
-        const exerciceTags = tags.filter(tag => {
+        const exerciceTags = tags.filter((tag: Tag) => {
           // S'assurer que tag.id n'est pas undefined et que tagIds existe
-          return tag.id !== undefined && 
-            this.exercice.tagIds?.some(id => id === tag.id) || false;
+          return tag.id !== undefined && Array.isArray(tagIds) && tagIds.some((id: string) => id === tag.id);
         });
         
-        console.log('Tags pour exercice:', this.exercice.nom, exerciceTags);
-        
-        // Répartir par catégorie
-        this.objectifTag = exerciceTags.find(tag => 
-          tag.category === TagCategory.OBJECTIF) || null;
-        
-        this.travailSpecifiqueTags = exerciceTags.filter(tag => 
-          tag.category === TagCategory.TRAVAIL_SPECIFIQUE);
-        
-        // Catégorie Variable supprimée
-        
-        this.niveauTags = exerciceTags.filter(tag => 
-          tag.category === TagCategory.NIVEAU);
-          
-        // Ajouter le traitement des nouvelles catégories
-        this.tempsTags = exerciceTags.filter(tag => 
-          tag.category === TagCategory.TEMPS);
-          
-        this.formatTags = exerciceTags.filter(tag => 
-          tag.category === TagCategory.FORMAT);
-          
-        console.log('Tags par catégorie:', {
-          objectif: this.objectifTag ? 1 : 0,
-          travailSpecifique: this.travailSpecifiqueTags.length,
-          niveau: this.niveauTags.length,
-          temps: this.tempsTags.length,
-          format: this.formatTags.length
-        });
+        console.log('Tags pour exercice:', this.exercice?.nom, exerciceTags);
+        this.populateTagCategories(exerciceTags);
       },
       error: (err) => {
         console.error('Erreur lors du chargement des tags:', err);
       }
+    });
+  }
+
+  /**
+   * Extrait des tags directement depuis l'objet exercice si disponibles
+   * Supporte exercice.tags ou exercice.exerciceTags: { tag }[]
+   */
+  private extractTagsFromExercice(): Tag[] {
+    const ex: any = this.exercice as any;
+    if (!ex) return [];
+    if (Array.isArray(ex.tags) && ex.tags.length > 0) {
+      return ex.tags as Tag[];
+    }
+    if (Array.isArray(ex.exerciceTags) && ex.exerciceTags.length > 0) {
+      return ex.exerciceTags
+        .map((et: any) => et && et.tag)
+        .filter((t: any) => !!t) as Tag[];
+    }
+    return [];
+  }
+
+  /**
+   * Répartit la liste de tags par catégories et alimente les champs d'affichage
+   */
+  private populateTagCategories(exerciceTags: Tag[]): void {
+    // Répartir par catégorie
+    this.objectifTag = exerciceTags.find(tag => 
+      tag.category === TagCategory.OBJECTIF) || null;
+    
+    this.travailSpecifiqueTags = exerciceTags.filter(tag => 
+      tag.category === TagCategory.TRAVAIL_SPECIFIQUE);
+    
+    // Catégorie Variable supprimée
+    
+    this.niveauTags = exerciceTags.filter(tag => 
+      tag.category === TagCategory.NIVEAU);
+      
+    // Nouvelles catégories
+    this.tempsTags = exerciceTags.filter(tag => 
+      tag.category === TagCategory.TEMPS);
+      
+    this.formatTags = exerciceTags.filter(tag => 
+      tag.category === TagCategory.FORMAT);
+
+    console.log('Tags par catégorie:', {
+      objectif: this.objectifTag ? 1 : 0,
+      travailSpecifique: this.travailSpecifiqueTags.length,
+      niveau: this.niveauTags.length,
+      temps: this.tempsTags.length,
+      format: this.formatTags.length
     });
   }
   
@@ -106,22 +205,56 @@ export class ExerciceCardComponent implements OnInit {
   toggleExpand(): void {
     this.expanded = !this.expanded;
   }
-  
+
   /**
-   * Navigue vers le formulaire d'édition de l'exercice
-   * @param event L'événement de clic optionnel (pour arrêter la propagation)
+   * Clic sur l'en-tête: sélectionne cette carte (simple sélection) et bascule l'expansion
    */
-  editExercice(event?: Event): void {
-    // Empêche le clic de déclencher toggleExpand() si un événement est fourni
-    if (event) {
-      event.stopPropagation();
-    }
-    
-    if (this.exercice.id) {
-      // Naviguer vers la page de formulaire avec l'ID de l'exercice
-      this.router.navigate(['/exercices/modifier', this.exercice.id]);
+  onHeaderClick(): void {
+    // émettre une sélection positive au parent (une seule sélection gérée côté parent)
+    this.selectedChange.emit(true);
+    // En mode entraînement, on autorise l'ouverture/fermeture pour voir les champs
+    if (this.mode === 'entrainement') {
+      this.toggleExpand();
     }
   }
+  
+  /** Affiche/masque l'image (schéma) */
+  toggleShowImage(): void {
+    this.showImage = !this.showImage;
+  }
+
+  /**
+   * Sélectionne/Désélectionne la carte pour des actions globales
+   */
+  toggleSelected(event?: Event): void {
+    if (event) event.stopPropagation();
+    this.selected = !this.selected;
+    this.selectedChange.emit(this.selected);
+  }
+  
+  /**
+   * Récupère la durée actuelle en minutes sous forme de nombre
+   */
+  private getDureeNumber(): number {
+    if (typeof this.duree === 'number') return this.duree;
+    if (typeof this.duree === 'string') {
+      const m = this.duree.match(/\d+/);
+      return m ? parseInt(m[0], 10) : 0;
+    }
+    return 0;
+  }
+
+  /**
+   * Incrémente/décrémente la durée (en minutes) et émet l'événement de changement
+   */
+  incrementDuration(delta: number): void {
+    if (!this.allowEditDuration) return;
+    const current = this.getDureeNumber();
+    const next = Math.max(0, current + delta);
+    this.duree = next;
+    this.dureeChange.emit(next);
+  }
+
   
   /**
    * Duplique l'exercice
@@ -160,7 +293,7 @@ export class ExerciceCardComponent implements OnInit {
     if (!this.exercice.id) return;
     
     // Demander confirmation avant de supprimer
-    const confirmation = confirm(`Êtes-vous sûr de vouloir supprimer l'exercice "${this.exercice.nom}" ?`);
+    const confirmation = confirm(`Êtes-vous sûr de vouloir supprimer l'exercice "${this.exercice?.nom ?? ''}" ?`);
     
     if (confirmation) {
       this.exerciceService.deleteExercice(this.exercice.id).subscribe({

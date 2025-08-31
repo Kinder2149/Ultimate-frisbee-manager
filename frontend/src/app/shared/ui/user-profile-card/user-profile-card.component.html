@@ -1,0 +1,26 @@
+<mat-card *ngIf="user as u">
+  <mat-card-header>
+    <ng-container>
+      <img *ngIf="u.iconUrl; else defaultAvatar" mat-card-avatar [src]="u.iconUrl" alt="avatar" />
+      <ng-template #defaultAvatar>
+        <div mat-card-avatar>
+          <mat-icon>account_circle</mat-icon>
+        </div>
+      </ng-template>
+    </ng-container>
+    <mat-card-title>{{ (u.prenom || '') + ' ' + (u.nom || '') }}</mat-card-title>
+    <mat-card-subtitle>{{ u.email }}</mat-card-subtitle>
+  </mat-card-header>
+  <mat-card-content>
+    <div class="profile-grid">
+      <div class="profile-field">
+        <span class="label">Rôle</span>
+        <span class="value">{{ u.role }}</span>
+      </div>
+      <div class="profile-field">
+        <span class="label">Actif</span>
+        <span class="value">{{ u.isActive ? 'Oui' : 'Non' }}</span>
+      </div>
+    </div>
+  </mat-card-content>
+</mat-card>

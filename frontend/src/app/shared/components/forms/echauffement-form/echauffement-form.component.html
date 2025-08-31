@@ -44,6 +44,15 @@
             </button>
           </div>
 
+          <!-- État vide: aucun bloc -->
+          <div class="empty-state" *ngIf="blocsFormArray.length === 0">
+            <p>Aucun bloc pour l'instant.</p>
+            <button type="button" mat-stroked-button color="primary" (click)="ajouterBloc()">
+              <mat-icon>add</mat-icon>
+              Ajouter le premier bloc
+            </button>
+          </div>
+
           <div formArrayName="blocs" class="blocs-container">
             <div *ngFor="let blocControl of blocsFormArray.controls; let i = index" 
                  [formGroupName]="i" 
@@ -63,7 +72,7 @@
                         <mat-icon>keyboard_arrow_down</mat-icon>
                       </button>
                       <button type="button" mat-icon-button color="warn" (click)="supprimerBloc(i)" 
-                              [disabled]="blocsFormArray.length === 1" title="Supprimer">
+                              title="Supprimer">
                         <mat-icon>delete</mat-icon>
                       </button>
                     </div>
@@ -88,10 +97,19 @@
                         <input matInput formControlName="repetitions" placeholder="Ex: 3x10, 5 fois">
                       </mat-form-field>
 
-                      <mat-form-field appearance="outline" class="half-width">
-                        <mat-label>Temps</mat-label>
-                        <input matInput formControlName="temps" placeholder="Ex: 5 min, 30 sec">
-                      </mat-form-field>
+                      <div class="half-width" style="display: flex; gap: 12px; align-items: flex-start;">
+                        <mat-form-field appearance="outline" style="flex: 1 1 60%;">
+                          <mat-label>Temps</mat-label>
+                          <input matInput type="number" min="0" step="1" formControlName="tempsValeur" placeholder="Ex: 5">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" style="flex: 0 0 40%; min-width: 110px;">
+                          <mat-label>Unité</mat-label>
+                          <mat-select formControlName="tempsUnite">
+                            <mat-option value="min">minutes</mat-option>
+                            <mat-option value="sec">secondes</mat-option>
+                          </mat-select>
+                        </mat-form-field>
+                      </div>
                     </div>
 
                     <!-- Informations supplémentaires -->

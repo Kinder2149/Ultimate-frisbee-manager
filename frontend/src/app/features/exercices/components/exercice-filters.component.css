@@ -1,0 +1,184 @@
+/* Styles scopés au composant des filtres d'exercices */
+
+.filters-section {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  /* Important: permet aux menus déroulants positionnés en absolu de dépasser la carte */
+  overflow: visible;
+}
+
+.search-bar {
+  display: flex;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 10px 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.reset-btn {
+  background-color: #f1f1f1;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #333;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.reset-btn:hover {
+  background-color: #e0e0e0;
+}
+
+.tag-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.filter-group {
+  flex: 1;
+  min-width: 200px;
+  margin-bottom: 15px;
+}
+
+.filter-group h3 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #555;
+}
+
+.dropdown-filter {
+  position: relative;
+}
+
+.filters-dropdown-container {
+  position: relative;
+  width: 100%;
+}
+
+/* Toggle bouton */
+.filters-dropdown-container .tag-dropdown-toggle {
+  width: 100%;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.filters-dropdown-container .tag-dropdown-toggle:hover {
+  border-color: #999;
+}
+
+/* Menu */
+.filters-dropdown-container .tag-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 0;
+  overflow-y: auto;
+  background-color: white;
+  border-radius: 0 0 4px 4px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  opacity: 0;
+  visibility: hidden;
+  /* S'assure de passer au-dessus du contenu environnant et des cartes */
+  z-index: 1000;
+  transition: max-height 0.3s, opacity 0.3s, visibility 0s 0.3s;
+}
+
+.filters-dropdown-container .tag-dropdown-menu.show {
+  /* Hauteur max relative à la fenêtre pour garantir la visibilité sur petits écrans */
+  max-height: 60vh;
+  opacity: 1;
+  visibility: visible;
+  transition: max-height 0.3s, opacity 0.3s;
+}
+
+/* Items */
+.filters-dropdown-container .tag-dropdown-item {
+  padding: 10px 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.2s;
+}
+
+.filters-dropdown-container .tag-dropdown-item:hover {
+  background-color: #f5f5f5;
+}
+
+.filters-dropdown-container .tag-dropdown-item.selected {
+  background-color: #f0f0f0;
+}
+
+.tag-color {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  border-radius: 3px;
+  margin-right: 10px;
+}
+
+.tag-label { flex: 1; }
+
+.tag-check {
+  margin-left: 10px;
+  color: #4CAF50;
+}
+
+.selected-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.selected-tag-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 16px;
+  color: white;
+  font-size: 13px;
+}
+
+.remove-tag {
+  margin-left: 6px;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.remove-tag:hover { opacity: 1; }
+
+/* Responsivité */
+@media (max-width: 768px) {
+  .tag-filters { flex-direction: column; gap: 16px; }
+  .filter-group { width: 100%; }
+  /* Sur mobile, on autorise un dropdown plus haut, tout en restant scrollable */
+  .filters-dropdown-container .tag-dropdown-menu.show { max-height: 70vh; }
+}
+
+@media (max-width: 480px) {
+  .search-bar { flex-direction: column; }
+  .reset-btn { width: 100%; }
+}

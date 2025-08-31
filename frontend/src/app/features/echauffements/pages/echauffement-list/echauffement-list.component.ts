@@ -6,11 +6,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { EchauffementService } from '../../../../core/services/echauffement.service';
 import { Echauffement } from '../../../../core/models/echauffement.model';
 import { ConfirmDialogComponent } from '../../../../shared/components/dialog/confirm-dialog.component';
+import { ExerciceFiltersComponent, ExerciceFiltersValue } from '../../../exercices/components/exercice-filters.component';
+import { EchauffementViewComponent } from '../../../../shared/components/echauffement-view/echauffement-view.component';
 
 @Component({
   selector: 'app-echauffement-list',
@@ -22,14 +25,18 @@ import { ConfirmDialogComponent } from '../../../../shared/components/dialog/con
     MatIconModule,
     MatSnackBarModule,
     MatDialogModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatTooltipModule,
+    ExerciceFiltersComponent
   ],
   templateUrl: './echauffement-list.component.html',
   styleUrls: ['./echauffement-list.component.css']
 })
 export class EchauffementListComponent implements OnInit {
   echauffements: Echauffement[] = [];
+  filteredEchauffements: Echauffement[] = [];
   isLoading = false;
+  searchTerm = '';
 
   constructor(
     private echauffementService: EchauffementService,
@@ -47,6 +54,7 @@ export class EchauffementListComponent implements OnInit {
     this.echauffementService.getEchauffements().subscribe({
       next: (echauffements) => {
         this.echauffements = echauffements;
+        this.applyFilters();
         this.isLoading = false;
       },
       error: (error) => {
@@ -57,12 +65,40 @@ export class EchauffementListComponent implements OnInit {
     });
   }
 
+  // Filtres: recherche uniquement
+  onFiltersChange(value: ExerciceFiltersValue): void {
+    this.searchTerm = value.searchTerm || '';
+    this.applyFilters();
+  }
+
+  private applyFilters(): void {
+    let list = [...this.echauffements];
+    if (this.searchTerm) {
+      const s = this.searchTerm.toLowerCase();
+      list = list.filter(e =>
+        (e.nom && e.nom.toLowerCase().includes(s)) ||
+        (e.description && e.description.toLowerCase().includes(s)) ||
+        (e.blocs && e.blocs.some(b => b.titre && b.titre.toLowerCase().includes(s)))
+      );
+    }
+    this.filteredEchauffements = list;
+  }
+
   onCreateEchauffement(): void {
     this.router.navigate(['/echauffements/ajouter']);
   }
 
   onEditEchauffement(echauffement: Echauffement): void {
     this.router.navigate(['/echauffements/modifier', echauffement.id]);
+  }
+
+  onViewEchauffement(echauffement: Echauffement): void {
+    this.dialog.open(EchauffementViewComponent, {
+      width: '720px',
+      maxWidth: '90vw',
+      panelClass: 'entity-view-dialog',
+      data: { echauffement }
+    });
   }
 
   onDuplicateEchauffement(echauffement: Echauffement): void {
@@ -141,5 +177,39 @@ export class EchauffementListComponent implements OnInit {
       month: 'long',
       day: 'numeric'
     });
+  }
+
+  // --- Calcul du temps total des blocs ---
+  private parseTempsToSeconds(temps: string | undefined): number {
+    if (!temps) return 0;
+    const t = temps.trim().toLowerCase();
+    // Supporte "5 min", "30 sec", "5m", "30s", ou juste nombre (par défaut min)
+    const regex = /^(\d+(?:[\.,]\d+)?)\s*(min|m|sec|s)?$/i;
+    const m = t.match(regex);
+    if (!m) return 0;
+    const rawVal = (m[1] || '').replace(',', '.');
+    const num = Number(rawVal);
+    if (isNaN(num)) return 0;
+    const unit = (m[2] || 'min').toLowerCase();
+    if (unit.startsWith('s')) {
+      return Math.round(num);
+    }
+    // minutes -> secondes
+    return Math.round(num * 60);
+  }
+
+  private formatSeconds(totalSec: number): string {
+    if (totalSec <= 0) return '0 min';
+    const minutes = Math.floor(totalSec / 60);
+    const seconds = totalSec % 60;
+    if (seconds === 0) return `${minutes} min`;
+    return `${minutes} min ${seconds}s`;
+  }
+
+  formatTotalTemps(echauffement: Echauffement): string {
+    const total = (echauffement.blocs || [])
+      .map(b => this.parseTempsToSeconds(b.temps))
+      .reduce((acc, v) => acc + v, 0);
+    return this.formatSeconds(total);
   }
 }

@@ -1,321 +1,327 @@
 <div class="container">
-  <h2 *ngIf="!editMode">Ajouter un exercice d'ultimate frisbee</h2>
-  <h2 *ngIf="editMode">Modifier l'exercice</h2>
+  <!-- Titres contextuels (pas de titre en lecture seule pour éviter la redondance) -->
+  <h2 *ngIf="mode === 'create'">Ajouter un exercice d'ultimate frisbee</h2>
+  <h2 *ngIf="mode === 'edit'">Modifier: {{ exerciceForm.get('nom')?.value || exercice.nom || 'Exercice' }}</h2>
 
-  <form [formGroup]="exerciceForm" (ngSubmit)="onSubmit()">
-    <!-- Nom de l'exercice -->
-    <div class="form-group">
-      <label for="nom">Nom</label>
-      <input 
-        type="text" 
-        id="nom" 
-        formControlName="nom" 
-        class="form-control"
-        [class.invalid]="submitted && f['nom'].errors"
-      >
-      <div *ngIf="submitted && f['nom'].errors" class="error-message">
-        <div *ngIf="f['nom'].errors && f['nom'].errors['required']">Le nom est requis</div>
-      </div>
-    </div>
+  
 
-    <!-- Description -->
-    <div class="form-group">
-      <label for="description">Description</label>
-      <textarea 
-        id="description" 
-        formControlName="description" 
-        class="form-control"
-        [class.invalid]="submitted && f['description'].errors"
-        rows="4"
-      ></textarea>
-      <div *ngIf="submitted && f['description'].errors" class="error-message">
-        <div *ngIf="f['description'].errors && f['description'].errors['required']">La description est requise</div>
-      </div>
-    </div>
+  <!-- Vue Lecture Seule harmonisée avec les entraînements -->
+  <div *ngIf="readonlyMode" class="themed-card exercice-theme">
+    <div class="themed-content">
+      <h2 class="view-title" style="margin-top:0;">{{ exerciceForm.get('nom')?.value || exercice.nom }}</h2>
+      <!-- Grille principale -->
+      <div class="view-grid">
+        <!-- Colonne gauche: Description -->
+        <section class="view-section view-span-2">
+          <h3 class="view-heading">Description</h3>
+          <p class="view-text">{{ exerciceForm.get('description')?.value }}</p>
+        </section>
 
-    <!-- Objectif (tags colorés) -->
-    <div class="form-group">
-      <label for="objectif">Objectif</label>
-      <div *ngIf="submitted && !selectedObjectifTag" class="error-message">
-        L'objectif est requis
-      </div>
-      
-      <!-- Tags d'objectif -->
-      <div class="tag-selection">
-        <p class="tag-section-hint">Sélectionnez un tag d'objectif:</p>
-        <div class="tag-options">
-          <div 
-            *ngFor="let tag of objectifTags" 
-            class="tag-option"
-            [ngStyle]="{'background-color': tag.color || '#e0e0e0'}"
-            [ngClass]="{'selected': selectedObjectifTag?.id === tag.id}"
-            (click)="selectObjectifTag(tag)">
-            {{ tag.label }}
+        <!-- Colonne droite: Image ou placeholder -->
+        <section class="view-section">
+          <ng-container *ngIf="exerciceForm.get('imageUrl')?.value; else imagePlaceholder">
+            <div class="media-item">
+              <img [src]="mediaUrl(exerciceForm.get('imageUrl')?.value)" alt="Illustration de l'exercice" />
+              <div class="media-caption">Illustration</div>
+            </div>
+          </ng-container>
+          <ng-template #imagePlaceholder>
+            <div class="image-placeholder">
+              <span class="material-icons">image</span>
+              <span>Ajouter une image</span>
+            </div>
+          </ng-template>
+        </section>
+
+        <!-- Ligne: Objectif | Travail Spécifique | Critère de réussite -->
+        <section class="view-section">
+          <h3 class="view-heading light-blue">Objectif</h3>
+          <div class="tags-display" *ngIf="selectedObjectifTag">
+            <span class="tag" [style.background-color]="selectedObjectifTag.color || '#e0e0e0'">{{ selectedObjectifTag.label }}</span>
           </div>
-        </div>
+          <div *ngIf="!selectedObjectifTag && exerciceForm.get('objectif')?.value" class="muted">{{ exerciceForm.get('objectif')?.value }}</div>
+        </section>
+
+        <section class="view-section">
+          <h3 class="view-heading light-blue">Travail Spécifique</h3>
+          <div class="tags-display">
+            <span class="tag" *ngFor="let tag of selectedTravailSpecifiqueTags" [style.background-color]="tag.color || '#e0e0e0'">{{ tag.label }}</span>
+          </div>
+        </section>
+
+        <section class="view-section">
+          <h3 class="view-heading light-blue">Critère de réussite</h3>
+          <div class="view-text muted" *ngIf="exerciceForm.get('variables')?.value as vars">{{ vars.objectifsPedagogiques || '—' }}</div>
+        </section>
+
+        <!-- Variables (+) | Variables (-) -->
+        <section class="view-section">
+          <h3 class="view-heading green">Variable (+)</h3>
+          <ul class="dot-list" *ngIf="exerciceForm.get('variables')?.value as vars">
+            <li *ngFor="let v of (vars.variablesPlus || [])">{{ v }}</li>
+            <li *ngIf="!(vars.variablesPlus?.length)">—</li>
+          </ul>
+        </section>
+
+        <section class="view-section">
+          <h3 class="view-heading red">Variable (−)</h3>
+          <ul class="dot-list" *ngIf="exerciceForm.get('variables')?.value as vars">
+            <li *ngFor="let v of (vars.variablesMinus || [])">{{ v }}</li>
+            <li *ngIf="!(vars.variablesMinus?.length)">—</li>
+          </ul>
+        </section>
+
+        <!-- Format | Matériel | Durée -->
+        <section class="view-section">
+          <h3 class="view-heading sand">Format</h3>
+          <div class="tags-display">
+            <span class="tag" *ngFor="let tag of selectedFormatTags" [style.background-color]="tag.color || '#e0e0e0'">{{ tag.label }}</span>
+          </div>
+        </section>
+
+        <section class="view-section">
+          <h3 class="view-heading sand">Matériel</h3>
+          <ul class="dot-list" *ngIf="exerciceForm.get('variables')?.value as vars">
+            <li *ngIf="(f['materiel'].value || vars.materiel); else noMat">{{ f['materiel'].value || vars.materiel }}</li>
+          </ul>
+          <ng-template #noMat><div class="muted">—</div></ng-template>
+        </section>
+
+        <section class="view-section">
+          <h3 class="view-heading sand">Temps moyen</h3>
+          <!-- Affiche les tags TEMPS si présents, sinon repli sur la durée libre -->
+          <div class="tags-display" *ngIf="selectedTempsTags?.length; else dureeFallback">
+            <span class="tag" *ngFor="let tag of selectedTempsTags" [style.background-color]="tag.color || '#e0e0e0'">{{ tag.label }}</span>
+          </div>
+          <ng-template #dureeFallback>
+            <div class="muted" *ngIf="exerciceForm.get('variables')?.value as vars">{{ vars.duree || '—' }}</div>
+          </ng-template>
+        </section>
+
+        <!-- Notes -->
+        <section class="view-section view-span-3">
+          <h3 class="view-heading violet">Notes</h3>
+          <div class="view-text" *ngIf="exerciceForm.get('variables')?.value as vars">{{ f['notes'].value || vars.consignes || '—' }}</div>
+        </section>
       </div>
     </div>
+  </div>
 
-    <!-- Travail Spécifique (tags/chips) avec sélection dynamique -->
-    <div class="form-group">
-      <label>Travail Spécifique</label>
-      
-      <!-- Tags sélectionnés (repositionnés entre le titre et le champ) -->
-      <div class="selected-tags-container">
-        <div 
-          *ngFor="let tag of selectedTravailSpecifiqueTags; let i = index" 
-          class="tag-badge"
-          [style.background-color]="tag.color || '#e0e0e0'">
-          {{ tag.label }}
-          <button 
-            type="button" 
-            class="remove-tag-btn"
-            (click)="removeTravailSpecifiqueTag(i)">
-            ×
-          </button>
-        </div>
-      </div>
-      
-      <!-- Conteneur principal pour l'autocomplete -->
-      <div class="autocomplete-container">
-        <!-- Champ de recherche -->
+  <form *ngIf="!readonlyMode" [formGroup]="exerciceForm" (ngSubmit)="onSubmit()" class="edit-form">
+    <div class="form-grid">
+      <!-- Nom (plein largeur) -->
+      <section class="form-section form-span-3">
+        <h3 class="view-heading">Nom</h3>
         <input 
-          type="text"
-          class="tag-search"
-          id="travailSpecifiqueSearch"
-          placeholder="Rechercher un travail spécifique..."
-          [(ngModel)]="travailSpecifiqueFilter"
-          [ngModelOptions]="{standalone: true}"
-          (input)="filterTravailSpecifiqueTags(travailSpecifiqueFilter)"
-          (focus)="showTravailSpecifiqueDropdown = true"
-          (click)="showTravailSpecifiqueDropdown = true"
-          autocomplete="off"
+          type="text" 
+          id="nom" 
+          formControlName="nom" 
+          class="form-control"
+          [class.invalid]="submitted && f['nom'].errors"
         >
-        
-        <!-- Dropdown des suggestions -->
-        <div 
-          class="dropdown-menu" 
-          [class.show]="showTravailSpecifiqueDropdown">
-          
-          <!-- Message si aucune suggestion -->
-          <div *ngIf="filteredTravailSpecifiqueTags.length === 0" class="dropdown-item no-results">
-            Aucun travail spécifique trouvé
-          </div>
-          
-          <!-- Liste des suggestions -->
-          <div 
-            *ngFor="let tag of filteredTravailSpecifiqueTags" 
-            class="dropdown-item"
-            (mousedown)="selectTravailSpecifiqueTag(tag)">
-            <span 
-              class="color-dot" 
-              [style.background-color]="tag.color || '#e0e0e0'">
-            </span>
-            {{ tag.label }}
-          </div>
+        <div *ngIf="submitted && f['nom'].errors" class="error-message">
+          <div *ngIf="f['nom'].errors && f['nom'].errors['required']">Le nom est requis</div>
         </div>
-      </div>
-      
-      <!-- Message d'erreur si aucun tag sélectionné -->
-      <div *ngIf="submitted && selectedTravailSpecifiqueTags.length === 0" class="error-message">
-        Au moins un travail spécifique est requis
-      </div>
-    </div>
+      </section>
 
-    <!-- Variables sous forme de composant réutilisable -->
-    <div class="form-group">
-      <h3>Variables de l'exercice</h3>
-      <app-exercice-variables formControlName="variables"></app-exercice-variables>
-    </div>
+      <!-- Description (2 colonnes) -->
+      <section class="form-section form-span-2">
+        <h3 class="view-heading">Description</h3>
+        <textarea 
+          id="description" 
+          formControlName="description" 
+          class="form-control"
+          [class.invalid]="submitted && f['description'].errors"
+          rows="6"
+        ></textarea>
+        <div *ngIf="submitted && f['description'].errors" class="error-message">
+          <div *ngIf="f['description'].errors && f['description'].errors['required']">La description est requise</div>
+        </div>
+      </section>
 
-    <!-- Niveau (tags/chips) - lecture seule avec tags préenregistrés -->
-    <div class="form-group">
-      <label>Niveau</label>
-      
-      <!-- Tags sélectionnés (affichage uniquement) -->
-      <div class="selected-tags-container">
-        <div 
-          *ngFor="let tag of selectedNiveauTags; let i = index" 
-          class="tag-badge readonly"
-          [style.background-color]="tag.color || '#e0e0e0'">
-          {{ tag.level ? '★'.repeat(tag.level) : tag.label }}
-          <button 
-            type="button" 
-            class="remove-tag-btn"
-            (click)="removeNiveauTag(i)">
-            ×
-          </button>
+      <!-- Tuile image (1 colonne) + upload -->
+      <section class="form-section">
+        <h3 class="view-heading">Illustration</h3>
+        <div *ngIf="!(imagePreview || f['imageUrl'].value)" class="image-placeholder" style="margin-bottom:8px;">
+          <span class="material-icons">image</span>
+          <span>Ajouter une image</span>
         </div>
-      </div>
-      
-      <!-- Sélection parmi les niveaux préenregistrés -->
-      <div class="predefined-tags-container">
-        <div 
-          *ngFor="let tag of niveauTags" 
-          class="predefined-tag"
-          [class.selected]="isNiveauTagSelected(tag)"
-          [style.background-color]="tag.color || '#e0e0e0'"
-          (click)="toggleNiveauTag(tag)">
-          {{ tag.level ? '★'.repeat(tag.level) : tag.label }}
+        <div class="media-grid" *ngIf="imagePreview || f['imageUrl'].value">
+          <div class="media-item">
+            <img [src]="imagePreview || mediaUrl(f['imageUrl'].value)" alt="Prévisualisation de l'image" />
+            <div class="media-caption">Prévisualisation</div>
+          </div>
         </div>
-      </div>
-    </div>
-    
-    <!-- Temps (tags/chips) avec sélection dynamique -->
-    <div class="form-group">
-      <label>Temps</label>
-      
-      <!-- Tags sélectionnés (repositionnés entre le titre et le champ) -->
-      <div class="selected-tags-container">
-        <div 
-          *ngFor="let tag of selectedTempsTags; let i = index" 
-          class="tag-badge"
-          [style.background-color]="tag.color || '#e0e0e0'">
-          {{ tag.label }}
-          <button 
-            type="button" 
-            class="remove-tag-btn"
-            (click)="removeTempsTag(i)">
-            ×
-          </button>
-        </div>
-      </div>
-      
-      <!-- Conteneur principal pour l'autocomplete -->
-      <div class="autocomplete-container">
-        <!-- Champ de recherche -->
         <input 
-          type="text"
-          class="tag-search"
-          id="tempsSearch"
-          placeholder="Rechercher une durée..."
-          [(ngModel)]="tempsFilter"
-          [ngModelOptions]="{standalone: true}"
-          (input)="filterTempsTags(tempsFilter)"
-          (focus)="showTempsDropdown = true"
-          (click)="showTempsDropdown = true"
-          autocomplete="off"
-        >
-        
-        <!-- Dropdown des suggestions -->
-        <div 
-          class="dropdown-menu" 
-          [class.show]="showTempsDropdown">
-          
-          <!-- Message si aucune suggestion -->
-          <div *ngIf="filteredTempsTags.length === 0" class="dropdown-item no-results">
-            Aucune durée trouvée
-          </div>
-          
-          <!-- Liste des suggestions -->
-          <div 
-            *ngFor="let tag of filteredTempsTags" 
-            class="dropdown-item"
-            (mousedown)="selectTempsTag(tag)">
-            <span 
-              class="color-dot" 
-              [style.background-color]="tag.color || '#e0e0e0'">
-            </span>
-            {{ tag.label }}
-          </div>
+          type="file" 
+          accept="image/png, image/jpeg, image/jpg, image/gif, image/webp"
+          (change)="onImageSelected($event)"
+          [disabled]="uploading"
+          style="margin:8px 0;"
+        />
+        <div class="d-flex gap-2" style="margin-bottom:6px;">
+          <button type="button" class="btn btn-secondary" (click)="uploadSelectedImage()" [disabled]="!selectedImageFile || uploading">Uploader</button>
+          <button type="button" class="btn btn-light" (click)="clearSelectedImage()" [disabled]="!selectedImageFile || uploading">Annuler</button>
         </div>
-      </div>
-    </div>
+        <small class="form-text text-muted">PNG, JPG, GIF, WEBP · max 5 Mo</small>
+        <div *ngIf="uploading" class="info-message" style="margin-top:6px;">Upload en cours…</div>
+        <div class="form-group" style="margin-top:10px;">
+          <label for="imageUrl">URL de l'image</label>
+          <input type="text" id="imageUrl" formControlName="imageUrl" class="form-control" placeholder="https://exemple.com/image.jpg">
+        </div>
+        <div class="form-group" style="margin-top:8px;">
+          <label for="schemaUrl">URL du schéma</label>
+          <input type="text" id="schemaUrl" formControlName="schemaUrl" class="form-control" placeholder="https://exemple.com/schema.jpg">
+        </div>
+      </section>
 
-    <!-- Format (tags/chips) avec sélection dynamique -->
-    <div class="form-group">
-      <label>Format / Nombre de joueurs</label>
-      
-      <!-- Tags sélectionnés (repositionnés entre le titre et le champ) -->
-      <div class="selected-tags-container">
-        <div 
-          *ngFor="let tag of selectedFormatTags; let i = index" 
-          class="tag-badge"
-          [style.background-color]="tag.color || '#e0e0e0'">
-          {{ tag.label }}
-          <button 
-            type="button" 
-            class="remove-tag-btn"
-            (click)="removeFormatTag(i)">
-            ×
-          </button>
+      <!-- Objectif -->
+      <section class="form-section">
+        <h3 class="view-heading light-blue">Objectif</h3>
+        <div *ngIf="submitted && !selectedObjectifTag" class="error-message">L'objectif est requis</div>
+        <div class="selected-tags-container">
+          <div *ngIf="selectedObjectifTag" class="tag-badge" [style.background-color]="selectedObjectifTag.color || '#e0e0e0'">
+            {{ selectedObjectifTag.label }}
+            <button type="button" class="remove-tag-btn" (click)="removeObjectifTag()">×</button>
+          </div>
         </div>
-      </div>
-      
-      <!-- Conteneur principal pour l'autocomplete -->
-      <div class="autocomplete-container">
-        <!-- Champ de recherche -->
+        <div class="autocomplete-container" id="objectifContainer">
+          <div class="tag-dropdown-toggle" (click)="toggleObjectifDropdown()">Choisir un objectif</div>
+          <div class="tag-dropdown-menu" [class.show]="showObjectifDropdown">
+            <div *ngIf="filteredObjectifTags.length === 0" class="tag-dropdown-item no-results">Aucun objectif trouvé</div>
+            <div *ngFor="let tag of filteredObjectifTags" class="tag-dropdown-item" (mousedown)="selectObjectifTag(tag)">
+              <span class="color-dot" [style.background-color]="tag.color || '#e0e0e0'"></span>
+              {{ tag.label }}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Travail spécifique -->
+      <section class="form-section">
+        <h3 class="view-heading light-blue">Travail Spécifique</h3>
+        <div class="selected-tags-container">
+          <div *ngFor="let tag of selectedTravailSpecifiqueTags; let i = index" class="tag-badge" [style.background-color]="tag.color || '#e0e0e0'">
+            {{ tag.label }}
+            <button type="button" class="remove-tag-btn" (click)="removeTravailSpecifiqueTag(i)">×</button>
+          </div>
+        </div>
+        <div class="autocomplete-container" id="travailSpecifiqueContainer">
+          <div class="tag-dropdown-toggle" (click)="toggleTravailDropdown()">Choisir un travail spécifique</div>
+          <div class="tag-dropdown-menu" [class.show]="showTravailSpecifiqueDropdown">
+            <div *ngIf="filteredTravailSpecifiqueTags.length === 0" class="tag-dropdown-item no-results">Aucun travail spécifique trouvé</div>
+            <div *ngFor="let tag of filteredTravailSpecifiqueTags" class="tag-dropdown-item" (mousedown)="selectTravailSpecifiqueTag(tag)">
+              <span class="color-dot" [style.background-color]="tag.color || '#e0e0e0'"></span>
+              {{ tag.label }}
+            </div>
+          </div>
+        </div>
+        <div *ngIf="submitted && selectedTravailSpecifiqueTags.length === 0" class="error-message">Au moins un travail spécifique est requis</div>
+      </section>
+
+      <!-- Variables (plein largeur) -->
+      <section class="form-section form-span-3">
+        <h3 class="view-heading green">Variables</h3>
+        <app-exercice-variables formControlName="variables"></app-exercice-variables>
+      </section>
+
+      <!-- Matériel (1 colonne) -->
+      <section class="form-section">
+        <h3 class="view-heading sand">Matériel</h3>
         <input 
-          type="text"
-          class="tag-search"
-          id="formatSearch"
-          placeholder="Rechercher un format..."
-          [(ngModel)]="formatFilter"
-          [ngModelOptions]="{standalone: true}"
-          (input)="filterFormatTags(formatFilter)"
-          (focus)="showFormatDropdown = true"
-          (click)="showFormatDropdown = true"
-          autocomplete="off"
+          type="text" 
+          id="materiel"
+          formControlName="materiel"
+          class="form-control"
+          placeholder="Ex: 10 cônes, 5 disques..."
         >
-        
-        <!-- Dropdown des suggestions -->
-        <div 
-          class="dropdown-menu" 
-          [class.show]="showFormatDropdown">
-          
-          <!-- Message si aucune suggestion -->
-          <div *ngIf="filteredFormatTags.length === 0" class="dropdown-item no-results">
-            Aucun format trouvé
+      </section>
+
+      <!-- Notes (2 colonnes) -->
+      <section class="form-section form-span-2">
+        <h3 class="view-heading violet">Notes</h3>
+        <textarea 
+          id="notes" 
+          formControlName="notes" 
+          class="form-control"
+          rows="4"
+          placeholder="Notes complémentaires, consignes particulières, adaptations..."
+        ></textarea>
+      </section>
+
+      <!-- Niveau -->
+      <section class="form-section">
+        <h3 class="view-heading">Niveau</h3>
+        <div class="selected-tags-container">
+          <div *ngFor="let tag of selectedNiveauTags; let i = index" class="tag-badge" [style.background-color]="tag.color || '#e0e0e0'">
+            {{ tag.level ? '★'.repeat(tag.level) : tag.label }}
+            <button type="button" class="remove-tag-btn" (click)="removeNiveauTag(i)">×</button>
           </div>
-          
-          <!-- Liste des suggestions -->
-          <div 
-            *ngFor="let tag of filteredFormatTags" 
-            class="dropdown-item"
-            (mousedown)="selectFormatTag(tag)">
-            <span 
-              class="color-dot" 
-              [style.background-color]="tag.color || '#e0e0e0'">
-            </span>
+        </div>
+        <div class="autocomplete-container" id="niveauContainer">
+          <div class="tag-dropdown-toggle" (click)="toggleNiveauDropdown()">Choisir un niveau</div>
+          <div class="tag-dropdown-menu" [class.show]="showNiveauDropdown">
+            <div *ngIf="filteredNiveauTags.length === 0" class="tag-dropdown-item no-results">Aucun niveau trouvé</div>
+            <div *ngFor="let tag of filteredNiveauTags" class="tag-dropdown-item" (mousedown)="selectNiveauTag(tag)">
+              <span class="color-dot" [style.background-color]="tag.color || '#e0e0e0'"></span>
+              {{ tag.level ? '★'.repeat(tag.level) : tag.label }}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Temps moyen -->
+      <section class="form-section">
+        <h3 class="view-heading">Temps moyen</h3>
+        <div class="selected-tags-container">
+          <div *ngFor="let tag of selectedTempsTags; let i = index" class="tag-badge" [style.background-color]="tag.color || '#e0e0e0'">
             {{ tag.label }}
+            <button type="button" class="remove-tag-btn" (click)="removeTempsTag(i)">×</button>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- URL de l'image (facultatif) -->
-    <div class="form-group">
-      <label for="imageUrl">URL de l'image (facultatif)</label>
-      <input 
-        type="text" 
-        id="imageUrl" 
-        formControlName="imageUrl" 
-        class="form-control"
-        placeholder="https://exemple.com/image.jpg"
-      >
-    </div>
-
-    <!-- URL du schéma (facultatif) -->
-    <div class="form-group">
-      <label for="schemaUrl">URL du schéma tactique (facultatif)</label>
-      <input 
-        type="text" 
-        id="schemaUrl" 
-        formControlName="schemaUrl" 
-        class="form-control"
-        placeholder="https://exemple.com/schema.jpg"
-      >
-    </div>
-
-    <!-- Boutons d'action -->
-    <div class="form-group submit-section">
-      <div class="d-flex justify-content-between">
-        <button type="submit" class="btn btn-primary" *ngIf="!editMode">Ajouter l'exercice</button>
-        <div *ngIf="editMode" class="d-flex gap-3">
-          <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
-          <button type="button" class="btn btn-secondary" (click)="onCancel()">Annuler</button>
+        <div class="autocomplete-container" id="tempsContainer">
+          <div class="tag-dropdown-toggle" (click)="toggleTempsDropdown()">Choisir un temps moyen</div>
+          <div class="tag-dropdown-menu" [class.show]="showTempsDropdown">
+            <div *ngIf="filteredTempsTags.length === 0" class="tag-dropdown-item no-results">Aucune durée trouvée</div>
+            <div *ngFor="let tag of filteredTempsTags" class="tag-dropdown-item" (mousedown)="selectTempsTag(tag)">
+              <span class="color-dot" [style.background-color]="tag.color || '#e0e0e0'"></span>
+              {{ tag.label }}
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
+
+      <!-- Format -->
+      <section class="form-section">
+        <h3 class="view-heading sand">Format</h3>
+        <div class="selected-tags-container">
+          <div *ngFor="let tag of selectedFormatTags; let i = index" class="tag-badge" [style.background-color]="tag.color || '#e0e0e0'">
+            {{ tag.label }}
+            <button type="button" class="remove-tag-btn" (click)="removeFormatTag(i)">×</button>
+          </div>
+        </div>
+        <div class="autocomplete-container" id="formatContainer">
+          <div class="tag-dropdown-toggle" (click)="toggleFormatDropdown()">Choisir un format</div>
+          <div class="tag-dropdown-menu" [class.show]="showFormatDropdown">
+            <div *ngIf="filteredFormatTags.length === 0" class="tag-dropdown-item no-results">Aucun format trouvé</div>
+            <div *ngFor="let tag of filteredFormatTags" class="tag-dropdown-item" (mousedown)="selectFormatTag(tag)">
+              <span class="color-dot" [style.background-color]="tag.color || '#e0e0e0'"></span>
+              {{ tag.label }}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Boutons d'action (plein largeur) -->
+      <section class="form-section form-span-3 submit-section">
+        <div class="d-flex justify-content-between">
+          <button type="submit" class="btn btn-primary" *ngIf="!editMode">Ajouter l'exercice</button>
+          <div *ngIf="editMode" class="d-flex gap-3">
+            <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+            <button type="button" class="btn btn-secondary" (click)="onCancel()">Annuler</button>
+          </div>
+        </div>
+      </section>
     </div>
   </form>
 

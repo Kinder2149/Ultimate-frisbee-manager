@@ -1,0 +1,211 @@
+      <!-- Thème d'entraînement -->
+      <div class="filter-group dropdown-filter" *ngIf="show.themeEntrainement">
+        <h3>Thème d'entraînement</h3>
+        <div class="filters-dropdown-container">
+          <button class="tag-dropdown-toggle" (click)="toggleDropdown('theme_entrainement')">
+            Sélectionner <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="tag-dropdown-menu" [class.show]="activeDropdown === 'theme_entrainement'">
+            <div
+              *ngFor="let tag of themeEntrainementTags"
+              class="tag-dropdown-item"
+              [class.selected]="selectedThemeEntrainementTags.includes(tag.id || '')"
+              (click)="toggleThemeEntrainementTag(tag.id || '')"
+            >
+              <span class="tag-color" [style.background-color]="tag.color || '#FF5722'"></span>
+              <span class="tag-label">{{ tag.label }}</span>
+              <span class="tag-check" *ngIf="selectedThemeEntrainementTags.includes(tag.id || '')"><i class="fas fa-check"></i></span>
+            </div>
+          </div>
+        </div>
+        <div class="selected-tags">
+          <span
+            class="selected-tag"
+            *ngFor="let tagId of selectedThemeEntrainementTags"
+            [style.background-color]="getTagById(tagId)?.color || '#eee'"
+          >
+            {{ getTagById(tagId)?.label }}
+            <span class="remove-tag" (click)="toggleThemeEntrainementTag(tagId)"><i class="fas fa-times"></i></span>
+          </span>
+        </div>
+      </div>
+<div class="filters-section card">
+  <div class="card-header">
+    <h2>Filtres de recherche</h2>
+  </div>
+  <div class="card-body">
+    <div class="search-bar">
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="onSearchChange()"
+        placeholder="Rechercher un exercice..."
+        class="search-input"
+      />
+      <button class="reset-btn" (click)="reset()">Réinitialiser les filtres</button>
+    </div>
+
+    <div class="tag-filters" *ngIf="!hideTagSections">
+      <!-- Objectif -->
+      <div class="filter-group dropdown-filter" *ngIf="show.objectif">
+        <h3>Objectif</h3>
+        <div class="filters-dropdown-container">
+          <button class="tag-dropdown-toggle" (click)="toggleDropdown('objectif')">
+            Sélectionner <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="tag-dropdown-menu" [class.show]="activeDropdown === 'objectif'">
+            <div
+              *ngFor="let tag of objectifTags"
+              class="tag-dropdown-item"
+              [class.selected]="selectedObjectifTags.includes(tag.id || '')"
+              (click)="toggleObjectifTag(tag.id || '')"
+            >
+              <span class="tag-color" [style.background-color]="tag.color || '#4285F4'"></span>
+              <span class="tag-label">{{ tag.label }}</span>
+              <span class="tag-check" *ngIf="selectedObjectifTags.includes(tag.id || '')"><i class="fas fa-check"></i></span>
+            </div>
+          </div>
+        </div>
+        <div class="selected-tags">
+          <div
+            *ngFor="let tagId of selectedObjectifTags"
+            class="selected-tag-badge"
+            [style.background-color]="getTagById(tagId)?.color || '#4285F4'"
+          >
+            {{ getTagById(tagId)?.label }}
+            <span class="remove-tag" (click)="toggleObjectifTag(tagId)"><i class="fas fa-times"></i></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Travail Spécifique -->
+      <div class="filter-group dropdown-filter" *ngIf="show.travail">
+        <h3>Travail Spécifique</h3>
+        <div class="filters-dropdown-container">
+          <button class="tag-dropdown-toggle" (click)="toggleDropdown('travail')">
+            Sélectionner <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="tag-dropdown-menu" [class.show]="activeDropdown === 'travail'">
+            <div
+              *ngFor="let tag of travailSpecifiqueTags"
+              class="tag-dropdown-item"
+              [class.selected]="selectedTravailSpecifiqueTags.includes(tag.id || '')"
+              (click)="toggleTravailSpecifiqueTag(tag.id || '')"
+            >
+              <span class="tag-color" [style.background-color]="tag.color || '#FBBC05'"></span>
+              <span class="tag-label">{{ tag.label }}</span>
+              <span class="tag-check" *ngIf="selectedTravailSpecifiqueTags.includes(tag.id || '')"><i class="fas fa-check"></i></span>
+            </div>
+          </div>
+        </div>
+        <div class="selected-tags">
+          <div
+            *ngFor="let tagId of selectedTravailSpecifiqueTags"
+            class="selected-tag-badge"
+            [style.background-color]="getTagById(tagId)?.color || '#FBBC05'"
+          >
+            {{ getTagById(tagId)?.label }}
+            <span class="remove-tag" (click)="toggleTravailSpecifiqueTag(tagId)"><i class="fas fa-times"></i></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Niveau -->
+      <div class="filter-group dropdown-filter" *ngIf="show.niveau">
+        <h3>Niveau</h3>
+        <div class="filters-dropdown-container">
+          <button class="tag-dropdown-toggle" (click)="toggleDropdown('niveau')">
+            Sélectionner <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="tag-dropdown-menu" [class.show]="activeDropdown === 'niveau'">
+            <div
+              *ngFor="let tag of niveauTags"
+              class="tag-dropdown-item"
+              [class.selected]="selectedNiveauTags.includes(tag.id || '')"
+              (click)="toggleNiveauTag(tag.id || '')"
+            >
+              <span class="tag-color" [style.background-color]="tag.color || '#34A853'"></span>
+              <span class="tag-label">{{ tag.level ? '★'.repeat(tag.level) : tag.label }}</span>
+              <span class="tag-check" *ngIf="selectedNiveauTags.includes(tag.id || '')"><i class="fas fa-check"></i></span>
+            </div>
+          </div>
+        </div>
+        <div class="selected-tags">
+          <div
+            *ngFor="let tagId of selectedNiveauTags"
+            class="selected-tag-badge"
+            [style.background-color]="getTagById(tagId)?.color || '#34A853'"
+          >
+            {{ getTagById(tagId)?.level ? '★'.repeat(getTagById(tagId)?.level || 0) : getTagById(tagId)?.label }}
+            <span class="remove-tag" (click)="toggleNiveauTag(tagId)"><i class="fas fa-times"></i></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Temps moyen -->
+      <div class="filter-group dropdown-filter" *ngIf="show.temps">
+        <h3>Temps moyen</h3>
+        <div class="filters-dropdown-container">
+          <button class="tag-dropdown-toggle" (click)="toggleDropdown('temps')">
+            Sélectionner <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="tag-dropdown-menu" [class.show]="activeDropdown === 'temps'">
+            <div
+              *ngFor="let tag of tempsTags"
+              class="tag-dropdown-item"
+              [class.selected]="selectedTempsTags.includes(tag.id || '')"
+              (click)="toggleTempsTag(tag.id || '')"
+            >
+              <span class="tag-color" [style.background-color]="tag.color || '#9C27B0'"></span>
+              <span class="tag-label">{{ tag.label }}</span>
+              <span class="tag-check" *ngIf="selectedTempsTags.includes(tag.id || '')"><i class="fas fa-check"></i></span>
+            </div>
+          </div>
+        </div>
+        <div class="selected-tags">
+          <div
+            *ngFor="let tagId of selectedTempsTags"
+            class="selected-tag-badge"
+            [style.background-color]="getTagById(tagId)?.color || '#9C27B0'"
+          >
+            {{ getTagById(tagId)?.label }}
+            <span class="remove-tag" (click)="toggleTempsTag(tagId)"><i class="fas fa-times"></i></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Format -->
+      <div class="filter-group dropdown-filter" *ngIf="show.format">
+        <h3>Format</h3>
+        <div class="filters-dropdown-container">
+          <button class="tag-dropdown-toggle" (click)="toggleDropdown('format')">
+            Sélectionner <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="tag-dropdown-menu" [class.show]="activeDropdown === 'format'">
+            <div
+              *ngFor="let tag of formatTags"
+              class="tag-dropdown-item"
+              [class.selected]="selectedFormatTags.includes(tag.id || '')"
+              (click)="toggleFormatTag(tag.id || '')"
+            >
+              <span class="tag-color" [style.background-color]="tag.color || '#00BCD4'"></span>
+              <span class="tag-label">{{ tag.label }}</span>
+              <span class="tag-check" *ngIf="selectedFormatTags.includes(tag.id || '')"><i class="fas fa-check"></i></span>
+            </div>
+          </div>
+        </div>
+        <div class="selected-tags">
+          <div
+            *ngFor="let tagId of selectedFormatTags"
+            class="selected-tag-badge"
+            [style.background-color]="getTagById(tagId)?.color || '#00BCD4'"
+          >
+            {{ getTagById(tagId)?.label }}
+            <span class="remove-tag" (click)="toggleFormatTag(tagId)"><i class="fas fa-times"></i></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -1,42 +1,122 @@
-<div class="exercice-card" [class.expanded]="expanded">
-  <!-- Nouvelle barre d'actions uniformisée -->
-  <div class="action-bar">
-    <button mat-icon-button (click)="editExercice($event)" matTooltip="Modifier">
-      <mat-icon>edit</mat-icon>
-    </button>
-    
-    <app-duplicate-button 
-      [entityId]="exercice.id!" 
-      entityType="exercice"
-      [loading]="duplicating"
-      (duplicate)="duplicateExercice($event)">
-    </app-duplicate-button>
-    
-    <button mat-icon-button (click)="deleteExercice($event)" matTooltip="Supprimer" class="delete-btn">
-      <mat-icon>delete</mat-icon>
-    </button>
-    
-    <button mat-icon-button (click)="toggleExpand()" [matTooltip]="expanded ? 'Réduire' : 'Développer'">
-      <mat-icon>{{ expanded ? 'expand_less' : 'expand_more' }}</mat-icon>
-    </button>
+<div class="exercice-card entity-card" [ngClass]="{ 'left-time': leftTime, 'right-time': true }">
+  <!-- Rail temps à gauche -->
+  <div *ngIf="leftTime && dureeDisplay" class="left-rail-time" aria-label="Durée">
+    <mat-icon>schedule</mat-icon>
+    <span>{{ dureeDisplay }}</span>
+  </div>
+
+  <!-- Rail temps à droite (toujours affiché si durée) -->
+  <div *ngIf="dureeDisplay" class="right-rail-time exercice" aria-label="Durée (droite)">
+    <mat-icon>schedule</mat-icon>
+    <span>{{ dureeDisplay }}</span>
+  </div>
+  <div class="card-header" (click)="onHeaderClick()">
+    <div class="title-section">
+      <div class="title-left">
+        <span *ngIf="index as idx" class="index-bubble">{{ idx }}</span>
+        <h3>{{ exercice.nom }}</h3>
+      </div>
+      <!-- Groupe d'actions en pilule aligné à droite -->
+      <div class="action-group" (click)="$event.stopPropagation()" *ngIf="mode === 'default'">
+        <button mat-icon-button (click)="viewExercice($event)" matTooltip="Voir">
+          <mat-icon>visibility</mat-icon>
+        </button>
+        <button mat-icon-button (click)="editExercice($event)" matTooltip="Modifier">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <app-duplicate-button 
+          [entityId]="exercice.id!" 
+          entityType="exercice"
+          [loading]="duplicating"
+          (duplicate)="duplicateExercice($event)">
+        </app-duplicate-button>
+        <button mat-icon-button (click)="deleteExercice($event)" matTooltip="Supprimer" class="delete-btn">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+    </div>
+    <div class="header-badge">
+      <span class="badge badge-exercice">Exercice</span>
+      <!-- Affichage simple de la durée quand non éditable -->
+      <span *ngIf="!leftTime && dureeDisplay && !allowEditDuration" class="duration-pill">
+        <mat-icon class="duration-icon">schedule</mat-icon>
+        {{ dureeDisplay }}
+      </span>
+      <!-- Éditeur de durée (+/-) en mode entraînement -->
+      <span *ngIf="mode === 'entrainement' && allowEditDuration" class="duration-pill">
+        <button mat-icon-button (click)="incrementDuration(-1)" matTooltip="-1 min">
+          <mat-icon>remove</mat-icon>
+        </button>
+        <mat-icon class="duration-icon">schedule</mat-icon>
+        {{ dureeDisplay || '0 min' }}
+        <button mat-icon-button (click)="incrementDuration(1)" matTooltip="+1 min">
+          <mat-icon>add</mat-icon>
+        </button>
+      </span>
+    </div>
   </div>
   
-  <div class="card-header" (click)="toggleExpand()">
-    <div class="title-section">
-      <h3>{{ exercice.nom }}</h3>
+  <!-- Bloc d'infos rapide en mode entraînement -->
+  <div class="training-quick-info" *ngIf="mode === 'entrainement'">
+    <!-- Description courte -->
+    <div class="info-row" *ngIf="exercice.description as desc">
+      <span class="label">Description :</span>
+      <span class="value">{{ desc }}</span>
     </div>
-    <!-- Toujours afficher l'objectif et le travail spécifique en haut de la carte -->
-    <div class="essential-tags">
-      <!-- Objectif tag -->
-      <div class="tag-badge objectif-badge" *ngIf="objectifTag" 
-           [style.background-color]="objectifTag.color || '#4285F4'">
-        {{ objectifTag.label }}
+
+    <!-- Bouton image / schéma -->
+    <div class="info-row" *ngIf="exercice.schemaUrl">
+      <button mat-stroked-button color="primary" (click)="toggleShowImage()">
+        <mat-icon>{{ showImage ? 'hide_image' : 'image' }}</mat-icon>
+        {{ showImage ? 'Masquer l\'image' : 'Afficher l\'image' }}
+      </button>
+    </div>
+    <div class="schema" *ngIf="showImage && exercice.schemaUrl">
+      <img [src]="exercice.schemaUrl" alt="Schéma de l'exercice" />
+    </div>
+
+    <!-- Objectif -->
+    <div class="info-row" *ngIf="objectifTag">
+      <span class="label">Objectif :</span>
+      <div class="tags-display">
+        <span class="tag tag--objectif" [style.background-color]="objectifTag.color || '#34A853'">{{ objectifTag.label }}</span>
       </div>
-      
-      <!-- Travail spécifique tags -->
-      <div class="tag-badge travail-badge" *ngFor="let tag of travailSpecifiqueTags" 
-           [style.background-color]="tag.color || '#FBBC05'">
-        {{ tag.label }}
+    </div>
+
+    <!-- Travail spécifique -->
+    <div class="info-row" *ngIf="travailSpecifiqueTags && travailSpecifiqueTags.length > 0">
+      <span class="label">Travail spécifique :</span>
+      <div class="tags-display">
+        <span class="tag tag--travail" *ngFor="let tag of travailSpecifiqueTags" [style.background-color]="tag.color || '#1E88E5'">{{ tag.label }}</span>
+      </div>
+    </div>
+
+    <!-- Variables (texte libre) -->
+    <div class="info-row" *ngIf="exercice.variablesText as vars">
+      <span class="label">Variables :</span>
+      <span class="value">{{ vars }}</span>
+    </div>
+
+    <!-- Format -->
+    <div class="info-row" *ngIf="formatTags && formatTags.length > 0">
+      <span class="label">Format :</span>
+      <div class="tags-display">
+        <span class="tag format-tag tag--format" *ngFor="let tag of formatTags" [style.background-color]="tag.color || '#00BCD4'">{{ tag.label }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lignes de résumé visibles sans expansion: Date et Thèmes -->
+  <div class="card-body summary-rows">
+    <div class="info-row" *ngIf="exercice.createdAt">
+      <span class="label">Date :</span>
+      <span class="value">{{ exercice.createdAt | date:'dd/MM/yyyy' }}</span>
+    </div>
+    <div class="info-row" *ngIf="objectifTag || (travailSpecifiqueTags && travailSpecifiqueTags.length > 0)">
+      <span class="label">Thèmes :</span>
+      <div class="tags-display">
+        <span class="tag tag--objectif" *ngIf="objectifTag" [style.background-color]="objectifTag.color || '#34A853'">{{ objectifTag.label }}</span>
+        <span class="tag tag--travail" *ngFor="let tag of travailSpecifiqueTags" [style.background-color]="tag.color || '#1E88E5'">{{ tag.label }}</span>
       </div>
     </div>
   </div>
@@ -62,17 +142,17 @@
       <div class="tag-group" *ngIf="niveauTags.length > 0">
         <h4>Niveau:</h4>
         <div class="tags-container">
-          <span class="tag niveau-tag" *ngFor="let tag of niveauTags" [style.background-color]="tag.color || '#34A853'">
+          <span class="tag niveau-tag tag--niveau" *ngFor="let tag of niveauTags" [style.background-color]="tag.color || '#34A853'">
             {{ tag.level ? '★'.repeat(tag.level) : tag.label }}
           </span>
         </div>
       </div>
       
-      <!-- Temps tags - nouvelle section -->
+      <!-- Temps moyen tags - nouvelle section -->
       <div class="tag-group" *ngIf="tempsTags && tempsTags.length > 0">
-        <h4>Temps:</h4>
+        <h4>Temps moyen:</h4>
         <div class="tags-container">
-          <span class="tag temps-tag" *ngFor="let tag of tempsTags" [style.background-color]="tag.color || '#9C27B0'">
+          <span class="tag temps-tag tag--temps" *ngFor="let tag of tempsTags" [style.background-color]="tag.color || '#9C27B0'">
             {{ tag.label }}
           </span>
         </div>
@@ -82,7 +162,7 @@
       <div class="tag-group" *ngIf="formatTags && formatTags.length > 0">
         <h4>Format:</h4>
         <div class="tags-container">
-          <span class="tag format-tag" *ngFor="let tag of formatTags" [style.background-color]="tag.color || '#00BCD4'">
+          <span class="tag format-tag tag--format" *ngFor="let tag of formatTags" [style.background-color]="tag.color || '#00BCD4'">
             {{ tag.label }}
           </span>
         </div>
@@ -94,11 +174,15 @@
     <!-- Footer avec date et bouton -->
     <div class="card-footer">
       <div class="d-flex justify-content-between align-items-center">
-        <span class="created-at" *ngIf="exercice.createdAt">
-          Créé le: {{ exercice.createdAt | date:'dd/MM/yyyy' }}
-        </span>
+        <span class="created-at meta-info" *ngIf="exercice.createdAt">Créé le {{ exercice.createdAt | date:'dd/MM/yyyy' }}</span>
         <!-- Les boutons d'action ont été déplacés vers la barre d'actions en haut à droite -->
       </div>
+    </div>
+    
+    <!-- Notes spécifiques à l'entraînement (si fournies par le parent) -->
+    <div class="notes-panel" *ngIf="notes">
+      <h4>Notes pour cet entraînement :</h4>
+      <p>{{ notes }}</p>
     </div>
   </div>
 </div>

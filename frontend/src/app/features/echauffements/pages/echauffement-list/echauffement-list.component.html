@@ -7,6 +7,12 @@
     </button>
   </div>
 
+  <!-- Filtres: recherche uniquement -->
+  <app-exercice-filters
+    [hideTagSections]="true"
+    (filtersChange)="onFiltersChange($event)"
+  ></app-exercice-filters>
+
   <!-- Indicateur de chargement -->
   <div *ngIf="isLoading" class="loading-container">
     <mat-spinner></mat-spinner>
@@ -14,7 +20,7 @@
   </div>
 
   <!-- Message si aucun échauffement -->
-  <div *ngIf="!isLoading && echauffements.length === 0" class="empty-state">
+  <div *ngIf="!isLoading && filteredEchauffements.length === 0" class="empty-state">
     <mat-icon class="empty-icon">fitness_center</mat-icon>
     <h3>Aucun échauffement trouvé</h3>
     <p>Commencez par créer votre premier échauffement</p>
@@ -25,19 +31,36 @@
   </div>
 
   <!-- Liste des échauffements -->
-  <div *ngIf="!isLoading && echauffements.length > 0" class="echauffements-grid">
-    <mat-card *ngFor="let echauffement of echauffements" class="echauffement-card">
-      <mat-card-header>
-        <mat-card-title>{{ echauffement.nom }}</mat-card-title>
-        <mat-card-subtitle>
-          <div class="subtitle-info">
-            <span class="blocs-count">{{ getNombreBlocsText(echauffement) }}</span>
-            <span class="date" *ngIf="echauffement.createdAt">
-              Créé le {{ formatDate(echauffement.createdAt) }}
-            </span>
+  <div *ngIf="!isLoading && filteredEchauffements.length > 0" class="echauffements-grid">
+    <mat-card *ngFor="let echauffement of filteredEchauffements" class="echauffement-card entity-card">
+      <!-- Header harmonisé -->
+      <div class="card-header">
+        <div class="title-section">
+          <h3>{{ echauffement.nom }}</h3>
+          <div class="action-group">
+            <button mat-icon-button (click)="onViewEchauffement(echauffement)" matTooltip="Voir">
+              <mat-icon>visibility</mat-icon>
+            </button>
+            <button mat-icon-button (click)="onEditEchauffement(echauffement)" matTooltip="Modifier">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button (click)="onDuplicateEchauffement(echauffement)" matTooltip="Dupliquer">
+              <mat-icon>content_copy</mat-icon>
+            </button>
+            <button mat-icon-button class="delete-btn" (click)="onDeleteEchauffement(echauffement)" matTooltip="Supprimer">
+              <mat-icon>delete</mat-icon>
+            </button>
           </div>
-        </mat-card-subtitle>
-      </mat-card-header>
+        </div>
+        <div class="header-badge">
+          <span class="badge badge-echauffement">ÉCHAUFFEMENT</span>
+          <a class="blocs-count-link">{{ getNombreBlocsText(echauffement) }}</a>
+          <span class="total-time" matTooltip="Temps total des blocs">
+            <mat-icon inline>timer</mat-icon>
+            {{ formatTotalTemps(echauffement) }}
+          </span>
+        </div>
+      </div>
 
       <mat-card-content>
         <p class="description">
@@ -54,21 +77,6 @@
           </div>
         </div>
       </mat-card-content>
-
-      <mat-card-actions align="end">
-        <button mat-button (click)="onEditEchauffement(echauffement)" title="Modifier">
-          <mat-icon>edit</mat-icon>
-          Modifier
-        </button>
-        <button mat-button (click)="onDuplicateEchauffement(echauffement)" title="Dupliquer">
-          <mat-icon>content_copy</mat-icon>
-          Dupliquer
-        </button>
-        <button mat-button color="warn" (click)="onDeleteEchauffement(echauffement)" title="Supprimer">
-          <mat-icon>delete</mat-icon>
-          Supprimer
-        </button>
-      </mat-card-actions>
     </mat-card>
   </div>
 </div>

@@ -1,3 +1,95 @@
+/* Bande d'en-tête harmonisée */
+.echauffement-card .card-header {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background-color: #f4f6f8;
+  cursor: default;
+  border-bottom: 1px solid #e6e8eb;
+  overflow: visible;
+}
+
+.echauffement-card .title-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  flex-wrap: nowrap;
+  min-height: 48px;
+}
+
+.echauffement-card .title-section h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #2b2d31;
+}
+
+/* Actions à droite (sans pilule) */
+.echauffement-card .action-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.echauffement-card .action-group button[mat-icon-button] {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  line-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.echauffement-card .action-group mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
+  color: #6b7280;
+}
+
+.echauffement-card .action-group button[mat-icon-button]:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.echauffement-card .action-group .delete-btn mat-icon,
+.echauffement-card .delete-btn {
+  color: #f44336;
+}
+
+/* Badge sous le titre */
+.echauffement-card .header-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.echauffement-card .badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.echauffement-card .badge-echauffement {
+  background-color: #e0f2fe; /* bleu très clair */
+  color: #075985; /* bleu foncé */
+}
+
+.echauffement-card .blocs-count-link {
+  font-size: 12px;
+  color: #3f51b5;
+  text-decoration: none;
+}
+
 .echauffement-list-container {
   max-width: 1200px;
   margin: 20px auto;
@@ -60,8 +152,8 @@
 
 .echauffements-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
 }
 
 .echauffement-card {
@@ -133,6 +225,13 @@ mat-card-actions button {
 }
 
 /* Styles responsives */
+@media (max-width: 1024px) {
+  .echauffements-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
 @media (max-width: 768px) {
   .echauffement-list-container {
     margin: 10px;
@@ -142,11 +241,6 @@ mat-card-actions button {
   .header {
     flex-direction: column;
     align-items: stretch;
-    gap: 15px;
-  }
-  
-  .echauffements-grid {
-    grid-template-columns: 1fr;
     gap: 15px;
   }
   

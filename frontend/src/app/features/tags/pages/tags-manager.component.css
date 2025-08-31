@@ -44,6 +44,22 @@ h2, h3 {
   margin-top: 20px;
 }
 
+/* Amélioration de la lisibilité des onglets (taille + gras) uniquement sur cette page */
+:host ::ng-deep .tags-tabs .mat-mdc-tab .mdc-tab__text-label {
+  font-size: 1.05rem; /* ~16.8px */
+  font-weight: 700;   /* gras */
+}
+
+/* Augmente un peu la hauteur des onglets pour une meilleure cliquabilité */
+:host ::ng-deep .tags-tabs .mat-mdc-tab {
+  min-height: 48px;
+}
+
+/* Espace horizontal un peu plus généreux */
+:host ::ng-deep .tags-tabs .mat-mdc-tab .mdc-tab__content {
+  padding: 0 16px;
+}
+
 .category-content {
   padding: 20px 0;
 }

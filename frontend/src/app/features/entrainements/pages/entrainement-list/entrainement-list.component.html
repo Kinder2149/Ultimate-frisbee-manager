@@ -7,6 +7,15 @@
     </button>
   </div>
 
+  <!-- Filtres: recherche + Thème d'entraînement -->
+  <app-exercice-filters
+    [hideTagSections]="false"
+    [show]="{ objectif: false, travail: false, niveau: false, temps: false, format: false, themeEntrainement: true }"
+    [themeEntrainementTags]="themeEntrainementTags"
+    [allTags]="allTags"
+    (filtersChange)="onFiltersChange($event)"
+  ></app-exercice-filters>
+
   <!-- Message de chargement -->
   <div *ngIf="loading" class="loading">
     <p>Chargement des entraînements...</p>
@@ -21,7 +30,7 @@
   <!-- Liste des entraînements -->
   <div *ngIf="!loading && !error" class="entrainements-grid">
     <!-- Message si aucun entraînement -->
-    <div *ngIf="entrainements.length === 0" class="no-entrainements">
+    <div *ngIf="filteredEntrainements.length === 0" class="no-entrainements">
       <p>Aucun entraînement trouvé.</p>
       <button class="btn btn-primary" (click)="creerEntrainement()">
         Créer le premier entraînement
@@ -29,25 +38,38 @@
     </div>
 
     <!-- Cartes des entraînements -->
-    <div *ngFor="let entrainement of entrainements" class="card">
+    <div *ngFor="let entrainement of filteredEntrainements" class="card entity-card entrainement-card">
       <div class="card-header">
-        <h3 (click)="voirEntrainement(entrainement.id!)">{{ entrainement.titre }}</h3>
-        <div class="actions">
-          <button class="btn-icon" (click)="voirEntrainement(entrainement.id!)" title="Voir">
-            <i class="material-icons">visibility</i>
-          </button>
-          <button class="btn-icon" (click)="modifierEntrainement(entrainement.id!)" title="Modifier">
-            <i class="material-icons">edit</i>
-          </button>
-          <app-duplicate-button 
-            [entityId]="entrainement.id!" 
-            entityType="entraînement"
-            [loading]="duplicatingIds.has(entrainement.id!)"
-            (duplicate)="dupliquerEntrainement($event)">
-          </app-duplicate-button>
-          <button class="btn-icon danger" (click)="supprimerEntrainement(entrainement)" title="Supprimer">
-            <i class="material-icons">delete</i>
-          </button>
+        <div class="title-section">
+          <h3 (click)="voirEntrainement(entrainement.id!)">{{ entrainement.titre }}</h3>
+          <div class="action-group">
+            <button 
+              class="btn-icon" 
+              *ngIf="entrainement.echauffement" 
+              (click)="voirEchauffement(entrainement.id!)" 
+              title="Voir l'échauffement">
+              <i class="material-icons">fitness_center</i>
+            </button>
+            <button class="btn-icon" (click)="modifierEntrainement(entrainement.id!)" title="Modifier">
+              <i class="material-icons">edit</i>
+            </button>
+            <app-duplicate-button 
+              [entityId]="entrainement.id!" 
+              entityType="entraînement"
+              [loading]="duplicatingIds.has(entrainement.id!)"
+              (duplicate)="dupliquerEntrainement($event)">
+            </app-duplicate-button>
+            <button class="btn-icon danger" (click)="supprimerEntrainement(entrainement)" title="Supprimer">
+              <i class="material-icons">delete</i>
+            </button>
+          </div>
+        </div>
+        <div class="header-badge">
+          <span class="badge badge-entrainement">ENTRAÎNEMENT</span>
+          <span class="total-time" title="Durée totale de l'entraînement (échauffement + exercices + situation)">
+            <i class="material-icons">timer</i>
+            {{ formatDureeTotaleEntrainement(entrainement) }}
+          </span>
         </div>
       </div>
 
@@ -69,11 +91,7 @@
           </div>
         </div>
 
-        <!-- Durée totale -->
-        <div class="info-row" *ngIf="entrainement.dureeTotal && entrainement.dureeTotal > 0">
-          <span class="label">Durée totale :</span>
-          <span class="value duration">{{ formatDuree(entrainement.dureeTotal) }}</span>
-        </div>
+        
 
         <!-- Nombre d'exercices -->
         <div class="info-row" *ngIf="entrainement.exercices && entrainement.exercices.length > 0">

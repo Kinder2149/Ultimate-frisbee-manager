@@ -1,0 +1,28 @@
+.title {
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 1.2;
+  margin-left: 8px;
+}
+
+mat-card {
+  margin-top: 16px;
+}
+
+mat-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+// Centrer la carte profil sur grands écrans
+app-user-profile-card {
+  display: block;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+// Petit ajustement du spinner et de la ligne de chargement
+:host ::ng-deep .mat-mdc-progress-spinner {
+  --mdc-circular-progress-active-indicator-color: #3f51b5;
+}

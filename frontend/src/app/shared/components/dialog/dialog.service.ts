@@ -31,6 +31,7 @@ export class DialogService {
       height: config.height,
       maxHeight: config.maxHeight,
       minHeight: config.minHeight,
+      panelClass: config.panelClass,
       disableClose: config.disableClose || false,
       data: {
         dialogConfig: config,

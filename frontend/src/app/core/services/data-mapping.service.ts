@@ -1,6 +1,4 @@
 import { Injectable } from '@angular/core';
-import { Training, TrainingTag } from '../models/training.model';
-import { Entrainement, TrainingTag as FeatureTrainingTag } from '../../features/trainings/services/training.models';
 
 /**
  * Type étendu pour la compatibilité entre les différents modèles de tag
@@ -28,12 +26,21 @@ export interface ExtendedTrainingTag {
 /**
  * Type étendu pour la compatibilité entre les différents modèles d'entraînement
  */
-export interface ExtendedTraining extends Training {
-  // Propriétés du modèle de l'application
+export interface ExtendedTraining {
+  id: string;
+  titre: string;
+  description?: string;
+  duree?: number;
+  niveau?: number;
+  date?: string | null;
+  tags?: ExtendedTrainingTag[];
+  phases?: any[];
+  // Propriétés additionnelles pour la compatibilité
   title?: string;
   duration?: number;
   difficulty?: number;
   isDraft?: boolean;
+  createdAt?: Date;
 }
 
 /**
@@ -130,7 +137,7 @@ export class DataMappingService {
       difficulty: apiTraining.difficulte || apiTraining.difficulty || 0,
       isDraft: apiTraining.isDraft || false,
       createdAt: apiTraining.createdAt ? new Date(apiTraining.createdAt) : new Date()
-    };
+    } as ExtendedTraining;
   }
 
   /**
@@ -146,7 +153,7 @@ export class DataMappingService {
 
     // Conversion des tags en IDs pour l'API
     const tagIds = appTraining.tags && Array.isArray(appTraining.tags)
-      ? appTraining.tags.map(tag => tag.id)
+      ? appTraining.tags.map((tag: ExtendedTrainingTag) => tag.id)
       : [];
 
     return {
@@ -166,7 +173,7 @@ export class DataMappingService {
    * @param apiTrainings Tableau d'entraînements provenant de l'API
    * @returns Tableau d'entraînements au format de l'application
    */
-  mapApiTrainingsToAppTrainings(apiTrainings: any[]): Training[] {
+  mapApiTrainingsToAppTrainings(apiTrainings: any[]): ExtendedTraining[] {
     if (!apiTrainings || !Array.isArray(apiTrainings)) {
       console.warn('mapApiTrainingsToAppTrainings called with invalid data:', apiTrainings);
       return [];

@@ -15,29 +15,70 @@ import { CoreModule } from './core/core.module';
 import { TagsAdvancedModule } from './features/tags-advanced/tags-advanced.module';
 
 
+// Import du guard d'authentification
+import { AuthGuard } from './core/guards/auth.guard';
+
 // Définition des routes de l'application
 const routes: Routes = [
-  // Route directe vers le dashboard - PRIORITÉ ABSOLUE
+  // Route de connexion (publique)
+  { 
+    path: 'login', 
+    loadChildren: () => import('./features/auth/auth.module').then(m => m.AuthModule)
+  },
+  
+  // Route directe vers le dashboard (protégée)
   { 
     path: '', 
     component: DashboardComponent,
+    pathMatch: 'full',
+    canActivate: [AuthGuard]
+  },
+  
+  // Routes des features avec lazy loading (toutes protégées)
+  { 
+    path: 'tags', 
+    redirectTo: 'parametres/tags',
     pathMatch: 'full'
   },
-  // Nouvelles routes pour la navigation réorganisée
+  { 
+    path: 'tags-advanced', 
+    loadChildren: () => import('./features/tags-advanced/tags-advanced.module').then(m => m.TagsAdvancedModule),
+    canActivate: [AuthGuard]
+  },
+  { 
+    path: 'parametres', 
+    loadChildren: () => import('./features/settings/settings.module').then(m => m.SettingsModule),
+    canActivate: [AuthGuard]
+  },
+  { 
+    path: 'exercices', 
+    loadChildren: () => import('./features/exercices/exercices.module').then(m => m.ExercicesModule),
+    canActivate: [AuthGuard],
+    data: { preload: true } // Précharger le module
+  },
+  { 
+    path: 'entrainements', 
+    loadChildren: () => import('./features/entrainements/entrainements.module').then(m => m.EntrainementsModule),
+    canActivate: [AuthGuard]
+  },
+  { 
+    path: 'echauffements', 
+    loadChildren: () => import('./features/echauffements/echauffements.module').then(m => m.EchauffenementsModule),
+    canActivate: [AuthGuard]
+  },
+  { 
+    path: 'situations-matchs', 
+    loadChildren: () => import('./features/situations-matchs/situations-matchs.module').then(m => m.SituationsMatchsModule),
+    canActivate: [AuthGuard]
+  },
+  { 
+    path: 'exercices', 
+    loadChildren: () => import('./features/exercices/exercices.module').then(m => m.ExercicesModule),
+    canActivate: [AuthGuard]
+  },
   
-  
-  // Routes des features avec lazy loading
-  { path: 'tags', loadChildren: () => import('./features/tags/tags.module').then(m => m.TagsModule) },
-  { path: 'tags-advanced', loadChildren: () => import('./features/tags-advanced/tags-advanced.module').then(m => m.TagsAdvancedModule) },
-  { path: 'exercices', loadChildren: () => import('./features/exercices/exercices.module').then(m => m.ExercicesModule) },
-  // Routes pour les entraînements complets
-  { path: 'entrainements', loadChildren: () => import('./features/entrainements/entrainements.module').then(m => m.EntrainementsModule) },
-  // Routes pour les échauffements
-  { path: 'echauffements', loadChildren: () => import('./features/echauffements/echauffements.module').then(m => m.EchauffenementsModule) },
-  // Routes pour les situations/matchs
-  { path: 'situations-matchs', loadChildren: () => import('./features/situations-matchs/situations-matchs.module').then(m => m.SituationsMatchsModule) },
   // Route de fallback
-  { path: '**', redirectTo: '/' }
+  { path: '**', redirectTo: '/login' }
 ];
 
 @NgModule({

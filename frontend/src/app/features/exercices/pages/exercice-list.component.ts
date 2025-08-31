@@ -1,12 +1,26 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Subscription, forkJoin } from 'rxjs';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+
+// Services
 import { ExerciceService } from '../../../core/services/exercice.service';
 import { TagService } from '../../../core/services/tag.service';
+import { ExerciceDialogService } from '../services/exercice-dialog.service';
+
+// Models
 import { Exercice } from '../../../core/models/exercice.model';
 import { Tag, TagCategory } from '../../../core/models/tag.model';
-import { ExerciceCardComponent } from '../components/exercice-card.component'; // Sera mis à jour quand le composant sera déplacé
-import { forkJoin } from 'rxjs';
+import { DialogResult } from '../../../shared/components/dialog/dialog-config.model';
+
+// Components
+import { ExerciceCardComponent } from '../components/exercice-card.component';
+import { ExerciceFiltersComponent, ExerciceFiltersValue } from '../components/exercice-filters.component';
 
 /**
  * Composant de page affichant la liste des exercices avec les filtres
@@ -16,9 +30,59 @@ import { forkJoin } from 'rxjs';
   templateUrl: './exercice-list.component.html',
   styleUrls: ['./exercice-list.component.css'],
   standalone: true,
-  imports: [CommonModule, FormsModule, ExerciceCardComponent]
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    ReactiveFormsModule,
+    MatButtonModule, 
+    MatIconModule, 
+    RouterModule,
+    MatSnackBarModule,
+    MatDialogModule,
+    ExerciceCardComponent, 
+    ExerciceFiltersComponent
+  ],
+  host: {
+    class: 'flex flex-col h-full overflow-hidden'
+  }
 })
-export class ExerciceListComponent implements OnInit {
+export class ExerciceListComponent implements OnInit, OnDestroy {
+  // Injecter les services nécessaires
+  private routeSubscription?: Subscription;
+  
+  constructor(
+    private exerciceService: ExerciceService,
+    private tagService: TagService,
+    private router: Router,
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog,
+    private exerciceDialogService: ExerciceDialogService,
+    private route: ActivatedRoute
+  ) { 
+    console.log('ExerciceListComponent chargé');
+    
+    // S'abonner aux changements de route
+    this.routeSubscription = this.route.url.subscribe(url => {
+      console.log('Changement de route détecté:', url);
+    });
+  }
+  
+  ngOnDestroy() {
+    // Nettoyer l'abonnement lors de la destruction du composant
+    if (this.routeSubscription) {
+      this.routeSubscription.unsubscribe();
+    }
+  }
+
+  /**
+   * Gère le clic sur le bouton d'ajout d'un nouvel exercice
+   * Navigue vers le formulaire d'ajout
+   */
+  onAddExercice(): void {
+    this.router.navigate(['/exercices/ajouter']);
+  }
+  
+  // Propriétés du composant
   exercices: Exercice[] = [];
   filteredExercices: Exercice[] = [];
   loading = true;
@@ -38,15 +102,8 @@ export class ExerciceListComponent implements OnInit {
   niveauTags: Tag[] = [];
   tempsTags: Tag[] = [];
   formatTags: Tag[] = [];
-  
-  // Gestion des dropdowns
-  activeDropdown: string | null = null;
   allTags: Tag[] = []; // Pour faciliter la recherche par ID
 
-  constructor(
-    private exerciceService: ExerciceService,
-    private tagService: TagService
-  ) {}
 
   ngOnInit(): void {
     this.loading = true;
@@ -73,14 +130,6 @@ export class ExerciceListComponent implements OnInit {
 
         // Masquer le message de chargement
         this.loading = false;
-        
-        // Fermer le dropdown si on clique en dehors
-        document.addEventListener('click', (event) => {
-          const target = event.target as HTMLElement;
-          if (!target.closest('.dropdown-container') && this.activeDropdown) {
-            this.activeDropdown = null;
-          }
-        });
       },
       error: (err) => {
         console.error('Erreur lors du chargement des données:', err);
@@ -177,62 +226,16 @@ export class ExerciceListComponent implements OnInit {
   }
 
   /**
-   * Recherche par terme dans le nom et la description
+   * Reçoit la valeur des filtres du composant enfant et applique
    */
-  onSearchChange(): void {
+  onFiltersChange(value: ExerciceFiltersValue): void {
+    this.searchTerm = value.searchTerm;
+    this.selectedObjectifTags = value.selectedObjectifTags;
+    this.selectedTravailSpecifiqueTags = value.selectedTravailSpecifiqueTags;
+    this.selectedNiveauTags = value.selectedNiveauTags;
+    this.selectedTempsTags = value.selectedTempsTags;
+    this.selectedFormatTags = value.selectedFormatTags;
     this.applyFilters();
-  }
-
-  /**
-   * Toggle la sélection d'un tag d'objectif
-   */
-  toggleObjectifTag(tagId: string): void {
-    this.toggleTagSelection(tagId, this.selectedObjectifTags);
-    this.applyFilters();
-  }
-
-  /**
-   * Toggle la sélection d'un tag de travail spécifique
-   */
-  toggleTravailSpecifiqueTag(tagId: string): void {
-    this.toggleTagSelection(tagId, this.selectedTravailSpecifiqueTags);
-    this.applyFilters();
-  }
-
-  /**
-   * Toggle la sélection d'un tag de niveau
-   */
-  toggleNiveauTag(tagId: string): void {
-    this.toggleTagSelection(tagId, this.selectedNiveauTags);
-    this.applyFilters();
-  }
-  
-  /**
-   * Toggle la sélection d'un tag de temps
-   */
-  toggleTempsTag(tagId: string): void {
-    this.toggleTagSelection(tagId, this.selectedTempsTags);
-    this.applyFilters();
-  }
-
-  /**
-   * Toggle la sélection d'un tag de format
-   */
-  toggleFormatTag(tagId: string): void {
-    this.toggleTagSelection(tagId, this.selectedFormatTags);
-    this.applyFilters();
-  }
-
-  /**
-   * Fonction helper pour toggle un tag dans une liste
-   */
-  private toggleTagSelection(tagId: string, tagList: string[]): void {
-    const index = tagList.indexOf(tagId);
-    if (index === -1) {
-      tagList.push(tagId);
-    } else {
-      tagList.splice(index, 1);
-    }
   }
 
   /**
@@ -342,67 +345,61 @@ export class ExerciceListComponent implements OnInit {
    * @param exerciceId ID de l'exercice supprimé
    */
   onExerciceDeleted(exerciceId: string): void {
-    console.log(`Exercice ${exerciceId} supprimé, mise à jour de la liste`);
-    
-    // Retirer l'exercice supprimé des listes
+    console.log(`Exercice supprimé avec l'ID: ${exerciceId}`);
+    // Filtrer la liste des exercices pour supprimer l'exercice supprimé
     this.exercices = this.exercices.filter(ex => ex.id !== exerciceId);
     this.filteredExercices = this.filteredExercices.filter(ex => ex.id !== exerciceId);
     
-    // Afficher une notification de succès
-    alert('Exercice supprimé avec succès');
+    // Afficher un message de confirmation
+    this.showSuccessMessage('Exercice supprimé avec succès');
   }
 
   /**
    * Gère la duplication d'un exercice
-   * @param duplicatedExercice Exercice dupliqué
+   * @param newExercice Nouvel exercice
    */
-  onExerciceDuplicated(duplicatedExercice: Exercice): void {
-    console.log(`Exercice dupliqué:`, duplicatedExercice);
+  onExerciceDuplicated(newExercice: Exercice): void {
+    console.log('Exercice dupliqué:', newExercice);
+    // Ajouter le nouvel exercice au début des listes
+    this.exercices.unshift(newExercice);
+    this.filteredExercices.unshift(newExercice);
     
-    // Ajouter l'exercice dupliqué aux listes
-    this.exercices.push(duplicatedExercice);
-    
-    // Enrichir le nouvel exercice avec ses tags
-    this.enrichExercicesWithTags();
-    
-    // Réappliquer les filtres pour inclure le nouvel exercice
-    this.applyFilters();
-    
-    // Afficher une notification de succès
-    alert('Exercice dupliqué avec succès');
+    // Afficher un message de confirmation
+    this.showSuccessMessage('Exercice dupliqué avec succès');
   }
 
   /**
    * Gère la modification d'un exercice
-   * @param updatedExercice Exercice modifié
+   * @param updatedExercice Exercice mis à jour
    */
   onExerciceUpdated(updatedExercice: Exercice): void {
-    console.log(`Exercice modifié:`, updatedExercice);
-    
-    // Trouver et remplacer l'exercice modifié dans la liste
+    console.log('Exercice mis à jour:', updatedExercice);
+    // Mettre à jour l'exercice dans les listes
     const index = this.exercices.findIndex(ex => ex.id === updatedExercice.id);
     if (index !== -1) {
-      this.exercices[index] = updatedExercice;
+      this.exercices[index] = { ...updatedExercice };
+      // Mettre à jour également dans la liste filtrée si nécessaire
+      const filteredIndex = this.filteredExercices.findIndex(ex => ex.id === updatedExercice.id);
+      if (filteredIndex !== -1) {
+        this.filteredExercices[filteredIndex] = { ...updatedExercice };
+      }
+      
+      // Afficher un message de confirmation
+      this.showSuccessMessage('Exercice mis à jour avec succès');
     }
-    
-    // Enrichir les exercices avec leurs tags
-    this.enrichExercicesWithTags();
-    
-    // Réappliquer les filtres
-    this.applyFilters();
-    
-    // Afficher une notification de succès
-    alert('Exercice modifié avec succès');
   }
 
   /**
-   * Gère l'ouverture/fermeture des listes déroulantes
-   * @param dropdown identifiant du dropdown à activer
+   * Affiche un message de succès
+   * @param message Message à afficher
    */
-  toggleDropdown(dropdown: string): void {
-    this.activeDropdown = this.activeDropdown === dropdown ? null : dropdown;
+  private showSuccessMessage(message: string): void {
+    this.snackBar.open(message, 'Fermer', {
+      duration: 3000,
+      panelClass: ['success-snackbar']
+    });
   }
-  
+
   /**
    * Trouve un tag par son ID
    * @param id ID du tag à rechercher

@@ -129,7 +129,7 @@ L'application dispose désormais d'un système complet de gestion des tags, perm
 2. **Travail Spécifique** : Décrit les compétences ou aspects travaillés dans l'exercice
 3. **Variable** : Représente les paramètres qui peuvent être ajustés dans l'exercice
 4. **Niveau** : Indique le niveau de difficulté ou de progression
-5. **Temps** : Indique la durée approximative de l'exercice
+5. **Temps moyen** : Indique la durée approximative de l'exercice
 6. **Format** : Précise le nombre de joueurs ou la configuration de l'exercice
 
 ### Migration depuis l'ancien système
@@ -149,7 +149,7 @@ L'application a été entièrement refactorisée pour suivre les principes d'arc
 
 La catégorie "Élément travaillé" a été renommée en "Travail Spécifique" pour mieux refléter son usage. De plus, deux nouvelles catégories ont été ajoutées :
 
-- **Temps** : Pour indiquer la durée estimée d'un exercice (ex: "5-10 min", "15-20 min", etc.)
+- **Temps moyen** : Pour indiquer la durée estimée d'un exercice (ex: "5-10 min", "15-20 min", etc.)
 - **Format** : Pour préciser le format de jeu ou le nombre de joueurs (ex: "3vs3", "Small sided", "7vs7", etc.)
 
 Ces évolutions permettent une meilleure catégorisation et recherche des exercices.

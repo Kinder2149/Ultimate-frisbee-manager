@@ -9,9 +9,73 @@
   position: relative; /* Position relative pour que la barre d'actions puisse être positionnée en absolu */
 }
 
+/* Rail de temps à gauche (activé par la classe .left-time) */
+.exercice-card.left-time {
+  padding-left: 84px; /* harmonisé avec entrainement-detail */
+}
+
+/* Rail de temps à droite */
+.exercice-card.right-time {
+  padding-right: 84px; /* colonne droite */
+}
+
+.left-rail-time {
+  position: absolute;
+  left: 16px;
+  top: 12px;
+  width: 64px;
+  min-height: 56px;
+  border-radius: 10px;
+  background: #f5f5f5; /* neutre */
+  color: #555; /* neutre */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-weight: 700;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+}
+
+.right-rail-time {
+  position: absolute;
+  right: 16px;
+  top: 12px;
+  width: 64px;
+  min-height: 56px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-weight: 700;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  background: #f5f5f5; /* neutre */
+  color: #555; /* neutre */
+}
+
+/* Variante rouge pour exercices (droite) */
+.right-rail-time.exercice {
+  background: #f5f5f5;
+  color: #555;
+}
+
+.left-rail-time mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
 .exercice-card:hover {
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
   transform: translateY(-2px);
+}
+
+/* État sélectionné */
+.exercice-card.selected {
+  border-color: #1976d2;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.15), 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
 .exercice-card.expanded {
@@ -19,13 +83,15 @@
 }
 
 .card-header {
-  padding: 18px 20px;
+  padding: 12px 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  background-color: #f8f9fa;
-  cursor: pointer;
+  gap: 8px;
+  background-color: #f7f7f7; /* neutre */
+  color: #333;
+  cursor: default;
   border-bottom: 1px solid #e0e0e0;
+  overflow: visible; /* éviter la coupe des boutons */
 }
 
 .title-section {
@@ -33,6 +99,30 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
+  flex-wrap: nowrap;
+  min-height: 48px;
+}
+
+/* Conteneur gauche avec pastille d'index + titre */
+.title-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Pastille d'index numérotée */
+.index-bubble {
+  background: #e0e0e0; /* neutre */
+  color: #333;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .title-section h3 {
@@ -77,6 +167,137 @@
 
 .expanded .expand-icon {
   transform: rotate(180deg);
+}
+
+/* Groupe d'actions en pilule dans le header */
+.action-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+}
+
+.action-group button[mat-icon-button] {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  line-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.action-group mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
+}
+
+/* Icônes neutres comme sur l'exemple (gris), sauf suppression en rouge) */
+.action-group button[mat-icon-button] mat-icon {
+  color: #555; /* neutre */
+}
+
+.action-group button[mat-icon-button]:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.action-group .delete-btn {
+  color: #f44336;
+}
+
+.action-group .delete-btn:hover {
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
+/* Badge sous le titre (EXERCICE) */
+.header-badge {
+  margin-top: 2px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #f1f1f1; /* neutre */
+  border: 1px solid #dddddd;
+  color: #333;
+}
+
+.badge-exercice {
+  background-color: #eeeeee;
+  color: #555;
+}
+
+/* Pilule de durée alignée au badge */
+.duration-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background-color: #eeeeee;
+  color: #333;
+}
+
+.duration-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+/* Lignes de résumé: Date & Thèmes (toujours visibles) */
+.summary-rows {
+  padding: 12px 20px;
+}
+
+.summary-rows .info-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.summary-rows .info-row:last-child {
+  margin-bottom: 0;
+}
+
+.summary-rows .label {
+  font-weight: 600;
+  color: #555;
+  min-width: 80px;
+  margin-right: 10px;
+}
+
+.summary-rows .value {
+  color: #333;
+  font-weight: 500;
+}
+
+.summary-rows .tags-display {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.summary-rows .tags-display .tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #f1f1f1;
+  border: 1px solid #dddddd;
+  color: #333;
 }
 
 /* Contenu de la carte (visible quand déplié) */
@@ -137,15 +358,36 @@
   gap: 8px;
 }
 
-/* Styles des tags individuels */
 .tag {
-  padding: 5px 10px;
+  padding: 4px 10px;
   border-radius: 16px;
-  color: white;
-  font-size: 13px;
+  color: #333;
+  font-size: 12px;
   display: inline-flex;
   align-items: center;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-weight: 600;
+}
+
+/* Catégories en mode neutre (pas de couleurs vives) */
+.tag--objectif { background-color: #f1f1f1; color: #333; border: 1px solid #ddd; }
+.tag--travail  { background-color: #f1f1f1; color: #333; border: 1px solid #ddd; }
+.tag--format   { background-color: #f1f1f1; color: #333; border: 1px solid #ddd; }
+.tag--temps    { background-color: #f1f1f1; color: #333; border: 1px solid #ddd; }
+.tag--niveau   { background-color: #f1f1f1; color: #333; border: 1px solid #ddd; }
+
+/* Protection anti-chevauchement avec la colonne temps à droite */
+.exercice-card.right-time .card-body,
+.exercice-card.right-time .card-content,
+.exercice-card.right-time .card-footer {
+  padding-right: 84px;
+}
+
+/* Mobile: limiter l'affichage de tags à 2 lignes */
+@media (max-width: 768px) {
+  .tags-display, .tags-container {
+    max-height: 2.8em; /* ~2 lignes */
+    overflow: hidden;
+  }
 }
 
 /* Card footer */
@@ -211,25 +453,35 @@
 
 .card-footer {
   display: flex;
-  justify-content: flex-end;
-  color: #999;
+  justify-content: flex-start;
+  color: #666;
   font-size: 12px;
   margin-top: 10px;
+  border-top: 1px solid #e9ecef;
+  padding-top: 10px;
 }
 
-/* Styles pour la barre d'actions */
-.action-bar {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  display: flex;
-  gap: 4px;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 20px;
-  padding: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  z-index: 10;
+/* Notes spécifiques à l'entraînement (intégrées en bas de la carte) */
+.notes-panel {
+  margin-top: 12px;
+  background: #fff8e1;
+  border-left: 4px solid #ffc107;
+  padding: 10px 12px;
+  border-radius: 6px;
 }
+
+.notes-panel h4 {
+  margin: 0 0 6px 0;
+  font-size: 14px;
+  color: #6b6000;
+}
+
+.notes-panel p {
+  margin: 0;
+  color: #5f5f5f;
+}
+
+/* .action-bar supprimé (remplacé par .action-group) */
 
 .action-bar button {
   width: 32px;

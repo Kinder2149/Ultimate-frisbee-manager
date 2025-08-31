@@ -46,6 +46,25 @@
   gap: var(--spacing-lg);
 }
 
+/* État vide lorsque aucun bloc n'est présent */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xl);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--border-radius-md);
+  background: var(--bg-secondary, #fafbfc);
+  color: var(--text-secondary, #6b7280);
+  margin-bottom: var(--spacing-lg);
+
+  p {
+    margin: 0;
+  }
+}
+
 .bloc-item {
   width: 100%;
 }

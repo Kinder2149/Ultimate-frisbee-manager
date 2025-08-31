@@ -38,6 +38,40 @@ export class ApiUrlService {
   }
 
   /**
+   * Construit une URL absolue pour un média (ex: /uploads/...).
+   * - Si l'entrée est déjà absolue (http/https), on la retourne telle quelle.
+   * - Si l'entrée commence par '/', on la préfixe par la base d'hôte dérivée de apiUrl (sans le suffixe /api).
+   * - Sinon on considère que c'est un chemin relatif d'API et on passe par getUrl.
+   */
+  getMediaUrl(pathOrUrl?: string | null): string | null {
+    if (!pathOrUrl) return null;
+
+    const val = String(pathOrUrl).trim();
+    if (!val) return null;
+
+    // Déjà absolu
+    if (/^https?:\/\//i.test(val)) {
+      return val;
+    }
+
+    // Dériver la base host à partir de apiUrl en retirant le suffixe '/api'
+    // Exemple: http://localhost:3002/api => http://localhost:3002
+    const hostBase = this.apiBaseUrl.replace(/\/?api\/?$/i, '');
+
+    if (val.startsWith('/')) {
+      return `${hostBase}${val}`.replace(/([^:]\/)\/+/g, '$1');
+    }
+
+    // Chemins relatifs de médias connus (ex: 'uploads/...') => préfixer hostBase
+    if (/^(uploads|static|files)\//i.test(val)) {
+      return `${hostBase}/${val}`.replace(/([^:]\/)\/+/g, '$1');
+    }
+
+    // Sinon, tenter via l'API (cas particulier)
+    return this.getUrl(val);
+  }
+
+  /**
    * Retourne l'URL pour les entraînements
    * @returns URL complète pour l'API des entraînements
    */

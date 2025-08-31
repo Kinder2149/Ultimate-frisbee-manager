@@ -109,6 +109,16 @@
   padding-bottom: 0.5rem;
 }
 
+/* Thème rouge pour la section Exercices */
+.section.exercice-theme {
+  border-color: #f5c2c7; /* rouge clair */
+  background: #fff5f5;  /* très léger rouge rosé */
+}
+
+.section.exercice-theme h2 {
+  border-bottom-color: #e74c3c; /* rouge d'accent (déjà utilisé par total-duration) */
+}
+
 .info-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -249,6 +259,47 @@
   margin-top: 0.5rem;
 }
 
+/* Harmonisation des tags (catégories) dans toutes les sections de la page */
+.section .tag-list, .section .tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.section .tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #fff;
+}
+
+/* Titre "Tags" discret et harmonisé (comme ExerciceCard) */
+.section .tags h4,
+.section .themed-content .tags h4 {
+  margin: 0 0 6px 0;
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+/* Marges autour des zones de tags pour une cohérence visuelle */
+.section .tags,
+.section .themed-content .tags {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+/* Mobile: limiter l'affichage de tags à 2 lignes dans les sections */
+@media (max-width: 768px) {
+  .section .tag-list, .section .tags-list {
+    max-height: 2.8em;
+    overflow: hidden;
+  }
+}
+
 .tag {
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
@@ -319,6 +370,114 @@
   border-left: 4px solid #FF9800;
 }
 
+/* Harmonisation: rail de temps à gauche pour les blocs */
+.bloc-item.left-time {
+  position: relative;
+  padding-left: 84px; /* espace pour le rail gauche */
+}
+
+/* Rail de temps à droite (blocs) */
+.bloc-item.right-time {
+  position: relative;
+  padding-right: 84px; /* espace pour le rail droit */
+}
+
+/* Éviter chevauchement: contenu décalé quand colonne droite présente */
+.bloc-item.right-time .bloc-content { padding-right: 84px; }
+.themed-card.right-time .themed-content { padding-right: 84px; }
+
+/* Pastille d'index unifiée (réutilise le style des cartes exercices) */
+.index-bubble {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 13px;
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Variante orange pour échauffement */
+.echauffement-theme .index-bubble {
+  background: #E65100;
+}
+
+.left-rail-time {
+  position: absolute;
+  left: 16px;
+  top: 12px;
+  width: 64px;
+  min-height: 56px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-weight: 700;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+}
+
+.right-rail-time {
+  position: absolute;
+  right: 16px;
+  top: 12px;
+  width: 64px;
+  min-height: 56px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-weight: 700;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+}
+
+/* Variantes de couleur */
+.left-rail-time.echauffement {
+  background: #FFF0DB; /* orange très clair */
+  color: #E65100;      /* orange foncé */
+}
+
+.right-rail-time.echauffement {
+  background: #FFF0DB; /* orange très clair */
+  color: #E65100;      /* orange foncé */
+}
+
+.left-rail-time i.material-icons {
+  font-size: 18px;
+  line-height: 18px;
+}
+
+.right-rail-time i.material-icons {
+  font-size: 18px;
+  line-height: 18px;
+}
+
+/* Variante verte pour situation */
+.left-rail-time.situation {
+  background: #E6F4EA; /* vert très clair */
+  color: #1B5E20;      /* vert foncé */
+}
+
+.right-rail-time.situation {
+  background: #E6F4EA; /* vert très clair */
+  color: #1B5E20;      /* vert foncé */
+}
+
+/* Responsive: réduire la taille des rails en mobile */
+@media (max-width: 768px) {
+  .bloc-item.left-time { padding-left: 72px; }
+  .bloc-item.right-time { padding-right: 72px; }
+  .themed-card.left-time { padding-left: 72px; }
+  .themed-card.right-time { padding-right: 72px; }
+  .left-rail-time, .right-rail-time { width: 56px; }
+}
+
 .bloc-number {
   background: #FF9800;
   color: white;
@@ -364,6 +523,17 @@
   border-radius: 8px;
   overflow: hidden;
   background: #E8F5E8;
+}
+
+/* Harmonisation: support du rail gauche pour les cartes thémées (situation) */
+.themed-card.left-time {
+  position: relative;
+  padding-left: 84px;
+}
+
+.themed-card.right-time {
+  position: relative;
+  padding-right: 84px;
 }
 
 .situation-header {

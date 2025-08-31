@@ -1,0 +1,23 @@
+.users-table {
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+}
+
+mat-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  .title { font-weight: 600; font-size: 16px; }
+}
+
+.new-user-form {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  margin: 12px 0 16px;
+}

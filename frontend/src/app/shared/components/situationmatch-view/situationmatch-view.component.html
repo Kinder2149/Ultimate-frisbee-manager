@@ -1,0 +1,42 @@
+<div class="dialog-container">
+  <div class="dialog-header sticky">
+    <h2 class="title">
+      <mat-icon class="title-icon">sports</mat-icon>
+      {{ situationMatch?.nom || (situationMatch?.type || 'Situation/Match') }}
+    </h2>
+    <button mat-icon-button aria-label="Fermer" (click)="close()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+  <mat-divider></mat-divider>
+
+  <div class="dialog-content">
+    <div class="section hero">
+      <div class="hero-icon"><mat-icon>sports_soccer</mat-icon></div>
+      <h3 class="hero-title">{{ situationMatch?.type }}</h3>
+      <div class="hero-subtitle" *ngIf="situationMatch?.temps">Durée: {{ situationMatch?.temps }}</div>
+    </div>
+
+    <div class="section" *ngIf="situationMatch?.description as description">
+      <h3>Description</h3>
+      <p class="description">{{ description }}</p>
+    </div>
+
+    <div class="section" *ngIf="situationMatch?.tags?.length">
+      <h3>Tags</h3>
+      <mat-chip-set aria-label="Tags">
+        <mat-chip *ngFor="let tag of situationMatch?.tags" [style.background-color]="tag.color || '#e0e0e0'" [style.color]="tag.color ? '#fff' : '#333'">
+          {{ tag.label }}
+        </mat-chip>
+      </mat-chip-set>
+    </div>
+
+    <div class="meta" *ngIf="situationMatch?.createdAt">
+      Créé le {{ (situationMatch?.createdAt | date:'longDate':'':'fr-FR') }}
+    </div>
+  </div>
+
+  <div class="dialog-actions">
+    <button mat-stroked-button (click)="close()">Fermer</button>
+  </div>
+</div>

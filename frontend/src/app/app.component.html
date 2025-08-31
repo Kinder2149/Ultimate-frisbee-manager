@@ -8,21 +8,6 @@
             <mat-icon>dashboard</mat-icon>
             <span class="nav-text">Tableau de bord</span>
           </a></li>
-          
-          <!-- Menu déroulant Ajouter -->
-          <li class="dropdown add" [class.open]="isDropdownOpen.add">
-            <a href="#" class="dropdown-toggle" (click)="toggleDropdown('add', $event)" matTooltip="Ajouter">
-              <mat-icon>add_circle</mat-icon>
-              <span class="nav-text">Ajouter</span>
-              <mat-icon class="dropdown-icon">expand_more</mat-icon>
-            </a>
-            <ul class="dropdown-menu" *ngIf="isDropdownOpen.add" style="position: absolute; top: 100%; left: 0; background: white; border: 2px solid #e9ecef; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); min-width: 250px; z-index: 99999; display: block;">
-              <li><a routerLink="/exercices/ajouter" routerLinkActive="active">Nouvel exercice</a></li>
-              <li><a routerLink="/entrainements/nouveau" routerLinkActive="active">Nouvel entraînement</a></li>
-              <li><a routerLink="/echauffements/ajouter" routerLinkActive="active">Nouvel échauffement</a></li>
-              <li><a routerLink="/situations-matchs/ajouter" routerLinkActive="active">Nouvelle situation</a></li>
-            </ul>
-          </li>
 
           <!-- Menu déroulant Exercices -->
           <li class="dropdown exercices" [class.open]="isDropdownOpen.exercices">
@@ -31,10 +16,9 @@
               <span class="nav-text">Exercices</span>
               <mat-icon class="dropdown-icon">expand_more</mat-icon>
             </a>
-            <ul class="dropdown-menu" *ngIf="isDropdownOpen.exercices" style="position: absolute; top: 100%; left: 0; background: white; border: 2px solid #e9ecef; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); min-width: 250px; z-index: 99999; display: block;">
+            <ul class="dropdown-menu" *ngIf="isDropdownOpen.exercices">
               <li><a routerLink="/exercices" routerLinkActive="active">Tous les exercices</a></li>
               <li><a routerLink="/exercices/ajouter" routerLinkActive="active">Ajouter un exercice</a></li>
-              <li><a routerLink="/tags" routerLinkActive="active">Gérer les tags</a></li>
             </ul>
           </li>
 
@@ -45,7 +29,7 @@
               <span class="nav-text">Entraînements</span>
               <mat-icon class="dropdown-icon">expand_more</mat-icon>
             </a>
-            <ul class="dropdown-menu" *ngIf="isDropdownOpen.entrainements" style="position: absolute; top: 100%; left: 0; background: white; border: 2px solid #e9ecef; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); min-width: 250px; z-index: 99999; display: block;">
+            <ul class="dropdown-menu" *ngIf="isDropdownOpen.entrainements">
               <li><a routerLink="/entrainements" routerLinkActive="active">Tous les entraînements</a></li>
               <li><a routerLink="/entrainements/nouveau" routerLinkActive="active">Nouvel entraînement</a></li>
             </ul>
@@ -58,7 +42,7 @@
               <span class="nav-text">Échauffements</span>
               <mat-icon class="dropdown-icon">expand_more</mat-icon>
             </a>
-            <ul class="dropdown-menu" *ngIf="isDropdownOpen.echauffements" style="position: absolute; top: 100%; left: 0; background: white; border: 2px solid #e9ecef; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); min-width: 250px; z-index: 99999; display: block;">
+            <ul class="dropdown-menu" *ngIf="isDropdownOpen.echauffements">
               <li><a routerLink="/echauffements" routerLinkActive="active">Tous les échauffements</a></li>
               <li><a routerLink="/echauffements/ajouter" routerLinkActive="active">Nouvel échauffement</a></li>
             </ul>
@@ -71,9 +55,29 @@
               <span class="nav-text">Situations/Matchs</span>
               <mat-icon class="dropdown-icon">expand_more</mat-icon>
             </a>
-            <ul class="dropdown-menu" *ngIf="isDropdownOpen.situations" style="position: absolute; top: 100%; left: 0; background: white; border: 2px solid #e9ecef; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); min-width: 250px; z-index: 99999; display: block;">
+            <ul class="dropdown-menu" *ngIf="isDropdownOpen.situations">
               <li><a routerLink="/situations-matchs" routerLinkActive="active">Toutes les situations</a></li>
               <li><a routerLink="/situations-matchs/ajouter" routerLinkActive="active">Nouvelle situation</a></li>
+            </ul>
+          </li>
+          
+          <!-- Menu utilisateur fusionné (Avatar + Paramètres) -->
+          <li class="dropdown parametres user-avatar" [class.open]="isDropdownOpen.parametres">
+            <a href="#" class="dropdown-toggle" (click)="toggleDropdown('parametres', $event)" matTooltip="Paramètres">
+              <ng-container *ngIf="(currentUser$ | async) as cu">
+                <img *ngIf="cu.iconUrl; else defaultHeaderAvatar" [src]="cu.iconUrl" alt="avatar" class="header-avatar" />
+                <ng-template #defaultHeaderAvatar>
+                  <mat-icon>account_circle</mat-icon>
+                </ng-template>
+              </ng-container>
+              <span class="nav-text">Paramètres</span>
+              <mat-icon class="dropdown-icon">expand_more</mat-icon>
+            </a>
+            <ul class="dropdown-menu" *ngIf="isDropdownOpen.parametres">
+              <li *ngIf="((currentUser$ | async)?.role || '').toLowerCase() === 'admin'"><a routerLink="/parametres/admin" routerLinkActive="active">Tableau de bord Admin</a></li>
+              <li *ngIf="((currentUser$ | async)?.role || '').toLowerCase() === 'admin'"><a routerLink="/parametres/import-exercices" routerLinkActive="active">Import d'exercices</a></li>
+              <li *ngIf="isAuthenticated$ | async"><a routerLink="/parametres/profil" routerLinkActive="active">Profil</a></li>
+              <li *ngIf="isAuthenticated$ | async"><a href="#" (click)="$event.preventDefault(); onLogout()">Déconnexion</a></li>
             </ul>
           </li>
         </ul>
@@ -86,6 +90,9 @@
       <router-outlet></router-outlet>
     </div>
   </main>
+
+  <!-- Bulle de statut backend (affichage global) -->
+  <app-status-bubble></app-status-bubble>
 
   <footer class="main-footer">
     <div class="container">

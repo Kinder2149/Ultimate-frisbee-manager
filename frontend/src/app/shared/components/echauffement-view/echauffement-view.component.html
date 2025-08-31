@@ -1,0 +1,81 @@
+<div class="dialog-container">
+  <div class="dialog-header sticky">
+    <h2 class="title">
+      <mat-icon class="title-icon">fitness_center</mat-icon>
+      {{ echauffement.nom || 'Échauffement' }}
+    </h2>
+    <button mat-icon-button aria-label="Fermer" (click)="close()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+  <mat-divider></mat-divider>
+
+  <div class="dialog-content">
+    <!-- Hero (aligné avec situation/match) -->
+    <div class="section hero">
+      <div class="hero-icon"><mat-icon>emoji_people</mat-icon></div>
+      <h3 class="hero-title">Échauffement</h3>
+      <div class="hero-subtitle" *ngIf="echauffement.blocs?.length as count">{{ count }} bloc{{ count > 1 ? 's' : '' }}</div>
+      <div class="hero-metrics" *ngIf="echauffement.blocs?.length">
+        <span class="time-chip time-chip--orange" title="Durée totale échauffement">
+          <mat-icon>schedule</mat-icon>
+          {{ getTotalLabel() }}
+        </span>
+      </div>
+    </div>
+
+    <div class="section" *ngIf="echauffement.description as description">
+      <h3>Description</h3>
+      <p class="description">{{ description }}</p>
+    </div>
+
+    <!-- Tags (optionnels si présents) -->
+    <div class="section" *ngIf="echauffement.tags?.length">
+      <h3>Tags</h3>
+      <mat-chip-set aria-label="Tags">
+        <mat-chip *ngFor="let tag of echauffement.tags" [style.background-color]="tag.color || '#e0e0e0'" [style.color]="tag.color ? '#fff' : '#333'">
+          {{ tag.label }}
+        </mat-chip>
+      </mat-chip-set>
+    </div>
+
+    <mat-divider *ngIf="echauffement.blocs?.length"></mat-divider>
+
+    <div class="section" *ngIf="echauffement.blocs?.length">
+      <h3>Blocs</h3>
+      <div class="blocs">
+        <div class="bloc" *ngFor="let bloc of echauffement.blocs; let i = index">
+          <div class="bloc-header">
+            <span class="bloc-index">{{ i + 1 }}</span>
+            <span class="bloc-title">{{ bloc.titre || 'Bloc' }}</span>
+          </div>
+          <div class="bloc-body">
+            <mat-chip-set aria-label="Infos du bloc" class="bloc-chips">
+              <mat-chip *ngIf="bloc.repetitions" appearance="outlined" color="primary">
+                <mat-icon matChipAvatar>repeat</mat-icon>
+                {{ bloc.repetitions }}
+              </mat-chip>
+              <mat-chip *ngIf="bloc.temps" appearance="outlined" color="accent">
+                <mat-icon matChipAvatar>schedule</mat-icon>
+                {{ bloc.temps }}
+              </mat-chip>
+            </mat-chip-set>
+          </div>
+          <div class="bloc-notes" *ngIf="bloc.informations">
+            {{ bloc.informations }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="meta" *ngIf="echauffement.createdAt">
+      Créé le {{ (echauffement.createdAt | date:'longDate':'':'fr-FR') }}
+    </div>
+  </div>
+
+  <div class="dialog-actions">
+    <button mat-stroked-button (click)="close()">
+      Fermer
+    </button>
+  </div>
+</div>

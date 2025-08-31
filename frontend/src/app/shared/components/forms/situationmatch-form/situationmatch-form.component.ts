@@ -55,6 +55,23 @@ export class SituationMatchFormComponent implements OnInit, OnChanges {
     this.form = this.createForm();
   }
 
+  private parseTemps(temps: string): { valeur: number | null; unite: 'min' | 'sec' } {
+    if (!temps || typeof temps !== 'string') {
+      return { valeur: null, unite: 'min' };
+    }
+    const trimmed = temps.trim().toLowerCase();
+    const regex = /^(\d+(?:[\.,]\d+)?)\s*(min|m|sec|s)?$/i;
+    const match = trimmed.match(regex);
+    if (match) {
+      const rawVal = match[1]?.replace(',', '.') || '';
+      const num = rawVal ? Number(rawVal) : NaN;
+      const unitRaw = (match[2] || 'min').toLowerCase();
+      const unit: 'min' | 'sec' = unitRaw.startsWith('s') ? 'sec' : 'min';
+      return { valeur: isNaN(num) ? null : num, unite: unit };
+    }
+    return { valeur: null, unite: 'min' };
+  }
+
   ngOnInit(): void {
     // Initialisation si nécessaire
   }
@@ -76,15 +93,19 @@ export class SituationMatchFormComponent implements OnInit, OnChanges {
     return this.fb.group({
       type: ['', [Validators.required]],
       description: [''],
-      temps: ['']
+      // UI controls for time
+      tempsValeur: [null, [Validators.min(0)]],
+      tempsUnite: ['min']
     });
   }
 
   private populateForm(situationMatch: SituationMatch): void {
+    const parsed = this.parseTemps(situationMatch.temps || '');
     this.form.patchValue({
       type: situationMatch.type,
       description: situationMatch.description || '',
-      temps: situationMatch.temps || ''
+      tempsValeur: parsed.valeur,
+      tempsUnite: parsed.unite
     });
     
     // Charger les tags sélectionnés
@@ -115,11 +136,14 @@ export class SituationMatchFormComponent implements OnInit, OnChanges {
     if (this.form.invalid) return;
 
     const formData = this.form.value;
-    
+    const valeur = formData.tempsValeur;
+    const unite = formData.tempsUnite as ('min'|'sec');
+    const temps = (valeur === null || valeur === undefined || valeur === '') ? undefined : `${valeur} ${unite}`;
+
     const situationMatchData: SituationMatchFormData = {
       type: formData.type,
       description: formData.description || undefined,
-      temps: formData.temps || undefined,
+      temps,
       tagIds: this.selectedTags.map(tag => tag.id).filter(id => id !== undefined) as string[]
     };
 

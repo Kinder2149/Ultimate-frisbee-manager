@@ -37,6 +37,8 @@ export class EntrainementFormComponent implements OnInit {
   availableThemeTags: Tag[] = [];
   selectedThemeTags: Tag[] = [];
   selectedTags: string[] = [];
+  showThemeDropdown = false;
+  filteredThemeTags: Tag[] = [];
 
   // Gestion des nouvelles relations
   selectedEchauffement: Echauffement | null = null;
@@ -425,6 +427,7 @@ export class EntrainementFormComponent implements OnInit {
     this.tagService.getTags('theme_entrainement').subscribe({
       next: (tags: Tag[]) => {
         this.availableThemeTags = tags;
+        this.filteredThemeTags = [...tags];
       },
       error: (err: any) => {
         console.error('Erreur lors du chargement des tags thème entraînement:', err);
@@ -446,6 +449,92 @@ export class EntrainementFormComponent implements OnInit {
 
   isThemeTagSelected(tag: Tag): boolean {
     return this.selectedThemeTags.some(t => t.id === tag.id);
+  }
+
+  /**
+   * UI dropdown tags thème (pattern Niveau)
+   */
+  toggleThemeDropdown(): void {
+    this.showThemeDropdown = !this.showThemeDropdown;
+  }
+
+  selectThemeTag(tag: Tag): void {
+    if (!this.selectedThemeTags.some(t => t.id === tag.id)) {
+      this.selectedThemeTags.push(tag);
+    }
+    this.showThemeDropdown = false;
+  }
+
+  removeThemeTag(index: number): void {
+    this.selectedThemeTags.splice(index, 1);
+  }
+
+  /**
+   * ===== Helpers Durées & Tags (affichage UI) =====
+   */
+  private parseTempsToSeconds(input?: string | null): number {
+    if (!input) return 0;
+    const s = String(input).trim().toLowerCase().replace(',', '.');
+    // Formats: "mm", "mm min", "ss s", "mm:ss"
+    const mmss = s.match(/^(\d{1,2}):(\d{2})$/);
+    if (mmss) {
+      const m = parseInt(mmss[1], 10) || 0;
+      const sec = parseInt(mmss[2], 10) || 0;
+      return m * 60 + sec;
+    }
+    const secMatch = s.match(/^(\d+(?:\.\d+)?)\s*(s|sec|secs|seconde|secondes)$/);
+    if (secMatch) return Math.round(parseFloat(secMatch[1]));
+    const minMatch = s.match(/^(\d+(?:\.\d+)?)\s*(m|min|mins|minute|minutes)?$/);
+    if (minMatch) return Math.round(parseFloat(minMatch[1]) * 60);
+    const asNumber = Number(s);
+    if (!isNaN(asNumber)) return Math.round(asNumber * 60);
+    return 0;
+  }
+
+  private formatSeconds(totalSeconds: number): string {
+    const sec = Math.max(0, Math.round(totalSeconds));
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    if (h > 0) {
+      const mm = m.toString().padStart(2, '0');
+      return `${h}h${mm}`;
+    }
+    return `${m} min`;
+  }
+
+  getEchauffementTotalSeconds(): number {
+    if (!this.selectedEchauffement || !this.selectedEchauffement.blocs) return 0;
+    return this.selectedEchauffement.blocs.reduce((acc, b) => acc + this.parseTempsToSeconds(b.temps), 0);
+  }
+
+  getEchauffementTotalLabel(): string {
+    return this.formatSeconds(this.getEchauffementTotalSeconds());
+  }
+
+  getSituationSeconds(): number {
+    return this.parseTempsToSeconds(this.selectedSituationMatch?.temps);
+  }
+
+  getSituationLabel(): string {
+    return this.formatSeconds(this.getSituationSeconds());
+  }
+
+  getExerciceMinutes(index: number): number {
+    const ctrl = this.exercicesFormArray.at(index);
+    const val = ctrl?.get('duree')?.value;
+    const n = Number(val);
+    return isNaN(n) ? 0 : Math.max(0, Math.floor(n));
+  }
+
+  getExerciceTags(index: number): Tag[] {
+    const ctrl = this.exercicesFormArray.at(index);
+    const exo = ctrl?.get('exercice')?.value as { tags?: Tag[] } | undefined;
+    return exo?.tags ?? [];
+  }
+
+  // Formatage du temps d'un bloc d'échauffement (affichage UI)
+  formatBlocTemps(temps?: string | null): string {
+    return this.formatSeconds(this.parseTempsToSeconds(temps));
   }
 
 }

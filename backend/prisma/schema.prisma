@@ -17,6 +17,8 @@ model Exercice {
   description String
   imageUrl    String?  // URL vers une image de l'exercice
   schemaUrl   String?  // URL facultative vers un schéma tactique
+  materiel    String?  // Matériel nécessaire pour l'exercice (optionnel)
+  notes       String?  // Notes générales de l'exercice (optionnel)
   variablesText String? // Ancienne version (à migrer et supprimer ultérieurement)
   variablesPlus String?  // Variables qui augmentent la difficulté (+)
   variablesMinus String? // Variables qui diminuent la difficulté (-)
@@ -138,4 +140,18 @@ model SituationMatch {
   
   // Relation avec les entraînements (une situation peut être utilisée dans plusieurs entraînements)
   entrainements Entrainement[]
+}
+
+// Modèle pour les utilisateurs
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String   // Hash bcrypt
+  nom       String
+  prenom    String?
+  role      String   @default("ADMIN")
+  isActive  Boolean  @default(true)
+  iconUrl   String?  // URL vers l'icône de l'utilisateur
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

@@ -72,14 +72,13 @@ exports.createEchauffement = async (req, res) => {
       return res.status(400).json({ error: 'Le nom est requis' });
     }
     
-    if (!description) {
-      return res.status(400).json({ error: 'La description est requise' });
-    }
+    // description devient optionnelle (schema Prisma: String?)
     
     const nouvelEchauffement = await prisma.echauffement.create({
       data: {
         nom,
-        description,
+        // Normalise une chaîne vide en null côté DB
+        description: (description && String(description).trim().length > 0) ? description : null,
         blocs: blocs && blocs.length > 0 ? {
           create: blocs.map((bloc, index) => ({
             ordre: bloc.ordre || index + 1,
@@ -123,9 +122,7 @@ exports.updateEchauffement = async (req, res) => {
       return res.status(400).json({ error: 'Le nom est requis' });
     }
     
-    if (!description) {
-      return res.status(400).json({ error: 'La description est requise' });
-    }
+    // description optionnelle
     
     // Supprimer les blocs existants
     await prisma.blocEchauffement.deleteMany({ 
@@ -136,7 +133,7 @@ exports.updateEchauffement = async (req, res) => {
       where: { id },
       data: {
         nom,
-        description,
+        description: (description && String(description).trim().length > 0) ? description : null,
         blocs: blocs && blocs.length > 0 ? {
           create: blocs.map((bloc, index) => ({
             ordre: bloc.ordre || index + 1,

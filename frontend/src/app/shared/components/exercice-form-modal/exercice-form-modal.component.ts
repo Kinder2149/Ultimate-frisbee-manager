@@ -24,7 +24,7 @@ import { Exercice } from '../../../core/models/exercice.model';
         <div class="modal-content">
           <app-exercice-form
             #exerciceForm
-            [editMode]="false"
+            [mode]="'create'"
             [exerciceToEdit]="null"
             [ignoreRouteParams]="true"
             (exerciceCreated)="onExerciceCreated($event)"

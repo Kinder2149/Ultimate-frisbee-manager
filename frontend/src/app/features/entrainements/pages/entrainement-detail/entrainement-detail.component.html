@@ -67,8 +67,20 @@
     </div>
 
     <!-- Échauffement -->
-    <div class="section echauffement-theme" *ngIf="entrainement.echauffement">
-      <h2>Échauffement</h2>
+    <div class="section echauffement-theme" id="echauffement" *ngIf="entrainement.echauffement">
+      <div class="section-header" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+        <h2 style="margin:0;">Échauffement</h2>
+        <div class="section-actions" style="display:flex; align-items:center; gap:8px;">
+          <app-action-button
+            icon="visibility"
+            iconType="material"
+            [buttonColor]="'#6b7280'"
+            [iconColor]="'#fff'"
+            tooltip="Afficher l'échauffement"
+            (click)="openEchauffementView()">
+          </app-action-button>
+        </div>
+      </div>
       <div class="card themed-card">
         <div class="themed-header">
           <h3>{{ entrainement.echauffement.nom }}</h3>
@@ -79,13 +91,17 @@
         </div>
         <div class="blocs-list" *ngIf="entrainement.echauffement.blocs && entrainement.echauffement.blocs.length > 0">
           <h4>Blocs d'échauffement :</h4>
-          <div *ngFor="let bloc of entrainement.echauffement.blocs; let i = index" class="bloc-item">
-            <span class="bloc-number">{{ i + 1 }}</span>
+          <div *ngFor="let bloc of entrainement.echauffement.blocs; let i = index" class="bloc-item right-time">
+            <!-- Rail temps à droite pour l'échauffement -->
+            <div *ngIf="bloc.temps" class="right-rail-time echauffement" aria-label="Temps du bloc (droite)">
+              <i class="material-icons">schedule</i>
+              <span>{{ bloc.temps }}</span>
+            </div>
+            <span class="index-bubble">{{ i + 1 }}</span>
             <div class="bloc-content">
               <h5>{{ bloc.titre }}</h5>
               <div class="bloc-details">
                 <span *ngIf="bloc.repetitions" class="detail">Répétitions: {{ bloc.repetitions }}</span>
-                <span *ngIf="bloc.temps" class="detail">Temps: {{ bloc.temps }}</span>
               </div>
               <p *ngIf="bloc.informations" class="bloc-info">{{ bloc.informations }}</p>
             </div>
@@ -103,65 +119,53 @@
       </div>
 
       <div *ngIf="entrainement.exercices && entrainement.exercices.length > 0" class="exercices-list">
-        <div 
-          *ngFor="let exerciceEntrainement of entrainement.exercices; let i = index" 
-          class="card themed-card">
-          
-          <div class="themed-header">
-            <span class="exercice-number">{{ i + 1 }}</span>
-            <h3>{{ exerciceEntrainement.exercice?.nom || 'Exercice sans nom' }}</h3>
-            <div class="exercice-meta">
-              <span *ngIf="exerciceEntrainement.duree" class="duree">
-                <i class="material-icons">schedule</i>
-                {{ formatDuree(exerciceEntrainement.duree) }}
-              </span>
-            </div>
+        <ng-container *ngFor="let exerciceEntrainement of entrainement.exercices; let i = index">
+          <!-- Barre d'action pour afficher l'exercice au format de la page Exercice -->
+          <div class="exercice-actions" style="display:flex; justify-content:flex-end; margin-bottom:6px;">
+            <app-action-button
+              icon="visibility"
+              iconType="material"
+              [buttonColor]="'#6b7280'"
+              [iconColor]="'#fff'"
+              tooltip="Afficher l'exercice"
+              (click)="openExerciceView(exerciceEntrainement.exercice)">
+            </app-action-button>
           </div>
-
-          <div class="themed-content">
-            <!-- Description de l'exercice -->
-            <div *ngIf="exerciceEntrainement.exercice?.description" class="description">
-              <h4>Description :</h4>
-              <p>{{ exerciceEntrainement.exercice?.description }}</p>
-            </div>
-
-            <!-- Notes spécifiques à cet entraînement -->
-            <div *ngIf="exerciceEntrainement.notes" class="notes">
-              <h4>Notes pour cet entraînement :</h4>
-              <p>{{ exerciceEntrainement.notes }}</p>
-            </div>
-
-            <!-- Tags de l'exercice -->
-            <div *ngIf="exerciceEntrainement.exercice?.tags && (exerciceEntrainement.exercice?.tags || []).length > 0" class="tags">
-              <h4>Tags :</h4>
-              <div class="tag-list">
-                <span 
-                  *ngFor="let tag of exerciceEntrainement.exercice?.tags" 
-                  class="tag"
-                  [style.background-color]="tag.color || '#e0e0e0'">
-                  {{ tag.label }}
-                </span>
-              </div>
-            </div>
-
-            <!-- Variables de l'exercice -->
-            <div *ngIf="exerciceEntrainement.exercice?.variablesPlus && getVariablesArray(exerciceEntrainement.exercice?.variablesPlus).length > 0" class="variables">
-              <h4>Variables :</h4>
-              <ul>
-                <li *ngFor="let variable of getVariablesArray(exerciceEntrainement.exercice?.variablesPlus)">
-                  {{ variable }}
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
+          <app-exercice-card
+            *ngIf="exerciceEntrainement.exercice"
+            [exercice]="exerciceEntrainement.exercice"
+            [index]="i + 1"
+            [duree]="exerciceEntrainement.duree"
+            [notes]="exerciceEntrainement.notes"
+            [mode]="'entrainement'"
+            [allowEditDuration]="true"
+            (dureeChange)="onExerciceDureeChange(i, $event)">
+          </app-exercice-card>
+        </ng-container>
       </div>
     </div>
 
     <!-- Situation/Match -->
     <div class="section situation-theme" *ngIf="entrainement.situationMatch">
-      <h2>Situation/Match</h2>
-      <div class="card themed-card">
+      <div class="section-header" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+        <h2 style="margin:0;">Situation/Match</h2>
+        <div class="section-actions" style="display:flex; align-items:center; gap:8px;">
+          <app-action-button
+            icon="visibility"
+            iconType="material"
+            [buttonColor]="'#6b7280'"
+            [iconColor]="'#fff'"
+            tooltip="Afficher la situation/match"
+            (click)="openSituationView()">
+          </app-action-button>
+        </div>
+      </div>
+      <div class="card themed-card right-time">
+        <!-- Rail temps à droite pour la situation -->
+        <div *ngIf="entrainement.situationMatch.temps" class="right-rail-time situation" aria-label="Temps situation (droite)">
+          <i class="material-icons">schedule</i>
+          <span>{{ entrainement.situationMatch.temps }}</span>
+        </div>
         <div class="themed-header">
           <h3>{{ entrainement.situationMatch.nom || entrainement.situationMatch.type }}</h3>
           <span class="situation-type">{{ entrainement.situationMatch.type }}</span>
@@ -169,12 +173,7 @@
         </div>
         <div class="themed-content">
           <p *ngIf="entrainement.situationMatch.description">{{ entrainement.situationMatch.description }}</p>
-          <div class="situation-meta" *ngIf="entrainement.situationMatch.temps">
-            <span class="temps">
-              <i class="material-icons">schedule</i>
-              {{ entrainement.situationMatch.temps }}
-            </span>
-          </div>
+          
           <div class="tags" *ngIf="entrainement.situationMatch.tags && entrainement.situationMatch.tags.length > 0">
             <h4>Tags :</h4>
             <div class="tag-list">

@@ -1,0 +1,9 @@
+<div class="status-bubble" *ngIf="isVisible()" [class.up]="state.status==='up'" [class.error]="state.status==='error'">
+  <div class="bubble-content">
+    <mat-icon *ngIf="state.status==='error'" color="warn">error</mat-icon>
+    <mat-icon *ngIf="state.status==='up'" color="primary">check_circle</mat-icon>
+    <mat-icon *ngIf="state.status==='checking' || state.status==='waking'" color="primary">cloud_sync</mat-icon>
+    <span class="message">{{ state.message }}</span>
+  </div>
+  <mat-progress-bar *ngIf="state.status==='checking' || state.status==='waking'" mode="indeterminate"></mat-progress-bar>
+</div>

@@ -22,7 +22,7 @@ const TAG_CATEGORY_LABELS = {
   [TAG_CATEGORIES.OBJECTIF]: 'Objectifs',
   [TAG_CATEGORIES.TRAVAIL_SPECIFIQUE]: 'Travail Spécifique',
   [TAG_CATEGORIES.NIVEAU]: 'Niveaux',
-  [TAG_CATEGORIES.TEMPS]: 'Temps',
+  [TAG_CATEGORIES.TEMPS]: 'Temps moyen',
   [TAG_CATEGORIES.FORMAT]: 'Format',
   [TAG_CATEGORIES.THEME_ENTRAINEMENT]: 'Thèmes Entraînements'
 };

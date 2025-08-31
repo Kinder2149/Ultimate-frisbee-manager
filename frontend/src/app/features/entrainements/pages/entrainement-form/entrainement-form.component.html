@@ -17,7 +17,7 @@
   <form *ngIf="!loading" [formGroup]="entrainementForm" (ngSubmit)="onSubmit()" class="form">
     
     <!-- Informations générales -->
-    <div class="section">
+    <div class="section section--infos">
       <h2><i class="material-icons">info</i>Informations de l'entraînement</h2>
       
       <div class="form-row">
@@ -49,33 +49,47 @@
     </div>
 
     <!-- Section Tags Thèmes Entraînements -->
-    <div class="section">
+    <div class="section section--themes">
       <div class="section-header">
         <h2><i class="material-icons">label</i>Thèmes Entraînements (optionnel)</h2>
         <div class="section-actions">
           <a routerLink="/tags" class="link-action">Gérer les tags</a>
         </div>
       </div>
-      
-      <div class="tags-container">
-        <div 
-          *ngFor="let tag of availableThemeTags" 
-          class="tag-selector"
-          [class.selected]="isThemeTagSelected(tag)"
-          (click)="toggleThemeTag(tag)">
-          <span class="tag-color" [style.background-color]="tag.color"></span>
-          <span class="tag-label">{{ tag.label }}</span>
+
+      <div class="form-group">
+        <label>Tags sélectionnés</label>
+        <div class="selected-tags-container">
+          <div *ngFor="let tag of selectedThemeTags; let i = index" class="tag-badge" [style.background-color]="tag.color || '#e0e0e0'">
+            {{ tag.label }}
+            <button type="button" class="remove-tag-btn" (click)="removeThemeTag(i)">×</button>
+          </div>
         </div>
-        <div *ngIf="availableThemeTags.length === 0" class="no-tags">
-          <p>Aucun tag thème entraînement disponible. <a routerLink="/tags">Créer des tags thème entraînement</a></p>
+      </div>
+
+      <div class="autocomplete-container" id="themeEntrainementContainer">
+        <div class="tag-dropdown-toggle" (click)="toggleThemeDropdown()">Choisir un tag de thème</div>
+        <div class="tag-dropdown-menu" [class.show]="showThemeDropdown">
+          <div *ngIf="filteredThemeTags.length === 0" class="tag-dropdown-item no-results">Aucun tag trouvé</div>
+          <div *ngFor="let tag of filteredThemeTags" class="tag-dropdown-item" (mousedown)="selectThemeTag(tag)">
+            <span class="color-dot" [style.background-color]="tag.color || '#e0e0e0'"></span>
+            {{ tag.label }}
+          </div>
         </div>
+      </div>
+
+      <div *ngIf="availableThemeTags.length === 0" class="no-tags" style="margin-top:12px;">
+        <p>Aucun tag thème entraînement disponible. <a routerLink="/tags">Créer des tags thème entraînement</a></p>
       </div>
     </div>
 
     <!-- Section Échauffement -->
-    <div class="section">
+    <div class="section section--echauffement">
       <div class="section-header">
         <h2><i class="material-icons">fitness_center</i>Échauffement (optionnel)</h2>
+        <div class="section-metrics" *ngIf="selectedEchauffement">
+          <span class="time-chip time-chip--orange" title="Durée totale échauffement">{{ getEchauffementTotalLabel() }}</span>
+        </div>
         <div class="section-actions">
           <button type="button" class="btn btn-primary" (click)="openEchauffementModal()">
             <i class="material-icons">add_circle</i>
@@ -99,6 +113,21 @@
         <p *ngIf="selectedEchauffement.description" class="item-description">
           {{ selectedEchauffement.description }}
         </p>
+        <div class="item-submetrics" *ngIf="selectedEchauffement?.blocs?.length">
+          <span class="submetric">{{ selectedEchauffement.blocs?.length }} blocs</span>
+        </div>
+
+        <!-- Liste des blocs d'échauffement avec pastille de temps -->
+        <div class="echauffement-blocs" *ngIf="selectedEchauffement?.blocs?.length">
+          <div class="echauffement-bloc" *ngFor="let bloc of selectedEchauffement?.blocs; let bi = index">
+            <div class="echauffement-bloc-header">
+              <span class="echauffement-bloc-index">{{ bi + 1 }}</span>
+              <span class="echauffement-bloc-title">{{ bloc?.titre || 'Bloc' }}</span>
+              <span class="time-chip time-chip--orange" *ngIf="bloc?.temps">{{ formatBlocTemps(bloc?.temps) }}</span>
+            </div>
+            <div class="echauffement-bloc-notes" *ngIf="bloc?.informations">{{ bloc?.informations }}</div>
+          </div>
+        </div>
       </div>
 
       <div *ngIf="!selectedEchauffement" class="no-selection">
@@ -107,7 +136,7 @@
     </div>
 
     <!-- Section Exercices -->
-    <div class="section">
+    <div class="section section--exercices">
       <div class="section-header">
         <h2><i class="material-icons">sports</i>Exercices de l'entraînement</h2>
         <div class="section-actions">
@@ -141,6 +170,7 @@
           <div class="exercice-header">
             <span class="exercice-number">{{ i + 1 }}</span>
             <h4>{{ exerciceControl.get('exercice')?.value?.nom }}</h4>
+            <span class="time-chip time-chip--blue" *ngIf="getExerciceMinutes(i) > 0">{{ getExerciceMinutes(i) }} min</span>
             <div class="exercice-actions">
               <button 
                 type="button" 
@@ -187,6 +217,13 @@
                 rows="2"
                 placeholder="Notes particulières pour cet exercice dans cet entraînement"></textarea>
             </div>
+
+            <!-- Tags de l'exercice -->
+            <div class="item-tags" *ngIf="getExerciceTags(i)?.length">
+              <span *ngFor="let tag of getExerciceTags(i)" class="tag" [style.background-color]="tag.color || '#888'">
+                {{ tag.label }}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -197,9 +234,12 @@
     </div>
 
     <!-- Section Situation/Match -->
-    <div class="section">
+    <div class="section section--situation">
       <div class="section-header">
         <h2><i class="material-icons">sports_soccer</i>Situation/Match (optionnel)</h2>
+        <div class="section-metrics" *ngIf="selectedSituationMatch">
+          <span class="time-chip time-chip--purple" title="Durée">{{ getSituationLabel() }}</span>
+        </div>
         <div class="section-actions">
           <button type="button" class="btn btn-primary" (click)="openSituationMatchModal()">
             <i class="material-icons">add_circle</i>
@@ -219,7 +259,10 @@
       <div *ngIf="selectedSituationMatch" class="selected-item">
         <div class="item-header">
           <h4>{{ selectedSituationMatch.type }}</h4>
-          <span class="item-type">{{ selectedSituationMatch.temps }}</span>
+          <span class="item-type">
+            <i class="material-icons">timer</i>
+            {{ getSituationLabel() }}
+          </span>
         </div>
         <p *ngIf="selectedSituationMatch.description" class="item-description">
           {{ selectedSituationMatch.description }}

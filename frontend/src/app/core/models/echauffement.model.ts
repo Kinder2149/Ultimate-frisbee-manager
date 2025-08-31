@@ -27,12 +27,12 @@ export interface Echauffement {
 
 export interface CreateEchauffementRequest {
   nom: string;
-  description: string;
+  description?: string | null;
   blocs: BlocEchauffement[];
 }
 
 export interface UpdateEchauffementRequest {
   nom: string;
-  description: string;
+  description?: string | null;
   blocs: BlocEchauffement[];
 }

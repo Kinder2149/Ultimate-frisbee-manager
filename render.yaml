@@ -2,11 +2,11 @@ services:
   - type: web
     name: ultimate-frisbee-manager-api
     env: node
-    buildCommand: cd backend && npm install && npm run db:force-migrate
+    buildCommand: cd backend && npm install && npm run deploy:render
     startCommand: cd backend && npm start
     plan: free
     region: frankfurt
-    branch: master
+    branch: main
     rootDir: ./
     envVars:
       - key: NODE_ENV
@@ -17,6 +17,8 @@ services:
           property: connectionString
       - key: CORS_ORIGINS
         value: https://ultimate-frisbee-manager-kinder.vercel.app,https://ultimate-frisbee-manager-za33.vercel.app,https://ultimate-frisbee-manager-za33-d0xhyhqs8-kinder2149s-projects.vercel.app,https://ultimate-frisbee-manager-nyvni7xiv-kinder2149s-projects.vercel.app
+      - key: JWT_SECRET
+        value: ${JWT_SECRET}
 
 databases:
   - name: ultimate-frisbee-manager-db

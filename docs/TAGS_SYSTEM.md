@@ -24,7 +24,7 @@ Le système de tags permet de catégoriser et organiser les exercices d'Ultimate
 | **Objectifs** | `objectif` | Objectifs pédagogiques | - |
 | **Travail Spécifique** | `travail_specifique` | Éléments techniques travaillés | - |
 | **Niveaux** | `niveau` | Niveaux de difficulté | `level` requis (1-5) |
-| **Temps** | `temps` | Durées d'exercices | - |
+| **Temps moyen** | `temps` | Durées d'exercices | - |
 | **Format** | `format` | Formats de pratique | - |
 | **Thèmes Entraînements** | `theme_entrainement` | Thématiques d'entraînements | - |
 
@@ -104,7 +104,7 @@ Le système est livré avec des tags prédéfinis :
 ### **Niveaux** (3 tags)
 - Débutant (1⭐), Intermédiaire (2⭐), Avancé (3⭐)
 
-### **Temps** (3 tags)
+### **Temps moyen** (3 tags)
 - 5-10 min, 10-15 min, 15-30 min
 
 ### **Format** (3 tags)

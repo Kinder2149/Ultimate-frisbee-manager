@@ -1,0 +1,30 @@
+:host {
+  display: block;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+mat-dialog-content {
+  margin: 16px 0 24px;
+  line-height: 1.5;
+  color: rgba(0, 0, 0, 0.87);
+}
+
+mat-dialog-actions {
+  padding: 8px 0 0;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+h2 {
+  margin: 0 0 16px;
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.87);
+}
+
+p {
+  margin: 0;
+  font-size: 1rem;
+  color: rgba(0, 0, 0, 0.6);
+}

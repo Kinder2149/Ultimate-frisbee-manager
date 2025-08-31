@@ -96,8 +96,8 @@
 
 .entrainements-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
 }
 
 .entrainement-card {
@@ -113,55 +113,89 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 
-.card-header {
-  padding: 20px;
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #e9ecef;
+.entrainement-card .card-header {
+  padding: 12px 16px;
+  background-color: #f4f6f8;
+  border-bottom: 1px solid #e6e8eb;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 8px;
+  overflow: visible;
 }
 
-.card-header h3 {
+.entrainement-card .card-header h3 {
   margin: 0;
-  color: #333;
+  color: #2b2d31;
   cursor: pointer;
   flex: 1;
   font-size: 18px;
+  font-weight: 700;
 }
 
 .card-header h3:hover {
   color: #007bff;
 }
 
-.actions {
-  display: flex;
-  gap: 8px;
-}
-
-.btn-icon {
-  background: none;
-  border: none;
-  padding: 8px;
-  border-radius: 4px;
-  cursor: pointer;
+.entrainement-card .title-section {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  flex-wrap: nowrap;
+  min-height: 48px;
+}
+
+.entrainement-card .action-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.entrainement-card .action-group .btn-icon {
+  background: transparent;
+  border: none;
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  line-height: 30px;
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
+  padding: 0;
+  border-radius: 50%;
+  cursor: pointer;
   transition: background-color 0.2s;
 }
 
-.btn-icon:hover {
-  background-color: rgba(0, 0, 0, 0.1);
+.entrainement-card .action-group .btn-icon:hover {
+  background-color: rgba(0, 0, 0, 0.04);
 }
 
-.btn-icon.danger:hover {
-  background-color: rgba(220, 53, 69, 0.1);
-  color: #dc3545;
-}
+.entrainement-card .action-group .btn-icon.danger i { color: #f44336; }
+.entrainement-card .action-group .btn-icon.danger:hover { background-color: rgba(244, 67, 54, 0.1); }
 
-.btn-icon i {
+.entrainement-card .action-group .btn-icon i {
   font-size: 18px;
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
+  color: #6b7280;
+}
+
+/* Badge sous le titre */
+.entrainement-card .header-badge { display: flex; align-items: center; gap: 8px; }
+.entrainement-card .badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+.entrainement-card .badge-entrainement {
+  background-color: #e9f5ff; /* bleu clair */
+  color: #0b65c2; /* bleu foncé */
 }
 
 .card-content {
@@ -256,6 +290,13 @@
 }
 
 /* Responsive */
+@media (max-width: 1024px) {
+  .entrainements-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 15px;
@@ -267,17 +308,10 @@
     align-items: stretch;
   }
   
-  .entrainements-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .card-header {
+  .entrainement-card .card-header {
     flex-direction: column;
     gap: 15px;
     align-items: stretch;
   }
-  
-  .actions {
-    justify-content: center;
-  }
+  .entrainement-card .action-group { justify-content: center; }
 }

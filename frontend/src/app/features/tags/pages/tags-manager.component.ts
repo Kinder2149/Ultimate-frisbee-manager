@@ -111,7 +111,43 @@ export class TagsManagerComponent implements OnInit {
           
           // Vérifier s'il s'agit d'une erreur de tag utilisé par des exercices
           if (err.status === 409) {
-            this.errorMessage = `Impossible de supprimer ce tag car il est utilisé par ${err.error.exercicesCount} exercice(s).`;
+            const ex = err.error?.exercicesCount ?? 0;
+            const en = err.error?.entrainementsCount ?? 0;
+            const si = err.error?.situationsCount ?? 0;
+            const total = ex + en + si;
+            this.errorMessage = `Impossible de supprimer ce tag car il est utilisé (${total} lien(s)): ${ex} exercice(s), ${en} entrainement(s), ${si} situation(s).`;
+
+            const confirmForce = confirm(
+              `Ce tag est référencé (${total}).\n` +
+              `- Exercices: ${ex}\n- Entraînements: ${en}\n- Situations: ${si}\n\n` +
+              `Voulez-vous forcer la suppression ? (le tag sera détaché de toutes ces entités puis supprimé)`
+            );
+
+            if (confirmForce) {
+              this.tagService.deleteTag(tag.id!, true).subscribe({
+                next: () => {
+                  this.successMessage = `Tag "${tag.label}" supprimé (forcé) avec succès !`;
+                  this.errorMessage = '';
+                  this.loadAllTags();
+                },
+                error: (forceErr) => {
+                  console.error('Erreur lors de la suppression forcée du tag:', forceErr);
+                  if (forceErr?.status === 404) {
+                    // Considérer 404 comme un succès (déjà supprimé côté backend)
+                    this.successMessage = `Tag "${tag.label}" déjà supprimé.`;
+                    this.errorMessage = '';
+                    this.loadAllTags();
+                  } else {
+                    this.errorMessage = 'Échec de la suppression forcée du tag. Veuillez réessayer.';
+                  }
+                }
+              });
+            }
+          } else if (err.status === 404) {
+            // Traiter 404 comme succès (l'élément n'existe plus côté serveur)
+            this.successMessage = `Tag "${tag.label}" déjà supprimé.`;
+            this.errorMessage = '';
+            this.loadAllTags();
           } else {
             this.errorMessage = 'Erreur lors de la suppression du tag. Veuillez réessayer.';
           }

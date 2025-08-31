@@ -1,0 +1,188 @@
+/* Styles pour le composant Admin Dashboard */
+.admin-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.tab-content {
+  margin-top: 20px;
+}
+
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.stat-card {
+  text-align: center;
+  
+  .mat-card-header {
+    display: flex;
+    justify-content: center;
+    padding: 16px 0;
+  }
+  
+  .stat-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    
+    &.primary {
+      background-color: #3f51b5;
+      color: white;
+    }
+    
+    &.accent {
+      background-color: #ff4081;
+      color: white;
+    }
+    
+    &.warn {
+      background-color: #f44336;
+      color: white;
+    }
+    
+    mat-icon {
+      width: 24px;
+      height: 24px;
+      font-size: 24px;
+    }
+  }
+  
+  .mat-card-title {
+    font-size: 2em;
+    font-weight: bold;
+    margin: 10px 0 5px;
+  }
+  
+  .mat-card-subtitle {
+    font-size: 1em;
+    margin: 0;
+  }
+}
+
+.recent-section {
+  margin-top: 30px;
+  
+  .mat-h2 {
+    margin-bottom: 20px;
+  }
+}
+
+.user-management {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  
+  .user-form, .user-list {
+    background: white;
+    border-radius: 4px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+    
+    .form-actions {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 10px;
+    }
+  }
+  
+  .table-container {
+    overflow-x: auto;
+    margin-top: 15px;
+    
+    table {
+      width: 100%;
+      
+      .mat-column-actions {
+        width: 120px;
+        text-align: center;
+      }
+      
+      .mat-column-isActive {
+        width: 100px;
+        text-align: center;
+      }
+      
+      .mat-column-role {
+        min-width: 180px;
+      }
+    }
+  }
+}
+
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  
+  p {
+    margin-top: 15px;
+  }
+}
+
+.error-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #f44336;
+  text-align: center;
+  
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 15px;
+  }
+  
+  p {
+    margin-bottom: 20px;
+    font-size: 1.1em;
+  }
+}
+
+/* Styles responsifs */
+@media (max-width: 768px) {
+  .overview-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .user-management {
+    .user-form, .user-list {
+      padding: 15px;
+    }
+    
+    form {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .overview-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .admin-container {
+    padding: 10px;
+  }
+}

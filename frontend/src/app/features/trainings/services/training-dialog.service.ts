@@ -112,9 +112,11 @@ export class TrainingDialogService {
 
     const config: DialogConfig = {
       title: 'Détails de l\'entraînement',
-      width: this.DEFAULT_DIALOG_WIDTH,
+      width: '720px',
+      maxWidth: '90vw',
       showSubmitButton: false,
       closeButtonText: 'Fermer',
+      panelClass: 'entity-view-dialog',
       customData: { ...training } as TrainingDialogData
     };
     

@@ -129,6 +129,23 @@
   border-radius: 2px;
 }
 
+/* Couleurs par section */
+.section--infos h2::before {
+  background: linear-gradient(135deg, #2196f3, #1976d2);
+}
+.section--themes h2::before {
+  background: linear-gradient(135deg, #26a69a, #00897b);
+}
+.section--echauffement h2::before {
+  background: linear-gradient(135deg, #ff9800, #fb8c00);
+}
+.section--exercices h2::before {
+  background: linear-gradient(135deg, #e53935, #c62828);
+}
+.section--situation h2::before {
+  background: linear-gradient(135deg, #8e24aa, #6a1b9a);
+}
+
 .section-header {
   display: flex;
   justify-content: space-between;
@@ -136,6 +153,31 @@
   margin-bottom: 24px;
   gap: 20px;
 }
+
+.section-metrics {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Pastilles de temps */
+.time-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: #607d8b;
+}
+.time-chip i { font-size: 16px; }
+.time-chip--orange { background: #fb8c00; }
+.time-chip--red { background: #e53935; }
+.time-chip--purple { background: #8e24aa; }
+/* Pastille bleue pour la durée des exercices */
+.time-chip--blue { background: #1e88e5; }
 
 .section-actions {
   display: flex;
@@ -484,11 +526,26 @@
 }
 
 .selected-item .item-header .item-type {
-  background: #007bff;
-  color: white;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #7e57c2;
+  color: #fff;
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: 12px;
   font-size: 0.85rem;
+}
+
+.item-submetrics {
+  margin-top: 8px;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+.item-submetrics .submetric {
+  background: #eceff1;
+  color: #455a64;
+  padding: 3px 8px;
+  border-radius: 12px;
 }
 
 .selected-item .item-description {
@@ -511,6 +568,53 @@
   font-size: 0.8rem;
   color: white;
   font-weight: 500;
+}
+
+/* Tags des exercices dans la section */
+.exercice-item .item-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+/* Blocs d'échauffement listés dans la sélection */
+.echauffement-blocs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.echauffement-bloc {
+  background: #fffaf3;
+  border: 1px solid #ffe0b2;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.echauffement-bloc-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.echauffement-bloc-index {
+  background: #ffecb3;
+  color: #fb8c00;
+  border-radius: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  min-width: 22px;
+  text-align: center;
+}
+
+.echauffement-bloc-title { font-weight: 600; color: #5d4037; }
+
+.echauffement-bloc-notes {
+  margin-top: 4px;
+  color: #6b7280;
+  font-style: italic;
 }
 
 .no-selection {
@@ -631,6 +735,94 @@
   justify-content: flex-end;
   gap: 16px;
   border-top: 2px solid #e9ecef;
+}
+
+/* ===== Sélecteur de tags (pattern Niveau) ===== */
+.selected-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #1f2937; /* gris foncé lisible sur pastilles claires */
+  padding: 6px 10px;
+  border-radius: 16px;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.remove-tag-btn {
+  appearance: none;
+  background: rgba(255,255,255,0.3);
+  border: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #111;
+}
+
+.remove-tag-btn:hover { background: rgba(255,255,255,0.5); }
+
+.autocomplete-container { position: relative; margin-top: 8px; }
+
+.tag-dropdown-toggle {
+  border: 2px dashed #e5e7eb;
+  background: #fff;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  color: #374151;
+}
+
+.tag-dropdown-toggle:hover {
+  border-color: #93c5fd;
+  background: #f8fafc;
+}
+
+.tag-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 6px;
+  display: none;
+}
+
+.tag-dropdown-menu.show { display: block; }
+
+.tag-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #111827;
+}
+
+.tag-dropdown-item:hover { background: #f3f4f6; }
+.tag-dropdown-item.no-results { color: #6b7280; cursor: default; }
+
+.color-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.08);
 }
 
 /* Responsive */

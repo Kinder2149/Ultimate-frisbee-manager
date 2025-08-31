@@ -138,14 +138,16 @@ exports.getExerciceById = async (req, res) => {
  */
 exports.createExercice = async (req, res) => {
   try {
-    const { nom, description, schemaUrl, variablesText, variablesPlus, variablesMinus, tags, tagIds } = req.body;
+    const { nom, description, schemaUrl, variablesText, variablesPlus, variablesMinus, tags, tagIds, materiel, notes } = req.body;
     
     // Journalisation des données reçues pour débogage
     console.log('Données reçues pour création d\'exercice:', { 
       nom, description: description ? description.substring(0, 50) + '...' : null, schemaUrl, variablesText, 
       variablesPlus: Array.isArray(variablesPlus) ? `[${variablesPlus.length} éléments]` : variablesPlus,
       variablesMinus: Array.isArray(variablesMinus) ? `[${variablesMinus.length} éléments]` : variablesMinus,
-      tagsInfo: { tagIdsProvided: tagIds !== undefined, tagsProvided: tags !== undefined }
+      tagsInfo: { tagIdsProvided: tagIds !== undefined, tagsProvided: tags !== undefined },
+      materiel: materiel ? `${String(materiel).slice(0,30)}...` : 'absent',
+      notes: notes ? `${String(notes).slice(0,30)}...` : 'absent'
     });
     
     // Validation basique des données
@@ -163,6 +165,8 @@ exports.createExercice = async (req, res) => {
       description: description || '', // S'assurer que description n'est jamais null/undefined
       imageUrl: req.body.imageUrl || null,
       schemaUrl: schemaUrl || null,
+      materiel: materiel || null,
+      notes: notes || null,
       // CORRECTION: Utiliser explicitement les chaînes de caractères traitées pour Prisma
       variablesText: processedVariables.variablesText || '',
       variablesPlus: processedVariables.variablesPlus || '',
@@ -212,7 +216,9 @@ exports.createExercice = async (req, res) => {
       variablesPlus: createData.variablesPlus ? `${createData.variablesPlus.length} caractères` : 'vide',
       variablesMinus: createData.variablesMinus ? `${createData.variablesMinus.length} caractères` : 'vide',
       tags: createData.tags && createData.tags.connect ? 
-        `${createData.tags.connect.length} tags à connecter` : 'aucun tag'
+        `${createData.tags.connect.length} tags à connecter` : 'aucun tag',
+      materiel: createData.materiel ? 'présent' : 'absent',
+      notes: createData.notes ? 'présent' : 'absent'
     });
     
     // Créer l'exercice avec ses tags dans une transaction
@@ -259,127 +265,172 @@ exports.createExercice = async (req, res) => {
  * @route PUT /api/exercices/:id
  */
 exports.updateExercice = async (req, res) => {
-try {
-const { id } = req.params;
-const { nom, description, schemaUrl, variablesText, variablesPlus, variablesMinus, tags, tagIds } = req.body;
+  try {
+    const { id } = req.params;
+    const { 
+      nom, 
+      description, 
+      schemaUrl, 
+      variablesText, 
+      variablesPlus, 
+      variablesMinus, 
+      tags, 
+      tagIds,
+      objectif, // Pour la rétrocompatibilité
+      materiel,
+      notes
+    } = req.body;
 
-// Vérifier si l'exercice existe
-const existingExercice = await prisma.exercice.findUnique({
-where: { id },
-include: { tags: true }
-});
+    // Vérifier si l'exercice existe
+    const existingExercice = await prisma.exercice.findUnique({
+      where: { id },
+      include: { 
+        tags: {
+          select: {
+            id: true,
+            label: true,
+            category: true,
+            color: true
+          }
+        } 
+      }
+    });
 
-if (!existingExercice) {
-return res.status(404).json({ error: 'Exercice non trouvé' });
-}
+    if (!existingExercice) {
+      return res.status(404).json({ error: 'Exercice non trouvé' });
+    }
 
-// Journalisation des données reçues pour débogage
-console.log(`Données reçues pour mise à jour d'exercice (ID: ${id}):`, { 
-nom, 
-description: description ? `${description.length} caractères` : 'absent',
-schemaUrl: schemaUrl || 'absent', 
-variablesText: variablesText || 'absent',
-variablesPlus: variablesPlus ? (Array.isArray(variablesPlus) ? `[${variablesPlus.length} éléments]` : 'chaîne') : 'absent',
-variablesMinus: variablesMinus ? (Array.isArray(variablesMinus) ? `[${variablesMinus.length} éléments]` : 'chaîne') : 'absent',
-tagsInfo: { tagIdsProvided: tagIds !== undefined, tagsProvided: tags !== undefined }
-});
+    // Journalisation des données reçues pour débogage
+    console.log(`Données reçues pour mise à jour d'exercice (ID: ${id}):`, { 
+      nom: nom ? `${nom.length} caractères` : 'absent', 
+      description: description ? `${description.length} caractères` : 'absent',
+      schemaUrl: schemaUrl ? 'présent' : 'absent',
+      tagIds: tagIds ? (Array.isArray(tagIds) ? `[${tagIds.length} éléments]` : 'présent (non tableau)') : 'absent',
+      tags: tags ? (Array.isArray(tags) ? `[${tags.length} éléments]` : 'présent (non tableau)') : 'absent',
+      objectif: objectif ? 'présent' : 'absent'
+    });
 
-// CORRECTION: Traitement des variables - Assurer la compatibilité entre les formats tableau et texte
-// La fonction processExerciceVariables convertit les tableaux en chaînes pour Prisma
-const processedVariables = processExerciceVariables(variablesText, variablesPlus, variablesMinus);
+    // Traitement des variables - Assurer la compatibilité entre les formats
+    const processedVariables = processExerciceVariables(variablesText, variablesPlus, variablesMinus);
 
-// Préparer les données de mise à jour
-let updateData = {
-nom,
-description: description || '', // S'assurer que description n'est jamais null/undefined
-imageUrl: req.body.imageUrl || null,
-schemaUrl: schemaUrl || null,
-// CORRECTION: Utiliser explicitement les chaînes de caractères traitées pour Prisma
-variablesText: processedVariables.variablesText || '',
-variablesPlus: processedVariables.variablesPlus || '',
-variablesMinus: processedVariables.variablesMinus || ''
-};
+    // Préparer les données de base pour la mise à jour
+    const updateData = {};
+    if (typeof nom !== 'undefined') updateData.nom = nom;
+    if (typeof description !== 'undefined') updateData.description = description;
+    if (typeof req.body.imageUrl !== 'undefined') updateData.imageUrl = req.body.imageUrl;
+    if (typeof schemaUrl !== 'undefined') updateData.schemaUrl = schemaUrl;
+    if (typeof materiel !== 'undefined') updateData.materiel = materiel || null;
+    if (typeof notes !== 'undefined') updateData.notes = notes || null;
+    updateData.variablesText = processedVariables.variablesText || existingExercice.variablesText || '';
+    updateData.variablesPlus = processedVariables.variablesPlus || existingExercice.variablesPlus || '';
+    updateData.variablesMinus = processedVariables.variablesMinus || existingExercice.variablesMinus || '';
 
-// CORRECTIF: Gestion plus robuste des tags
-// Uniquement mise à jour des tags si tagIds ou tags est fourni
-if (tagIds !== undefined || tags !== undefined) {
-let tagIdsToConnect = [];
+    // Gestion des tags
+    let tagIdsToConnect = [];
+    
+    // Déterminer la source des tags (priorité à tagIds, puis tags, puis objectif pour la rétrocompatibilité)
+    if (tagIds !== undefined) {
+      // Utiliser directement les IDs de tags fournis
+      tagIdsToConnect = Array.isArray(tagIds) 
+        ? tagIds.filter(id => id !== null && id !== undefined && id !== '')
+        : [];
+    } 
+    else if (tags !== undefined && Array.isArray(tags)) {
+      // Extraire les IDs d'objets tags
+      tagIdsToConnect = tags
+        .map(tag => (tag && typeof tag === 'object' ? tag.id : tag))
+        .filter(id => id !== null && id !== undefined && id !== '');
+    }
+    
+    // Si un objectif est fourni directement (rétrocompatibilité) et qu'aucun tag n'est fourni
+    if (objectif && !tagIdsToConnect.length) {
+      tagIdsToConnect = [objectif];
+    }
 
-if (Array.isArray(tagIds)) {
-// Si des IDs de tags sont fournis directement
-tagIdsToConnect = tagIds.filter(id => id !== null && id !== undefined);
-} else if (Array.isArray(tags)) {
-// Si des objets tags sont fournis, extraire les IDs
-tagIdsToConnect = tags.map(tag => {
-// Si c'est un objet tag complet
-if (tag && typeof tag === 'object' && tag.id) {
-return tag.id;
-}
-// Si c'est déjà un ID
-else if (typeof tag === 'string') {
-return tag;
-}
-return null;
-}).filter(id => id !== null);
-}
+    // Si des tags sont à connecter, préparer la mise à jour des relations
+    if (tagIdsToConnect.length > 0) {
+      // Vérifier que les tags existent avant de les connecter
+      const existingTags = await prisma.tag.findMany({
+        where: {
+          id: { in: tagIdsToConnect }
+        },
+        select: { id: true }
+      });
 
-updateData.tags = {
-set: [], // Déconnecter tous les tags existants
-connect: tagIdsToConnect.map(id => ({ id }))
-};
-}
+      const existingTagIds = existingTags.map(tag => tag.id);
+      const missingTagIds = tagIdsToConnect.filter(id => !existingTagIds.includes(id));
 
-console.log('Données préparées pour mise à jour:', {
-nom: updateData.nom,
-description: updateData.description ? `${updateData.description.length} caractères` : 'vide',
-variablesPlus: updateData.variablesPlus ? `${updateData.variablesPlus.length} caractères` : 'vide',
-variablesMinus: updateData.variablesMinus ? `${updateData.variablesMinus.length} caractères` : 'vide',
-tags: updateData.tags ? {
-connectCount: updateData.tags.connect.length,
-connectSample: updateData.tags.connect.slice(0, 3)
-} : 'non modifiés'
-});
+      if (missingTagIds.length > 0) {
+        console.warn(`Certains tags n'existent pas et seront ignorés:`, missingTagIds);
+      }
 
-// Mettre à jour l'exercice avec tous les champs et relations dans une seule transaction
-const exerciceUpdated = await prisma.exercice.update({
-where: { id },
-data: updateData,
-include: { tags: true }
-});
+      updateData.tags = {
+        set: [], // Déconnecter tous les tags existants
+        connect: existingTags.map(tag => ({ id: tag.id }))
+      };
+    }
 
-// Journaliser l'exercice mis à jour pour vérifier que tout est bien enregistré
-console.log('Exercice mis à jour avec succès:', { 
-id: exerciceUpdated.id,
-nom: exerciceUpdated.nom,
-description: exerciceUpdated.description ? `${exerciceUpdated.description.length} caractères` : 'vide',
-variablesPlus: exerciceUpdated.variablesPlus ? `${exerciceUpdated.variablesPlus.length} caractères` : 'vide',
-variablesMinus: exerciceUpdated.variablesMinus ? `${exerciceUpdated.variablesMinus.length} caractères` : 'vide',
-tagsCount: exerciceUpdated.tags.length,
-hasTags: exerciceUpdated.tags.length > 0
-});
+    console.log('Mise à jour exercice: champs pris en compte =', {
+      nom: Object.prototype.hasOwnProperty.call(updateData, 'nom'),
+      description: Object.prototype.hasOwnProperty.call(updateData, 'description'),
+      variablesText: Object.prototype.hasOwnProperty.call(updateData, 'variablesText'),
+      variablesPlus: Object.prototype.hasOwnProperty.call(updateData, 'variablesPlus'),
+      variablesMinus: Object.prototype.hasOwnProperty.call(updateData, 'variablesMinus'),
+      tags: updateData.tags ? (updateData.tags.connect || updateData.tags.disconnect ? 'modifiés' : 'inchangés') 
+        : 'Aucune modification des tags',
+      imageUrlIncluded: Object.prototype.hasOwnProperty.call(updateData, 'imageUrl'),
+      schemaUrlIncluded: Object.prototype.hasOwnProperty.call(updateData, 'schemaUrl'),
+      materielIncluded: Object.prototype.hasOwnProperty.call(updateData, 'materiel'),
+      notesIncluded: Object.prototype.hasOwnProperty.call(updateData, 'notes')
+    });
 
-// Transformation pour le client: convertir les variables au format tableau
-// pour consommation par le frontend
-const clientResponse = {
-...exerciceUpdated,
-// Si les variables sont non vides, les convertir en tableaux
-variablesPlus: exerciceUpdated.variablesPlus ? 
-exerciceUpdated.variablesPlus.split('\n').filter(v => v.trim() !== '') : 
-[],
-variablesMinus: exerciceUpdated.variablesMinus ? 
-exerciceUpdated.variablesMinus.split('\n').filter(v => v.trim() !== '') : 
-[]
-};
+    // Mettre à jour l'exercice dans une transaction
+    const exerciceUpdated = await prisma.$transaction(async (prisma) => {
+      const updatedExercice = await prisma.exercice.update({
+        where: { id },
+        data: updateData,
+        include: { 
+          tags: {
+            select: {
+              id: true,
+              label: true,
+              category: true,
+              color: true
+            }
+          }
+        }
+      });
+      
+      return updatedExercice;
+    });
 
-// Renvoyer l'exercice avec les variables au format tableau attendu par le frontend
-res.json(clientResponse);
-} catch (error) {
-console.error('Erreur lors de la mise à jour de l\'exercice:', error);
-res.status(500).json({ 
-error: 'Erreur serveur lors de la mise à jour de l\'exercice',
-details: error.message 
-});
-}
+    // Journaliser l'exercice mis à jour
+    console.log('Exercice mis à jour avec succès:', { 
+      id: exerciceUpdated.id,
+      nom: exerciceUpdated.nom,
+      tagsCount: exerciceUpdated.tags.length
+    });
+
+    // Préparer la réponse pour le client
+    const clientResponse = {
+      ...exerciceUpdated,
+      // Convertir les variables en tableaux pour le frontend
+      variablesPlus: exerciceUpdated.variablesPlus 
+        ? exerciceUpdated.variablesPlus.split('\n').filter(v => v.trim() !== '')
+        : [],
+      variablesMinus: exerciceUpdated.variablesMinus 
+        ? exerciceUpdated.variablesMinus.split('\n').filter(v => v.trim() !== '')
+        : []
+    };
+
+    res.json(clientResponse);
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour de l\'exercice:', error);
+    res.status(500).json({ 
+      error: 'Erreur serveur lors de la mise à jour de l\'exercice',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
 };
 
 /**

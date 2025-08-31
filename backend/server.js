@@ -3,6 +3,7 @@
  */
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const dotenv = require('dotenv');
 const { PrismaClient } = require('@prisma/client');
 const fs = require('fs');
@@ -58,14 +59,17 @@ const corsOptions = {
     }
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 };
 
 // Middleware
+app.use(helmet()); // Sécurité HTTP de base
 app.use(cors(corsOptions)); // CORS sécurisé
 app.use(express.json()); // Parse les requêtes JSON
 app.use(express.urlencoded({ extended: true })); // Parse les requêtes avec formulaires
+// Servir les fichiers statiques (avatars, etc.)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Route racine
 app.get('/', (req, res) => {
@@ -76,10 +80,22 @@ app.get('/', (req, res) => {
 const routes = require('./routes');
 routes(app);
 
-// Création du dossier uploads s'il n'existe pas
-if (!fs.existsSync(path.join(__dirname, 'uploads'))) {
-  fs.mkdirSync(path.join(__dirname, 'uploads'), { recursive: true });
+// Création des dossiers uploads s'ils n'existent pas
+const uploadsDir = path.join(__dirname, 'uploads');
+const avatarsDir = path.join(uploadsDir, 'avatars');
+const exercicesDir = path.join(uploadsDir, 'exercices');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
   console.log('Dossier uploads créé');
+}
+if (!fs.existsSync(avatarsDir)) {
+  fs.mkdirSync(avatarsDir, { recursive: true });
+  console.log('Dossier uploads/avatars créé');
+}
+
+if (!fs.existsSync(exercicesDir)) {
+  fs.mkdirSync(exercicesDir, { recursive: true });
+  console.log('Dossier uploads/exercices créé');
 }
 
 // Démarrage du serveur avec initialisation automatique

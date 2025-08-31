@@ -133,10 +133,12 @@ export class TagService {
   /**
    * Supprime un tag
    * @param id ID du tag à supprimer
+   * @param force Si true, envoie force=true pour détacher les relations côté backend avant suppression
    * @returns void
    */
-  deleteTag(id: string): Observable<void> {
-    return this.crudService.delete(id).pipe(
+  deleteTag(id: string, force: boolean = false): Observable<void> {
+    const httpOptions = force ? { params: { force: 'true' } } : undefined;
+    return this.crudService.delete(id, { httpOptions }).pipe(
       map(res => {
         this.invalidateAllTagCaches();
         return res;

@@ -9,9 +9,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 
 import { SituationMatch } from '../../../../core/models/situationmatch.model';
+import { ExerciceFiltersComponent, ExerciceFiltersValue } from '../../../exercices/components/exercice-filters.component';
+import { TagService } from '../../../../core/services/tag.service';
+import { Tag, TagCategory } from '../../../../core/models/tag.model';
 import { SituationMatchService } from '../../../../core/services/situationmatch.service';
 import { ConfirmDialogComponent } from '../../../../shared/components/dialog/confirm-dialog.component';
 import { DuplicateButtonComponent } from '../../../../shared/components/duplicate-button/duplicate-button.component';
+import { SituationMatchViewComponent } from '../../../../shared/components/situationmatch-view/situationmatch-view.component';
 
 /**
  * Composant de liste des situations et matchs
@@ -26,26 +30,56 @@ import { DuplicateButtonComponent } from '../../../../shared/components/duplicat
     MatButtonModule,
     MatIconModule,
     MatChipsModule,
-    DuplicateButtonComponent
+    DuplicateButtonComponent,
+    ExerciceFiltersComponent
   ],
   templateUrl: './situationmatch-list.component.html',
   styleUrls: ['./situationmatch-list.component.scss']
 })
 export class SituationMatchListComponent implements OnInit {
   situationsMatchs: SituationMatch[] = [];
+  filteredSituationsMatchs: SituationMatch[] = [];
   loading = false;
   duplicatingIds = new Set<string>();
+
+  // Filtres
+  searchTerm = '';
+  tempsTags: Tag[] = [];
+  formatTags: Tag[] = [];
+  allTags: Tag[] = [];
+  selectedTempsTags: string[] = [];
+  selectedFormatTags: string[] = [];
 
   constructor(
     private situationMatchService: SituationMatchService,
     private router: Router,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private tagService: TagService
   ) {}
 
   ngOnInit(): void {
+    this.loadTags();
     this.loadSituationsMatchs();
+  }
+
+  private loadTags(): void {
+    // Charger les catégories pertinentes pour Situations/Matchs: TEMPS et FORMAT
+    this.tagService.getTags(TagCategory.TEMPS).subscribe({
+      next: (tags) => {
+        this.tempsTags = [...tags].sort((a, b) => a.label.localeCompare(b.label));
+        this.allTags = [...this.allTags, ...tags];
+      },
+      error: () => {}
+    });
+    this.tagService.getTags(TagCategory.FORMAT).subscribe({
+      next: (tags) => {
+        this.formatTags = [...tags].sort((a, b) => a.label.localeCompare(b.label));
+        this.allTags = [...this.allTags, ...tags];
+      },
+      error: () => {}
+    });
   }
 
   /**
@@ -56,6 +90,7 @@ export class SituationMatchListComponent implements OnInit {
     this.situationMatchService.getSituationsMatchs().subscribe({
       next: (situationsMatchs) => {
         this.situationsMatchs = situationsMatchs;
+        this.applyFilters();
         this.loading = false;
         console.log(`${situationsMatchs.length} situations/matchs chargées`);
       },
@@ -65,6 +100,37 @@ export class SituationMatchListComponent implements OnInit {
         this.snackBar.open('Erreur lors du chargement des situations/matchs', 'Fermer', { duration: 3000 });
       }
     });
+  }
+
+  // Gestion des filtres
+  onFiltersChange(value: ExerciceFiltersValue): void {
+    this.searchTerm = value.searchTerm || '';
+    this.selectedTempsTags = value.selectedTempsTags || [];
+    this.selectedFormatTags = value.selectedFormatTags || [];
+    this.applyFilters();
+  }
+
+  private applyFilters(): void {
+    let list = [...this.situationsMatchs];
+
+    if (this.searchTerm) {
+      const s = this.searchTerm.toLowerCase();
+      list = list.filter(sm =>
+        (sm.nom && sm.nom.toLowerCase().includes(s)) ||
+        (sm.description && sm.description.toLowerCase().includes(s)) ||
+        (sm.type && sm.type.toLowerCase().includes(s)) ||
+        (sm.tags && sm.tags.some(t => t.label.toLowerCase().includes(s)))
+      );
+    }
+
+    if (this.selectedTempsTags.length > 0) {
+      list = list.filter(sm => sm.tags?.some(t => t.category === TagCategory.TEMPS && this.selectedTempsTags.includes(t.id || '')));
+    }
+    if (this.selectedFormatTags.length > 0) {
+      list = list.filter(sm => sm.tags?.some(t => t.category === TagCategory.FORMAT && this.selectedFormatTags.includes(t.id || '')));
+    }
+
+    this.filteredSituationsMatchs = list;
   }
 
   /**
@@ -169,6 +235,18 @@ export class SituationMatchListComponent implements OnInit {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
+    });
+  }
+
+  /**
+   * Ouvre la modale de visualisation d'une situation/match
+   */
+  ouvrirVueSituationMatch(situationMatch: SituationMatch): void {
+    this.dialog.open(SituationMatchViewComponent, {
+      width: '720px',
+      maxWidth: '90vw',
+      panelClass: 'entity-view-dialog',
+      data: { situationMatch }
     });
   }
 }

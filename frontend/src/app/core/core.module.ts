@@ -1,48 +1,66 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+
+// Import du module Material
 import { MaterialModule } from './material/material.module';
 
-// Importation des intercepteurs
-import { LoggingInterceptor } from './interceptors/logging.interceptor';
-import { ErrorHandlerInterceptor } from './interceptors/error-handler.interceptor';
-
-// Importation des services
-import { ApiUrlService } from './services/api-url.service';
+// Import des services
+import { ExerciceService } from './services/exercice.service';
+import { TagService } from './services/tag.service';
+import { CacheService } from './services/cache.service';
 import { NotificationService } from './services/notification.service';
+import { DataMappingService } from './services/data-mapping.service';
+import { ApiUrlService } from './services/api-url.service';
+import { TrainingSimpleService } from './services/training-simple.service';
+import { EntrainementService } from './services/entrainement.service';
+import { EchauffementService } from './services/echauffement.service';
+import { SituationMatchService } from './services/situationmatch.service';
+import { DashboardService } from './services/dashboard.service';
+import { AuthService } from './services/auth.service';
 
-// Importation du composant de statistiques de cache
-import { CacheStatsComponent } from './components/cache-stats/cache-stats.component';
+// Import des guards et intercepteurs
+import { AuthGuard } from './guards/auth.guard';
+import { AuthInterceptor } from './interceptors/auth.interceptor';
+import { BackendStatusInterceptor } from './interceptors/backend-status.interceptor';
+import { StatusBubbleComponent } from './components/status-bubble/status-bubble.component';
 
 /**
  * Module Core regroupant tous les services et modules partagés
  * Ce module doit être importé uniquement dans AppModule
  */
 @NgModule({
-  declarations: [
-    CacheStatsComponent
-  ],
+  declarations: [StatusBubbleComponent],
   imports: [
     CommonModule,
-    HttpClientModule
-  ],
-  exports: [
-    // Exporte MaterialModule pour qu'il soit disponible dans toute l'application
-    MaterialModule,
-    // Exporte HttpClientModule pour les services
     HttpClientModule,
-    // Exporte CommonModule pour les directives
-    CommonModule,
-    // Exporte le composant de statistiques du cache
-    CacheStatsComponent
+    MaterialModule
   ],
+  exports: [StatusBubbleComponent],
   providers: [
-    // Configuration des intercepteurs HTTP
-    { provide: HTTP_INTERCEPTORS, useClass: LoggingInterceptor, multi: true },
-    { provide: HTTP_INTERCEPTORS, useClass: ErrorHandlerInterceptor, multi: true },
-    // Services explicitement fournis
+    ExerciceService,
+    TagService,
+    CacheService,
+    NotificationService,
+    DataMappingService,
     ApiUrlService,
-    NotificationService
+    TrainingSimpleService,
+    EntrainementService,
+    EchauffementService,
+    SituationMatchService,
+    DashboardService,
+    AuthService,
+    AuthGuard,
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
+      multi: true
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: BackendStatusInterceptor,
+      multi: true
+    }
   ]
 })
 export class CoreModule { }

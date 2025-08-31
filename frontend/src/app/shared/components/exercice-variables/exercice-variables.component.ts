@@ -1,5 +1,5 @@
 import { Component, Input, OnInit, forwardRef, ElementRef, ViewChild } from '@angular/core';
-import { ControlValueAccessor, FormBuilder, FormGroup, NG_VALUE_ACCESSOR, ReactiveFormsModule, FormControl } from '@angular/forms';
+import { ControlValueAccessor, FormBuilder, FormGroup, NG_VALUE_ACCESSOR, ReactiveFormsModule, FormControl, FormArray } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -83,8 +83,8 @@ export class ExerciceVariablesComponent implements OnInit, ControlValueAccessor 
 
   constructor(private fb: FormBuilder) {
     this.variablesForm = this.fb.group({
-      variablesPlus: [''],
-      variablesMinus: ['']
+      variablesPlus: this.fb.array([]),
+      variablesMinus: this.fb.array([])
     });
   }
 
@@ -115,14 +115,21 @@ export class ExerciceVariablesComponent implements OnInit, ControlValueAccessor 
     const cleanVariablesMinusArray = this.variablesMinusArray
       .filter(v => v !== null && v !== undefined && v.trim && v.trim() !== '');
     
-    // Conserver les valeurs sous forme de tableaux ET de chaînes
-    const variablesPlusStr = cleanVariablesPlusArray.join('\n');
-    const variablesMinusStr = cleanVariablesMinusArray.join('\n');
+    // Mettre à jour les tableaux du formulaire
+    const variablesPlusArray = this.variablesForm.get('variablesPlus') as FormArray;
+    const variablesMinusArray = this.variablesForm.get('variablesMinus') as FormArray;
     
-    // Mettre à jour le formulaire interne avec les chaînes (pour compatibilité)
-    this.variablesForm.patchValue(
-      { variablesPlus: variablesPlusStr, variablesMinus: variablesMinusStr },
-      { emitEvent: false }
+    // Vider les tableaux existants
+    while (variablesPlusArray.length) variablesPlusArray.removeAt(0);
+    while (variablesMinusArray.length) variablesMinusArray.removeAt(0);
+    
+    // Ajouter les nouvelles valeurs
+    cleanVariablesPlusArray.forEach(variable => 
+      variablesPlusArray.push(this.fb.control(variable))
+    );
+    
+    cleanVariablesMinusArray.forEach(variable => 
+      variablesMinusArray.push(this.fb.control(variable))
     );
     
     // Mettre à jour les tableaux propres
@@ -131,11 +138,10 @@ export class ExerciceVariablesComponent implements OnInit, ControlValueAccessor 
     
     // Propager les tableaux au FormGroup parent
     const valueToEmit = {
-      variablesPlus: [...this.variablesPlusArray], // Envoyer une copie du tableau
-      variablesMinus: [...this.variablesMinusArray] // Envoyer une copie du tableau
+      variablesPlus: [...this.variablesPlusArray],
+      variablesMinus: [...this.variablesMinusArray]
     };
     
-    console.log('ExerciceVariablesComponent - valeurs propagées au parent:', valueToEmit);
     this.onChange(valueToEmit);
     this.onTouched();
   }
@@ -201,71 +207,44 @@ export class ExerciceVariablesComponent implements OnInit, ControlValueAccessor 
    * @param value Les nouvelles valeurs à afficher
    */
   writeValue(value: ExerciceVariables | null): void {
-    console.log('ExerciceVariablesComponent - writeValue reçoit:', value);
-    
-    // S'assurer que les tableaux sont toujours initialisés
-    this.ensureArraysInitialized();
-    
-    if (!value) {
-      // Réinitialiser proprement en cas de valeur null/undefined
-      console.log('ExerciceVariablesComponent - writeValue reçoit null/undefined, réinitialisation');
-      this.variablesPlusArray = [];
-      this.variablesMinusArray = [];
-      
-      this.variablesForm.patchValue(
-        { variablesPlus: '', variablesMinus: '' },
-        { emitEvent: false }
-      );
-      return;
-    }
-    
-    // Traitement des variablesPlus
-    if (value.variablesPlus) {
-      if (Array.isArray(value.variablesPlus)) {
-        // Si c'est déjà un tableau, l'utiliser directement
-        this.variablesPlusArray = value.variablesPlus
-          .filter(v => v !== null && v !== undefined && v.trim && v.trim() !== '')
-          .map(v => typeof v === 'string' ? v : String(v));
-      } else if (typeof value.variablesPlus === 'string') {
-        // Si c'est une chaîne, la convertir en tableau
-        this.variablesPlusArray = this.convertTextToArray(value.variablesPlus);
+    if (value) {
+      // Initialiser les tableaux à partir des valeurs fournies
+      // variablesPlus: accepter string | string[] | FormArray-like
+      if (value.variablesPlus !== undefined && value.variablesPlus !== null) {
+        const vp: any = value.variablesPlus as any;
+        const vpArray: any[] = Array.isArray(vp)
+          ? vp
+          : (typeof vp?.value !== 'undefined' && Array.isArray(vp.value))
+            ? vp.value
+            : [vp];
+        this.variablesPlusArray = vpArray
+          .map(v => (typeof v === 'string' ? v : (v != null ? String(v) : '')))
+          .filter(s => s && s.trim && s.trim() !== '');
+      } else {
+        this.variablesPlusArray = [];
+      }
+
+      // variablesMinus: accepter string | string[] | FormArray-like
+      if (value.variablesMinus !== undefined && value.variablesMinus !== null) {
+        const vm: any = value.variablesMinus as any;
+        const vmArray: any[] = Array.isArray(vm)
+          ? vm
+          : (typeof vm?.value !== 'undefined' && Array.isArray(vm.value))
+            ? vm.value
+            : [vm];
+        this.variablesMinusArray = vmArray
+          .map(v => (typeof v === 'string' ? v : (v != null ? String(v) : '')))
+          .filter(s => s && s.trim && s.trim() !== '');
+      } else {
+        this.variablesMinusArray = [];
       }
     } else {
+      // Aucune valeur fournie: réinitialiser proprement
       this.variablesPlusArray = [];
-    }
-    
-    // Traitement des variablesMinus
-    if (value.variablesMinus) {
-      if (Array.isArray(value.variablesMinus)) {
-        // Si c'est déjà un tableau, l'utiliser directement
-        this.variablesMinusArray = value.variablesMinus
-          .filter(v => v !== null && v !== undefined && v.trim && v.trim() !== '')
-          .map(v => typeof v === 'string' ? v : String(v));
-      } else if (typeof value.variablesMinus === 'string') {
-        // Si c'est une chaîne, la convertir en tableau
-        this.variablesMinusArray = this.convertTextToArray(value.variablesMinus);
-      }
-    } else {
       this.variablesMinusArray = [];
     }
-    
-    // Convertir les tableaux en chaînes pour le formulaire interne
-    const variablesPlusString = this.variablesPlusArray.join('\n');
-    const variablesMinusString = this.variablesMinusArray.join('\n');
-    
-    // Mettre à jour le formulaire sans déclencher d'événement onChange
-    this.variablesForm.patchValue(
-      { variablesPlus: variablesPlusString, variablesMinus: variablesMinusString },
-      { emitEvent: false }
-    );
-    
-    // Log pour débogage
-    console.log('ExerciceVariablesComponent - après writeValue:', {
-      variablesPlusArray: this.variablesPlusArray,
-      variablesMinusArray: this.variablesMinusArray
-    });
-    
-    // Forcer une mise à jour du modèle pour s'assurer que les valeurs sont propagées
+
+    // Mettre à jour les FormArray à partir des tableaux (et propager la valeur propre)
     this.updateFormValues();
   }
   

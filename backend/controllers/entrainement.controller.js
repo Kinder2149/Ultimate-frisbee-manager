@@ -170,6 +170,7 @@ exports.createEntrainement = async (req, res) => {
             }
           }
         },
+        tags: true,
         echauffement: {
           include: {
             blocs: {
@@ -188,7 +189,7 @@ exports.createEntrainement = async (req, res) => {
     console.log('Entraînement créé avec succès:', {
       id: nouvelEntrainement.id,
       titre: nouvelEntrainement.titre,
-      tagsCount: nouvelEntrainement.tags.length,
+      tagsCount: (nouvelEntrainement.tags ? nouvelEntrainement.tags.length : 0),
       exercicesCount: nouvelEntrainement.exercices.length,
       echauffementId: nouvelEntrainement.echauffementId,
       situationMatchId: nouvelEntrainement.situationMatchId
@@ -212,7 +213,7 @@ exports.createEntrainement = async (req, res) => {
 exports.updateEntrainement = async (req, res) => {
   try {
     const { id } = req.params;
-    const { titre, date, theme, exercices, echauffementId, situationMatchId } = req.body;
+    const { titre, date, theme, exercices, echauffementId, situationMatchId, tagIds } = req.body;
     
     if (!titre) {
       return res.status(400).json({ error: 'Le titre est requis' });
@@ -263,6 +264,7 @@ exports.updateEntrainement = async (req, res) => {
             }
           }
         },
+        tags: true,
         echauffement: {
           include: {
             blocs: {
@@ -281,7 +283,7 @@ exports.updateEntrainement = async (req, res) => {
     console.log('Entraînement mis à jour avec succès:', {
       id: entrainementMisAJour.id,
       titre: entrainementMisAJour.titre,
-      tagsCount: entrainementMisAJour.tags.length,
+      tagsCount: (entrainementMisAJour.tags ? entrainementMisAJour.tags.length : 0),
       exercicesCount: entrainementMisAJour.exercices.length,
       echauffementId: entrainementMisAJour.echauffementId,
       situationMatchId: entrainementMisAJour.situationMatchId
