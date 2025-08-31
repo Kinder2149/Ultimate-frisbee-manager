@@ -12,12 +12,13 @@
     "prisma:generate": "npx prisma generate",
     "prisma:migrate": "npx prisma migrate dev --name init",
     "prisma:migrate:deploy": "npx prisma migrate deploy",
+    "prisma:baseline": "npx prisma migrate resolve --applied 20250831221342_init",
     "prisma:studio": "npx prisma studio",
     "db:init": "node scripts/standalone-init.js",
     "db:force-migrate": "node scripts/force-migrate.js",
     "migrate:postgresql": "node scripts/migrate-to-postgresql.js",
     "deploy:prepare": "node scripts/deploy-render.js",
-    "deploy:render": "npm run prisma:generate && npm run prisma:migrate:deploy"
+    "deploy:render": "npm run prisma:generate && (npm run prisma:baseline || echo baseline-skip) && npm run prisma:migrate:deploy"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
