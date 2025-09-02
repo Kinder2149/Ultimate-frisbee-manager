@@ -4,7 +4,7 @@
   "description": "Backend pour l'application de gestion d'exercices d'ultimate frisbee",
   "main": "server.js",
   "engines": {
-    "node": ">=18.0.0"
+    "node": "20.x"
   },
   "scripts": {
     "start": "node server.js",
@@ -33,7 +33,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@prisma/client": "^5.4.1",
+    "@prisma/client": "5.22.0",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
@@ -49,6 +49,6 @@
   "devDependencies": {
     "@types/pg": "^8.10.7",
     "nodemon": "^3.0.1",
-    "prisma": "^5.4.1"
+    "prisma": "5.22.0"
   }
 }

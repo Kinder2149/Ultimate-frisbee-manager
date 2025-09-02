@@ -42,18 +42,47 @@ function main() {
   console.log(`[baseline] CWD: ${root}`);
   console.log(`[baseline] Migrations détectées: ${entries.map((e) => e.name).join(', ')}`);
 
+  // Afficher l'état des migrations avant baseline
+  try {
+    console.log('[baseline] État avant baseline:');
+    spawnSync('npx', ['prisma', 'migrate', 'status', '--schema', 'prisma/schema.prisma'], {
+      cwd: root,
+      stdio: 'inherit',
+      shell: process.platform === 'win32',
+    });
+  } catch (_) {}
+
   for (const e of entries) {
     console.log(`[baseline] Applying resolve --applied ${e.name} ...`);
-    const res = spawnSync('npx', ['prisma', 'migrate', 'resolve', '--applied', e.name, '--schema', 'prisma/schema.prisma'], {
+    let res = spawnSync('npx', ['prisma', 'migrate', 'resolve', '--applied', e.name, '--schema', 'prisma/schema.prisma'], {
       cwd: root,
       stdio: 'inherit',
       shell: process.platform === 'win32',
     });
     if (res.status !== 0) {
-      console.warn(`[baseline] Avertissement: échec/ignoré pour ${e.name} (peut-être déjà appliquée)`);
-      // Continuer avec les autres
+      // Fallback avec chemin complet (certains environnements exigent le chemin relatif complet)
+      const fullRelPath = path.posix.join('prisma', 'migrations', e.name);
+      console.log(`[baseline] Tentative fallback avec chemin: ${fullRelPath}`);
+      res = spawnSync('npx', ['prisma', 'migrate', 'resolve', '--applied', fullRelPath, '--schema', 'prisma/schema.prisma'], {
+        cwd: root,
+        stdio: 'inherit',
+        shell: process.platform === 'win32',
+      });
+      if (res.status !== 0) {
+        console.warn(`[baseline] Avertissement: échec/ignoré pour ${e.name} (peut-être déjà appliquée ou nom introuvable)`);
+      }
     }
   }
+
+  // Afficher l'état des migrations après baseline
+  try {
+    console.log('[baseline] État après baseline:');
+    spawnSync('npx', ['prisma', 'migrate', 'status', '--schema', 'prisma/schema.prisma'], {
+      cwd: root,
+      stdio: 'inherit',
+      shell: process.platform === 'win32',
+    });
+  } catch (_) {}
 
   console.log('[baseline] Terminé');
 }
