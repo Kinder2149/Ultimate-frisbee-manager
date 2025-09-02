@@ -17,7 +17,7 @@ services:
       - key: CORS_ORIGINS
         value: https://ultimate-frisbee-manager-kinder.vercel.app,https://ultimate-frisbee-manager-*.vercel.app,https://*-kinder2149s-projects.vercel.app
       - key: JWT_SECRET
-        value: ${JWT_SECRET}
+        fromSecret: jwt-secret
 
 databases:
   - name: ultimate-frisbee-manager-db

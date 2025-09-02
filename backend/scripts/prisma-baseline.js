@@ -11,7 +11,9 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 
 const root = path.resolve(__dirname, '..');
-const migrationsDir = path.join(root, 'prisma', 'migrations');
+const prismaDir = path.join(root, 'prisma');
+const migrationsDir = path.join(prismaDir, 'migrations');
+const schemaAbs = path.join(prismaDir, 'schema.prisma');
 
 function isDir(p) {
   try {
@@ -45,7 +47,7 @@ function main() {
   // Afficher l'état des migrations avant baseline
   try {
     console.log('[baseline] État avant baseline:');
-    spawnSync('npx', ['prisma', 'migrate', 'status', '--schema', 'prisma/schema.prisma'], {
+    spawnSync('npx', ['prisma', 'migrate', 'status', '--schema', schemaAbs], {
       cwd: root,
       stdio: 'inherit',
       shell: process.platform === 'win32',
@@ -54,7 +56,7 @@ function main() {
 
   for (const e of entries) {
     console.log(`[baseline] Applying resolve --applied ${e.name} ...`);
-    let res = spawnSync('npx', ['prisma', 'migrate', 'resolve', '--applied', e.name, '--schema', 'prisma/schema.prisma'], {
+    let res = spawnSync('npx', ['prisma', 'migrate', 'resolve', '--applied', e.name, '--schema', schemaAbs], {
       cwd: root,
       stdio: 'inherit',
       shell: process.platform === 'win32',
@@ -62,14 +64,33 @@ function main() {
     if (res.status !== 0) {
       // Fallback avec chemin complet (certains environnements exigent le chemin relatif complet)
       const fullRelPath = path.posix.join('prisma', 'migrations', e.name);
-      console.log(`[baseline] Tentative fallback avec chemin: ${fullRelPath}`);
-      res = spawnSync('npx', ['prisma', 'migrate', 'resolve', '--applied', fullRelPath, '--schema', 'prisma/schema.prisma'], {
+      console.log(`[baseline] Tentative fallback 1 (root) avec chemin: ${fullRelPath}`);
+      res = spawnSync('npx', ['prisma', 'migrate', 'resolve', '--applied', fullRelPath, '--schema', schemaAbs], {
         cwd: root,
         stdio: 'inherit',
         shell: process.platform === 'win32',
       });
       if (res.status !== 0) {
-        console.warn(`[baseline] Avertissement: échec/ignoré pour ${e.name} (peut-être déjà appliquée ou nom introuvable)`);
+        // Fallback 2: se placer dans prisma/ et cibler le nom
+        console.log('[baseline] Tentative fallback 2 (cwd=prisma) avec nom de dossier');
+        res = spawnSync('npx', ['prisma', 'migrate', 'resolve', '--applied', e.name, '--schema', schemaAbs], {
+          cwd: prismaDir,
+          stdio: 'inherit',
+          shell: process.platform === 'win32',
+        });
+        if (res.status !== 0) {
+          // Fallback 3: cwd=prisma et chemin migrations/<name>
+          const relInPrisma = path.posix.join('migrations', e.name);
+          console.log(`[baseline] Tentative fallback 3 (cwd=prisma) avec chemin: ${relInPrisma}`);
+          res = spawnSync('npx', ['prisma', 'migrate', 'resolve', '--applied', relInPrisma, '--schema', schemaAbs], {
+            cwd: prismaDir,
+            stdio: 'inherit',
+            shell: process.platform === 'win32',
+          });
+          if (res.status !== 0) {
+            console.warn(`[baseline] Avertissement: échec/ignoré pour ${e.name} (peut-être déjà appliquée ou nom introuvable)`);
+          }
+        }
       }
     }
   }
@@ -77,7 +98,7 @@ function main() {
   // Afficher l'état des migrations après baseline
   try {
     console.log('[baseline] État après baseline:');
-    spawnSync('npx', ['prisma', 'migrate', 'status', '--schema', 'prisma/schema.prisma'], {
+    spawnSync('npx', ['prisma', 'migrate', 'status', '--schema', schemaAbs], {
       cwd: root,
       stdio: 'inherit',
       shell: process.platform === 'win32',
