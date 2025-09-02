@@ -1,0 +1,2 @@
+-- Baseline migration: no-op SQL. Marks the database as already aligned with the current Prisma schema.
+-- This file intentionally contains no statements.

@@ -88,7 +88,17 @@ function main() {
             shell: process.platform === 'win32',
           });
           if (res.status !== 0) {
-            console.warn(`[baseline] Avertissement: échec/ignoré pour ${e.name} (peut-être déjà appliquée ou nom introuvable)`);
+            // Fallback 4: essayer l'ID seul (timestamp avant l'underscore)
+            const idOnly = e.name.split('_')[0];
+            console.log(`[baseline] Tentative fallback 4 (ID seul): ${idOnly}`);
+            res = spawnSync('npx', ['prisma', 'migrate', 'resolve', '--applied', idOnly, '--schema', schemaAbs], {
+              cwd: root,
+              stdio: 'inherit',
+              shell: process.platform === 'win32',
+            });
+            if (res.status !== 0) {
+              console.warn(`[baseline] Avertissement: échec/ignoré pour ${e.name} (peut-être déjà appliquée ou nom introuvable)`);
+            }
           }
         }
       }
