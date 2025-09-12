@@ -16,6 +16,7 @@
     "db:seed:destructive": "SEED_DESTRUCTIVE=true prisma db seed",
     "db:studio": "prisma studio",
     "db:reset": "prisma migrate reset",
+    "deploy:render": "prisma migrate deploy",
     "deploy": "npm run db:deploy && npm start"
   },
   "prisma": {
