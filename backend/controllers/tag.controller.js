@@ -1,6 +1,5 @@
-const { PrismaClient } = require('@prisma/client');
 const { TAG_CATEGORIES, isValidCategory, isValidLevel } = require('../../shared/constants/tag-categories');
-const prisma = new PrismaClient();
+const { prisma } = require('../services/prisma');
 
 /**
  * Récupérer tous les tags (avec filtres optionnels)

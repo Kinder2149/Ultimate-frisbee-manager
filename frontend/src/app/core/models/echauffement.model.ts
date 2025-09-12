@@ -20,6 +20,7 @@ export interface Echauffement {
   id?: string;
   nom?: string;
   description?: string;
+  imageUrl?: string;
   createdAt?: Date;
   blocs?: BlocEchauffement[];
   [key: string]: any;
@@ -28,11 +29,13 @@ export interface Echauffement {
 export interface CreateEchauffementRequest {
   nom: string;
   description?: string | null;
+  imageUrl?: string | null;
   blocs: BlocEchauffement[];
 }
 
 export interface UpdateEchauffementRequest {
   nom: string;
   description?: string | null;
+  imageUrl?: string | null;
   blocs: BlocEchauffement[];
 }

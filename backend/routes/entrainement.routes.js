@@ -5,6 +5,7 @@
 const express = require('express');
 const router = express.Router();
 const entrainementController = require('../controllers/entrainement.controller');
+const { createUploader, handleUploadResponse } = require('../middleware/upload.middleware');
 
 // Routes pour les entraînements
 // GET /api/entrainements - Récupérer tous les entraînements
@@ -24,5 +25,9 @@ router.post('/:id/duplicate', entrainementController.duplicateEntrainement);
 
 // DELETE /api/entrainements/:id - Supprimer un entraînement
 router.delete('/:id', entrainementController.deleteEntrainement);
+
+// POST /api/entrainements/upload-image - Uploader une image pour un entraînement
+const uploadEntrainement = createUploader('entrainements');
+router.post('/upload-image', uploadEntrainement.single('image'), handleUploadResponse('entrainements'));
 
 module.exports = router;

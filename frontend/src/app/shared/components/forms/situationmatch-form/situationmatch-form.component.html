@@ -50,6 +50,17 @@
         </mat-form-field>
       </div>
 
+      <!-- Upload d'image -->
+      <div class="image-upload-section">
+        <h3>Image</h3>
+        <app-image-upload 
+          [entityType]="'situations-matchs'"
+          [currentImageUrl]="form.get('imageUrl')?.value"
+          (imageUploaded)="form.get('imageUrl')?.setValue($event)"
+          (imageRemoved)="form.get('imageUrl')?.setValue(null)">
+        </app-image-upload>
+      </div>
+
       <!-- Sélection des tags -->
       <div class="tags-section">
         <h3>Tags (Format, Temps moyen, Niveau)</h3>

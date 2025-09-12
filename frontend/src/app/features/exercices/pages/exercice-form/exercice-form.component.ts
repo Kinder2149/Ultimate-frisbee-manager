@@ -591,6 +591,28 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
   }
   
   /**
+   * Déclenche l'upload via le bouton "Uploader" et met à jour le formulaire
+   */
+  onUploadClick(): void {
+    if (!this.selectedImageFile || this.uploading) {
+      return;
+    }
+    const sub = this.uploadSelectedImage().subscribe({
+      next: (imageUrl: string) => {
+        // Utiliser l'URL renvoyée par l'API et mettre à jour l'aperçu résolu
+        this.exerciceForm.patchValue({ imageUrl });
+        this.imagePreview = this.mediaUrl(imageUrl);
+        this.snackBar.open('Image uploadée avec succès', 'Fermer', { duration: 3000, panelClass: ['success-snackbar'] });
+        sub.unsubscribe();
+      },
+      error: () => {
+        // uploadSelectedImage gère déjà handleHttpError et uploading
+        sub.unsubscribe();
+      }
+    });
+  }
+  
+  /**
    * Répartit les tags sélectionnés dans les tableaux par catégorie
    */
   private distributeTagsByCategory(): void {

@@ -1,5 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const { prisma } = require('../services/prisma');
 
 /**
  * Récupère tous les échauffements avec leurs blocs
@@ -66,7 +65,7 @@ exports.getEchauffementById = async (req, res) => {
  */
 exports.createEchauffement = async (req, res) => {
   try {
-    const { nom, description, blocs } = req.body;
+    const { nom, description, blocs, imageUrl } = req.body;
     
     if (!nom) {
       return res.status(400).json({ error: 'Le nom est requis' });
@@ -79,6 +78,7 @@ exports.createEchauffement = async (req, res) => {
         nom,
         // Normalise une chaîne vide en null côté DB
         description: (description && String(description).trim().length > 0) ? description : null,
+        imageUrl: imageUrl || null,
         blocs: blocs && blocs.length > 0 ? {
           create: blocs.map((bloc, index) => ({
             ordre: bloc.ordre || index + 1,
@@ -116,7 +116,7 @@ exports.createEchauffement = async (req, res) => {
 exports.updateEchauffement = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nom, description, blocs } = req.body;
+    const { nom, description, blocs, imageUrl } = req.body;
     
     if (!nom) {
       return res.status(400).json({ error: 'Le nom est requis' });
@@ -134,6 +134,7 @@ exports.updateEchauffement = async (req, res) => {
       data: {
         nom,
         description: (description && String(description).trim().length > 0) ? description : null,
+        imageUrl: typeof imageUrl !== 'undefined' ? (imageUrl || null) : undefined,
         blocs: blocs && blocs.length > 0 ? {
           create: blocs.map((bloc, index) => ({
             ordre: bloc.ordre || index + 1,
@@ -214,6 +215,7 @@ exports.duplicateEchauffement = async (req, res) => {
       data: {
         nom: `${echauffementOriginal.nom} (Copie)`,
         description: echauffementOriginal.description,
+        imageUrl: echauffementOriginal.imageUrl,
         blocs: {
           create: echauffementOriginal.blocs.map(bloc => ({
             ordre: bloc.ordre,

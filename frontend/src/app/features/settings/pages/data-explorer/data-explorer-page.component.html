@@ -1,0 +1,31 @@
+<div class="explorer-container">
+  <div class="explorer-header">
+    <h1>Explorateur de données</h1>
+    <a mat-stroked-button routerLink="/parametres/admin">
+      <mat-icon>arrow_back</mat-icon>
+      Retour au tableau de bord
+    </a>
+  </div>
+
+  <mat-tab-group animationDuration="0ms">
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon">dynamic_feed</mat-icon>
+        Contenus
+      </ng-template>
+      <div class="tab-content">
+        <app-content-list></app-content-list>
+      </div>
+    </mat-tab>
+
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon">label</mat-icon>
+        Tags
+      </ng-template>
+      <div class="tab-content">
+        <app-tag-list></app-tag-list>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

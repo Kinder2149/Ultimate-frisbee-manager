@@ -1,9 +1,10 @@
-import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA, LOCALE_ID } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule, Routes } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { CommonModule, registerLocaleData } from '@angular/common';
+import localeFr from '@angular/common/locales/fr';
 
 import { AppComponent } from './app.component';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
@@ -20,6 +21,12 @@ import { AuthGuard } from './core/guards/auth.guard';
 
 // Définition des routes de l'application
 const routes: Routes = [
+  // Routes publiques pour la réinitialisation de mot de passe
+  {
+    path: 'forgot-password',
+    loadComponent: () => import('./features/auth/pages/forgot-password/forgot-password-page.component').then(c => c.ForgotPasswordPageComponent)
+  },
+
   // Route de connexion (publique)
   { 
     path: 'login', 
@@ -98,7 +105,12 @@ const routes: Routes = [
     CoreModule // Module core qui inclut MaterialModule et HttpClientModule
     // Tous les modules (ExercicesModule, TagsModule, TagsAdvancedModule, TrainingsModule) sont chargés en lazy loading
   ],
-  providers: [],
+  providers: [
+    { provide: LOCALE_ID, useValue: 'fr-FR' }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
+
+// Enregistrer les données de locale française pour pipes (DatePipe, CurrencyPipe, etc.)
+registerLocaleData(localeFr);

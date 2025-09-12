@@ -1,8 +1,7 @@
 /**
  * Contrôleur Admin - Aperçu agrégé des données
  */
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const { prisma } = require('../services/prisma');
 const bcrypt = require('bcryptjs');
 
 /**
@@ -141,6 +140,185 @@ exports.getUsers = async (req, res) => {
  * PATCH /api/admin/users/:id
  * Mettre à jour le rôle et/ou l'état actif d'un utilisateur (admin uniquement)
  */
+exports.getAllContent = async (req, res) => {
+  try {
+    const [exercicesRaw, entrainements, echauffementsRaw, situationsRaw] = await Promise.all([
+      prisma.exercice.findMany({
+        orderBy: { createdAt: 'desc' },
+        select: { id: true, nom: true, createdAt: true, tags: { select: { label: true, category: true, color: true } } }
+      }),
+      prisma.entrainement.findMany({
+        orderBy: { createdAt: 'desc' },
+        select: { id: true, titre: true, createdAt: true }
+      }),
+      prisma.echauffement.findMany({
+        orderBy: { createdAt: 'desc' },
+        select: { id: true, nom: true, createdAt: true }
+      }),
+      prisma.situationMatch.findMany({
+        orderBy: { createdAt: 'desc' },
+        select: { id: true, nom: true, type: true, createdAt: true, tags: { select: { label: true, category: true, color: true } } }
+      })
+    ]);
+
+    // Mapping pour uniformiser le champ 'titre' et la structure
+    const exercices = exercicesRaw.map(e => ({ ...e, titre: e.nom, tags: e.tags || [] }));
+    const entrainementsMapped = entrainements.map(e => ({ ...e, tags: [] }));
+    const echauffements = echauffementsRaw.map(e => ({ ...e, titre: e.nom, tags: [] }));
+    const situations = situationsRaw.map(s => ({ ...s, titre: s.nom || s.type, tags: s.tags || [] }));
+
+    res.json({
+      exercices,
+      entrainements: entrainementsMapped,
+      echauffements,
+      situations
+    });
+  } catch (error) {
+    console.error('Erreur lors de la récupération de tous les contenus:', error);
+    res.status(500).json({ error: 'Erreur serveur lors de la récupération des contenus.' });
+  }
+};
+
+exports.getAllTags = async (req, res) => {
+  try {
+    const tags = await prisma.tag.findMany({
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, label: true, category: true, createdAt: true }
+    });
+    res.json({ tags });
+  } catch (error) {
+    console.error('Erreur lors de la récupération de tous les tags:', error);
+    res.status(500).json({ error: 'Erreur serveur lors de la récupération des tags.' });
+  }
+};
+
+exports.bulkDelete = async (req, res) => {
+  try {
+    const { items } = req.body; // items: { id: string, type: string }[]
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: 'Aucun élément à supprimer fourni.' });
+    }
+
+    const deletionsByType = items.reduce((acc, item) => {
+      const type = item.type.toLowerCase();
+      if (!acc[type]) {
+        acc[type] = [];
+      }
+      acc[type].push(item.id);
+      return acc;
+    }, {});
+
+    const transactionPromises = [];
+
+    for (const type in deletionsByType) {
+      const ids = deletionsByType[type];
+      let model;
+      switch (type) {
+        case 'exercice':
+          model = prisma.exercice;
+          break;
+        case 'entraînement':
+          model = prisma.entrainement;
+          break;
+        case 'échauffement':
+          model = prisma.echauffement;
+          break;
+        case 'situation':
+          model = prisma.situationMatch;
+          break;
+        case 'tag':
+          model = prisma.tag;
+          break;
+        default:
+          continue;
+      }
+      if (model) {
+        transactionPromises.push(model.deleteMany({ where: { id: { in: ids } } }));
+      }
+    }
+
+    if (transactionPromises.length === 0) {
+      return res.status(400).json({ error: 'Aucun type d\'élément valide à supprimer.' });
+    }
+
+    const result = await prisma.$transaction(transactionPromises);
+
+    res.json({ message: 'Éléments supprimés avec succès.', counts: result });
+
+  } catch (error) {
+    console.error('Erreur lors de la suppression en masse:', error);
+    res.status(500).json({ error: 'Erreur serveur lors de la suppression.' });
+  }
+};
+
+exports.bulkDuplicate = async (req, res) => {
+  try {
+    const { items } = req.body;
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: 'Aucun élément à dupliquer fourni.' });
+    }
+
+    const transactionPromises = items.map(async (item) => {
+      switch (item.type.toLowerCase()) {
+        case 'exercice': {
+          const original = await prisma.exercice.findUnique({ where: { id: item.id }, include: { tags: true } });
+          if (!original) return null;
+          const { id, createdAt, updatedAt, ...dataToCopy } = original;
+          return prisma.exercice.create({
+            data: {
+              ...dataToCopy,
+              nom: `${original.nom} (Copie)`,
+              tags: { connect: original.tags.map(t => ({ id: t.id })) }
+            }
+          });
+        }
+        case 'entrainement': {
+          const original = await prisma.entrainement.findUnique({ where: { id: item.id } });
+          if (!original) return null;
+          const { id, createdAt, updatedAt, ...dataToCopy } = original;
+          return prisma.entrainement.create({ data: { ...dataToCopy, titre: `${original.titre} (Copie)` } });
+        }
+        case 'échauffement': {
+          const original = await prisma.echauffement.findUnique({ where: { id: item.id } });
+          if (!original) return null;
+          const { id, createdAt, updatedAt, ...dataToCopy } = original;
+          return prisma.echauffement.create({ data: { ...dataToCopy, nom: `${original.nom} (Copie)` } });
+        }
+        case 'tag': {
+          const original = await prisma.tag.findUnique({ where: { id: item.id } });
+          if (!original) return null;
+          const { id, createdAt, ...dataToCopy } = original;
+          return prisma.tag.create({ data: { ...dataToCopy, label: `${original.label} (Copie)` } });
+        }
+        case 'situation': {
+          const original = await prisma.situationMatch.findUnique({ where: { id: item.id }, include: { tags: true } });
+          if (!original) return null;
+          const { id, createdAt, updatedAt, ...dataToCopy } = original;
+          return prisma.situationMatch.create({
+            data: {
+              ...dataToCopy,
+              nom: `${original.nom} (Copie)`,
+              tags: { connect: original.tags.map(t => ({ id: t.id })) }
+            }
+          });
+        }
+        default:
+          return null;
+      }
+    });
+
+    await prisma.$transaction(await Promise.all(transactionPromises));
+
+    res.json({ message: 'Éléments dupliqués avec succès.' });
+
+  } catch (error) {
+    console.error('Erreur lors de la duplication en masse:', error);
+    res.status(500).json({ error: 'Erreur serveur lors de la duplication.' });
+  }
+};
+
 exports.updateUser = async (req, res) => {
   try {
     const { id } = req.params;

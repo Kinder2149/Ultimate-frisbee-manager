@@ -76,6 +76,24 @@ mat-card-content {
   width: 100%;
 }
 
+.forgot-password-link {
+  text-align: right;
+  margin-top: -12px; // Remonte le lien pour le rapprocher du champ mot de passe
+  margin-bottom: 20px;
+
+  a {
+    font-size: 14px;
+    color: #667eea;
+    text-decoration: none;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: #7f53ac;
+      text-decoration: underline;
+    }
+  }
+}
+
 .login-button {
   height: 48px;
   font-size: 16px;

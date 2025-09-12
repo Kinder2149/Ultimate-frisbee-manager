@@ -106,6 +106,16 @@
   overflow: hidden;
   background: #fafafa;
   box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+
+  &.clickable {
+    cursor: zoom-in;
+    transition: transform 0.2s ease-out;
+
+    &:hover {
+      transform: scale(1.03);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+  }
 }
 
 .media-item img {

@@ -8,8 +8,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSelectModule } from '@angular/material/select';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { Echauffement, BlocEchauffement } from '../../../../core/models/echauffement.model';
+import { EchauffementService } from '../../../../core/services/echauffement.service';
+import { ApiUrlService } from '../../../../core/services/api-url.service';
 
 export interface EchauffementFormData {
   nom: string;
@@ -29,7 +32,8 @@ export interface EchauffementFormData {
     MatButtonModule,
     MatIconModule,
     MatDividerModule,
-    MatSelectModule
+    MatSelectModule,
+    MatProgressSpinnerModule
   ],
   templateUrl: './echauffement-form.component.html',
   styleUrls: ['./echauffement-form.component.scss']
@@ -44,7 +48,12 @@ export class EchauffementFormComponent implements OnInit, OnChanges {
 
   echauffementForm: FormGroup;
 
-  constructor(private fb: FormBuilder) {
+  // Image globale
+  selectedImageFile: File | null = null;
+  uploading = false;
+  imagePreview: string | ArrayBuffer | null = null;
+
+  constructor(private fb: FormBuilder, private echauffementService: EchauffementService, private apiUrl: ApiUrlService) {
     this.echauffementForm = this.createForm();
   }
 
@@ -63,6 +72,7 @@ export class EchauffementFormComponent implements OnInit, OnChanges {
       nom: ['', [Validators.required, Validators.minLength(3)]],
       // Description optionnelle, pas de contrainte de longueur minimale
       description: [''],
+      imageUrl: [''],
       blocs: this.fb.array([])
     });
   }
@@ -144,8 +154,13 @@ export class EchauffementFormComponent implements OnInit, OnChanges {
   private populateForm(echauffement: Echauffement): void {
     this.echauffementForm.patchValue({
       nom: echauffement.nom,
-      description: echauffement.description
+      description: echauffement.description,
+      imageUrl: echauffement.imageUrl || ''
     });
+
+    if (echauffement.imageUrl) {
+      this.imagePreview = this.mediaUrl(echauffement.imageUrl);
+    }
 
     // Vider le FormArray et ajouter les blocs
     while (this.blocsFormArray.length !== 0) {
@@ -184,10 +199,49 @@ export class EchauffementFormComponent implements OnInit, OnChanges {
         })
       };
 
+      // Ajouter l'URL d'image si présente
+      const imgUrl = this.echauffementForm.get('imageUrl')?.value;
+      if (imgUrl) {
+        (echauffementData as any).imageUrl = imgUrl;
+      }
+
       this.formSubmit.emit(echauffementData);
     } else {
       this.markFormGroupTouched(this.echauffementForm);
     }
+  }
+
+  // ===== Gestion image globale =====
+  onImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input?.files || input.files.length === 0) return;
+    const file = input.files[0];
+    this.selectedImageFile = file;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.imagePreview = reader.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  mediaUrl(path?: string | null): string | null {
+    return this.apiUrl.getMediaUrl(path ?? undefined);
+  }
+
+  uploadSelectedImage(): void {
+    if (!this.selectedImageFile || this.uploading) return;
+    this.uploading = true;
+    this.echauffementService.uploadImage(this.selectedImageFile).subscribe({
+      next: (resp) => {
+        this.uploading = false;
+        this.echauffementForm.patchValue({ imageUrl: resp.imageUrl });
+        this.imagePreview = this.mediaUrl(resp.imageUrl);
+      },
+      error: () => {
+        this.uploading = false;
+      }
+    });
   }
 
   private markFormGroupTouched(formGroup: FormGroup): void {

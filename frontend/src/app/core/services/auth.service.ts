@@ -50,6 +50,46 @@ export class AuthService {
   }
 
   /**
+   * Changer le mot de passe de l'utilisateur
+   */
+  changePassword(payload: any): Observable<{ message: string }> {
+    const url = this.apiUrlService.getUrl('auth/change-password');
+    return this.http.put<{ message: string }>(url, payload).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Réinitialiser le mot de passe avec un token
+   */
+  resetPassword(payload: any): Observable<{ message: string }> {
+    const url = this.apiUrlService.getUrl('auth/reset-password-answer');
+    return this.http.post<{ message: string }>(url, payload).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Définir la question de sécurité pour l'utilisateur connecté
+   */
+  setSecurityQuestion(payload: { securityQuestion: string, securityAnswer: string }): Observable<{ message: string }> {
+    const url = this.apiUrlService.getUrl('auth/security-question');
+    return this.http.post<{ message: string }>(url, payload).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Obtenir la question de sécurité pour un email donné
+   */
+  getSecurityQuestion(email: string): Observable<{ securityQuestion: string }> {
+    const url = this.apiUrlService.getUrl('auth/security-question');
+    return this.http.get<{ securityQuestion: string }>(url, { params: { email } }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  /**
    * Mettre à jour le profil utilisateur
    */
   updateProfile(payload: Partial<User> & { password?: string }): Observable<{ user: User }> {

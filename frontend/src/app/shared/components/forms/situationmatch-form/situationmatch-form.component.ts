@@ -8,6 +8,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
+import { ImageUploadComponent } from '../../image-upload/image-upload.component';
 
 import { SituationMatch, SITUATION_MATCH_TYPES } from '../../../../core/models/situationmatch.model';
 import { Tag } from '../../../../core/models/tag.model';
@@ -16,6 +17,7 @@ export interface SituationMatchFormData {
   type: 'Match' | 'Situation';
   description?: string;
   temps?: string;
+  imageUrl?: string;
   tagIds: string[];
 }
 
@@ -31,7 +33,8 @@ export interface SituationMatchFormData {
     MatSelectModule,
     MatButtonModule,
     MatIconModule,
-    MatChipsModule
+    MatChipsModule,
+    ImageUploadComponent
   ],
   templateUrl: './situationmatch-form.component.html',
   styleUrls: ['./situationmatch-form.component.scss']
@@ -95,7 +98,8 @@ export class SituationMatchFormComponent implements OnInit, OnChanges {
       description: [''],
       // UI controls for time
       tempsValeur: [null, [Validators.min(0)]],
-      tempsUnite: ['min']
+      tempsUnite: ['min'],
+      imageUrl: ['']
     });
   }
 
@@ -105,7 +109,8 @@ export class SituationMatchFormComponent implements OnInit, OnChanges {
       type: situationMatch.type,
       description: situationMatch.description || '',
       tempsValeur: parsed.valeur,
-      tempsUnite: parsed.unite
+      tempsUnite: parsed.unite,
+      imageUrl: situationMatch.imageUrl || ''
     });
     
     // Charger les tags sélectionnés
@@ -144,6 +149,7 @@ export class SituationMatchFormComponent implements OnInit, OnChanges {
       type: formData.type,
       description: formData.description || undefined,
       temps,
+      imageUrl: formData.imageUrl || undefined,
       tagIds: this.selectedTags.map(tag => tag.id).filter(id => id !== undefined) as string[]
     };
 

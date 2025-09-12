@@ -1,8 +1,7 @@
 /**
  * Contrôleur pour le dashboard - statistiques et compteurs
  */
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const { prisma } = require('../services/prisma');
 
 /**
  * Récupère les statistiques pour le dashboard

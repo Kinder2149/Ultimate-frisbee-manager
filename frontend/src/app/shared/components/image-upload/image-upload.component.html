@@ -1,0 +1,19 @@
+<div class="upload-container">
+  <div class="preview-area" *ngIf="previewUrl">
+    <img [src]="previewUrl" alt="Aperçu de l'image">
+    <button mat-icon-button class="remove-btn" (click)="removeImage()" matTooltip="Supprimer l'image">
+      <mat-icon>delete</mat-icon>
+    </button>
+  </div>
+
+  <div class="upload-area" *ngIf="!previewUrl">
+    <button type="button" mat-stroked-button (click)="fileInput.click()">
+      <mat-icon>cloud_upload</mat-icon>
+      <span>Choisir une image</span>
+    </button>
+    <input hidden #fileInput type="file" (change)="onFileSelected($event)" accept="image/png, image/jpeg, image/gif, image/webp">
+    <p class="hint">Taille max: 5MB. Formats: PNG, JPG, GIF, WEBP</p>
+  </div>
+
+  <mat-progress-bar *ngIf="uploading" mode="indeterminate"></mat-progress-bar>
+</div>

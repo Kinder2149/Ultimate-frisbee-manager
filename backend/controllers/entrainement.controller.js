@@ -2,8 +2,7 @@
  * Contrôleur unifié pour les entraînements simplifiés
  * Gère uniquement : titre, date optionnelle, thème global
  */
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const { prisma } = require('../services/prisma');
 
 /**
  * Calcule la durée totale d'un entraînement
@@ -132,7 +131,7 @@ exports.getEntrainementById = async (req, res) => {
  */
 exports.createEntrainement = async (req, res) => {
   try {
-    const { titre, date, exercices, echauffementId, situationMatchId, tagIds } = req.body;
+    const { titre, date, exercices, echauffementId, situationMatchId, tagIds, imageUrl } = req.body;
     
     console.log('Création entraînement - Données reçues:', { titre, date, exercices, echauffementId, situationMatchId, tagIds });
     
@@ -145,6 +144,7 @@ exports.createEntrainement = async (req, res) => {
       data: {
         titre,
         date: date ? new Date(date) : null,
+        imageUrl: imageUrl || null,
         echauffementId: echauffementId || null,
         situationMatchId: situationMatchId || null,
         tags: tagIds && tagIds.length > 0 ? {
@@ -213,7 +213,7 @@ exports.createEntrainement = async (req, res) => {
 exports.updateEntrainement = async (req, res) => {
   try {
     const { id } = req.params;
-    const { titre, date, theme, exercices, echauffementId, situationMatchId, tagIds } = req.body;
+    const { titre, date, theme, exercices, echauffementId, situationMatchId, tagIds, imageUrl } = req.body;
     
     if (!titre) {
       return res.status(400).json({ error: 'Le titre est requis' });
@@ -239,6 +239,7 @@ exports.updateEntrainement = async (req, res) => {
       data: {
         titre,
         date: date ? new Date(date) : null,
+        imageUrl,
         echauffementId: echauffementId || null,
         situationMatchId: situationMatchId || null,
         tags: tagIds && tagIds.length > 0 ? {

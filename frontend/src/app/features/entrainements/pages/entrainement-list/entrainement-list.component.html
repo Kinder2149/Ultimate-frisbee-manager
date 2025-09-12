@@ -38,90 +38,66 @@
     </div>
 
     <!-- Cartes des entraînements -->
-    <div *ngFor="let entrainement of filteredEntrainements" class="card entity-card entrainement-card">
-      <div class="card-header">
-        <div class="title-section">
-          <h3 (click)="voirEntrainement(entrainement.id!)">{{ entrainement.titre }}</h3>
-          <div class="action-group">
-            <button 
-              class="btn-icon" 
-              *ngIf="entrainement.echauffement" 
-              (click)="voirEchauffement(entrainement.id!)" 
-              title="Voir l'échauffement">
-              <i class="material-icons">fitness_center</i>
-            </button>
-            <button class="btn-icon" (click)="modifierEntrainement(entrainement.id!)" title="Modifier">
-              <i class="material-icons">edit</i>
-            </button>
+    <div *ngFor="let entrainement of filteredEntrainements" class="entrainement-card entity-card">
+        <div class="card-header">
+          <div class="title-section">
+            <h3 class="card-title" (click)="voirEntrainement(entrainement.id!)">{{ entrainement.titre }}</h3>
+            <div class="header-badge">
+              <span class="badge badge-entrainement">ENTRAÎNEMENT</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <button mat-icon-button *ngIf="entrainement.echauffement" (click)="voirEchauffement(entrainement.id!)" title="Voir l'échauffement"><mat-icon>fitness_center</mat-icon></button>
+            <button mat-icon-button (click)="modifierEntrainement(entrainement.id!)" title="Modifier"><mat-icon>edit</mat-icon></button>
             <app-duplicate-button 
               [entityId]="entrainement.id!" 
               entityType="entraînement"
               [loading]="duplicatingIds.has(entrainement.id!)"
               (duplicate)="dupliquerEntrainement($event)">
             </app-duplicate-button>
-            <button class="btn-icon danger" (click)="supprimerEntrainement(entrainement)" title="Supprimer">
-              <i class="material-icons">delete</i>
-            </button>
+            <button mat-icon-button class="delete-btn" (click)="supprimerEntrainement(entrainement)" title="Supprimer"><mat-icon>delete</mat-icon></button>
           </div>
         </div>
-        <div class="header-badge">
-          <span class="badge badge-entrainement">ENTRAÎNEMENT</span>
-          <span class="total-time" title="Durée totale de l'entraînement (échauffement + exercices + situation)">
-            <i class="material-icons">timer</i>
-            {{ formatDureeTotaleEntrainement(entrainement) }}
-          </span>
-        </div>
-      </div>
 
-      <div class="card-body">
-        <!-- Informations de base -->
-        <div class="info-row" *ngIf="entrainement.date">
-          <span class="label">Date :</span>
-          <span class="value">{{ formatDate(entrainement.date) }}</span>
-        </div>
+        <div class="card-content">
+          <div class="image-container" *ngIf="entrainement.imageUrl">
+            <img [src]="getFullImageUrl(entrainement.imageUrl)" [alt]="'Image pour ' + entrainement.titre">
+          </div>
 
-        <div class="info-row" *ngIf="entrainement.tags && entrainement.tags.length > 0">
-          <span class="label">Thèmes :</span>
-          <div class="tags-display">
-            <span *ngFor="let tag of entrainement.tags" 
-                  class="tag"
-                  [style.background-color]="tag.color || '#e0e0e0'">
-              {{ tag.label }}
+          <div class="meta-info">
+            <span class="total-time" title="Durée totale de l'entraînement">
+              <mat-icon>timer</mat-icon>
+              {{ formatDureeTotaleEntrainement(entrainement) }}
             </span>
+            <span class="date" *ngIf="entrainement.date">{{ formatDate(entrainement.date) }}</span>
+          </div>
+
+          <div class="info-row" *ngIf="entrainement.tags?.length">
+            <span class="label">Thèmes :</span>
+            <div class="tags-display">
+              <mat-chip-listbox><mat-chip *ngFor="let tag of entrainement.tags" [style.background-color]="tag.color || '#e0e0e0'" [style.color]="'#fff'">{{ tag.label }}</mat-chip></mat-chip-listbox>
+            </div>
+          </div>
+
+          <div class="info-row" *ngIf="entrainement.exercices?.length">
+            <span class="label">Exercices :</span>
+            <span class="value">{{ entrainement.exercices!.length }} exercice{{ entrainement.exercices!.length > 1 ? 's' : '' }}</span>
+          </div>
+
+          <div class="info-row" *ngIf="entrainement.echauffement">
+            <span class="label">Échauffement :</span>
+            <span class="value echauffement"><mat-icon>fitness_center</mat-icon>{{ entrainement.echauffement.nom }}</span>
+          </div>
+
+          <div class="info-row" *ngIf="entrainement.situationMatch">
+            <span class="label">Situation/Match :</span>
+            <span class="value situation-match"><mat-icon>sports</mat-icon>{{ entrainement.situationMatch.nom || entrainement.situationMatch.type }}</span>
+          </div>
+
+          <div class="meta-info footer" *ngIf="entrainement.createdAt">
+            <span>Créé le {{ formatDate(entrainement.createdAt) }}</span>
           </div>
         </div>
-
-        
-
-        <!-- Nombre d'exercices -->
-        <div class="info-row" *ngIf="entrainement.exercices && entrainement.exercices.length > 0">
-          <span class="label">Exercices :</span>
-          <span class="value">{{ entrainement.exercices.length }} exercice{{ entrainement.exercices.length > 1 ? 's' : '' }}</span>
-        </div>
-
-        <!-- Échauffement -->
-        <div class="info-row" *ngIf="entrainement.echauffement">
-          <span class="label">Échauffement :</span>
-          <span class="value echauffement">
-            <i class="material-icons">fitness_center</i>
-            {{ entrainement.echauffement.nom }}
-          </span>
-        </div>
-
-        <!-- Situation/Match -->
-        <div class="info-row" *ngIf="entrainement.situationMatch">
-          <span class="label">Situation/Match :</span>
-          <span class="value situation-match">
-            <i class="material-icons">sports</i>
-            {{ entrainement.situationMatch.nom || entrainement.situationMatch.type }}
-          </span>
-        </div>
-
-        <!-- Date de création -->
-        <div class="created-at" *ngIf="entrainement.createdAt">
-          Créé le {{ formatDate(entrainement.createdAt) }}
-        </div>
       </div>
-    </div>
   </div>
 </div>

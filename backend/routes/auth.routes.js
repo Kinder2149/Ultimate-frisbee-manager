@@ -5,12 +5,11 @@ const express = require('express');
 const rateLimit = require('express-rate-limit');
 const multer = require('multer');
 const path = require('path');
-const { PrismaClient } = require('@prisma/client');
-const { login, getProfile, refreshToken, logout, updateProfile } = require('../controllers/auth.controller');
+const { login, getProfile, refreshToken, logout, updateProfile, changePassword, setSecurityQuestion, getSecurityQuestion, resetPasswordWithAnswer } = require('../controllers/auth.controller');
 const { authenticateToken } = require('../middleware/auth.middleware');
+const { prisma } = require('../services/prisma');
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // Multer storage config for avatars
 const storage = multer.diskStorage({
@@ -52,10 +51,16 @@ const loginLimiter = rateLimit({
 router.post('/login', loginLimiter, login);
 router.post('/refresh', refreshToken);
 
+// Routes pour la réinitialisation par question de sécurité
+router.get('/security-question', getSecurityQuestion); // Publique, prend l'email en query param
+router.post('/reset-password-answer', resetPasswordWithAnswer); // Publique
+
 // Routes protégées (nécessitent authentification)
 router.get('/profile', authenticateToken, getProfile);
 router.post('/logout', authenticateToken, logout);
 router.put('/profile', authenticateToken, updateProfile);
+router.put('/change-password', authenticateToken, changePassword);
+router.post('/security-question', authenticateToken, setSecurityQuestion); // Protégée
 
 // Upload d'avatar
 router.post('/profile/icon', authenticateToken, upload.single('icon'), async (req, res) => {
@@ -63,7 +68,7 @@ router.post('/profile/icon', authenticateToken, upload.single('icon'), async (re
     if (!req.file) {
       return res.status(400).json({ error: 'Aucun fichier reçu', code: 'NO_FILE' });
     }
-    const relativePath = `/uploads/avatars/${req.file.filename}`;
+    const relativePath = `/api/uploads/avatars/${req.file.filename}`;
     const absoluteUrl = `${req.protocol}://${req.get('host')}${relativePath}`;
     const updated = await prisma.user.update({
       where: { id: req.user.id },

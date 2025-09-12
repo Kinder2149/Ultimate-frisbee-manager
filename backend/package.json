@@ -9,16 +9,14 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "prisma:generate": "npx prisma generate",
-    "prisma:migrate": "npx prisma migrate dev --name init",
-    "prisma:migrate:deploy": "npx prisma migrate deploy",
-    "prisma:baseline": "node scripts/prisma-baseline.js",
-    "prisma:studio": "npx prisma studio",
-    "db:init": "node scripts/standalone-init.js",
-    "db:force-migrate": "node scripts/force-migrate.js",
-    "migrate:postgresql": "node scripts/migrate-to-postgresql.js",
-    "deploy:prepare": "node scripts/deploy-render.js",
-    "deploy:render": "npm run prisma:generate && (npm run prisma:baseline || echo baseline-skip) && npm run prisma:migrate:deploy"
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:seed": "prisma db seed",
+    "db:seed:destructive": "SEED_DESTRUCTIVE=true prisma db seed",
+    "db:studio": "prisma studio",
+    "db:reset": "prisma migrate reset",
+    "deploy": "npm run db:deploy && npm start"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
@@ -39,15 +37,17 @@
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "express-rate-limit": "^8.0.1",
-    "helmet": "^7.1.0",
     "gray-matter": "^4.0.3",
+    "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
     "pg": "^8.11.3",
+    "ultimate-frisbee-manager": "file:..",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@types/pg": "^8.10.7",
+    "bcrypt": "^6.0.0",
     "nodemon": "^3.0.1",
     "prisma": "5.22.0"
   }

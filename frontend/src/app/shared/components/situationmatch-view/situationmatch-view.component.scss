@@ -28,6 +28,23 @@
   flex-direction: column;
   gap: 20px;
   padding: 12px 4px 20px 4px;
+
+  .preview-image {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    object-fit: cover;
+    margin-bottom: 16px;
+  }
+
+  .clickable {
+    cursor: zoom-in;
+    transition: transform 0.2s ease-out;
+  }
+
+  .clickable:hover {
+    transform: scale(1.03);
+  }
 }
 
 .section { padding: 6px 4px 10px; }

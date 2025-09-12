@@ -13,13 +13,14 @@ import { ExerciceSelectorComponent } from '../../../../shared/components/exercic
 import { ExerciceFormModalComponent } from '../../../../shared/components/exercice-form-modal/exercice-form-modal.component';
 import { EchauffementModalComponent } from '../../../../shared/components/echauffement-modal/echauffement-modal.component';
 import { SituationMatchModalComponent } from '../../../../shared/components/situationmatch-modal/situationmatch-modal.component';
+import { ImageUploadComponent } from '../../../../shared/components/image-upload/image-upload.component';
 
 @Component({
   selector: 'app-entrainement-form',
   templateUrl: './entrainement-form.component.html',
   styleUrls: ['./entrainement-form.component.css'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ExerciceSelectorComponent, ExerciceFormModalComponent]
+  imports: [CommonModule, ReactiveFormsModule, ExerciceSelectorComponent, ExerciceFormModalComponent, ImageUploadComponent]
 })
 export class EntrainementFormComponent implements OnInit {
   entrainementForm!: FormGroup;
@@ -70,7 +71,8 @@ export class EntrainementFormComponent implements OnInit {
     this.entrainementForm = this.fb.group({
       titre: ['', [Validators.required, Validators.minLength(3)]],
       date: [''],
-      exercices: this.fb.array([])
+      exercices: this.fb.array([]),
+      imageUrl: ['']
     });
   }
 
@@ -134,7 +136,8 @@ export class EntrainementFormComponent implements OnInit {
   private populateForm(entrainement: Entrainement): void {
     this.entrainementForm.patchValue({
       titre: entrainement.titre,
-      date: entrainement.date ? new Date(entrainement.date).toISOString().split('T')[0] : ''
+      date: entrainement.date ? new Date(entrainement.date).toISOString().split('T')[0] : '',
+      imageUrl: entrainement.imageUrl || ''
     });
     
     // Charger les relations échauffement et situation/match
@@ -176,7 +179,8 @@ export class EntrainementFormComponent implements OnInit {
         exercices: formData.exercices || [],
         echauffementId: this.selectedEchauffement?.id || undefined,
         situationMatchId: this.selectedSituationMatch?.id || undefined,
-        tagIds: this.selectedThemeTags.map(tag => tag.id).filter(id => id)
+        tagIds: this.selectedThemeTags.map(tag => tag.id).filter(id => id),
+        imageUrl: formData.imageUrl || undefined
       };
 
       const operation = this.isEditMode && this.entrainementId

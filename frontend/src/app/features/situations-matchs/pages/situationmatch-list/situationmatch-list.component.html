@@ -25,11 +25,11 @@
 
   <!-- Liste des situations/matchs -->
   <div *ngIf="!loading" class="situationsMatchs-grid">
-    <mat-card *ngFor="let situationMatch of filteredSituationsMatchs" class="situationmatch-card entity-card">
+    <div *ngFor="let situationMatch of filteredSituationsMatchs" class="entity-card">
       <!-- En-tête de la carte -->
       <div class="card-header">
         <div class="title-section">
-          <h3 class="card-title">{{ situationMatch.type }}</h3>
+          <h3 class="card-title">{{ situationMatch.nom || situationMatch.type }}</h3>
           <span class="type-badge" [class]="'type-' + situationMatch.type.toLowerCase()">
             {{ situationMatch.type }}
           </span>
@@ -56,6 +56,10 @@
       </div>
 
       <div class="card-content">
+        <!-- Image -->
+        <div *ngIf="situationMatch.imageUrl" class="image-container clickable" (click)="openImageViewer(situationMatch)">
+          <img [src]="mediaUrl(situationMatch.imageUrl)" [alt]="'Image pour ' + (situationMatch.nom || situationMatch.type)" class="exercice-image">
+        </div>
         <!-- Description -->
         <div class="info-row" *ngIf="situationMatch.description">
           <span class="label">Description :</span>
@@ -84,15 +88,11 @@
 
         <!-- Informations de création -->
         <div class="meta-info">
-          <small class="creation-date">
-            Créé le {{ formatDate(situationMatch.createdAt) }}
-          </small>
-          <small class="tags-count">
-            {{ getTagsText(situationMatch) }}
-          </small>
+          <small class="creation-date">Créé le {{ formatDate(situationMatch.createdAt) }}</small>
+          <small class="tags-count">{{ getTagsText(situationMatch) }}</small>
         </div>
       </div>
-    </mat-card>
+    </div>
   </div>
 
   <!-- Message si aucune situation/match -->

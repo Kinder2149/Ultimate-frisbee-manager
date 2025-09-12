@@ -1,5 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const { prisma } = require('../services/prisma');
 
 /**
  * Fonction utilitaire pour traiter les variables d'exercice
@@ -163,7 +162,7 @@ exports.createExercice = async (req, res) => {
     let createData = {
       nom,
       description: description || '', // S'assurer que description n'est jamais null/undefined
-      imageUrl: req.body.imageUrl || null,
+      imageUrl: req.body.imageUrl ? `/uploads/exercices/${req.body.imageUrl}` : null,
       schemaUrl: schemaUrl || null,
       materiel: materiel || null,
       notes: notes || null,

@@ -5,6 +5,7 @@
 const express = require('express');
 const router = express.Router();
 const situationMatchController = require('../controllers/situationmatch.controller');
+const { createUploader, handleUploadResponse } = require('../middleware/upload.middleware');
 
 // Routes pour les situations/matchs
 // GET /api/situations-matchs - Récupérer toutes les situations/matchs
@@ -24,5 +25,9 @@ router.post('/:id/duplicate', situationMatchController.duplicateSituationMatch);
 
 // DELETE /api/situations-matchs/:id - Supprimer une situation/match
 router.delete('/:id', situationMatchController.deleteSituationMatch);
+
+// POST /api/situations-matchs/upload-image - Uploader une image pour une situation/match
+const uploadSituation = createUploader('situations');
+router.post('/upload-image', uploadSituation.single('image'), handleUploadResponse('situations'));
 
 module.exports = router;

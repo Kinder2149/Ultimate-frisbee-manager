@@ -9,6 +9,7 @@ import { TagsManagerComponent } from '../tags/pages/tags-manager.component';
 import { ProfilePageComponent } from './pages/profile/profile-page.component';
 import { ImportExercicesComponent } from './pages/import-exercices/import-exercices.component';
 import { AdminDashboardComponent } from './pages/admin-dashboard/admin-dashboard.component';
+import { DataExplorerPageComponent } from './pages/data-explorer/data-explorer-page.component';
 
 const routes: Routes = [
   {
@@ -24,9 +25,14 @@ const routes: Routes = [
         canActivate: [RoleGuard], 
         data: { role: 'admin' } 
       },
+      { 
+        path: 'admin/explorer', 
+        component: DataExplorerPageComponent, 
+        canActivate: [RoleGuard], 
+        data: { role: 'admin' } 
+      },
       // Redirection pour maintenir la compatibilité avec les anciennes URL
       { path: 'admin/overview', redirectTo: 'admin', pathMatch: 'full' },
-      { path: 'admin/users', redirectTo: 'admin', pathMatch: 'full' },
       { path: '', pathMatch: 'full', redirectTo: 'tags' }
     ]
   }
@@ -40,7 +46,8 @@ const routes: Routes = [
     // standalone components imported directly (only those used in templates)
     TagsManagerComponent,
     ImportExercicesComponent,
-    AdminDashboardComponent
+    AdminDashboardComponent,
+    DataExplorerPageComponent
   ]
 })
 export class SettingsModule {}

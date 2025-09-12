@@ -32,51 +32,47 @@
 
   <!-- Liste des échauffements -->
   <div *ngIf="!isLoading && filteredEchauffements.length > 0" class="echauffements-grid">
-    <mat-card *ngFor="let echauffement of filteredEchauffements" class="echauffement-card entity-card">
-      <!-- Header harmonisé -->
-      <div class="card-header">
-        <div class="title-section">
-          <h3>{{ echauffement.nom }}</h3>
-          <div class="action-group">
-            <button mat-icon-button (click)="onViewEchauffement(echauffement)" matTooltip="Voir">
-              <mat-icon>visibility</mat-icon>
-            </button>
-            <button mat-icon-button (click)="onEditEchauffement(echauffement)" matTooltip="Modifier">
-              <mat-icon>edit</mat-icon>
-            </button>
-            <button mat-icon-button (click)="onDuplicateEchauffement(echauffement)" matTooltip="Dupliquer">
-              <mat-icon>content_copy</mat-icon>
-            </button>
-            <button mat-icon-button class="delete-btn" (click)="onDeleteEchauffement(echauffement)" matTooltip="Supprimer">
-              <mat-icon>delete</mat-icon>
-            </button>
+    <div *ngFor="let echauffement of filteredEchauffements" class="echauffement-card entity-card">
+        <div class="card-header">
+          <div class="title-section">
+            <h3 class="card-title">{{ echauffement.nom }}</h3>
+            <div class="header-badge">
+              <span class="badge badge-echauffement">ÉCHAUFFEMENT</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <button mat-icon-button (click)="onViewEchauffement(echauffement)" matTooltip="Voir"><mat-icon>visibility</mat-icon></button>
+            <button mat-icon-button (click)="onEditEchauffement(echauffement)" matTooltip="Modifier"><mat-icon>edit</mat-icon></button>
+            <button mat-icon-button (click)="onDuplicateEchauffement(echauffement)" matTooltip="Dupliquer"><mat-icon>content_copy</mat-icon></button>
+            <button mat-icon-button class="delete-btn" (click)="onDeleteEchauffement(echauffement)" matTooltip="Supprimer"><mat-icon>delete</mat-icon></button>
           </div>
         </div>
-        <div class="header-badge">
-          <span class="badge badge-echauffement">ÉCHAUFFEMENT</span>
-          <a class="blocs-count-link">{{ getNombreBlocsText(echauffement) }}</a>
-          <span class="total-time" matTooltip="Temps total des blocs">
-            <mat-icon inline>timer</mat-icon>
-            {{ formatTotalTemps(echauffement) }}
-          </span>
-        </div>
-      </div>
 
-      <mat-card-content>
-        <p class="description">
-          {{ getDescriptionTruncated(echauffement.description) }}
-        </p>
-
-        <!-- Aperçu des blocs -->
-        <div *ngIf="echauffement.blocs && echauffement.blocs.length > 0" class="blocs-preview">
-          <h4>Blocs :</h4>
-          <div class="blocs-list">
-            <span *ngFor="let bloc of echauffement.blocs; let i = index" class="bloc-tag">
-              {{ i + 1 }}. {{ bloc.titre }}
+        <div class="card-content">
+          <div class="image-container" *ngIf="echauffement.imageUrl">
+            <img [src]="getFullImageUrl(echauffement.imageUrl)" [alt]="'Image pour ' + echauffement.nom">
+          </div>
+          <div class="meta-info">
+            <a class="blocs-count-link">{{ getNombreBlocsText(echauffement) }}</a>
+            <span class="total-time" matTooltip="Temps total des blocs">
+              <mat-icon inline>timer</mat-icon>
+              {{ formatTotalTemps(echauffement) }}
             </span>
           </div>
+
+          <p class="description" *ngIf="echauffement.description">
+            {{ getDescriptionTruncated(echauffement.description) }}
+          </p>
+
+          <div *ngIf="echauffement.blocs?.length" class="blocs-preview">
+            <h4>Blocs :</h4>
+            <div class="blocs-list">
+              <span *ngFor="let bloc of echauffement.blocs; let i = index" class="bloc-tag">
+                {{ i + 1 }}. {{ bloc.titre }}
+              </span>
+            </div>
+          </div>
         </div>
-      </mat-card-content>
-    </mat-card>
+      </div>
   </div>
 </div>

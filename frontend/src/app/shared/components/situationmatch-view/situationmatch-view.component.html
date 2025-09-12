@@ -17,6 +17,10 @@
       <div class="hero-subtitle" *ngIf="situationMatch.temps">Durée: {{ situationMatch.temps }}</div>
     </div>
 
+    <div class="section" *ngIf="situationMatch.imageUrl as url">
+      <img [src]="mediaUrl(url)" [alt]="'Illustration de ' + situationMatch.nom" class="preview-image clickable" (click)="openImageViewer(url)">
+    </div>
+
     <div class="section" *ngIf="situationMatch.description as description">
       <h3>Description</h3>
       <p class="description">{{ description }}</p>

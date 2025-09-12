@@ -91,6 +91,7 @@ export class SituationMatchFormComponent implements OnInit {
         type: formData.type as 'Match' | 'Situation',
         description: formData.description,
         temps: formData.temps,
+        imageUrl: formData.imageUrl,
         tagIds: formData.tagIds
       };
 
@@ -111,6 +112,7 @@ export class SituationMatchFormComponent implements OnInit {
         type: formData.type as 'Match' | 'Situation',
         description: formData.description,
         temps: formData.temps,
+        imageUrl: formData.imageUrl,
         tagIds: formData.tagIds
       };
 

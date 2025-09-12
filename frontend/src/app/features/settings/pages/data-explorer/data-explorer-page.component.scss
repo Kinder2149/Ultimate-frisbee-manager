@@ -1,0 +1,20 @@
+.explorer-container {
+  padding: 24px;
+  max-width: 1600px;
+  margin: auto;
+}
+
+.explorer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.tab-icon {
+  margin-right: 8px;
+}
+
+.tab-content {
+  padding-top: 24px;
+}

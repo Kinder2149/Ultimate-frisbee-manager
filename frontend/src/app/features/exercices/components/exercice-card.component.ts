@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatChipsModule } from '@angular/material/chips';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Exercice } from '../../../core/models/exercice.model';
 import { ExerciceService } from '../../../core/services/exercice.service';
@@ -11,6 +12,7 @@ import { TagService } from '../../../core/services/tag.service';
 import { Tag, TagCategory } from '../../../core/models/tag.model';
 import { DuplicateButtonComponent } from '../../../shared/components/duplicate-button/duplicate-button.component';
 import { ExerciceDialogService } from '../services/exercice-dialog.service';
+import { ApiUrlService } from '../../../core/services/api-url.service';
 
 // Type d'entrée précis pour couvrir les champs utilisés dans le template
 // et éviter les erreurs strictes de template (TS4111, pipes, etc.).
@@ -20,6 +22,7 @@ export interface ExerciceInput {
   createdAt?: string | number | Date | null | undefined;
   description?: string;
   variablesText?: string;
+  imageUrl?: string;
   schemaUrl?: string;
   tagIds?: string[];
   tags?: any[];
@@ -31,9 +34,9 @@ export interface ExerciceInput {
 @Component({
   selector: 'app-exercice-card',
   templateUrl: './exercice-card.component.html',
-  styleUrls: ['./exercice-card.component.css'],
+  styleUrls: ['./exercice-card.component.scss'],
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, MatTooltipModule, DuplicateButtonComponent]
+  imports: [CommonModule, MatButtonModule, MatIconModule, MatTooltipModule, DuplicateButtonComponent, MatChipsModule]
 })
 export class ExerciceCardComponent implements OnInit {
   @Input() exercice!: ExerciceInput;
@@ -52,6 +55,7 @@ export class ExerciceCardComponent implements OnInit {
   @Output() exerciceUpdated = new EventEmitter<Exercice>();
   @Output() selectedChange = new EventEmitter<boolean>();
   @Output() dureeChange = new EventEmitter<number>();
+  @Output() imageClick = new EventEmitter<string>();
   
   // État de duplication
   duplicating: boolean = false;
@@ -63,8 +67,6 @@ export class ExerciceCardComponent implements OnInit {
   tempsTags: Tag[] = []; // Ajout des tags de temps
   formatTags: Tag[] = []; // Ajout des tags de format
   
-  // Pour l'affichage conditionnel
-  expanded: boolean = false;
   showImage: boolean = false;
   
   constructor(
@@ -72,7 +74,8 @@ export class ExerciceCardComponent implements OnInit {
     private exerciceService: ExerciceService,
     private router: Router,
     private snackBar: MatSnackBar,
-    private exerciceDialogService: ExerciceDialogService
+    private exerciceDialogService: ExerciceDialogService,
+    private apiUrlService: ApiUrlService
   ) {}
   
   ngOnInit(): void {
@@ -199,28 +202,26 @@ export class ExerciceCardComponent implements OnInit {
     });
   }
   
-  /**
-   * Bascule l'état d'expansion de la carte
-   */
-  toggleExpand(): void {
-    this.expanded = !this.expanded;
-  }
-
-  /**
-   * Clic sur l'en-tête: sélectionne cette carte (simple sélection) et bascule l'expansion
-   */
-  onHeaderClick(): void {
-    // émettre une sélection positive au parent (une seule sélection gérée côté parent)
-    this.selectedChange.emit(true);
-    // En mode entraînement, on autorise l'ouverture/fermeture pour voir les champs
-    if (this.mode === 'entrainement') {
-      this.toggleExpand();
-    }
-  }
   
   /** Affiche/masque l'image (schéma) */
   toggleShowImage(): void {
     this.showImage = !this.showImage;
+  }
+
+  /**
+   * Construit une URL absolue pour un média (image/schéma)
+   */
+  mediaUrl(path?: string | null): string | null {
+    return this.apiUrlService.getMediaUrl(path ?? undefined);
+  }
+
+  /**
+   * Émet l'événement de clic sur l'image avec son URL.
+   */
+  onImageClicked(url?: string | null): void {
+    if (url) {
+      this.imageClick.emit(url);
+    }
   }
 
   /**

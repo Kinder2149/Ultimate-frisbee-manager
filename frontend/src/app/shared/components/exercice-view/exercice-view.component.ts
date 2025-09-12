@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
@@ -8,6 +8,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { Tag, TagCategory } from '../../../core/models/tag.model';
 import { TagService } from '../../../core/services/tag.service';
 import { ApiUrlService } from '../../../core/services/api-url.service';
+import { ImageViewerComponent, ImageViewerData } from '../image-viewer/image-viewer.component';
 
 export interface ExerciceViewData {
   exercice: {
@@ -51,7 +52,8 @@ export class ExerciceViewComponent implements OnInit {
     // Nous typons en 'any' pour lire customData.exercice de façon robuste
     @Inject(MAT_DIALOG_DATA) public data: any,
     private tagService: TagService,
-    private apiUrl: ApiUrlService
+    private apiUrl: ApiUrlService,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -118,6 +120,24 @@ export class ExerciceViewComponent implements OnInit {
 
   get consignes(): string | null {
     return this.variables?.consignes || null;
+  }
+
+  openImageViewer(imageUrl: string): void {
+    if (!imageUrl) return;
+
+    const fullImageUrl = this.mediaUrl(imageUrl);
+    if (!fullImageUrl) return;
+
+    this.dialog.open<ImageViewerComponent, ImageViewerData>(ImageViewerComponent, {
+      data: {
+        imageUrl: fullImageUrl,
+        altText: `Illustration de l'exercice: ${this.exercice.nom}`
+      },
+      panelClass: 'image-viewer-dialog-container',
+      width: '100vw',
+      height: '100vh',
+      maxWidth: '100vw',
+    });
   }
 
   close(): void {

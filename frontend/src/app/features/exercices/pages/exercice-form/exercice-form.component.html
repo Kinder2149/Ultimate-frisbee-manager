@@ -160,7 +160,7 @@
           style="margin:8px 0;"
         />
         <div class="d-flex gap-2" style="margin-bottom:6px;">
-          <button type="button" class="btn btn-secondary" (click)="uploadSelectedImage()" [disabled]="!selectedImageFile || uploading">Uploader</button>
+          <button type="button" class="btn btn-secondary" (click)="onUploadClick()" [disabled]="!selectedImageFile || uploading">Uploader</button>
           <button type="button" class="btn btn-light" (click)="clearSelectedImage()" [disabled]="!selectedImageFile || uploading">Annuler</button>
         </div>
         <small class="form-text text-muted">PNG, JPG, GIF, WEBP · max 5 Mo</small>

@@ -2,9 +2,7 @@
  * Middleware d'authentification JWT
  */
 const jwt = require('jsonwebtoken');
-const { PrismaClient } = require('@prisma/client');
-
-const prisma = new PrismaClient();
+const { prisma } = require('../services/prisma');
 
 // Clé secrète JWT (à déplacer dans .env en production)
 const JWT_SECRET = process.env.JWT_SECRET || 'ultimate-frisbee-secret-key-2024';

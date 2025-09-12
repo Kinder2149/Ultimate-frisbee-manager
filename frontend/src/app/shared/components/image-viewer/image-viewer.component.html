@@ -1,0 +1,6 @@
+<div class="image-viewer-container" (click)="close()">
+  <button mat-icon-button class="close-button" (click)="close()" aria-label="Fermer l'aperçu">
+    <mat-icon>close</mat-icon>
+  </button>
+  <img [src]="data.imageUrl" [alt]="data.altText || 'Aperçu de l’image'" class="zoomed-image">
+</div>

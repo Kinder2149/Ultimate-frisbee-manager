@@ -19,6 +19,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { AdminService } from '../../../../core/services/admin.service';
 
 type AdminOverviewResponse = any;
@@ -70,7 +71,8 @@ interface UserRow extends AdminOverviewItem {
     MatCheckboxModule,
     MatProgressSpinnerModule,
     MatProgressBarModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    RouterModule
   ],
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.scss']

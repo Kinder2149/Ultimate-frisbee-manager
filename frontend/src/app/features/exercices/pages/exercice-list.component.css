@@ -214,11 +214,13 @@ h1 {
 
 /* Style pour la grille d'exercices */
 .exercices-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 24px;
-  margin-top: 20px;
+  align-items: start; /* Aligne les éléments au début de leur piste de grille */
 }
+
+/* Plus besoin de styles spécifiques pour les cartes dans la grille */
 
 /* Style pour les messages */
 .loading-indicator,
@@ -260,7 +262,7 @@ h1 {
 /* Media queries pour la responsivité */
 @media (max-width: 1024px) {
   .exercices-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr; /* Une seule colonne sur les écrans plus petits */
   }
   
   .tag-filters {

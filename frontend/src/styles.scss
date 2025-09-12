@@ -1,7 +1,27 @@
 /* Styles globaux pour l'application */
 
-/* Import du thème Angular Material */
-@import '@angular/material/prebuilt-themes/indigo-pink.css';
+/* Import du thème Angular Material avec Sass */
+@use '@angular/material' as mat;
+
+// Inclure les styles de base (une seule fois)
+@include mat.core();
+
+// Définir une palette de couleurs
+$ultimate-primary: mat.define-palette(mat.$indigo-palette, 500);
+$ultimate-accent: mat.define-palette(mat.$pink-palette, A200, A100, A400);
+$ultimate-warn: mat.define-palette(mat.$red-palette);
+
+// Créer l'objet de thème
+$ultimate-theme: mat.define-light-theme((
+  color: (
+    primary: $ultimate-primary,
+    accent: $ultimate-accent,
+    warn: $ultimate-warn,
+  )
+));
+
+// Appliquer le thème à tous les composants
+@include mat.all-component-themes($ultimate-theme);
 
 /* Import du thème global unifié */
 @import './app/shared/styles/global-theme.scss';
@@ -161,6 +181,17 @@ button {
 
 .warning-snackbar .mat-mdc-button {
   color: white;
+}
+
+/* Styles pour les pastilles de couleur dans les panneaux de menu déroulant */
+.colored-dropdown-panel .mat-mdc-option .color-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 12px;
+  vertical-align: middle;
+  border: 1px solid rgba(0,0,0,0.1);
 }
 
 /* Dialog surfaces for entity views (unified) */

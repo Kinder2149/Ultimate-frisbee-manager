@@ -42,6 +42,13 @@
           <span class="label">Date :</span>
           <span class="value">{{ formatDate(entrainement.date) }}</span>
         </div>
+
+        <div class="info-item" *ngIf="entrainement.imageUrl">
+          <span class="label">Image :</span>
+          <div class="value">
+            <img [src]="mediaUrl(entrainement.imageUrl)" alt="Image de l'entraînement" class="thumbnail clickable" (click)="openImageViewer(entrainement.imageUrl, 'Image de l\'entraînement: ' + entrainement.titre)">
+          </div>
+        </div>
         
         <div class="info-item" *ngIf="entrainement.tags && entrainement.tags.length > 0">
           <span class="label">Thèmes :</span>
@@ -138,6 +145,7 @@
             [duree]="exerciceEntrainement.duree"
             [notes]="exerciceEntrainement.notes"
             [mode]="'entrainement'"
+            (imageClick)="openImageViewer($event, 'Image de l\'exercice: ' + exerciceEntrainement.exercice.nom)"
             [allowEditDuration]="true"
             (dureeChange)="onExerciceDureeChange(i, $event)">
           </app-exercice-card>

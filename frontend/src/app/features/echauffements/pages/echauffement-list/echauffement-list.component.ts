@@ -14,6 +14,7 @@ import { Echauffement } from '../../../../core/models/echauffement.model';
 import { ConfirmDialogComponent } from '../../../../shared/components/dialog/confirm-dialog.component';
 import { ExerciceFiltersComponent, ExerciceFiltersValue } from '../../../exercices/components/exercice-filters.component';
 import { EchauffementViewComponent } from '../../../../shared/components/echauffement-view/echauffement-view.component';
+import { ApiUrlService } from '../../../../core/services/api-url.service';
 
 @Component({
   selector: 'app-echauffement-list',
@@ -30,7 +31,7 @@ import { EchauffementViewComponent } from '../../../../shared/components/echauff
     ExerciceFiltersComponent
   ],
   templateUrl: './echauffement-list.component.html',
-  styleUrls: ['./echauffement-list.component.css']
+  styleUrls: ['./echauffement-list.component.scss']
 })
 export class EchauffementListComponent implements OnInit {
   echauffements: Echauffement[] = [];
@@ -42,7 +43,8 @@ export class EchauffementListComponent implements OnInit {
     private echauffementService: EchauffementService,
     private router: Router,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private apiUrlService: ApiUrlService
   ) {}
 
   ngOnInit(): void {
@@ -204,6 +206,10 @@ export class EchauffementListComponent implements OnInit {
     const seconds = totalSec % 60;
     if (seconds === 0) return `${minutes} min`;
     return `${minutes} min ${seconds}s`;
+  }
+
+  getFullImageUrl(relativeUrl: string | undefined): string | null {
+    return this.apiUrlService.getMediaUrl(relativeUrl);
   }
 
   formatTotalTemps(echauffement: Echauffement): string {

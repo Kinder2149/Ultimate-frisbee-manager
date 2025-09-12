@@ -89,6 +89,17 @@ export class EchauffementService {
   }
 
   /**
+   * Upload d'une image d'échauffement. Retourne l'URL publique renvoyée par l'API.
+   * @param file Fichier image sélectionné
+   */
+  uploadImage(file: File): Observable<{ imageUrl: string; filename: string; size: number; mimeType: string }> {
+    const formData = new FormData();
+    formData.append('image', file);
+    const endpoint = `${this.baseUrl}/upload-image`;
+    return this.httpService.post<{ imageUrl: string; filename: string; size: number; mimeType: string }>(endpoint, formData);
+  }
+
+  /**
    * Transforme les données avant envoi à l'API
    */
   private transformBeforeSend(data: CreateEchauffementRequest | UpdateEchauffementRequest): any {
@@ -99,6 +110,14 @@ export class EchauffementService {
       const desc: any = (prepared as any).description;
       if (typeof desc === 'string' && desc.trim().length === 0) {
         (prepared as any).description = null;
+      }
+    }
+
+    // Image optionnelle: convertir chaîne vide en null
+    if (prepared.hasOwnProperty('imageUrl')) {
+      const img: any = (prepared as any).imageUrl;
+      if (typeof img === 'string' && img.trim().length === 0) {
+        (prepared as any).imageUrl = null;
       }
     }
 

@@ -5,15 +5,14 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const dotenv = require('dotenv');
-const { PrismaClient } = require('@prisma/client');
 const fs = require('fs');
 const path = require('path');
+const { prisma } = require('./services/prisma');
 
 // Configuration des variables d'environnement
 dotenv.config();
 
-// Initialisation de Prisma Client
-const prisma = new PrismaClient();
+// Prisma Client est initialisé via le service singleton
 
 // Import du script d'initialisation
 const { initializeDatabase } = require('./scripts/init-database');
@@ -76,7 +75,17 @@ app.use(express.urlencoded({ extended: true })); // Parse les requêtes avec for
 // Gérer explicitement les préflight CORS pour toutes les routes
 app.options('*', cors(corsOptions));
 // Servir les fichiers statiques (avatars, etc.)
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Important: autoriser l'affichage cross-origin des images (ex: frontend sur Vercel)
+// en définissant Cross-Origin-Resource-Policy: cross-origin
+app.use(
+  '/api/uploads',
+  cors(corsOptions), // Appliquer CORS spécifiquement pour les médias
+  express.static(path.join(__dirname, 'uploads'), {
+    setHeaders: (res) => {
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    },
+  })
+);
 
 // Route racine
 app.get('/', (req, res) => {
@@ -91,6 +100,9 @@ routes(app);
 const uploadsDir = path.join(__dirname, 'uploads');
 const avatarsDir = path.join(uploadsDir, 'avatars');
 const exercicesDir = path.join(uploadsDir, 'exercices');
+const echauffementsDir = path.join(uploadsDir, 'echauffements');
+const situationsDir = path.join(uploadsDir, 'situations');
+const entrainementsDir = path.join(uploadsDir, 'entrainements');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
   console.log('Dossier uploads créé');
@@ -105,11 +117,38 @@ if (!fs.existsSync(exercicesDir)) {
   console.log('Dossier uploads/exercices créé');
 }
 
+if (!fs.existsSync(echauffementsDir)) {
+  fs.mkdirSync(echauffementsDir, { recursive: true });
+  console.log('Dossier uploads/echauffements créé');
+}
+
+if (!fs.existsSync(situationsDir)) {
+  fs.mkdirSync(situationsDir, { recursive: true });
+  console.log('Dossier uploads/situations créé');
+}
+
+if (!fs.existsSync(entrainementsDir)) {
+  fs.mkdirSync(entrainementsDir, { recursive: true });
+  console.log('Dossier uploads/entrainements créé');
+}
+
 // Démarrage du serveur avec initialisation automatique
 app.listen(PORT, '0.0.0.0', async () => {
   console.log(`Serveur démarré sur http://0.0.0.0:${PORT}`);
   console.log(`Accessible localement sur http://localhost:${PORT}`);
   
+  // Tentative de connexion DB au démarrage pour échouer tôt si injoignable
+  try {
+    console.log('🔌 Test de connexion à la base de données...');
+    await prisma.$connect();
+    // Ping léger
+    await prisma.$queryRaw`SELECT 1`;
+    console.log('✅ Connexion DB OK');
+  } catch (err) {
+    console.error('❌ Connexion DB échouée au démarrage:', err?.message || err);
+    console.error('Vérifiez DATABASE_URL et l\'accessibilité réseau (port 5432, SSL).');
+  }
+
   // Initialiser la base de données en production
   if (process.env.NODE_ENV === 'production') {
     await initializeDatabase();

@@ -1,6 +1,14 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatSelectModule } from '@angular/material/select';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 
 /**
  * Interface pour les valeurs de type range
@@ -21,7 +29,7 @@ export interface FilterOption {
   /** Valeur actuelle du filtre */
   value?: unknown | RangeValue;
   /** Valeurs possibles pour les filtres à choix multiples */
-  options?: { value: unknown; label: string }[];
+  options?: { value: unknown; label: string; color?: string }[];
   /** Type de filtre */
   type: 'text' | 'select' | 'date' | 'boolean' | 'range';
   /** Si le filtre est actuellement actif */
@@ -46,7 +54,19 @@ export interface SearchEvent {
   templateUrl: './search-filter.component.html',
   styleUrls: ['./search-filter.component.css'],
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule]
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatIconModule,
+    MatButtonModule,
+    MatSelectModule,
+    MatCheckboxModule,
+    MatDatepickerModule,
+    MatNativeDateModule
+  ]
 })
 export class SearchFilterComponent {
   /** Placeholder pour le champ de recherche */
@@ -58,8 +78,7 @@ export class SearchFilterComponent {
   /** Options de filtres disponibles */
   @Input() filterOptions: FilterOption[] = [];
   
-  /** Si les filtres sont initialement repliés */
-  @Input() filtersCollapsed: boolean = true;
+
   
   /** Terme de recherche initial */
   @Input() set initialSearchTerm(value: string) {
@@ -86,8 +105,7 @@ export class SearchFilterComponent {
   /** Valeurs des filtres */
   filters: { [key: string]: unknown } = {};
   
-  /** Si les filtres sont affichés */
-  showFilters: boolean = false;
+
   
   /** Délai pour la recherche automatique */
   private searchTimeout: NodeJS.Timeout | null = null;
@@ -147,12 +165,7 @@ export class SearchFilterComponent {
     });
   }
   
-  /**
-   * Bascule l'affichage des filtres
-   */
-  toggleFilters(): void {
-    this.showFilters = !this.showFilters;
-  }
+
   
   /**
    * Met à jour l'état actif des filtres

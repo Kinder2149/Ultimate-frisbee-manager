@@ -1,16 +1,19 @@
 import { Component, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
+import { ApiUrlService } from '../../../core/services/api-url.service';
+import { ImageViewerComponent, ImageViewerData } from '../image-viewer/image-viewer.component';
 
 export interface EchauffementViewData {
   echauffement: {
     nom?: string;
     description?: string;
-    blocs?: Array<{ titre?: string; repetitions?: string | number; temps?: string; informations?: string }>;
+    imageUrl?: string;
+    blocs?: Array<{ titre?: string; repetitions?: string | number; temps?: string; informations?: string; fonctionnement?: string; notes?: string }>;
     createdAt?: string | Date;
     tags?: Array<{ id?: string; label: string; color?: string }>; // optionnel si fourni par l'appelant
   };
@@ -30,7 +33,9 @@ export class EchauffementViewComponent {
 
   constructor(
     public dialogRef: MatDialogRef<EchauffementViewComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    private apiUrl: ApiUrlService,
+    private dialog: MatDialog
   ) {
     this.echauffement = (data?.customData?.echauffement || data?.echauffement || {}) as EchauffementViewData['echauffement'];
   }
@@ -78,5 +83,27 @@ export class EchauffementViewComponent {
 
   getTotalLabel(): string {
     return this.formatSeconds(this.getTotalSeconds());
+  }
+
+  mediaUrl(path?: string | null): string | null {
+    return this.apiUrl.getMediaUrl(path ?? undefined);
+  }
+
+  openImageViewer(imageUrl: string): void {
+    if (!imageUrl) return;
+
+    const fullImageUrl = this.mediaUrl(imageUrl);
+    if (!fullImageUrl) return;
+
+    this.dialog.open<ImageViewerComponent, ImageViewerData>(ImageViewerComponent, {
+      data: {
+        imageUrl: fullImageUrl,
+        altText: `Illustration de l'échauffement: ${this.echauffement.nom}`
+      },
+      panelClass: 'image-viewer-dialog-container', // Applique le style sans padding
+      width: '100vw',
+      height: '100vh',
+      maxWidth: '100vw',
+    });
   }
 }

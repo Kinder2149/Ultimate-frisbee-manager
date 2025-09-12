@@ -20,11 +20,11 @@
     <!-- Image / Schéma -->
     <div class="section">
       <div class="media-grid" *ngIf="exercice.imageUrl || exercice.schemaUrl; else imagePlaceholder">
-        <div class="media-item" *ngIf="exercice.imageUrl">
+        <div class="media-item clickable" *ngIf="exercice.imageUrl" (click)="openImageViewer(exercice.imageUrl)" title="Agrandir l'illustration">
           <img [src]="mediaUrl(exercice.imageUrl)" alt="Illustration de l'exercice" />
           <div class="media-caption">Illustration</div>
         </div>
-        <div class="media-item" *ngIf="exercice.schemaUrl">
+        <div class="media-item clickable" *ngIf="exercice.schemaUrl" (click)="openImageViewer(exercice.schemaUrl)" title="Agrandir le schéma">
           <img [src]="mediaUrl(exercice.schemaUrl)" alt="Schéma de l'exercice" />
           <div class="media-caption">Schéma</div>
         </div>

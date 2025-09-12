@@ -296,6 +296,11 @@ export class ExerciceService {
    * Upload d'une image d'exercice. Retourne l'URL publique renvoyée par l'API.
    * @param file Fichier image sélectionné
    */
+
+  /**
+   * Upload d'une image d'exercice. Retourne l'URL publique renvoyée par l'API.
+   * @param file Fichier image sélectionné
+   */
   uploadImage(file: File): Observable<{ imageUrl: string; filename: string; size: number; mimeType: string }> {
     const formData = new FormData();
     formData.append('image', file);

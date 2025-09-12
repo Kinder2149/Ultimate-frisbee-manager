@@ -54,20 +54,15 @@ export class ApiUrlService {
       return val;
     }
 
-    // Dériver la base host à partir de apiUrl en retirant le suffixe '/api'
-    // Exemple: http://localhost:3002/api => http://localhost:3002
-    const hostBase = this.apiBaseUrl.replace(/\/?api\/?$/i, '');
+    // Dériver l'origine de l'API (ex: http://localhost:3002)
+    const origin = new URL(this.apiBaseUrl).origin;
 
+    // Si le chemin commence par '/', c'est un chemin absolu par rapport à l'hôte.
     if (val.startsWith('/')) {
-      return `${hostBase}${val}`.replace(/([^:]\/)\/+/g, '$1');
+      return `${origin}${val}`;
     }
 
-    // Chemins relatifs de médias connus (ex: 'uploads/...') => préfixer hostBase
-    if (/^(uploads|static|files)\//i.test(val)) {
-      return `${hostBase}/${val}`.replace(/([^:]\/)\/+/g, '$1');
-    }
-
-    // Sinon, tenter via l'API (cas particulier)
+    // Pour les autres cas (chemins relatifs comme 'uploads/...'), on le traite comme un endpoint d'API.
     return this.getUrl(val);
   }
 

@@ -5,6 +5,7 @@ export interface Entrainement {
   id?: string;
   titre: string;
   date?: Date;
+  imageUrl?: string;
   createdAt?: Date | string;
   exercices?: EntrainementExercice[];
   dureeTotal?: number; // Durée totale calculée en minutes

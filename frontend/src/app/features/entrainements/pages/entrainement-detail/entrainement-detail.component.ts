@@ -5,6 +5,9 @@ import { Entrainement } from '../../../../core/models/entrainement.model';
 import { EntrainementService } from '../../../../core/services/entrainement.service';
 import { ExerciceCardComponent } from '../../../exercices/components/exercice-card.component';
 import { DialogService } from '../../../../shared/components/dialog/dialog.service';
+import { MatDialog } from '@angular/material/dialog';
+import { ApiUrlService } from '../../../../core/services/api-url.service';
+import { ImageViewerComponent, ImageViewerData } from '../../../../shared/components/image-viewer/image-viewer.component';
 import { EchauffementViewComponent } from '../../../../shared/components/echauffement-view/echauffement-view.component';
 import { ExerciceViewComponent } from '../../../../shared/components/exercice-view/exercice-view.component';
 import { SituationMatchViewComponent } from '../../../../shared/components/situationmatch-view/situationmatch-view.component';
@@ -27,7 +30,9 @@ export class EntrainementDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private entrainementService: EntrainementService,
-    private dialogService: DialogService
+    private dialogService: DialogService,
+    private dialog: MatDialog,
+    private apiUrl: ApiUrlService
   ) {}
 
   ngOnInit(): void {
@@ -256,6 +261,28 @@ export class EntrainementDetailComponent implements OnInit {
   /**
    * Formate la durée pour l'affichage
    */
+  openImageViewer(imageUrl: string | undefined, altText: string): void {
+    if (!imageUrl) return;
+
+    const fullImageUrl = this.mediaUrl(imageUrl);
+    if (!fullImageUrl) return;
+
+    this.dialog.open<ImageViewerComponent, ImageViewerData>(ImageViewerComponent, {
+      data: {
+        imageUrl: fullImageUrl,
+        altText: altText
+      },
+      panelClass: 'image-viewer-dialog-container',
+      width: '100vw',
+      height: '100vh',
+      maxWidth: '100vw',
+    });
+  }
+
+  mediaUrl(path?: string | null): string | null {
+    return this.apiUrl.getMediaUrl(path ?? undefined);
+  }
+
   private formatDurationDisplay(totalMinutes: number): string {
     if (totalMinutes === 0) return '0 min';
     

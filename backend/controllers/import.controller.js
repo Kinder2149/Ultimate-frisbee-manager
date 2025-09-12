@@ -1,12 +1,5 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
-
-const {
-  TAG_CATEGORIES,
-  isValidCategory,
-  isValidLevel
-} = require('../../shared/constants/tag-categories');
-
+const { TAG_CATEGORIES, isValidCategory, isValidLevel } = require('../../shared/constants/tag-categories');
+const { prisma } = require('../services/prisma');
 const matter = require('gray-matter');
 
 function normalizeWhitespace(str) {

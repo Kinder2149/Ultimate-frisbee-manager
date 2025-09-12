@@ -13,6 +13,7 @@ export interface SituationMatch {
   type: 'Match' | 'Situation';  // Type obligatoire
   description?: string;         // Description optionnelle
   temps?: string;              // Temps/durée optionnel
+  imageUrl?: string;             // URL de l'image
   tags?: Tag[];                // Tags associés (format, etc.)
   createdAt?: Date;
 }
@@ -25,6 +26,7 @@ export interface CreateSituationMatchRequest {
   type: 'Match' | 'Situation';  // Type obligatoire
   description?: string;         // Description optionnelle
   temps?: string;              // Temps/durée optionnel
+  imageUrl?: string;             // URL de l'image
   tagIds?: string[];           // IDs des tags à associer
 }
 
@@ -36,6 +38,7 @@ export interface UpdateSituationMatchRequest {
   type?: 'Match' | 'Situation'; // Type optionnel en mise à jour
   description?: string;          // Description optionnelle
   temps?: string;               // Temps/durée optionnel
+  imageUrl?: string;             // URL de l'image
   tagIds?: string[];            // IDs des tags à associer
 }
 

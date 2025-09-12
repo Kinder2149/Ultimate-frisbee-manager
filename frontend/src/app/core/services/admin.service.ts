@@ -26,6 +26,20 @@ export interface AdminOverviewItem {
   createdAt: string;
 }
 
+export interface BaseContentItem {
+  id: string;
+  titre: string;
+  createdAt: string;
+  tags?: { label: string; category: string; color?: string }[];
+}
+
+export interface AllContentResponse {
+  exercices: BaseContentItem[];
+  entrainements: BaseContentItem[];
+  echauffements: BaseContentItem[];
+  situations: BaseContentItem[];
+}
+
 export interface AdminOverviewResponse {
   counts: AdminOverviewCounts;
   recent: {
@@ -61,5 +75,25 @@ export class AdminService {
   createUser(payload: { email: string; password: string; nom?: string; prenom?: string; role?: string; isActive?: boolean }): Observable<{ user: any }> {
     const url = this.api.getUrl('admin/users');
     return this.http.post<{ user: any }>(url, payload);
+  }
+
+  getAllContent(): Observable<AllContentResponse> {
+    const url = this.api.getUrl('admin/all-content');
+    return this.http.get<AllContentResponse>(url);
+  }
+
+  getAllTags(): Observable<{ tags: any[] }> {
+    const url = this.api.getUrl('admin/all-tags');
+    return this.http.get<{ tags: any[] }>(url);
+  }
+
+  bulkDelete(items: { id: string, type: string }[]): Observable<any> {
+    const url = this.api.getUrl('admin/bulk-delete');
+    return this.http.post(url, { items });
+  }
+
+  bulkDuplicate(items: { id: string, type: string }[]): Observable<any> {
+    const url = this.api.getUrl('admin/bulk-duplicate');
+    return this.http.post(url, { items });
   }
 }

@@ -3,18 +3,26 @@ import { CommonModule } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { MatSelectModule } from '@angular/material/select';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { UserProfileCardComponent } from '../../../../shared/ui/user-profile-card/user-profile-card.component';
+import { AbsoluteUrlPipe } from '../../../../shared/pipes/absolute-url.pipe';
 import { AuthService } from '../../../../core/services/auth.service';
 import { User } from '../../../../core/models/user.model';
 import { Observable } from 'rxjs';
 import { take } from 'rxjs/operators';
+
+// Validator function outside the class
+export function passwordMatchValidator(): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const newPassword = control.get('newPassword')?.value;
+    const confirmPassword = control.get('confirmPassword')?.value;
+    return newPassword && confirmPassword && newPassword !== confirmPassword ? { passwordMismatch: true } : null;
+  };
+}
 
 @Component({
   selector: 'app-profile-page',
@@ -28,10 +36,9 @@ import { take } from 'rxjs/operators';
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatSelectModule,
-    MatSlideToggleModule,
     MatSnackBarModule,
-    UserProfileCardComponent
+    UserProfileCardComponent,
+    AbsoluteUrlPipe
   ],
   templateUrl: './profile-page.component.html',
   styleUrls: ['./profile-page.component.scss']
@@ -40,31 +47,36 @@ export class ProfilePageComponent implements OnInit {
   user$!: Observable<User | null>;
   loading = true;
   form!: FormGroup;
-  isAdmin = false;
+  passwordForm!: FormGroup;
+  securityForm!: FormGroup;
+
   selectedFile: File | null = null;
+  hideNewPassword = true;
+  hideConfirmPassword = true;
 
   constructor(private authService: AuthService, private fb: FormBuilder, private snackBar: MatSnackBar) {}
 
   ngOnInit(): void {
+    this.securityForm = this.fb.group({
+      securityQuestion: ['', [Validators.required]],
+      securityAnswer: ['', [Validators.required]]
+    });
+    this.passwordForm = this.fb.group({
+      newPassword: ['', [Validators.required, Validators.minLength(6)]],
+      confirmPassword: ['', [Validators.required]]
+    }, { validators: passwordMatchValidator() });
     this.user$ = this.authService.currentUser$;
     // Charger user et initialiser le formulaire
     this.authService.getProfile().subscribe({
       next: (res) => {
         const user = res.user;
-        this.isAdmin = (user.role || '').toLowerCase() === 'admin';
         this.form = this.fb.group({
           prenom: [user.prenom || '', [Validators.maxLength(50)]],
           nom: [user.nom || '', [Validators.maxLength(50)]],
-          email: [user.email || '', [Validators.required, Validators.email]],
-          iconUrl: [user.iconUrl || '', [Validators.maxLength(200)]],
-          password: ['', [Validators.minLength(6)]], // optionnel
-          // Champs admin
-          role: [user.role || 'user'],
-          isActive: [!!user.isActive]
+          email: [user.email || '', [Validators.required, Validators.email]]
         });
-        if (!this.isAdmin) {
-          this.form.get('role')?.disable();
-          this.form.get('isActive')?.disable();
+        if (user.securityQuestion) {
+          this.securityForm.patchValue({ securityQuestion: user.securityQuestion });
         }
         this.loading = false;
       },
@@ -78,19 +90,12 @@ export class ProfilePageComponent implements OnInit {
       return;
     }
 
-    // Construire le payload en excluant les champs admin si non-admin
     const raw = this.form.getRawValue();
     const payload: any = {
       prenom: raw.prenom?.trim(),
       nom: raw.nom?.trim(),
-      email: raw.email?.trim().toLowerCase(),
-      iconUrl: raw.iconUrl?.trim()
+      email: raw.email?.trim().toLowerCase()
     };
-    if (raw.password) payload.password = raw.password;
-    if (this.isAdmin) {
-      payload.role = raw.role;
-      payload.isActive = !!raw.isActive;
-    }
 
     this.loading = true;
     this.authService.updateProfile(payload).pipe(take(1)).subscribe({
@@ -101,11 +106,7 @@ export class ProfilePageComponent implements OnInit {
         this.form.patchValue({
           prenom: u.prenom || '',
           nom: u.nom || '',
-          email: u.email || '',
-          iconUrl: u.iconUrl || '',
-          password: '',
-          role: u.role || 'user',
-          isActive: !!u.isActive
+          email: u.email || ''
         });
         this.snackBar.open('Profil mis à jour', 'Fermer', { duration: 2500, panelClass: ['success-snackbar'] });
       },
@@ -122,16 +123,8 @@ export class ProfilePageComponent implements OnInit {
       this.form.reset({
         prenom: u.prenom || '',
         nom: u.nom || '',
-        email: u.email || '',
-        iconUrl: u.iconUrl || '',
-        password: '',
-        role: u.role || 'user',
-        isActive: !!u.isActive
+        email: u.email || ''
       });
-      if (!this.isAdmin) {
-        this.form.get('role')?.disable();
-        this.form.get('isActive')?.disable();
-      }
     });
   }
 
@@ -142,6 +135,48 @@ export class ProfilePageComponent implements OnInit {
     }
   }
 
+  changePassword(): void {
+    if (this.passwordForm.invalid) {
+      this.passwordForm.markAllAsTouched();
+      return;
+    }
+
+    this.loading = true;
+    const payload = this.passwordForm.getRawValue();
+
+    this.authService.changePassword(payload).pipe(take(1)).subscribe({
+      next: () => {
+        this.loading = false;
+        this.snackBar.open('Mot de passe mis à jour avec succès', 'Fermer', { duration: 3000, panelClass: ['success-snackbar'] });
+        this.passwordForm.reset();
+      },
+      error: (err) => {
+        this.loading = false;
+        this.snackBar.open(err || 'Échec de la mise à jour du mot de passe', 'Fermer', { duration: 4000, panelClass: ['error-snackbar'] });
+      }
+    });
+  }
+
+  setSecurityQuestion(): void {
+    if (this.securityForm.invalid) {
+      this.securityForm.markAllAsTouched();
+      return;
+    }
+
+    this.loading = true;
+    this.authService.setSecurityQuestion(this.securityForm.value).pipe(take(1)).subscribe({
+      next: () => {
+        this.loading = false;
+        this.snackBar.open('Question de sécurité mise à jour', 'Fermer', { duration: 3000, panelClass: ['success-snackbar'] });
+        this.securityForm.get('securityAnswer')?.reset();
+      },
+      error: (err) => {
+        this.loading = false;
+        this.snackBar.open(err || 'Erreur lors de la mise à jour', 'Fermer', { duration: 4000, panelClass: ['error-snackbar'] });
+      }
+    });
+  }
+
   uploadIcon(): void {
     if (!this.selectedFile) return;
     this.loading = true;
@@ -149,10 +184,7 @@ export class ProfilePageComponent implements OnInit {
       next: (res) => {
         this.loading = false;
         this.selectedFile = null;
-        // Synchroniser le formulaire pour éviter qu'un futur "Enregistrer" réécrive l'ancienne URL
-        if (res?.user?.iconUrl) {
-          this.form?.patchValue({ iconUrl: res.user.iconUrl });
-        }
+
         this.snackBar.open('Avatar mis à jour', 'Fermer', { duration: 2500, panelClass: ['success-snackbar'] });
       },
       error: (err) => {

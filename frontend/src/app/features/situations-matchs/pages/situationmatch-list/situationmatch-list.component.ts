@@ -16,6 +16,8 @@ import { SituationMatchService } from '../../../../core/services/situationmatch.
 import { ConfirmDialogComponent } from '../../../../shared/components/dialog/confirm-dialog.component';
 import { DuplicateButtonComponent } from '../../../../shared/components/duplicate-button/duplicate-button.component';
 import { SituationMatchViewComponent } from '../../../../shared/components/situationmatch-view/situationmatch-view.component';
+import { ApiUrlService } from '../../../../core/services/api-url.service';
+import { ImageViewerComponent, ImageViewerData } from '../../../../shared/components/image-viewer/image-viewer.component';
 
 /**
  * Composant de liste des situations et matchs
@@ -56,7 +58,8 @@ export class SituationMatchListComponent implements OnInit {
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private cdr: ChangeDetectorRef,
-    private tagService: TagService
+    private tagService: TagService,
+    private apiUrlService: ApiUrlService
   ) {}
 
   ngOnInit(): void {
@@ -235,6 +238,28 @@ export class SituationMatchListComponent implements OnInit {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
+    });
+  }
+
+  mediaUrl(path?: string | null): string | null {
+    return this.apiUrlService.getMediaUrl(path ?? undefined);
+  }
+
+  openImageViewer(situationMatch: SituationMatch): void {
+    if (!situationMatch.imageUrl) return;
+
+    const fullImageUrl = this.mediaUrl(situationMatch.imageUrl);
+    if (!fullImageUrl) return;
+
+    this.dialog.open<ImageViewerComponent, ImageViewerData>(ImageViewerComponent, {
+      data: {
+        imageUrl: fullImageUrl,
+        altText: `Illustration de: ${situationMatch.nom || situationMatch.type}`
+      },
+      panelClass: 'image-viewer-dialog-container',
+      width: '100vw',
+      height: '100vh',
+      maxWidth: '100vw',
     });
   }
 

@@ -46,6 +46,16 @@
         </div>
       </div>
 
+      <div class="form-group">
+        <label>Image de l'entraînement</label>
+        <app-image-upload 
+          [entityType]="'entrainements'"
+          [currentImageUrl]="entrainementForm.get('imageUrl')?.value"
+          (imageUploaded)="entrainementForm.get('imageUrl')?.setValue($event)"
+          (imageRemoved)="entrainementForm.get('imageUrl')?.setValue(null)">
+        </app-image-upload>
+      </div>
+
     </div>
 
     <!-- Section Tags Thèmes Entraînements -->

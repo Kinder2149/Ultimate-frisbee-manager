@@ -11,6 +11,11 @@
   <mat-divider></mat-divider>
 
   <div class="dialog-content">
+    <!-- Image hero si disponible -->
+    <div class="section image-section" *ngIf="echauffement.imageUrl as url" (click)="openImageViewer(url)" title="Agrandir l'image">
+      <img [src]="mediaUrl(url)" alt="Illustration de l'échauffement" class="preview-image" />
+    </div>
+
     <!-- Hero (aligné avec situation/match) -->
     <div class="section hero">
       <div class="hero-icon"><mat-icon>emoji_people</mat-icon></div>
@@ -60,9 +65,21 @@
                 {{ bloc.temps }}
               </mat-chip>
             </mat-chip-set>
-          </div>
-          <div class="bloc-notes" *ngIf="bloc.informations">
-            {{ bloc.informations }}
+            <!-- Fonctionnement du bloc -->
+            <div class="bloc-fonctionnement" *ngIf="bloc.fonctionnement">
+              <strong>Fonctionnement&nbsp;:</strong>
+              <div class="text">{{ bloc.fonctionnement }}</div>
+            </div>
+            <!-- Informations complémentaires (déjà existantes) -->
+            <div class="bloc-informations" *ngIf="bloc.informations">
+              <strong>Informations&nbsp;:</strong>
+              <div class="text">{{ bloc.informations }}</div>
+            </div>
+            <!-- Notes du bloc -->
+            <div class="bloc-notes" *ngIf="bloc.notes">
+              <strong>Notes&nbsp;:</strong>
+              <div class="text">{{ bloc.notes }}</div>
+            </div>
           </div>
         </div>
       </div>
