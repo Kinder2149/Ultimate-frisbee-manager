@@ -54,7 +54,8 @@ Dans les settings du Web Service :
 ```
 DATABASE_URL=<Internal Database URL de PostgreSQL>
 NODE_ENV=production
-CORS_ORIGINS=https://ultimate-frisbee-manager-nyvni7xiv-kinder2149s-projects.vercel.app
+# URL du frontend de production + URL des déploiements de prévisualisation (previews)
+CORS_ORIGINS=https://ultimate-frisbee-manager.vercel.app,https://ultimate-frisbee-manager-git-main-kinder2149s-projects.vercel.app,https://ultimate-frisbee-manager-*.vercel.app
 
 # Variables pour Cloudinary (stockage d'images)
 CLOUDINARY_CLOUD_NAME=<Votre Cloud Name>
