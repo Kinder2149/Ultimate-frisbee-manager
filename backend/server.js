@@ -74,18 +74,7 @@ app.use(express.json()); // Parse les requêtes JSON
 app.use(express.urlencoded({ extended: true })); // Parse les requêtes avec formulaires
 // Gérer explicitement les préflight CORS pour toutes les routes
 app.options('*', cors(corsOptions));
-// Servir les fichiers statiques (avatars, etc.)
-// Important: autoriser l'affichage cross-origin des images (ex: frontend sur Vercel)
-// en définissant Cross-Origin-Resource-Policy: cross-origin
-app.use(
-  '/api/uploads',
-  cors(corsOptions), // Appliquer CORS spécifiquement pour les médias
-  express.static(path.join(__dirname, 'uploads'), {
-    setHeaders: (res) => {
-      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-    },
-  })
-);
+
 
 // Route racine
 app.get('/', (req, res) => {
@@ -96,41 +85,6 @@ app.get('/', (req, res) => {
 const routes = require('./routes');
 routes(app);
 
-// Création des dossiers uploads s'ils n'existent pas
-const uploadsDir = path.join(__dirname, 'uploads');
-const avatarsDir = path.join(uploadsDir, 'avatars');
-const exercicesDir = path.join(uploadsDir, 'exercices');
-const echauffementsDir = path.join(uploadsDir, 'echauffements');
-const situationsDir = path.join(uploadsDir, 'situations');
-const entrainementsDir = path.join(uploadsDir, 'entrainements');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-  console.log('Dossier uploads créé');
-}
-if (!fs.existsSync(avatarsDir)) {
-  fs.mkdirSync(avatarsDir, { recursive: true });
-  console.log('Dossier uploads/avatars créé');
-}
-
-if (!fs.existsSync(exercicesDir)) {
-  fs.mkdirSync(exercicesDir, { recursive: true });
-  console.log('Dossier uploads/exercices créé');
-}
-
-if (!fs.existsSync(echauffementsDir)) {
-  fs.mkdirSync(echauffementsDir, { recursive: true });
-  console.log('Dossier uploads/echauffements créé');
-}
-
-if (!fs.existsSync(situationsDir)) {
-  fs.mkdirSync(situationsDir, { recursive: true });
-  console.log('Dossier uploads/situations créé');
-}
-
-if (!fs.existsSync(entrainementsDir)) {
-  fs.mkdirSync(entrainementsDir, { recursive: true });
-  console.log('Dossier uploads/entrainements créé');
-}
 
 // Démarrage du serveur avec initialisation automatique
 app.listen(PORT, '0.0.0.0', async () => {

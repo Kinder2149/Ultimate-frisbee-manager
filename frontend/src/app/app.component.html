@@ -65,7 +65,7 @@
           <li class="dropdown parametres user-avatar" [class.open]="isDropdownOpen.parametres">
             <a href="#" class="dropdown-toggle" (click)="toggleDropdown('parametres', $event)" matTooltip="Paramètres">
               <ng-container *ngIf="(currentUser$ | async) as cu">
-                <img *ngIf="cu.iconUrl; else defaultHeaderAvatar" [src]="cu.iconUrl" alt="avatar" class="header-avatar" />
+                <img *ngIf="cu.iconUrl; else defaultHeaderAvatar" [src]="getAvatarUrl(cu.iconUrl)" alt="avatar" class="header-avatar" />
                 <ng-template #defaultHeaderAvatar>
                   <mat-icon>account_circle</mat-icon>
                 </ng-template>

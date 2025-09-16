@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, OnInit, Input, Optional } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -36,6 +36,8 @@ export interface ExerciceViewData {
   styleUrls: ['./exercice-view.component.scss']
 })
 export class ExerciceViewComponent implements OnInit {
+  @Input() exercice: ExerciceViewData['exercice'] = {};
+  @Input() isSummary: boolean = false;
   // Tags par catégorie
   objectifTag: Tag | null = null;
   travailSpecifiqueTags: Tag[] = [];
@@ -44,21 +46,19 @@ export class ExerciceViewComponent implements OnInit {
   formatTags: Tag[] = [];
 
   // Exercice affiché (alimenté depuis DialogService.customData)
-  exercice: ExerciceViewData['exercice'] = {};
-
   constructor(
-    public dialogRef: MatDialogRef<ExerciceViewComponent>,
-    // Le DialogService passe { dialogConfig, customData } dans MAT_DIALOG_DATA
-    // Nous typons en 'any' pour lire customData.exercice de façon robuste
-    @Inject(MAT_DIALOG_DATA) public data: any,
+    @Optional() public dialogRef: MatDialogRef<ExerciceViewComponent>,
+    @Optional() @Inject(MAT_DIALOG_DATA) public data: any,
     private tagService: TagService,
     private apiUrl: ApiUrlService,
     private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
-    // Extraire l'exercice depuis customData si présent
-    this.exercice = (this.data?.customData?.exercice || this.data?.exercice || {}) as ExerciceViewData['exercice'];
+    // Si les données viennent d'un dialogue, on les utilise. Sinon, on s'attend à ce qu'elles soient passées via @Input()
+    if (this.data) {
+      this.exercice = (this.data?.customData?.exercice || this.data?.exercice || {}) as ExerciceViewData['exercice'];
+    }
 
     if (this.exercice.tags && this.exercice.tags.length) {
       this.splitTagsByCategory(this.exercice.tags);
@@ -74,7 +74,7 @@ export class ExerciceViewComponent implements OnInit {
   }
 
   mediaUrl(path?: string | null): string | null {
-    return this.apiUrl.getMediaUrl(path ?? undefined);
+    return this.apiUrl.getMediaUrl(path ?? undefined, 'exercices');
   }
 
   private splitTagsByCategory(tags: Tag[]) {

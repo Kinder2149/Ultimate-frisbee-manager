@@ -1,199 +1,191 @@
-<div class="container">
-  <!-- En-tête -->
-  <div class="header">
-    <button class="btn btn-secondary" (click)="retourListe()">
-      <i class="material-icons">arrow_back</i>
-      Retour à la liste
-    </button>
-    <h1>Détail de l'entraînement</h1>
-    <button 
-      *ngIf="entrainement" 
-      class="btn btn-primary" 
-      (click)="modifierEntrainement()">
-      <i class="material-icons">edit</i>
-      Modifier
-    </button>
-  </div>
-
-  <!-- Message de chargement -->
-  <div *ngIf="loading" class="loading">
+<ng-template #loadingOrError>
+  <div class="loading-container" *ngIf="loading; else errorTemplate">
+    <mat-spinner></mat-spinner>
     <p>Chargement de l'entraînement...</p>
   </div>
+  <ng-template #errorTemplate>
+    <div class="error-container">
+      <p>{{ error }}</p>
+      <button class="btn btn-secondary" (click)="loadEntrainement(entrainementId!)">Réessayer</button>
+    </div>
+  </ng-template>
+</ng-template>
 
-  <!-- Message d'erreur -->
-  <div *ngIf="error" class="error-message">
-    {{ error }}
-    <button class="btn btn-secondary" (click)="loadEntrainement(entrainementId!)">Réessayer</button>
+<ng-container *ngIf="entrainement; else loadingOrError">
+  <div class="detail-page">
+
+  <!-- En-tête de la page -->
+  <div class="page-header">
+    <div class="header-main-info">
+      <h1 class="training-title">{{ entrainement.titre }}</h1>
+      <div class="header-meta">
+        <div class="meta-item" *ngIf="entrainement.date">
+          <i class="material-icons">event</i>
+          <span>{{ formatDate(entrainement.date) }}</span>
+        </div>
+        <div class="meta-item duration-highlight">
+          <i class="material-icons">timer</i>
+          <span>{{ calculateTotalDuration() }}</span>
+        </div>
+      </div>
+      <div class="header-tags" *ngIf="entrainement.tags && entrainement.tags.length > 0">
+        <span *ngFor="let tag of entrainement.tags" class="tag" [style.background-color]="tag.color || '#e0e0e0'">
+          {{ tag.label }}
+        </span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="retourListe()">
+        <i class="material-icons">arrow_back</i>
+        <span>Retour</span>
+      </button>
+      <button class="btn btn-primary" (click)="modifierEntrainement()">
+        <i class="material-icons">edit</i>
+        <span>Modifier</span>
+      </button>
+    </div>
   </div>
 
-  <!-- Détails de l'entraînement -->
-  <div *ngIf="!loading && !error && entrainement" class="entrainement-detail">
-    
-    <!-- Informations générales -->
-    <div class="section">
-      <h2>Informations générales</h2>
-      <div class="info-grid">
-        <div class="info-item">
-          <span class="label">Titre :</span>
-          <span class="value">{{ entrainement.titre }}</span>
-        </div>
-        
-        <div class="info-item" *ngIf="entrainement.date">
-          <span class="label">Date :</span>
-          <span class="value">{{ formatDate(entrainement.date) }}</span>
-        </div>
+  <!-- Timeline de l'entraînement -->
+  <div class="timeline">
 
-        <div class="info-item" *ngIf="entrainement.imageUrl">
-          <span class="label">Image :</span>
-          <div class="value">
-            <img [src]="mediaUrl(entrainement.imageUrl)" alt="Image de l'entraînement" class="thumbnail clickable" (click)="openImageViewer(entrainement.imageUrl, 'Image de l\'entraînement: ' + entrainement.titre)">
+    <!-- 1. Échauffement -->
+    <div class="timeline-item" *ngIf="entrainement.echauffement">
+      <div class="timeline-icon echauffement">
+        <i class="material-icons">whatshot</i>
+      </div>
+      <div class="timeline-content">
+        <div class="timeline-card expandable" [class.expanded]="echauffementExpanded">
+          <div class="card-header" (click)="toggleEchauffement()">
+            <div class="card-title">
+              <h3>Échauffement: {{ entrainement.echauffement.nom }}</h3>
+              <div class="card-summary">
+                <span class="summary-item">
+                  <i class="material-icons">schedule</i>
+                  {{ getTotalEchauffementLabel() }}
+                </span>
+              </div>
+            </div>
+            <div class="card-actions">
+              <button mat-icon-button [matMenuTriggerFor]="echauffementMenu" (click)="$event.stopPropagation()">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #echauffementMenu="matMenu">
+                <button mat-menu-item (click)="openEchauffementView()"><mat-icon>visibility</mat-icon><span>Voir</span></button>
+                <!-- Placeholder for future actions -->
+                <button mat-menu-item disabled><mat-icon>edit</mat-icon><span>Modifier</span></button>
+                <button mat-menu-item disabled><mat-icon>content_copy</mat-icon><span>Dupliquer</span></button>
+                <button mat-menu-item disabled><mat-icon>delete</mat-icon><span>Supprimer</span></button>
+              </mat-menu>
+              <button class="expand-icon">
+                <i class="material-icons">{{ echauffementExpanded ? 'expand_less' : 'expand_more' }}</i>
+              </button>
+            </div>
           </div>
-        </div>
-        
-        <div class="info-item" *ngIf="entrainement.tags && entrainement.tags.length > 0">
-          <span class="label">Thèmes :</span>
-          <div class="tags-display">
-            <span *ngFor="let tag of entrainement.tags" 
-                  class="tag"
-                  [style.background-color]="tag.color || '#e0e0e0'">
-              {{ tag.label }}
-            </span>
+          <div class="card-expansion-content">
+            <div>
+              <app-echauffement-view [echauffement]="entrainement.echauffement" [isSummary]="!echauffementExpanded"></app-echauffement-view>
+            </div>
           </div>
-        </div>
-        
-        <div class="info-item" *ngIf="entrainement.createdAt">
-          <span class="label">Créé le :</span>
-          <span class="value">{{ formatDate(entrainement.createdAt) }}</span>
-        </div>
-        
-        <div class="info-item">
-          <span class="label">Durée totale :</span>
-          <span class="value total-duration">{{ calculateTotalDuration() }}</span>
         </div>
       </div>
     </div>
 
-    <!-- Échauffement -->
-    <div class="section echauffement-theme" id="echauffement" *ngIf="entrainement.echauffement">
-      <div class="section-header" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-        <h2 style="margin:0;">Échauffement</h2>
-        <div class="section-actions" style="display:flex; align-items:center; gap:8px;">
-          <app-action-button
-            icon="visibility"
-            iconType="material"
-            [buttonColor]="'#6b7280'"
-            [iconColor]="'#fff'"
-            tooltip="Afficher l'échauffement"
-            (click)="openEchauffementView()">
-          </app-action-button>
-        </div>
-      </div>
-      <div class="card themed-card">
-        <div class="themed-header">
-          <h3>{{ entrainement.echauffement.nom }}</h3>
+    <!-- 2. Exercices -->
+    <ng-container *ngFor="let exerciceEntrainement of entrainement.exercices; let i = index">
+      <div class="timeline-item" *ngIf="exerciceEntrainement.exercice">
+        <div class="timeline-icon exercice">
           <i class="material-icons">fitness_center</i>
         </div>
-        <div class="themed-content" *ngIf="entrainement.echauffement.description">
-          <p>{{ entrainement.echauffement.description }}</p>
-        </div>
-        <div class="blocs-list" *ngIf="entrainement.echauffement.blocs && entrainement.echauffement.blocs.length > 0">
-          <h4>Blocs d'échauffement :</h4>
-          <div *ngFor="let bloc of entrainement.echauffement.blocs; let i = index" class="bloc-item right-time">
-            <!-- Rail temps à droite pour l'échauffement -->
-            <div *ngIf="bloc.temps" class="right-rail-time echauffement" aria-label="Temps du bloc (droite)">
-              <i class="material-icons">schedule</i>
-              <span>{{ bloc.temps }}</span>
-            </div>
-            <span class="index-bubble">{{ i + 1 }}</span>
-            <div class="bloc-content">
-              <h5>{{ bloc.titre }}</h5>
-              <div class="bloc-details">
-                <span *ngIf="bloc.repetitions" class="detail">Répétitions: {{ bloc.repetitions }}</span>
+        <div class="timeline-content">
+          <div class="timeline-card expandable" [class.expanded]="expandedExercices[i]">
+            <div class="card-header" (click)="toggleExercice(i)">
+              <div class="card-title">
+                <h3>{{ i + 1 }}. {{ exerciceEntrainement.exercice.nom }}</h3>
+                <div class="card-summary">
+                  <span class="summary-item">
+                    <i class="material-icons">schedule</i>
+                    {{ formatDuree(exerciceEntrainement.duree) }}
+                  </span>
+                  <div class="summary-tags" *ngIf="exerciceEntrainement.exercice.tags?.length">
+                    <span *ngFor="let tag of getImportantTags(exerciceEntrainement.exercice.tags)" class="summary-tag" [style.background-color]="tag.color">{{ tag.label }}</span>
+                  </div>
+                </div>
               </div>
-              <p *ngIf="bloc.informations" class="bloc-info">{{ bloc.informations }}</p>
+              <div class="card-actions">
+                <button mat-icon-button [matMenuTriggerFor]="exerciceMenu" (click)="$event.stopPropagation()">
+                  <mat-icon>more_vert</mat-icon>
+                </button>
+                <mat-menu #exerciceMenu="matMenu">
+                  <button mat-menu-item (click)="openExerciceView(exerciceEntrainement.exercice)"><mat-icon>visibility</mat-icon><span>Voir</span></button>
+                  <!-- Placeholder for future actions -->
+                  <button mat-menu-item disabled><mat-icon>edit</mat-icon><span>Modifier</span></button>
+                  <button mat-menu-item disabled><mat-icon>content_copy</mat-icon><span>Dupliquer</span></button>
+                  <button mat-menu-item disabled><mat-icon>delete</mat-icon><span>Supprimer</span></button>
+                </mat-menu>
+                <button class="expand-icon">
+                  <i class="material-icons">{{ expandedExercices[i] ? 'expand_less' : 'expand_more' }}</i>
+                </button>
+              </div>
+            </div>
+            <div class="card-expansion-content">
+              <div>
+                <app-exercice-view [exercice]="exerciceEntrainement.exercice" [isSummary]="!expandedExercices[i]"></app-exercice-view>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- 3. Situation/Match -->
+    <div class="timeline-item" *ngIf="entrainement.situationMatch">
+      <div class="timeline-icon situation">
+        <i class="material-icons">sports_soccer</i>
+      </div>
+      <div class="timeline-content">
+        <div class="timeline-card expandable" [class.expanded]="situationMatchExpanded">
+          <div class="card-header" (click)="toggleSituationMatch()">
+            <div class="card-title">
+              <h3>Match: {{ entrainement.situationMatch.nom || entrainement.situationMatch.type }}</h3>
+              <div class="card-summary">
+                <span class="summary-item">
+                  <i class="material-icons">schedule</i>
+                  {{ entrainement.situationMatch.temps }}
+                </span>
+                <div class="summary-tags" *ngIf="entrainement.situationMatch.tags?.length">
+                  <span *ngFor="let tag of entrainement.situationMatch.tags" class="summary-tag" [style.background-color]="tag.color">{{ tag.label }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="card-actions">
+              <button mat-icon-button [matMenuTriggerFor]="situationMenu" (click)="$event.stopPropagation()">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #situationMenu="matMenu">
+                <button mat-menu-item (click)="openSituationView()"><mat-icon>visibility</mat-icon><span>Voir</span></button>
+                <!-- Placeholder for future actions -->
+                <button mat-menu-item disabled><mat-icon>edit</mat-icon><span>Modifier</span></button>
+                <button mat-menu-item disabled><mat-icon>content_copy</mat-icon><span>Dupliquer</span></button>
+                <button mat-menu-item disabled><mat-icon>delete</mat-icon><span>Supprimer</span></button>
+              </mat-menu>
+              <button class="expand-icon">
+                <i class="material-icons">{{ situationMatchExpanded ? 'expand_less' : 'expand_more' }}</i>
+              </button>
+            </div>
+          </div>
+          <div class="card-expansion-content">
+            <div>
+              <app-situationmatch-view [situationMatch]="entrainement.situationMatch" [isSummary]="!situationMatchExpanded"></app-situationmatch-view>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Liste des exercices -->
-    <div class="section exercice-theme">
-      <h2>Exercices de l'entraînement</h2>
-      
-      <div *ngIf="!entrainement.exercices || entrainement.exercices.length === 0" class="no-exercices">
-        <p>Aucun exercice associé à cet entraînement.</p>
-      </div>
-
-      <div *ngIf="entrainement.exercices && entrainement.exercices.length > 0" class="exercices-list">
-        <ng-container *ngFor="let exerciceEntrainement of entrainement.exercices; let i = index">
-          <!-- Barre d'action pour afficher l'exercice au format de la page Exercice -->
-          <div class="exercice-actions" style="display:flex; justify-content:flex-end; margin-bottom:6px;">
-            <app-action-button
-              icon="visibility"
-              iconType="material"
-              [buttonColor]="'#6b7280'"
-              [iconColor]="'#fff'"
-              tooltip="Afficher l'exercice"
-              (click)="openExerciceView(exerciceEntrainement.exercice)">
-            </app-action-button>
-          </div>
-          <app-exercice-card
-            *ngIf="exerciceEntrainement.exercice"
-            [exercice]="exerciceEntrainement.exercice"
-            [index]="i + 1"
-            [duree]="exerciceEntrainement.duree"
-            [notes]="exerciceEntrainement.notes"
-            [mode]="'entrainement'"
-            (imageClick)="openImageViewer($event, 'Image de l\'exercice: ' + exerciceEntrainement.exercice.nom)"
-            [allowEditDuration]="true"
-            (dureeChange)="onExerciceDureeChange(i, $event)">
-          </app-exercice-card>
-        </ng-container>
-      </div>
-    </div>
-
-    <!-- Situation/Match -->
-    <div class="section situation-theme" *ngIf="entrainement.situationMatch">
-      <div class="section-header" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-        <h2 style="margin:0;">Situation/Match</h2>
-        <div class="section-actions" style="display:flex; align-items:center; gap:8px;">
-          <app-action-button
-            icon="visibility"
-            iconType="material"
-            [buttonColor]="'#6b7280'"
-            [iconColor]="'#fff'"
-            tooltip="Afficher la situation/match"
-            (click)="openSituationView()">
-          </app-action-button>
-        </div>
-      </div>
-      <div class="card themed-card right-time">
-        <!-- Rail temps à droite pour la situation -->
-        <div *ngIf="entrainement.situationMatch.temps" class="right-rail-time situation" aria-label="Temps situation (droite)">
-          <i class="material-icons">schedule</i>
-          <span>{{ entrainement.situationMatch.temps }}</span>
-        </div>
-        <div class="themed-header">
-          <h3>{{ entrainement.situationMatch.nom || entrainement.situationMatch.type }}</h3>
-          <span class="situation-type">{{ entrainement.situationMatch.type }}</span>
-          <i class="material-icons">sports</i>
-        </div>
-        <div class="themed-content">
-          <p *ngIf="entrainement.situationMatch.description">{{ entrainement.situationMatch.description }}</p>
-          
-          <div class="tags" *ngIf="entrainement.situationMatch.tags && entrainement.situationMatch.tags.length > 0">
-            <h4>Tags :</h4>
-            <div class="tag-list">
-              <span *ngFor="let tag of entrainement.situationMatch.tags" 
-                    class="tag"
-                    [style.background-color]="tag.color || '#e0e0e0'">
-                {{ tag.label }}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </div>
+
+<!-- Force refresh -->
+<ng-container class="clearfix"></ng-container>
+

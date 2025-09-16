@@ -70,7 +70,7 @@ exports.getSituationMatchById = async (req, res) => {
  */
 exports.createSituationMatch = async (req, res) => {
   try {
-    const { type, description, temps, tagIds, imageUrl } = req.body;
+    const { type, description, temps, tagIds } = req.body;
     
     console.log('Création d\'une nouvelle situation/match:', {
       type,
@@ -91,7 +91,7 @@ exports.createSituationMatch = async (req, res) => {
       type,
       description: description || null,
       temps: temps || null,
-      imageUrl: imageUrl || null
+      imageUrl: req.file ? req.file.cloudinaryUrl : (req.body.imageUrl || null)
     };
     
     // Ajouter les tags si fournis
@@ -131,7 +131,7 @@ exports.createSituationMatch = async (req, res) => {
 exports.updateSituationMatch = async (req, res) => {
   try {
     const { id } = req.params;
-    const { type, description, temps, tagIds, imageUrl } = req.body;
+    const { type, description, temps, tagIds } = req.body;
     
     console.log(`Mise à jour de la situation/match: ${id}`, {
       type,
@@ -163,7 +163,11 @@ exports.updateSituationMatch = async (req, res) => {
     if (type !== undefined) updateData.type = type;
     if (description !== undefined) updateData.description = description || null;
     if (temps !== undefined) updateData.temps = temps || null;
-    if (imageUrl !== undefined) updateData.imageUrl = imageUrl;
+    if (req.file) {
+      updateData.imageUrl = req.file.cloudinaryUrl;
+    } else if (req.body.imageUrl !== undefined) {
+      updateData.imageUrl = req.body.imageUrl || null;
+    }
     
     // Gestion des tags : déconnecter tous puis reconnecter les nouveaux
     if (tagIds !== undefined) {

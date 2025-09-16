@@ -1,133 +1,51 @@
-<div class="dialog-container">
-  <div class="dialog-header sticky">
-    <h2 class="title">
-      <mat-icon class="title-icon">sports_handball</mat-icon>
-      {{ exercice.nom || 'Exercice' }}
-    </h2>
-    <button mat-icon-button aria-label="Fermer" (click)="close()">
-      <mat-icon>close</mat-icon>
-    </button>
-  </div>
-  <mat-divider></mat-divider>
+<div class="view-container" [class.summary-mode]="isSummary">
 
-  <div class="dialog-content">
-    <!-- Description -->
-    <div class="section" *ngIf="exercice.description as description">
-      <h3 class="hl hl-violet">Description</h3>
-      <p class="description">{{ description }}</p>
-    </div>
-
-    <!-- Image / Schéma -->
-    <div class="section">
-      <div class="media-grid" *ngIf="exercice.imageUrl || exercice.schemaUrl; else imagePlaceholder">
-        <div class="media-item clickable" *ngIf="exercice.imageUrl" (click)="openImageViewer(exercice.imageUrl)" title="Agrandir l'illustration">
-          <img [src]="mediaUrl(exercice.imageUrl)" alt="Illustration de l'exercice" />
-          <div class="media-caption">Illustration</div>
-        </div>
-        <div class="media-item clickable" *ngIf="exercice.schemaUrl" (click)="openImageViewer(exercice.schemaUrl)" title="Agrandir le schéma">
-          <img [src]="mediaUrl(exercice.schemaUrl)" alt="Schéma de l'exercice" />
-          <div class="media-caption">Schéma</div>
-        </div>
-      </div>
-      <ng-template #imagePlaceholder>
-        <div class="image-upload-placeholder">
-          <mat-icon>image</mat-icon>
-          <span>Ajouter une image</span>
-        </div>
-      </ng-template>
-    </div>
-
-    <!-- Objectif / Travail spécifique / Critère de réussite -->
-    <div class="grid grid-3">
-      <div class="section">
-        <h3 class="hl hl-blue">Objectif</h3>
-        <div class="tags-display" *ngIf="objectifTag; else objectifFallback">
-          <span class="tag" [style.background-color]="objectifTag.color || '#e0e0e0'">{{ objectifTag.label }}</span>
-        </div>
-        <ng-template #objectifFallback><div class="muted">—</div></ng-template>
-      </div>
-
-      <div class="section">
-        <h3 class="hl hl-blue">Travail Spécifique</h3>
-        <div class="tags-display">
-          <span class="tag" *ngFor="let tag of travailSpecifiqueTags" [style.background-color]="tag.color || '#e0e0e0'">{{ tag.label }}</span>
-          <div class="muted" *ngIf="!travailSpecifiqueTags.length">—</div>
-        </div>
-      </div>
-
-      <div class="section">
-        <h3 class="hl hl-blue">Critère de réussite</h3>
-        <div class="view-text muted">{{ objectifsPedagogiques || '—' }}</div>
-      </div>
-    </div>
-
-    <!-- Variables (+) / (−) -->
-    <div class="grid grid-2">
-      <div class="section">
-        <h3 class="hl hl-green">Variable (+)</h3>
-        <ul class="dot-list">
-          <li *ngFor="let v of variablesPlusList">{{ v }}</li>
-          <li *ngIf="!variablesPlusList.length">—</li>
-        </ul>
-      </div>
-
-      <div class="section">
-        <h3 class="hl hl-red">Variable (−)</h3>
-        <ul class="dot-list">
-          <li *ngFor="let v of variablesMinusList">{{ v }}</li>
-          <li *ngIf="!variablesMinusList.length">—</li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- Format / Matériel / Temps -->
-    <div class="grid grid-3">
-      <div class="section">
-        <h3 class="hl hl-sand">Format</h3>
-        <div class="tags-display">
-          <span class="tag" *ngFor="let tag of formatTags" [style.background-color]="tag.color || '#e0e0e0'">{{ tag.label }}</span>
-          <div class="muted" *ngIf="!formatTags.length">—</div>
-        </div>
-      </div>
-
-      <div class="section">
-        <h3 class="hl hl-sand">Matériel</h3>
-        <div class="view-text">{{ exercice.materiel || '—' }}</div>
-      </div>
-
-      <div class="section">
-        <h3 class="hl hl-sand">Durée</h3>
-        <div class="tags-display" *ngIf="tempsTags.length; else dureeFallback">
-          <span class="tag" *ngFor="let tag of tempsTags" [style.background-color]="tag.color || '#e0e0e0'">{{ tag.label }}</span>
-        </div>
-        <ng-template #dureeFallback>
-          <div class="muted">{{ duree || 'XX min' }}</div>
-        </ng-template>
-      </div>
-    </div>
-
-    <!-- Niveau -->
-    <div class="section">
-      <h3 class="hl">Niveau</h3>
-      <div class="tags-display">
-        <span class="tag" *ngFor="let tag of niveauTags" [style.background-color]="tag.color || '#e0e0e0'">{{ tag.level ? '★'.repeat(tag.level) : tag.label }}</span>
-        <div class="muted" *ngIf="!niveauTags.length">—</div>
-      </div>
-    </div>
-
-    <!-- Notes -->
-    <div class="section">
-      <h3 class="hl hl-violet with-pin">Notes</h3>
-      <div class="view-text">{{ exercice.notes || consignes || '—' }}</div>
-    </div>
-
-    <!-- Meta -->
-    <div class="meta" *ngIf="exercice.createdAt">
-      Créé le {{ (exercice.createdAt | date:'longDate':'':'fr-FR') }}
+  <!-- AFFICHAGE EN MODE RÉSUMÉ -->
+  <div *ngIf="isSummary; else detailedView" class="summary-content">
+    <p *ngIf="exercice.description" class="summary-description">{{ exercice.description }}</p>
+    <div class="summary-tags">
+      <mat-chip-listbox *ngIf="objectifTag">
+        <mat-chip [style.background-color]="objectifTag.color || '#e0e0e0'" [style.color]="'#fff'">{{ objectifTag.label }}</mat-chip>
+      </mat-chip-listbox>
+      <mat-chip-listbox *ngIf="travailSpecifiqueTags.length">
+        <mat-chip *ngFor="let tag of travailSpecifiqueTags" [style.background-color]="tag.color || '#e0e0e0'" [style.color]="'#fff'">{{ tag.label }}</mat-chip>
+      </mat-chip-listbox>
     </div>
   </div>
 
-  <div class="dialog-actions">
-    <button mat-stroked-button (click)="close()">Fermer</button>
-  </div>
+  <!-- AFFICHAGE EN MODE DÉTAILLÉ -->
+  <ng-template #detailedView>
+    <div class="dialog-container">
+      <!-- En-tête (uniquement en mode dialogue) -->
+      <div class="dialog-header sticky" *ngIf="dialogRef">
+        <h2 class="title"><mat-icon class="title-icon">sports_handball</mat-icon>{{ exercice.nom || 'Exercice' }}</h2>
+        <button mat-icon-button aria-label="Fermer" (click)="close()"><mat-icon>close</mat-icon></button>
+      </div>
+      <mat-divider *ngIf="dialogRef"></mat-divider>
+
+      <div class="dialog-content">
+        <!-- Contenu détaillé ici -->
+        <div class="section" *ngIf="exercice.description as description"><h3 class="hl hl-violet">Description</h3><p>{{ description }}</p></div>
+        <div class="section media-grid" *ngIf="exercice.imageUrl || exercice.schemaUrl">
+          <div class="media-item clickable" *ngIf="exercice.imageUrl" (click)="openImageViewer(exercice.imageUrl)"><img [src]="mediaUrl(exercice.imageUrl)" alt="Illustration" /><div class="media-caption">Illustration</div></div>
+          <div class="media-item clickable" *ngIf="exercice.schemaUrl" (click)="openImageViewer(exercice.schemaUrl)"><img [src]="mediaUrl(exercice.schemaUrl)" alt="Schéma" /><div class="media-caption">Schéma</div></div>
+        </div>
+        <div class="grid grid-3">
+          <div class="section"><h3 class="hl hl-blue">Objectif</h3><div class="tags-display" *ngIf="objectifTag"><span class="tag" [style.background-color]="objectifTag.color">{{ objectifTag.label }}</span></div></div>
+          <div class="section"><h3 class="hl hl-blue">Travail Spécifique</h3><div class="tags-display"><span class="tag" *ngFor="let tag of travailSpecifiqueTags" [style.background-color]="tag.color">{{ tag.label }}</span></div></div>
+          <div class="section"><h3 class="hl hl-blue">Critère de réussite</h3><div class="view-text muted">{{ objectifsPedagogiques || '—' }}</div></div>
+        </div>
+        <div class="grid grid-2">
+          <div class="section"><h3 class="hl hl-green">Variable (+)</h3><ul class="dot-list"><li *ngFor="let v of variablesPlusList">{{ v }}</li></ul></div>
+          <div class="section"><h3 class="hl hl-red">Variable (−)</h3><ul class="dot-list"><li *ngFor="let v of variablesMinusList">{{ v }}</li></ul></div>
+        </div>
+        <div class="section"><h3 class="hl hl-violet with-pin">Notes</h3><div class="view-text">{{ exercice.notes || consignes || '—' }}</div></div>
+      </div>
+
+      <!-- Pied de page (uniquement en mode dialogue) -->
+      <div class="dialog-actions" *ngIf="dialogRef">
+        <button mat-stroked-button (click)="close()">Fermer</button>
+      </div>
+    </div>
+  </ng-template>
 </div>

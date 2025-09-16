@@ -1,11 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Entrainement } from '../../../../core/models/entrainement.model';
+import { ChangeDetectionStrategy } from '@angular/core';
+import { Entrainement, EntrainementExercice, Echauffement } from '../../../../core/models/entrainement.model';
 import { EntrainementService } from '../../../../core/services/entrainement.service';
 import { ExerciceCardComponent } from '../../../exercices/components/exercice-card.component';
 import { DialogService } from '../../../../shared/components/dialog/dialog.service';
 import { MatDialog } from '@angular/material/dialog';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatIconModule } from '@angular/material/icon';
 import { ApiUrlService } from '../../../../core/services/api-url.service';
 import { ImageViewerComponent, ImageViewerData } from '../../../../shared/components/image-viewer/image-viewer.component';
 import { EchauffementViewComponent } from '../../../../shared/components/echauffement-view/echauffement-view.component';
@@ -17,14 +22,29 @@ import { ActionButtonComponent } from '../../../../shared/components/action-butt
   selector: 'app-entrainement-detail',
   templateUrl: './entrainement-detail.component.html',
   styleUrls: ['./entrainement-detail.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, ExerciceCardComponent, ActionButtonComponent]
+  imports: [
+    CommonModule, 
+    ExerciceCardComponent, 
+    ActionButtonComponent, 
+    MatMenuModule, 
+    MatButtonModule, 
+    MatIconModule,
+    MatProgressSpinnerModule,
+    EchauffementViewComponent,
+    ExerciceViewComponent,
+    SituationMatchViewComponent
+  ]
 })
 export class EntrainementDetailComponent implements OnInit {
   entrainement: Entrainement | null = null;
   loading = false;
   error: string | null = null;
   entrainementId: string | null = null;
+  expandedExercices: boolean[] = [];
+  echauffementExpanded: boolean = false;
+  situationMatchExpanded: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -63,6 +83,9 @@ export class EntrainementDetailComponent implements OnInit {
     this.entrainementService.getEntrainementById(id).subscribe({
       next: (entrainement) => {
         this.entrainement = entrainement;
+        if (this.entrainement.exercices) {
+          this.expandedExercices = new Array(this.entrainement.exercices.length).fill(false);
+        }
         this.loading = false;
         console.log('Entraînement chargé:', entrainement);
         // Scroll vers la section d'échauffement si demandée via le fragment
@@ -92,6 +115,60 @@ export class EntrainementDetailComponent implements OnInit {
   /**
    * Navigue vers l'édition de l'entraînement
    */
+  toggleEchauffement(): void {
+    this.echauffementExpanded = !this.echauffementExpanded;
+  }
+
+  toggleSituationMatch(): void {
+    this.situationMatchExpanded = !this.situationMatchExpanded;
+  }
+
+  toggleExercice(index: number): void {
+    if (index >= 0 && index < this.expandedExercices.length) {
+      this.expandedExercices[index] = !this.expandedExercices[index];
+    }
+  }
+
+  getTotalEchauffementLabel(): string {
+    const blocs = this.entrainement?.echauffement?.blocs || [];
+    const totalSeconds = blocs.reduce((acc, b) => acc + this.parseTempsToSeconds(b?.temps), 0);
+    return this.formatSeconds(totalSeconds);
+  }
+
+  getImportantTags(tags: any[] | undefined): any[] {
+    if (!tags) {
+      return [];
+    }
+    return tags.filter(t => t.category === 'objectif' || t.category === 'travail_specifique').slice(0, 2);
+  }
+
+  private parseTempsToSeconds(input?: string | number | null): number {
+    if (input === null || input === undefined) return 0;
+    if (typeof input === 'number') return Math.max(0, Math.round(input));
+    const s = String(input).trim().toLowerCase().replace(',', '.');
+    const mmss = s.match(/^(\d{1,2}):(\d{2})$/);
+    if (mmss) {
+      const m = parseInt(mmss[1], 10) || 0;
+      const sec = parseInt(mmss[2], 10) || 0;
+      return m * 60 + sec;
+    }
+    const secMatch = s.match(/^(\d+(?:\.\d+)?)\s*(s|sec|secs|seconde|secondes)$/);
+    if (secMatch) return Math.round(parseFloat(secMatch[1]));
+    const minMatch = s.match(/^(\d+(?:\.\d+)?)\s*(m|min|mins|minute|minutes)?$/);
+    if (minMatch) return Math.round(parseFloat(minMatch[1]) * 60);
+    const asNumber = Number(s);
+    if (!isNaN(asNumber)) return Math.round(asNumber * 60);
+    return 0;
+  }
+
+  private formatSeconds(totalSeconds: number): string {
+    const sec = Math.max(0, Math.round(totalSeconds));
+    const m = Math.floor((sec % 3600) / 60);
+    const s_rem = sec % 60;
+    if (m === 0 && s_rem > 0) return `${s_rem}s`;
+    return `${m} min`;
+  }
+
   modifierEntrainement(): void {
     if (this.entrainement?.id) {
       this.router.navigate(['/entrainements/modifier', this.entrainement.id]);
@@ -261,10 +338,10 @@ export class EntrainementDetailComponent implements OnInit {
   /**
    * Formate la durée pour l'affichage
    */
-  openImageViewer(imageUrl: string | undefined, altText: string): void {
+  openImageViewer(imageUrl: string | undefined, altText: string, context?: string): void {
     if (!imageUrl) return;
 
-    const fullImageUrl = this.mediaUrl(imageUrl);
+    const fullImageUrl = this.mediaUrl(imageUrl, context);
     if (!fullImageUrl) return;
 
     this.dialog.open<ImageViewerComponent, ImageViewerData>(ImageViewerComponent, {
@@ -279,8 +356,8 @@ export class EntrainementDetailComponent implements OnInit {
     });
   }
 
-  mediaUrl(path?: string | null): string | null {
-    return this.apiUrl.getMediaUrl(path ?? undefined);
+  mediaUrl(path?: string | null, context?: string): string | null {
+    return this.apiUrl.getMediaUrl(path ?? undefined, context);
   }
 
   private formatDurationDisplay(totalMinutes: number): string {

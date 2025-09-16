@@ -242,7 +242,7 @@ export class SituationMatchListComponent implements OnInit {
   }
 
   mediaUrl(path?: string | null): string | null {
-    return this.apiUrlService.getMediaUrl(path ?? undefined);
+    return this.apiUrlService.getMediaUrl(path ?? undefined, 'situations');
   }
 
   openImageViewer(situationMatch: SituationMatch): void {

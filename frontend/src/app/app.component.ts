@@ -3,6 +3,7 @@ import { Observable } from 'rxjs';
 import { AuthService } from './core/services/auth.service';
 import { User } from './core/models/user.model';
 import { BackendStatusService } from './core/services/backend-status.service';
+import { ApiUrlService } from './core/services/api-url.service';
 
 @Component({
   selector: 'app-root',
@@ -22,7 +23,7 @@ export class AppComponent implements OnInit {
     parametres: false
   };
 
-  constructor(private cdr: ChangeDetectorRef, private authService: AuthService, private backendStatus: BackendStatusService) {
+  constructor(private cdr: ChangeDetectorRef, private authService: AuthService, private backendStatus: BackendStatusService, private apiUrlService: ApiUrlService) {
     this.currentUser$ = this.authService.currentUser$;
   }
 
@@ -70,6 +71,10 @@ export class AppComponent implements OnInit {
     Object.keys(this.isDropdownOpen).forEach(key => {
       (this.isDropdownOpen as any)[key] = false;
     });
+  }
+
+  getAvatarUrl(path?: string | null): string | null {
+    return this.apiUrlService.getMediaUrl(path, 'avatars');
   }
 
   onLogout(): void {

@@ -14,7 +14,7 @@ import { catchError, finalize } from 'rxjs/operators';
 
 import { SituationMatchService } from '../../../core/services/situationmatch.service';
 import { TagService } from '../../../core/services/tag.service';
-import { SituationMatch } from '../../../core/models/entrainement.model';
+import { SituationMatch } from '../../../core/models/situationmatch.model';
 import { Tag } from '../../../core/models/tag.model';
 import { SituationMatchFormComponent, SituationMatchFormData } from '../forms/situationmatch-form/situationmatch-form.component';
 

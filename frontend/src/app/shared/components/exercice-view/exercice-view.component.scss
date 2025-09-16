@@ -1,3 +1,16 @@
+.summary-content {
+  .summary-description {
+    font-style: italic;
+    color: #666;
+    margin-bottom: 12px;
+  }
+  .summary-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+
 .dialog-container {
   width: 100%;
   max-width: 720px;

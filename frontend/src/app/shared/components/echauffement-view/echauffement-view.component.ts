@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, Input, Optional } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -27,17 +27,22 @@ export interface EchauffementViewData {
   styleUrls: ['./echauffement-view.component.scss']
 })
 export class EchauffementViewComponent {
+  @Input() echauffement: EchauffementViewData['echauffement'] = {};
+  @Input() isSummary: boolean = false;
   // Normalisation pour supporter DialogService (data: { dialogConfig, customData })
   // et l'ancien format direct (data: { echauffement })
-  echauffement: EchauffementViewData['echauffement'] = {};
-
   constructor(
-    public dialogRef: MatDialogRef<EchauffementViewComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any,
+    @Optional() public dialogRef: MatDialogRef<EchauffementViewComponent>,
+    @Optional() @Inject(MAT_DIALOG_DATA) public data: any,
     private apiUrl: ApiUrlService,
     private dialog: MatDialog
   ) {
-    this.echauffement = (data?.customData?.echauffement || data?.echauffement || {}) as EchauffementViewData['echauffement'];
+    // Si les données viennent d'un dialogue, on les utilise
+    if (data) {
+      this.echauffement = (data?.customData?.echauffement || data?.echauffement || {}) as EchauffementViewData['echauffement'];
+    }
+    // Sinon, on s'attend à ce que les données soient passées via @Input()
+  
   }
 
   close(): void {
@@ -86,7 +91,7 @@ export class EchauffementViewComponent {
   }
 
   mediaUrl(path?: string | null): string | null {
-    return this.apiUrl.getMediaUrl(path ?? undefined);
+    return this.apiUrl.getMediaUrl(path ?? undefined, 'echauffements');
   }
 
   openImageViewer(imageUrl: string): void {

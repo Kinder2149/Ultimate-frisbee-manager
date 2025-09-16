@@ -65,7 +65,7 @@ exports.getEchauffementById = async (req, res) => {
  */
 exports.createEchauffement = async (req, res) => {
   try {
-    const { nom, description, blocs, imageUrl } = req.body;
+    const { nom, description, blocs } = req.body;
     
     if (!nom) {
       return res.status(400).json({ error: 'Le nom est requis' });
@@ -78,7 +78,8 @@ exports.createEchauffement = async (req, res) => {
         nom,
         // Normalise une chaîne vide en null côté DB
         description: (description && String(description).trim().length > 0) ? description : null,
-        imageUrl: imageUrl || null,
+        // Si un fichier est uploadé, utiliser son URL Cloudinary, sinon garder la valeur du corps (pour la suppression)
+        imageUrl: req.file ? req.file.cloudinaryUrl : (req.body.imageUrl || null),
         blocs: blocs && blocs.length > 0 ? {
           create: blocs.map((bloc, index) => ({
             ordre: bloc.ordre || index + 1,
@@ -116,7 +117,7 @@ exports.createEchauffement = async (req, res) => {
 exports.updateEchauffement = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nom, description, blocs, imageUrl } = req.body;
+    const { nom, description, blocs } = req.body;
     
     if (!nom) {
       return res.status(400).json({ error: 'Le nom est requis' });
@@ -134,7 +135,9 @@ exports.updateEchauffement = async (req, res) => {
       data: {
         nom,
         description: (description && String(description).trim().length > 0) ? description : null,
-        imageUrl: typeof imageUrl !== 'undefined' ? (imageUrl || null) : undefined,
+        // Si un nouveau fichier est uploadé, il remplace l'ancien.
+        // Sinon, on vérifie si le champ imageUrl est présent dans le corps (pour permettre la suppression)
+        imageUrl: req.file ? req.file.cloudinaryUrl : (typeof req.body.imageUrl !== 'undefined' ? (req.body.imageUrl || null) : undefined),
         blocs: blocs && blocs.length > 0 ? {
           create: blocs.map((bloc, index) => ({
             ordre: bloc.ordre || index + 1,

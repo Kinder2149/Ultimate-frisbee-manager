@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, Input, Optional } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -21,15 +21,17 @@ export interface SituationMatchViewData {
   styleUrls: ['./situationmatch-view.component.scss']
 })
 export class SituationMatchViewComponent {
-  situationMatch!: SituationMatch;
-
+  @Input() situationMatch!: SituationMatch;
+  @Input() isSummary: boolean = false;
   constructor(
-    public dialogRef: MatDialogRef<SituationMatchViewComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any,
+    @Optional() public dialogRef: MatDialogRef<SituationMatchViewComponent>,
+    @Optional() @Inject(MAT_DIALOG_DATA) public data: any,
     private dialog: MatDialog,
     private apiUrl: ApiUrlService
   ) {
-    this.situationMatch = (data?.customData?.situationMatch || data?.situationMatch) as SituationMatch;
+    if (data) {
+      this.situationMatch = (data?.customData?.situationMatch || data?.situationMatch) as SituationMatch;
+    }
   }
 
   close(): void {
@@ -37,7 +39,7 @@ export class SituationMatchViewComponent {
   }
 
   mediaUrl(path?: string | null): string | null {
-    return this.apiUrl.getMediaUrl(path ?? undefined);
+    return this.apiUrl.getMediaUrl(path ?? undefined, 'situations');
   }
 
   openImageViewer(imageUrl: string): void {

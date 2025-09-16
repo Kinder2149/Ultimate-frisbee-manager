@@ -68,11 +68,9 @@ router.post('/profile/icon', authenticateToken, upload.single('icon'), async (re
     if (!req.file) {
       return res.status(400).json({ error: 'Aucun fichier reçu', code: 'NO_FILE' });
     }
-    const relativePath = `/api/uploads/avatars/${req.file.filename}`;
-    const absoluteUrl = `${req.protocol}://${req.get('host')}${relativePath}`;
     const updated = await prisma.user.update({
       where: { id: req.user.id },
-      data: { iconUrl: absoluteUrl }
+      data: { iconUrl: req.file.filename }
     });
     return res.json({
       user: {

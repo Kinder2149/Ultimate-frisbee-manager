@@ -9,10 +9,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { UserProfileCardComponent } from '../../../../shared/ui/user-profile-card/user-profile-card.component';
-import { AbsoluteUrlPipe } from '../../../../shared/pipes/absolute-url.pipe';
 import { AuthService } from '../../../../core/services/auth.service';
 import { User } from '../../../../core/models/user.model';
 import { Observable } from 'rxjs';
+import { ApiUrlService } from '../../../../core/services/api-url.service';
 import { take } from 'rxjs/operators';
 
 // Validator function outside the class
@@ -38,7 +38,6 @@ export function passwordMatchValidator(): ValidatorFn {
     MatButtonModule,
     MatSnackBarModule,
     UserProfileCardComponent,
-    AbsoluteUrlPipe
   ],
   templateUrl: './profile-page.component.html',
   styleUrls: ['./profile-page.component.scss']
@@ -54,7 +53,7 @@ export class ProfilePageComponent implements OnInit {
   hideNewPassword = true;
   hideConfirmPassword = true;
 
-  constructor(private authService: AuthService, private fb: FormBuilder, private snackBar: MatSnackBar) {}
+  constructor(private authService: AuthService, private fb: FormBuilder, private snackBar: MatSnackBar, private apiUrlService: ApiUrlService) {}
 
   ngOnInit(): void {
     this.securityForm = this.fb.group({
@@ -175,6 +174,10 @@ export class ProfilePageComponent implements OnInit {
         this.snackBar.open(err || 'Erreur lors de la mise à jour', 'Fermer', { duration: 4000, panelClass: ['error-snackbar'] });
       }
     });
+  }
+
+  getAvatarUrl(path?: string | null): string | null {
+    return this.apiUrlService.getMediaUrl(path, 'avatars');
   }
 
   uploadIcon(): void {

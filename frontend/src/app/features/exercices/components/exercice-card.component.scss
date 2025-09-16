@@ -1,5 +1,13 @@
 @import '../../../shared/styles/entity-card';
 
+// Styles spécifiques lorsque la carte est en mode résumé dans un entraînement
+:host-context(.mode-summary) {
+  .card-content {
+    padding: 16px;
+  }
+}
+
+
 .exercice-card {
   margin-bottom: 25px;
   position: relative;

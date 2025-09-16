@@ -130,7 +130,7 @@
             <mat-card-subtitle>Personnalisez votre photo de profil</mat-card-subtitle>
           </mat-card-header>
           <mat-card-content class="avatar-content">
-            <img [src]="(user$ | async)?.iconUrl | absoluteUrl" alt="Avatar actuel" class="avatar-preview" *ngIf="(user$ | async)?.iconUrl">
+            <img [src]="getAvatarUrl((user$ | async)?.iconUrl)" alt="Avatar actuel" class="avatar-preview" *ngIf="(user$ | async)?.iconUrl">
             <div class="avatar-placeholder" *ngIf="!(user$ | async)?.iconUrl">
               <mat-icon>person</mat-icon>
             </div>

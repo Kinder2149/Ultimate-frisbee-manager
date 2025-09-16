@@ -47,7 +47,7 @@ export class ExerciceCardComponent implements OnInit {
   @Input() notes?: string;
   @Input() leftTime: boolean = false; // affiche un rail de temps à gauche
   // Mode d'affichage: 'default' (liste d'exercices) ou 'entrainement'
-  @Input() mode: 'default' | 'entrainement' = 'default';
+  @Input() mode: 'default' | 'entrainement' | 'entrainement-summary' = 'default';
   // Autoriser l'édition de la durée (uniquement pertinent pour le mode entraînement)
   @Input() allowEditDuration: boolean = false;
   @Output() exerciceDeleted = new EventEmitter<string>();
@@ -212,7 +212,7 @@ export class ExerciceCardComponent implements OnInit {
    * Construit une URL absolue pour un média (image/schéma)
    */
   mediaUrl(path?: string | null): string | null {
-    return this.apiUrlService.getMediaUrl(path ?? undefined);
+    return this.apiUrlService.getMediaUrl(path ?? undefined, 'exercices');
   }
 
   /**

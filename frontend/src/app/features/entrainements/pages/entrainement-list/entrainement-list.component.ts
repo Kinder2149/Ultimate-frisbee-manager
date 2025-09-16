@@ -7,7 +7,7 @@ import { DuplicateButtonComponent } from '../../../../shared/components/duplicat
 import { ExerciceFiltersComponent, ExerciceFiltersValue } from '../../../exercices/components/exercice-filters.component';
 import { TagService } from '../../../../core/services/tag.service';
 import { Tag, TagCategory } from '../../../../core/models/tag.model';
-import { environment } from '../../../../../environments/environment';
+import { ApiUrlService } from '../../../../core/services/api-url.service';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatButtonModule } from '@angular/material/button';
@@ -36,8 +36,13 @@ export class EntrainementListComponent implements OnInit {
     private entrainementService: EntrainementService,
     private tagService: TagService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private apiUrlService: ApiUrlService
   ) {}
+
+  getFullImageUrl(imageName?: string): string | null {
+    return this.apiUrlService.getMediaUrl(imageName, 'entrainements');
+  }
 
   ngOnInit(): void {
     this.loadTags();
@@ -177,13 +182,6 @@ export class EntrainementListComponent implements OnInit {
     if (heures === 0) return `${minutes} min`;
     if (minutes === 0) return `${heures}h`;
     return `${heures}h${minutes.toString().padStart(2, '0')}`;
-  }
-
-  getFullImageUrl(relativeUrl: string | undefined): string | null {
-    if (!relativeUrl) {
-      return null;
-    }
-    return `${environment.apiUrl}${relativeUrl}`;
   }
 
   dupliquerEntrainement(entityId: string): void {

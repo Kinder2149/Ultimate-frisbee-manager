@@ -1,7 +1,7 @@
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
-const { v4: uuidv4 } = require('uuid');
+const streamifier = require('streamifier');
+const { cloudinary } = require('../services/cloudinary');
 
 /**
  * Filtre les fichiers pour n'accepter que les images.
@@ -16,61 +16,60 @@ const imageFileFilter = (req, file, cb) => {
   }
 };
 
-/**
- * Crée une instance de middleware Multer configurée pour un sous-dossier spécifique.
- * @param {string} subfolder - Le sous-dossier dans 'uploads' (ex: 'echauffements', 'situations').
- * @returns {multer.Instance} - Une instance de Multer configurée.
- */
-const createUploader = (subfolder) => {
-  const uploadDir = path.join(__dirname, '..', 'uploads', subfolder);
+// Configure multer pour utiliser le stockage en mémoire
+const memoryUploader = multer({
+  storage: multer.memoryStorage(),
+  fileFilter: imageFileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // Limite de 5MB
+});
 
-  // S'assurer que le dossier de destination existe
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
+/**
+ * Middleware pour uploader le fichier depuis la mémoire vers Cloudinary.
+ * @param {string} subfolder - Le sous-dossier de destination sur Cloudinary (ex: 'avatars', 'exercices').
+ */
+const uploadToCloudinary = (subfolder) => (req, res, next) => {
+  if (!req.file) {
+    // S'il n'y a pas de fichier, on passe simplement au middleware suivant.
+    // Utile pour les formulaires qui peuvent avoir ou non une image.
+    return next();
   }
 
-  const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, uploadDir);
+  const uploadStream = cloudinary.uploader.upload_stream(
+    {
+      folder: `ultimate-frisbee-manager/${subfolder}`,
+      // public_id: `custom_name`, // Optionnel: pour un nom de fichier personnalisé
     },
-    filename: (req, file, cb) => {
-      const ext = path.extname(file.originalname).toLowerCase();
-      const baseName = path.basename(file.originalname, ext)
-        .toString()
-        .toLowerCase()
-        .replace(/[^a-z0-9-_.]+/g, '-') // Conserver les points pour les noms de fichiers complexes
-        .replace(/^-+|-+$/g, '')
-        .substring(0, 50) || 'image';
-      const uniqueSuffix = uuidv4();
-      cb(null, `${baseName}-${uniqueSuffix}${ext}`);
-    },
-  });
+    (error, result) => {
+      if (error) {
+        console.error('Erreur Cloudinary:', error);
+        return next(new Error('Erreur lors de l\'upload sur Cloudinary.'));
+      }
+      // Attache l'URL sécurisée et d'autres infos au fichier de la requête
+      req.file.cloudinaryUrl = result.secure_url;
+      req.file.cloudinaryPublicId = result.public_id;
+      next();
+    }
+  );
 
-  return multer({
-    storage: storage,
-    fileFilter: imageFileFilter,
-    limits: { fileSize: 5 * 1024 * 1024 }, // Limite de 5MB
-  });
+  // Envoie le buffer du fichier au stream d'upload de Cloudinary
+  streamifier.createReadStream(req.file.buffer).pipe(uploadStream);
 };
 
 /**
- * Gère la réponse après un upload réussi.
- * @param {string} subfolder - Le sous-dossier où l'image a été stockée.
- * @returns {Function} - Un gestionnaire de route Express.
+ * Crée une chaîne de middlewares pour l'upload.
+ * 1. Multer gère le fichier en mémoire.
+ * 2. uploadToCloudinary envoie le fichier à Cloudinary.
+ * @param {string} fieldName - Le nom du champ du formulaire contenant le fichier.
+ * @param {string} subfolder - Le sous-dossier de destination sur Cloudinary.
  */
-const handleUploadResponse = (subfolder) => (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ message: 'Aucun fichier reçu.' });
-  }
-
-  const imageUrl = `/api/uploads/${subfolder}/${req.file.filename}`;
-  res.status(201).json({
-    message: 'Image téléchargée avec succès.',
-    imageUrl: imageUrl,
-  });
+const createUploader = (fieldName, subfolder) => {
+  return [
+    memoryUploader.single(fieldName), // 1. Multer
+    uploadToCloudinary(subfolder),    // 2. Cloudinary
+  ];
 };
 
 module.exports = {
   createUploader,
-  handleUploadResponse,
 };
+

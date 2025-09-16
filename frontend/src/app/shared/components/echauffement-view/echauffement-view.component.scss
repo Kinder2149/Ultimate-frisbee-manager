@@ -184,6 +184,19 @@
   font-style: italic;
 }
 
+.summary-content {
+  .summary-description {
+    font-style: italic;
+    color: #666;
+    margin-bottom: 12px;
+  }
+  .summary-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+
 .meta {
   margin-top: 10px;
   color: #999;

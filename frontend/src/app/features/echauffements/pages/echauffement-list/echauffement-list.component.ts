@@ -209,7 +209,7 @@ export class EchauffementListComponent implements OnInit {
   }
 
   getFullImageUrl(relativeUrl: string | undefined): string | null {
-    return this.apiUrlService.getMediaUrl(relativeUrl);
+    return this.apiUrlService.getMediaUrl(relativeUrl, 'echauffements');
   }
 
   formatTotalTemps(echauffement: Echauffement): string {
