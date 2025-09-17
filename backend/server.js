@@ -68,12 +68,16 @@ const corsOptions = {
 };
 
 // Middleware
-app.use(helmet()); // Sécurité HTTP de base
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } })); // Autoriser le chargement des ressources cross-origin (images)
 app.use(cors(corsOptions)); // CORS sécurisé
 app.use(express.json()); // Parse les requêtes JSON
 app.use(express.urlencoded({ extended: true })); // Parse les requêtes avec formulaires
 // Gérer explicitement les préflight CORS pour toutes les routes
 app.options('*', cors(corsOptions));
+
+// Servir les fichiers statiques depuis le dossier 'uploads'
+// Le chemin virtuel /api/uploads est mappé sur le dossier physique /uploads
+app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
 // Route racine
