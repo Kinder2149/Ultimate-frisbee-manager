@@ -54,7 +54,6 @@
       <div class="image-upload-section">
         <h3>Image</h3>
         <app-image-upload 
-          [entityType]="'situations-matchs'"
           [currentImageUrl]="form.get('imageUrl')?.value"
           (imageSelected)="onImageSelected($event)">
         </app-image-upload>

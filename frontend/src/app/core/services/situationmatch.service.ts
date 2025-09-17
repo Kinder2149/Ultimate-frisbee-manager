@@ -39,7 +39,7 @@ export class SituationMatchService {
   }
 
   updateSituationMatch(id: string, situationMatch: UpdateSituationMatchRequest): Observable<SituationMatch> {
-    return this.crudService.update(id, situationMatch).pipe(
+    return this.crudService.update(id, situationMatch as SituationMatch).pipe(
       tap(() => this.crudService.invalidateCache())
     );
   }
@@ -56,5 +56,4 @@ export class SituationMatchService {
       tap(() => this.crudService.invalidateCache())
     );
   }
-}
 }

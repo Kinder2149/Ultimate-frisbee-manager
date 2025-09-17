@@ -35,6 +35,7 @@ import { TagService } from '../../../../core/services/tag.service';
 // Composants partagés
 import { ConfirmationDialogComponent, ConfirmationDialogData } from '../../../../shared/shared.module';
 import { ExerciceVariablesComponent } from '../../../../shared/components/exercice-variables/exercice-variables.component';
+import { ImageUploadComponent } from '../../../../shared/components/image-upload/image-upload.component';
 
 interface ExerciceVariables {
   nbJoueurs?: string;
@@ -81,7 +82,8 @@ interface TagProperties {
     MatSelectModule,
     MatTooltipModule,
     MatProgressSpinnerModule,
-    ExerciceVariablesComponent
+    ExerciceVariablesComponent,
+    ImageUploadComponent
   ],
   templateUrl: './exercice-form.component.html',
   styleUrls: ['./exercice-form.component.css'],
@@ -142,7 +144,6 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
   
   // Propriétés pour la gestion des images
   selectedImageFile: File | null = null;
-  uploading = false;
   imagePreview: string | ArrayBuffer | null = null;
   
   // Propriétés pour les dropdowns
@@ -569,47 +570,17 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
   }
 
   // ---------- Gestion image (input file) ----------
-  onImageSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (!input?.files || input.files.length === 0) return;
-    const file = input.files[0];
+  onImageSelected(file: File | null): void {
     this.selectedImageFile = file;
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.imagePreview = reader.result;
-    };
-    reader.readAsDataURL(file);
-  }
-
-  clearSelectedImage(): void {
-    this.selectedImageFile = null;
-    this.imagePreview = null;
-    if (this.imageInput?.nativeElement) {
-      this.imageInput.nativeElement.value = '';
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.imagePreview = reader.result;
+      };
+      reader.readAsDataURL(file);
+    } else {
+      this.imagePreview = null;
     }
-  }
-  
-  /**
-   * Déclenche l'upload via le bouton "Uploader" et met à jour le formulaire
-   */
-  onUploadClick(): void {
-    if (!this.selectedImageFile || this.uploading) {
-      return;
-    }
-    const sub = this.uploadSelectedImage().subscribe({
-      next: (imageUrl: string) => {
-        // Utiliser l'URL renvoyée par l'API et mettre à jour l'aperçu résolu
-        this.exerciceForm.patchValue({ imageUrl });
-        this.imagePreview = this.mediaUrl(imageUrl);
-        this.snackBar.open('Image uploadée avec succès', 'Fermer', { duration: 3000, panelClass: ['success-snackbar'] });
-        sub.unsubscribe();
-      },
-      error: () => {
-        // uploadSelectedImage gère déjà handleHttpError et uploading
-        sub.unsubscribe();
-      }
-    });
   }
   
   /**

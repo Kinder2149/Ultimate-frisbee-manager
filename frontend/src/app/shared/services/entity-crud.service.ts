@@ -5,6 +5,22 @@ import { tap, map } from 'rxjs/operators';
 import { CacheService } from '../../core/services/cache.service';
 
 /**
+ * Vérifie de manière robuste si une valeur est un objet de type Fichier.
+ * @param value La valeur à vérifier.
+ * @returns `true` si la valeur est un fichier, sinon `false`.
+ */
+function isUploadFile(value: any): value is File {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    typeof value.name === 'string' &&
+    typeof value.size === 'number' &&
+    typeof value.type === 'string' &&
+    typeof value.lastModified === 'number'
+  );
+}
+
+/**
  * Interface générique pour les entités avec un ID
  */
 export interface Entity {
@@ -167,7 +183,7 @@ export class EntityCrudService<T extends Entity> {
     let dataToSend = mergedOptions.transformBeforeSend ? mergedOptions.transformBeforeSend(entity) : entity;
 
     // Gérer l'upload de fichier si un champ est spécifié
-    if (mergedOptions.fileUploadField && (entity as any)[mergedOptions.fileUploadField] instanceof File) {
+    if (mergedOptions.fileUploadField && isUploadFile((entity as any)[mergedOptions.fileUploadField])) {
       dataToSend = this.createFormData(entity, mergedOptions.fileUploadField);
     }
 
@@ -208,7 +224,7 @@ export class EntityCrudService<T extends Entity> {
     let dataToSend = mergedOptions.transformBeforeSend ? mergedOptions.transformBeforeSend(entity) : entity;
 
     // Gérer l'upload de fichier si un champ est spécifié
-    if (mergedOptions.fileUploadField && (entity as any)[mergedOptions.fileUploadField] instanceof File) {
+    if (mergedOptions.fileUploadField && isUploadFile((entity as any)[mergedOptions.fileUploadField])) {
       dataToSend = this.createFormData(entity, mergedOptions.fileUploadField);
     }
     
@@ -313,7 +329,7 @@ export class EntityCrudService<T extends Entity> {
     const file = (entity as any)[fileField];
 
     // Ajouter le fichier principal
-    if (file instanceof File) {
+    if (isUploadFile(file)) {
       formData.append(fileField, file, file.name);
     }
 
@@ -333,9 +349,9 @@ export class EntityCrudService<T extends Entity> {
       }
 
       // Gérer les objets (y compris les tableaux), mais exclure les fichiers
-      if (typeof value === 'object' && !(value instanceof File)) {
+      if (typeof value === 'object' && !isUploadFile(value)) {
         formData.append(key, JSON.stringify(value));
-      } else if (!(value instanceof File)) {
+      } else if (!isUploadFile(value)) {
         // Gérer les types primitifs (string, number, boolean)
         formData.append(key, String(value));
       }

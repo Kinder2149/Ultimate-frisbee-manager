@@ -33,13 +33,13 @@ export class EchauffementService {
   }
 
   ajouterEchauffement(echauffement: CreateEchauffementRequest): Observable<Echauffement> {
-    return this.crudService.create(echauffement).pipe(
+    return this.crudService.create(echauffement as Echauffement).pipe(
       tap(() => this.crudService.invalidateCache())
     );
   }
 
   updateEchauffement(id: string, echauffement: UpdateEchauffementRequest): Observable<Echauffement> {
-    return this.crudService.update(id, echauffement).pipe(
+    return this.crudService.update(id, echauffement as Echauffement).pipe(
       tap(() => this.crudService.invalidateCache())
     );
   }
@@ -56,5 +56,4 @@ export class EchauffementService {
       tap(() => this.crudService.invalidateCache())
     );
   }
-}
 }

@@ -142,29 +142,10 @@
       <!-- Tuile image (1 colonne) + upload -->
       <section class="form-section">
         <h3 class="view-heading">Illustration</h3>
-        <div *ngIf="!(imagePreview || f['imageUrl'].value)" class="image-placeholder" style="margin-bottom:8px;">
-          <span class="material-icons">image</span>
-          <span>Ajouter une image</span>
-        </div>
-        <div class="media-grid" *ngIf="imagePreview || f['imageUrl'].value">
-          <div class="media-item">
-            <img [src]="imagePreview || mediaUrl(f['imageUrl'].value)" alt="Prévisualisation de l'image" />
-            <div class="media-caption">Prévisualisation</div>
-          </div>
-        </div>
-        <input 
-          type="file" 
-          accept="image/png, image/jpeg, image/jpg, image/gif, image/webp"
-          (change)="onImageSelected($event)"
-          [disabled]="uploading"
-          style="margin:8px 0;"
-        />
-        <div class="d-flex gap-2" style="margin-bottom:6px;">
-          <button type="button" class="btn btn-secondary" (click)="onUploadClick()" [disabled]="!selectedImageFile || uploading">Uploader</button>
-          <button type="button" class="btn btn-light" (click)="clearSelectedImage()" [disabled]="!selectedImageFile || uploading">Annuler</button>
-        </div>
-        <small class="form-text text-muted">PNG, JPG, GIF, WEBP · max 5 Mo</small>
-        <div *ngIf="uploading" class="info-message" style="margin-top:6px;">Upload en cours…</div>
+        <app-image-upload 
+          [currentImageUrl]="f['imageUrl'].value"
+          (imageSelected)="onImageSelected($event)">
+        </app-image-upload>
         <div class="form-group" style="margin-top:10px;">
           <label for="imageUrl">URL de l'image</label>
           <input type="text" id="imageUrl" formControlName="imageUrl" class="form-control" placeholder="https://exemple.com/image.jpg">
