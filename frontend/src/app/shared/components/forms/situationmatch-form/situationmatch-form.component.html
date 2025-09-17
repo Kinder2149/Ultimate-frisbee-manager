@@ -56,8 +56,7 @@
         <app-image-upload 
           [entityType]="'situations-matchs'"
           [currentImageUrl]="form.get('imageUrl')?.value"
-          (imageUploaded)="form.get('imageUrl')?.setValue($event)"
-          (imageRemoved)="form.get('imageUrl')?.setValue(null)">
+          (imageSelected)="onImageSelected($event)">
         </app-image-upload>
       </div>
 

@@ -34,6 +34,7 @@ export class ExerciceOptimizedService {
     this.exerciceCrud.configure(this.ENDPOINT, {
       cachePrefix: this.CACHE_PREFIX,
       cacheTTL: 300, // 5 minutes
+      fileUploadField: 'image', // Spécifier le nom du champ pour l'upload
       transformBeforeSend: this.prepareExerciceForSending,
       transformAfterReceive: this.processExerciceFromApi
     });

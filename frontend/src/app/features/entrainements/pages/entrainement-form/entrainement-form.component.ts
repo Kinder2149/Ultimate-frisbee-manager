@@ -29,6 +29,7 @@ export class EntrainementFormComponent implements OnInit {
   entrainementId: string | null = null;
   loading = false;
   error: string | null = null;
+  selectedImageFile: File | null = null;
   
   // Gestion des exercices
   availableExercices: Exercice[] = [];
@@ -181,7 +182,8 @@ export class EntrainementFormComponent implements OnInit {
         echauffementId: this.selectedEchauffement?.id || undefined,
         situationMatchId: this.selectedSituationMatch?.id || undefined,
         tagIds: this.selectedThemeTags.map(tag => tag.id).filter(id => id),
-        imageUrl: formData.imageUrl || undefined
+        imageUrl: formData.imageUrl || undefined,
+        schemaUrl: this.selectedImageFile || undefined // Attach the file for upload
       };
 
       const operation = this.isEditMode && this.entrainementId
@@ -529,6 +531,12 @@ export class EntrainementFormComponent implements OnInit {
     const val = ctrl?.get('duree')?.value;
     const n = Number(val);
     return isNaN(n) ? 0 : Math.max(0, Math.floor(n));
+  }
+
+  onImageSelected(file: File | null): void {
+    this.selectedImageFile = file;
+    // Mettre à jour le champ imageUrl pour que la suppression d'image fonctionne
+    this.entrainementForm.get('imageUrl')?.setValue(file ? 'file-present' : null);
   }
 
   getExerciceTags(index: number): Tag[] {

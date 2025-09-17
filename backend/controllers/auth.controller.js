@@ -330,7 +330,14 @@ module.exports = {
       if (typeof email === 'string' && email.trim().length > 0) data.email = email.trim().toLowerCase();
       if (typeof nom === 'string' && nom.trim().length > 0) data.nom = nom.trim();
       if (typeof prenom === 'string' && prenom.trim().length > 0) data.prenom = prenom.trim();
-      if (typeof iconUrl === 'string' && iconUrl.trim().length > 0) data.iconUrl = iconUrl.trim();
+      // Gérer la mise à jour de l'avatar
+      if (req.file) {
+        // Si un nouveau fichier est uploadé, utiliser sa nouvelle URL
+        data.iconUrl = req.file.cloudinaryUrl;
+      } else if (typeof iconUrl !== 'undefined') {
+        // Sinon, utiliser la valeur envoyée (peut être une URL existante ou null pour la supprimer)
+        data.iconUrl = iconUrl || null;
+      }
 
       // Mot de passe optionnel
       if (password && typeof password === 'string' && password.length >= 6) {

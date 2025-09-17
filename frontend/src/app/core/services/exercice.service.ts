@@ -291,21 +291,4 @@ export class ExerciceService {
   deleteExercice(id: string): Observable<void> {
     return this.crudService.delete(id);
   }
-
-  /**
-   * Upload d'une image d'exercice. Retourne l'URL publique renvoyée par l'API.
-   * @param file Fichier image sélectionné
-   */
-
-  /**
-   * Upload d'une image d'exercice. Retourne l'URL publique renvoyée par l'API.
-   * @param file Fichier image sélectionné
-   */
-  uploadImage(file: File): Observable<{ imageUrl: string; filename: string; size: number; mimeType: string }> {
-    const formData = new FormData();
-    formData.append('image', file);
-    const endpoint = 'exercices/upload-image';
-    // Important: ne pas fixer Content-Type pour laisser le navigateur définir le boundary multipart
-    return this.crudService.http.post<{ imageUrl: string; filename: string; size: number; mimeType: string }>(endpoint, formData);
-  }
 }

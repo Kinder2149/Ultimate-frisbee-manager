@@ -50,6 +50,7 @@ export class SituationMatchFormComponent implements OnInit, OnChanges {
 
   form: FormGroup;
   selectedTags: Tag[] = [];
+  selectedImageFile: File | null = null;
   
   // Options pour le sélecteur de type
   typeOptions = SITUATION_MATCH_TYPES;
@@ -150,10 +151,16 @@ export class SituationMatchFormComponent implements OnInit, OnChanges {
       description: formData.description || undefined,
       temps,
       imageUrl: formData.imageUrl || undefined,
+      schemaUrl: this.selectedImageFile || undefined, // Attach the file for upload
       tagIds: this.selectedTags.map(tag => tag.id).filter(id => id !== undefined) as string[]
     };
 
     this.formSubmit.emit(situationMatchData);
+  }
+
+  onImageSelected(file: File | null): void {
+    this.selectedImageFile = file;
+    this.form.get('imageUrl')?.setValue(file ? 'file-present' : null);
   }
 
   onCancel(): void {

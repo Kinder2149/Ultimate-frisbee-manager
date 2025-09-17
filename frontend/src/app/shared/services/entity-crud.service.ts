@@ -26,6 +26,8 @@ export interface CrudOptions<T> {
   httpOptions?: HttpOptions;
   /** Fonction de transformation avant l'envoi */
   transformBeforeSend?: (entity: T) => unknown;
+  /** Nom du champ contenant le fichier à uploader */
+  fileUploadField?: string;
   /** Fonction de transformation après réception */
   transformAfterReceive?: (data: unknown) => T;
 }
@@ -162,7 +164,12 @@ export class EntityCrudService<T extends Entity> {
     };
 
     // Transformer les données avant envoi si nécessaire
-    const dataToSend = mergedOptions.transformBeforeSend ? mergedOptions.transformBeforeSend(entity) : entity;
+    let dataToSend = mergedOptions.transformBeforeSend ? mergedOptions.transformBeforeSend(entity) : entity;
+
+    // Gérer l'upload de fichier si un champ est spécifié
+    if (mergedOptions.fileUploadField && (entity as any)[mergedOptions.fileUploadField] instanceof File) {
+      dataToSend = this.createFormData(entity, mergedOptions.fileUploadField);
+    }
 
     return this.httpService.post<T>(this.endpoint, dataToSend, httpOptions)
       .pipe(
@@ -198,7 +205,12 @@ export class EntityCrudService<T extends Entity> {
     };
 
     // Transformer les données avant envoi si nécessaire
-    const dataToSend = mergedOptions.transformBeforeSend ? mergedOptions.transformBeforeSend(entity) : entity;
+    let dataToSend = mergedOptions.transformBeforeSend ? mergedOptions.transformBeforeSend(entity) : entity;
+
+    // Gérer l'upload de fichier si un champ est spécifié
+    if (mergedOptions.fileUploadField && (entity as any)[mergedOptions.fileUploadField] instanceof File) {
+      dataToSend = this.createFormData(entity, mergedOptions.fileUploadField);
+    }
     
     const url = `${this.endpoint}/${id}`;
     return this.httpService.put<T>(url, dataToSend, httpOptions)
@@ -288,6 +300,43 @@ export class EntityCrudService<T extends Entity> {
   protected invalidateListCache(options: CrudOptions<T>): void {
     const cacheKey = `${options.cachePrefix || this.endpoint}.all`;
     this.cacheService.remove(cacheKey);
+  }
+
+  /**
+   * Crée un objet FormData à partir d'une entité pour l'upload de fichier.
+   * @param entity L'entité contenant les données et le fichier.
+   * @param fileField Le nom du champ qui contient le fichier.
+   * @returns Un objet FormData.
+   */
+  private createFormData(entity: T, fileField: string): FormData {
+    const formData = new FormData();
+    const file = (entity as any)[fileField];
+
+    // Ajouter le fichier
+    if (file instanceof File) {
+      formData.append(fileField, file, file.name);
+    }
+
+    // Ajouter les autres champs de l'entité
+    for (const key in entity) {
+      if (Object.prototype.hasOwnProperty.call(entity, key) && key !== fileField) {
+        const value = entity[key];
+        if (value === null || value === undefined) {
+          // Ne pas ajouter les champs null ou undefined, sauf si c'est intentionnel
+          // Pour la suppression d'image, on envoie une chaîne vide
+          if (key === 'imageUrl' || key === 'iconUrl') {
+            formData.append(key, '');
+          }
+        } else if (typeof value === 'object' && !(value instanceof File)) {
+          // Stringify les objets et les tableaux
+          formData.append(key, JSON.stringify(value));
+        } else {
+          formData.append(key, value as string);
+        }
+      }
+    }
+
+    return formData;
   }
 }
 

@@ -32,22 +32,7 @@ export class AuthService {
     this.initializeAuthState();
   }
 
-  /**
-   * Uploader l'avatar utilisateur
-   */
-  uploadProfileIcon(file: File): Observable<{ user: User }> {
-    const url = this.apiUrlService.getUrl('auth/profile/icon');
-    const formData = new FormData();
-    formData.append('icon', file);
 
-    return this.http.post<{ user: User }>(url, formData).pipe(
-      tap(response => {
-        this.setStoredUser(response.user);
-        this.currentUserSubject.next(response.user);
-      }),
-      catchError(this.handleError)
-    );
-  }
 
   /**
    * Changer le mot de passe de l'utilisateur
@@ -92,10 +77,33 @@ export class AuthService {
   /**
    * Mettre à jour le profil utilisateur
    */
-  updateProfile(payload: Partial<User> & { password?: string }): Observable<{ user: User }> {
+  updateProfile(payload: Partial<User> & { password?: string; icon?: File }): Observable<{ user: User }> {
     const url = this.apiUrlService.getUrl('auth/profile');
+    let body: any;
 
-    return this.http.put<{ user: User }>(url, payload).pipe(
+    // Si un fichier d'icône est présent, nous devons utiliser FormData
+    if (payload.icon instanceof File) {
+      const formData = new FormData();
+      
+      // Ajouter le fichier
+      formData.append('icon', payload.icon, payload.icon.name);
+
+      // Ajouter les autres champs du payload
+      for (const key in payload) {
+        if (Object.prototype.hasOwnProperty.call(payload, key) && key !== 'icon') {
+          const value = (payload as any)[key];
+          if (value !== null && value !== undefined) {
+            formData.append(key, value);
+          }
+        }
+      }
+      body = formData;
+    } else {
+      // Sinon, envoyer en tant que JSON normal
+      body = payload;
+    }
+
+    return this.http.put<{ user: User }>(url, body).pipe(
       tap(response => {
         this.setStoredUser(response.user);
         this.currentUserSubject.next(response.user);

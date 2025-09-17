@@ -199,10 +199,11 @@ export class EchauffementFormComponent implements OnInit, OnChanges {
         })
       };
 
-      // Ajouter l'URL d'image si présente
-      const imgUrl = this.echauffementForm.get('imageUrl')?.value;
-      if (imgUrl) {
-        (echauffementData as any).imageUrl = imgUrl;
+      // Ajouter l'URL d'image si elle existe, ou le fichier pour l'upload
+      if (this.selectedImageFile) {
+        (echauffementData as any).schemaUrl = this.selectedImageFile;
+      } else {
+        (echauffementData as any).imageUrl = this.echauffementForm.get('imageUrl')?.value || null;
       }
 
       this.formSubmit.emit(echauffementData);
@@ -229,20 +230,7 @@ export class EchauffementFormComponent implements OnInit, OnChanges {
     return this.apiUrl.getMediaUrl(path ?? undefined);
   }
 
-  uploadSelectedImage(): void {
-    if (!this.selectedImageFile || this.uploading) return;
-    this.uploading = true;
-    this.echauffementService.uploadImage(this.selectedImageFile).subscribe({
-      next: (resp) => {
-        this.uploading = false;
-        this.echauffementForm.patchValue({ imageUrl: resp.imageUrl });
-        this.imagePreview = this.mediaUrl(resp.imageUrl);
-      },
-      error: () => {
-        this.uploading = false;
-      }
-    });
-  }
+
 
   private markFormGroupTouched(formGroup: FormGroup): void {
     Object.keys(formGroup.controls).forEach(key => {

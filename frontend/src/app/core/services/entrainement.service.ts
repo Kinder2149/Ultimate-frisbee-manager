@@ -60,7 +60,8 @@ export class EntrainementService {
         return preparedEntrainement;
       },
       useCache: true,
-      cacheTTL: 300 // 5 minutes
+      cacheTTL: 300, // 5 minutes
+      fileUploadField: 'schemaUrl' // Spécifier le nom du champ pour l'upload
     });
   }
 

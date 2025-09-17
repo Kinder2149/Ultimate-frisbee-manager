@@ -162,7 +162,7 @@ exports.createExercice = async (req, res) => {
     let createData = {
       nom,
       description: description || '', // S'assurer que description n'est jamais null/undefined
-      imageUrl: req.body.imageUrl || null,
+      imageUrl: req.file ? req.file.cloudinaryUrl : (req.body.imageUrl || null),
       schemaUrl: schemaUrl || null,
       materiel: materiel || null,
       notes: notes || null,
@@ -316,7 +316,14 @@ exports.updateExercice = async (req, res) => {
     const updateData = {};
     if (typeof nom !== 'undefined') updateData.nom = nom;
     if (typeof description !== 'undefined') updateData.description = description;
-    if (typeof req.body.imageUrl !== 'undefined') updateData.imageUrl = req.body.imageUrl;
+    // Gérer la mise à jour de l'image
+    if (req.file) {
+      // Si un nouveau fichier est uploadé, utiliser sa nouvelle URL
+      updateData.imageUrl = req.file.cloudinaryUrl;
+    } else if (typeof req.body.imageUrl !== 'undefined') {
+      // Sinon, utiliser la valeur envoyée (peut être une URL existante ou null pour la supprimer)
+      updateData.imageUrl = req.body.imageUrl || null;
+    }
     if (typeof schemaUrl !== 'undefined') updateData.schemaUrl = schemaUrl;
     if (typeof materiel !== 'undefined') updateData.materiel = materiel || null;
     if (typeof notes !== 'undefined') updateData.notes = notes || null;

@@ -734,23 +734,16 @@ onSubmit(): void {
   // Nettoyage éventuel
   delete formData.variables;
 
-  // Si une image est sélectionnée, on l'upload d'abord
+  // Attacher directement le fichier au payload. Le service se chargera de créer le FormData.
   if (this.selectedImageFile) {
-    const uploadSubscription = this.uploadSelectedImage().subscribe({
-      next: (imageUrl: string) => {
-        formData.imageUrl = imageUrl;
-        this.saveExercice(formData);
-        uploadSubscription.unsubscribe();
-      },
-      error: (error: any) => {
-        this.handleHttpError(error);
-        this.submitting = false;
-        uploadSubscription.unsubscribe();
-      }
-    });
-  } else {
-    this.saveExercice(formData);
+    formData.image = this.selectedImageFile;
+  } else if (this.mode === 'edit' && !this.imagePreview) {
+    // Si l'image a été supprimée en mode édition, s'assurer que l'URL est vide
+    formData.imageUrl = '';
   }
+
+  // Toujours appeler saveExercice une seule fois
+  this.saveExercice(formData);
 }
 
   private saveExercice(formData: any): void {
@@ -795,25 +788,7 @@ onSubmit(): void {
     });
   }
 
-  /**
-   * Upload l'image sélectionnée
-   */
-  uploadSelectedImage(): Observable<string> {
-    if (!this.selectedImageFile) {
-      return of('');
-    }
 
-    this.uploading = true;
-    return this.exerciceService.uploadImage(this.selectedImageFile).pipe(
-      tap(() => this.uploading = false),
-      map((response: { imageUrl: string }) => response.imageUrl),
-      catchError((error: any) => {
-        this.uploading = false;
-        this.handleHttpError(error);
-        return throwError(() => error);
-      })
-    );
-  }
 
   /**
    * Gestion centralisée des erreurs HTTP

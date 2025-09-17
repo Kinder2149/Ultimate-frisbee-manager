@@ -53,14 +53,7 @@
             [disabled]="uploading"
             style="margin:8px 0;"
           />
-          <div style="display:flex; gap:8px; margin-bottom:6px;">
-            <button type="button" mat-stroked-button color="primary" (click)="uploadSelectedImage()" [disabled]="!selectedImageFile || uploading">
-              <mat-icon *ngIf="!uploading">cloud_upload</mat-icon>
-              <mat-icon *ngIf="uploading">hourglass_empty</mat-icon>
-              Uploader
-            </button>
-            <button type="button" mat-button (click)="selectedImageFile=null; imagePreview=null;" [disabled]="!selectedImageFile || uploading">Annuler</button>
-          </div>
+
           <small class="form-text text-muted">PNG, JPG, GIF, WEBP · max 5 Mo</small>
           <div *ngIf="uploading" style="margin-top:6px; display:flex; align-items:center; gap:8px; color:#555;">
             <mat-progress-spinner diameter="18" mode="indeterminate"></mat-progress-spinner>

@@ -96,6 +96,11 @@ export class ProfilePageComponent implements OnInit {
       email: raw.email?.trim().toLowerCase()
     };
 
+    // Si un nouveau fichier a été sélectionné, l'ajouter au payload
+    if (this.selectedFile) {
+      payload.icon = this.selectedFile;
+    }
+
     this.loading = true;
     this.authService.updateProfile(payload).pipe(take(1)).subscribe({
       next: (res) => {
@@ -180,20 +185,5 @@ export class ProfilePageComponent implements OnInit {
     return this.apiUrlService.getMediaUrl(path, 'avatars');
   }
 
-  uploadIcon(): void {
-    if (!this.selectedFile) return;
-    this.loading = true;
-    this.authService.uploadProfileIcon(this.selectedFile).pipe(take(1)).subscribe({
-      next: (res) => {
-        this.loading = false;
-        this.selectedFile = null;
 
-        this.snackBar.open('Avatar mis à jour', 'Fermer', { duration: 2500, panelClass: ['success-snackbar'] });
-      },
-      error: (err) => {
-        this.loading = false;
-        this.snackBar.open(err || "Échec de l'upload de l'avatar", 'Fermer', { duration: 4000, panelClass: ['error-snackbar'] });
-      }
-    });
-  }
 }
