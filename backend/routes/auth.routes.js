@@ -7,6 +7,8 @@ const { login, getProfile, refreshToken, logout, updateProfile, changePassword, 
 const { authenticateToken } = require('../middleware/auth.middleware');
 const { createUploader } = require('../middleware/upload.middleware');
 
+const router = express.Router();
+
 // Limitation du taux de requêtes pour les tentatives de connexion
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
