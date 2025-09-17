@@ -33,13 +33,13 @@ export class SituationMatchService {
   }
 
   ajouterSituationMatch(situationMatch: CreateSituationMatchRequest): Observable<SituationMatch> {
-    return this.crudService.create(situationMatch as SituationMatch).pipe(
+    return this.crudService.create(situationMatch).pipe(
       tap(() => this.crudService.invalidateCache())
     );
   }
 
   updateSituationMatch(id: string, situationMatch: UpdateSituationMatchRequest): Observable<SituationMatch> {
-    return this.crudService.update(id, situationMatch as SituationMatch).pipe(
+    return this.crudService.update(id, situationMatch).pipe(
       tap(() => this.crudService.invalidateCache())
     );
   }
