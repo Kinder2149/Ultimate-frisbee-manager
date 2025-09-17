@@ -327,7 +327,7 @@ export class EntityCrudService<T extends Entity> {
           if (key === 'imageUrl' || key === 'iconUrl') {
             formData.append(key, '');
           }
-        } else if (typeof value === 'object' && !(value instanceof File)) {
+        } else if (value !== null && typeof value === 'object' && !(value instanceof File)) {
           // Stringify les objets et les tableaux
           formData.append(key, JSON.stringify(value));
         } else {

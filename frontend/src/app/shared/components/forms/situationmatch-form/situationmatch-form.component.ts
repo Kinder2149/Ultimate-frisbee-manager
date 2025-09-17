@@ -19,6 +19,7 @@ export interface SituationMatchFormData {
   temps?: string;
   imageUrl?: string;
   tagIds: string[];
+  schemaUrl?: File;
 }
 
 @Component({
