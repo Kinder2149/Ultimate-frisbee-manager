@@ -2,11 +2,8 @@
   "version": 2,
   "builds": [
     {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "frontend/dist/ultimate-frisbee-manager"
-      }
+      "src": "frontend/package.json",
+      "use": "@vercel/angular"
     }
   ],
   "routes": [
