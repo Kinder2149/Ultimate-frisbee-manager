@@ -312,29 +312,35 @@ export class EntityCrudService<T extends Entity> {
     const formData = new FormData();
     const file = (entity as any)[fileField];
 
-    // Ajouter le fichier
+    // Ajouter le fichier principal
     if (file instanceof File) {
       formData.append(fileField, file, file.name);
     }
 
     // Ajouter les autres champs de l'entité
-    for (const key in entity) {
-      if (Object.prototype.hasOwnProperty.call(entity, key) && key !== fileField) {
-        const value = entity[key];
-        if (value === null || value === undefined) {
-          // Ne pas ajouter les champs null ou undefined, sauf si c'est intentionnel
-          // Pour la suppression d'image, on envoie une chaîne vide
-          if (key === 'imageUrl' || key === 'iconUrl') {
-            formData.append(key, '');
-          }
-        } else if (typeof value === 'object' && value !== null && !(value instanceof File)) {
-          // Stringify les objets et les tableaux
-          formData.append(key, JSON.stringify(value));
-        } else {
-          formData.append(key, value as string);
+    Object.keys(entity).forEach(key => {
+      if (key === fileField) return; // Ne pas traiter le champ du fichier principal à nouveau
+
+      const value = entity[key];
+
+      if (value === null || value === undefined) {
+        // Pour la suppression d'image, on envoie une chaîne vide
+        if (key === 'imageUrl' || key === 'iconUrl') {
+          formData.append(key, '');
         }
+        // Sinon, on ignore les champs null/undefined
+        return;
       }
-    }
+
+      // Gérer les objets (y compris les tableaux), mais exclure les fichiers
+      if (typeof value === 'object' && !(value instanceof File)) {
+        formData.append(key, JSON.stringify(value));
+      } else if (!(value instanceof File)) {
+        // Gérer les types primitifs (string, number, boolean)
+        formData.append(key, String(value));
+      }
+      // Les autres fichiers (non-principaux) sont ignorés
+    });
 
     return formData;
   }
