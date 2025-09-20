@@ -21,7 +21,7 @@
           <div class="stat-card">
             <mat-icon>label</mat-icon>
             <div class="stat-info">
-              <span class="stat-number">{{ tagsByCategory[category].length || 0 }}</span>
+              <span class="stat-number">{{ getTagsForCategory(category).length || 0 }}</span>
               <span class="stat-label">Tags</span>
             </div>
           </div>
@@ -44,7 +44,7 @@
           <h3>Tags {{ getCategoryDisplayName(category).toLowerCase() }} existants</h3>
           
           <app-tag-list
-            [tags]="tagsByCategory[category] || []"
+            [tags]="getTagsForCategory(category) || []"
             [category]="category"
             (editTag)="editTag($event)"
             (deleteTag)="deleteTag($event)">

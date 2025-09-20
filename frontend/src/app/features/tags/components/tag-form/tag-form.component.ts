@@ -167,28 +167,28 @@ export class TagFormComponent implements OnInit, OnChanges {
     // Ajouter ou mettre à jour le tag
     if (this.editTag && this.editTag.id) {
       // Mode édition
-      this.tagService.updateTag(this.editTag.id, tagData).subscribe({
-        next: (updatedTag) => {
-          this.tagSaved.emit(updatedTag);
-          this.resetForm();
-        },
-        error: (err) => {
-          console.error('Erreur lors de la mise à jour du tag:', err);
-          this.handleError(err);
-        }
-      });
+      // this.tagService.updateTag(this.editTag.id, tagData).subscribe({
+      //   next: (updatedTag) => {
+      //     this.tagSaved.emit(updatedTag);
+      //     this.resetForm();
+      //   },
+      //   error: (err) => {
+      //     console.error('Erreur lors de la mise à jour du tag:', err);
+      //     this.handleError(err);
+      //   }
+      // });
     } else {
       // Mode création
-      this.tagService.ajouterTag(tagData).subscribe({
-        next: (newTag) => {
-          this.tagSaved.emit(newTag);
-          this.resetForm();
-        },
-        error: (err) => {
-          console.error('Erreur lors de la création du tag:', err);
-          this.handleError(err);
-        }
-      });
+      // this.tagService.ajouterTag(tagData).subscribe({
+      //   next: (newTag) => {
+      //     this.tagSaved.emit(newTag);
+      //     this.resetForm();
+      //   },
+      //   error: (err) => {
+      //     console.error('Erreur lors de la création du tag:', err);
+      //     this.handleError(err);
+      //   }
+      // });
     }
   }
 

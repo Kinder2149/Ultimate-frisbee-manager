@@ -1,14 +1,10 @@
-/**
- * Service d'authentification Angular
- */
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { Injectable, NgZone } from '@angular/core';
+import { BehaviorSubject, Observable, from } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
-
-import { User, LoginCredentials, LoginResponse, AuthError } from '../models/user.model';
-import { ApiUrlService } from './api-url.service';
+import { SupabaseService } from './supabase.service';
+import { User as SupabaseUser, AuthChangeEvent, Session } from '@supabase/supabase-js';
+import { User, LoginCredentials } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root'
@@ -20,280 +16,105 @@ export class AuthService {
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
-  private readonly TOKEN_KEY = 'ultimate_auth_token';
-  private readonly REFRESH_TOKEN_KEY = 'ultimate_refresh_token';
-  private readonly USER_KEY = 'ultimate_user';
-
   constructor(
-    private http: HttpClient,
+    private supabaseService: SupabaseService,
     private router: Router,
-    private apiUrlService: ApiUrlService
+    private zone: NgZone
   ) {
-    this.initializeAuthState();
+    this.initializeAuthState(); // Vérifier l'état au démarrage
+    this.supabaseService.supabase.auth.onAuthStateChange((event, session) => {
+      this.zone.run(() => {
+        this.handleAuthStateChange(event, session);
+      });
+    });
   }
 
-
-
-  /**
-   * Changer le mot de passe de l'utilisateur
-   */
-  changePassword(payload: any): Observable<{ message: string }> {
-    const url = this.apiUrlService.getUrl('auth/change-password');
-    return this.http.put<{ message: string }>(url, payload).pipe(
-      catchError(this.handleError)
-    );
+  async initializeAuthState(): Promise<void> {
+    const { data: { session } } = await this.supabaseService.supabase.auth.getSession();
+    this.updateUserState(session?.user || null);
   }
 
-  /**
-   * Réinitialiser le mot de passe avec un token
-   */
-  resetPassword(payload: any): Observable<{ message: string }> {
-    const url = this.apiUrlService.getUrl('auth/reset-password-answer');
-    return this.http.post<{ message: string }>(url, payload).pipe(
-      catchError(this.handleError)
-    );
-  }
-
-  /**
-   * Définir la question de sécurité pour l'utilisateur connecté
-   */
-  setSecurityQuestion(payload: { securityQuestion: string, securityAnswer: string }): Observable<{ message: string }> {
-    const url = this.apiUrlService.getUrl('auth/security-question');
-    return this.http.post<{ message: string }>(url, payload).pipe(
-      catchError(this.handleError)
-    );
-  }
-
-  /**
-   * Obtenir la question de sécurité pour un email donné
-   */
-  getSecurityQuestion(email: string): Observable<{ securityQuestion: string }> {
-    const url = this.apiUrlService.getUrl('auth/security-question');
-    return this.http.get<{ securityQuestion: string }>(url, { params: { email } }).pipe(
-      catchError(this.handleError)
-    );
-  }
-
-  /**
-   * Mettre à jour le profil utilisateur
-   */
-  updateProfile(payload: Partial<User> & { password?: string; icon?: File }): Observable<{ user: User }> {
-    const url = this.apiUrlService.getUrl('auth/profile');
-    let body: any;
-
-    // Si un fichier d'icône est présent, nous devons utiliser FormData
-    if (payload.icon instanceof File) {
-      const formData = new FormData();
-      
-      // Ajouter le fichier
-      formData.append('icon', payload.icon, payload.icon.name);
-
-      // Ajouter les autres champs du payload
-      for (const key in payload) {
-        if (Object.prototype.hasOwnProperty.call(payload, key) && key !== 'icon') {
-          const value = (payload as any)[key];
-          if (value !== null && value !== undefined) {
-            formData.append(key, value);
-          }
-        }
-      }
-      body = formData;
-    } else {
-      // Sinon, envoyer en tant que JSON normal
-      body = payload;
+  private handleAuthStateChange(event: AuthChangeEvent, session: Session | null) {
+    if (event === 'SIGNED_IN') {
+      this.updateUserState(session?.user || null);
+    } else if (event === 'SIGNED_OUT') {
+      this.updateUserState(null);
+      this.router.navigate(['/login']);
+    } else if (event === 'TOKEN_REFRESHED') {
+      // La session a été rafraîchie, on peut mettre à jour l'état si nécessaire
+      this.updateUserState(session?.user || null);
     }
-
-    return this.http.put<{ user: User }>(url, body).pipe(
-      tap(response => {
-        this.setStoredUser(response.user);
-        this.currentUserSubject.next(response.user);
-      }),
-      catchError(this.handleError)
-    );
   }
 
-  /**
-   * Initialiser l'état d'authentification au démarrage
-   */
-  private initializeAuthState(): void {
-    const token = this.getToken();
-    const user = this.getStoredUser();
-
-    if (token && user) {
+  private updateUserState(supabaseUser: SupabaseUser | null) {
+    if (supabaseUser) {
+      // Mapper l'utilisateur Supabase vers notre modèle User
+      const user: User = {
+        id: supabaseUser.id,
+        email: supabaseUser.email || '',
+        nom: supabaseUser.user_metadata['nom'] || '',
+        prenom: supabaseUser.user_metadata['prenom'] || '',
+        role: supabaseUser.user_metadata['role'] || 'USER',
+        isActive: true, // A adapter si vous avez cette info
+        iconUrl: supabaseUser.user_metadata['iconUrl'] || null,
+      };
       this.currentUserSubject.next(user);
       this.isAuthenticatedSubject.next(true);
+    } else {
+      this.currentUserSubject.next(null);
+      this.isAuthenticatedSubject.next(false);
     }
   }
 
-  /**
-   * Connexion utilisateur
-   */
-  login(credentials: LoginCredentials): Observable<LoginResponse> {
-    const url = this.apiUrlService.getUrl('auth/login');
-    
-    return this.http.post<LoginResponse>(url, credentials).pipe(
-      tap(response => {
-        // Stocker les tokens et les données utilisateur
-        this.setToken(response.token);
-        this.setRefreshToken(response.refreshToken);
-        this.setStoredUser(response.user);
-        
-        // Mettre à jour les subjects
-        this.currentUserSubject.next(response.user);
-        this.isAuthenticatedSubject.next(true);
-      }),
-      catchError(this.handleError)
-    );
-  }
+  async login(credentials: LoginCredentials): Promise<any> {
+    const { data, error } = await this.supabaseService.supabase.auth.signInWithPassword({
+      email: credentials.email,
+      password: credentials.password,
+    });
 
-  /**
-   * Déconnexion utilisateur
-   */
-  logout(): Observable<any> {
-    const url = this.apiUrlService.getUrl('auth/logout');
-    
-    return this.http.post(url, {}).pipe(
-      tap(() => {
-        this.clearAuthData();
-      }),
-      catchError(() => {
-        // Même en cas d'erreur serveur, on nettoie les données locales
-        this.clearAuthData();
-        return throwError('Erreur lors de la déconnexion');
-      })
-    );
-  }
-
-  /**
-   * Déconnexion locale (sans appel serveur)
-   */
-  logoutLocal(): void {
-    this.clearAuthData();
-  }
-
-  /**
-   * Récupérer le profil utilisateur
-   */
-  getProfile(): Observable<{ user: User }> {
-    const url = this.apiUrlService.getUrl('auth/profile');
-    
-    return this.http.get<{ user: User }>(url).pipe(
-      tap(response => {
-        this.setStoredUser(response.user);
-        this.currentUserSubject.next(response.user);
-      }),
-      catchError(this.handleError)
-    );
-  }
-
-  /**
-   * Rafraîchir le token
-   */
-  refreshToken(): Observable<{ token: string }> {
-    const refreshToken = this.getRefreshToken();
-    
-    if (!refreshToken) {
-      return throwError('Aucun refresh token disponible');
+    if (error) {
+      console.error('Erreur de connexion:', error);
+      throw error;
     }
 
-    const url = this.apiUrlService.getUrl('auth/refresh');
-    
-    return this.http.post<{ token: string }>(url, { refreshToken }).pipe(
-      tap(response => {
-        this.setToken(response.token);
-      }),
-      catchError(error => {
-        // Si le refresh token est invalide, déconnecter l'utilisateur
-        this.clearAuthData();
-        return throwError(error);
-      })
-    );
+    return data;
   }
 
-  /**
-   * Vérifier si l'utilisateur est authentifié
-   */
+  async logout(): Promise<void> {
+    const { error } = await this.supabaseService.supabase.auth.signOut();
+    if (error) {
+      console.error('Erreur de déconnexion:', error);
+      throw error;
+    }
+  }
+
+  async getCurrentUser(): Promise<User | null> {
+    const { data: { session } } = await this.supabaseService.supabase.auth.getSession();
+    if (session?.user) {
+      const supabaseUser = session.user;
+      const user: User = {
+        id: supabaseUser.id,
+        email: supabaseUser.email || '',
+        nom: supabaseUser.user_metadata['nom'] || '',
+        prenom: supabaseUser.user_metadata['prenom'] || '',
+        role: supabaseUser.user_metadata['role'] || 'USER',
+        isActive: true,
+        iconUrl: supabaseUser.user_metadata['iconUrl'] || null,
+      };
+      return user;
+    } 
+    return null;
+  }
+
   isAuthenticated(): boolean {
-    return !!this.getToken() && !!this.getStoredUser();
+    return this.isAuthenticatedSubject.value;
   }
 
-  /**
-   * Obtenir l'utilisateur actuel
-   */
-  getCurrentUser(): User | null {
-    return this.currentUserSubject.value;
+  async getAccessToken(): Promise<string | null> {
+    const { data: { session } } = await this.supabaseService.supabase.auth.getSession();
+    return session?.access_token || null;
   }
-
-  /**
-   * Obtenir le token d'authentification
-   */
-  getToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY);
-  }
-
-  /**
-   * Obtenir le refresh token
-   */
-  getRefreshToken(): string | null {
-    return localStorage.getItem(this.REFRESH_TOKEN_KEY);
-  }
-
-  /**
-   * Stocker le token d'authentification
-   */
-  private setToken(token: string): void {
-    localStorage.setItem(this.TOKEN_KEY, token);
-  }
-
-  /**
-   * Stocker le refresh token
-   */
-  private setRefreshToken(refreshToken: string): void {
-    localStorage.setItem(this.REFRESH_TOKEN_KEY, refreshToken);
-  }
-
-  /**
-   * Obtenir les données utilisateur stockées
-   */
-  private getStoredUser(): User | null {
-    const userData = localStorage.getItem(this.USER_KEY);
-    return userData ? JSON.parse(userData) : null;
-  }
-
-  /**
-   * Stocker les données utilisateur
-   */
-  private setStoredUser(user: User): void {
-    localStorage.setItem(this.USER_KEY, JSON.stringify(user));
-  }
-
-  /**
-   * Nettoyer toutes les données d'authentification
-   */
-  private clearAuthData(): void {
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
-    localStorage.removeItem(this.USER_KEY);
-    
-    this.currentUserSubject.next(null);
-    this.isAuthenticatedSubject.next(false);
-    
-    this.router.navigate(['/login']);
-  }
-
-  /**
-   * Gestion des erreurs HTTP
-   */
-  private handleError = (error: any): Observable<never> => {
-    let errorMessage = 'Une erreur est survenue';
-    
-    if (error.error && error.error.error) {
-      errorMessage = error.error.error;
-    } else if (error.message) {
-      errorMessage = error.message;
-    }
-
-    console.error('Erreur AuthService:', error);
-    return throwError(errorMessage);
-  };
+  
+  // Les autres méthodes (changePassword, updateProfile, etc.) seront migrées plus tard
+  // en utilisant les fonctions de Supabase Auth ou des Edge Functions.
 }

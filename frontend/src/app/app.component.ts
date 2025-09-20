@@ -1,9 +1,11 @@
-import { Component, ChangeDetectorRef, OnInit } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Component, ChangeDetectorRef, OnInit, Renderer2, ElementRef } from '@angular/core';
+import { Observable, Subscription } from 'rxjs';
 import { AuthService } from './core/services/auth.service';
 import { User } from './core/models/user.model';
 import { BackendStatusService } from './core/services/backend-status.service';
 import { ApiUrlService } from './core/services/api-url.service';
+import { Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
@@ -14,7 +16,8 @@ export class AppComponent implements OnInit {
   title = 'Ultimate Frisbee Manager';
   currentUser$!: Observable<User | null>;
   isAuthenticated$ = this.authService.isAuthenticated$;
-  
+  private routerSubscription!: Subscription;
+
   isDropdownOpen = {
     exercices: false,
     entrainements: false,
@@ -23,7 +26,15 @@ export class AppComponent implements OnInit {
     parametres: false
   };
 
-  constructor(private cdr: ChangeDetectorRef, private authService: AuthService, private backendStatus: BackendStatusService, private apiUrlService: ApiUrlService) {
+  constructor(
+    private cdr: ChangeDetectorRef,
+    public authService: AuthService, // public pour l'utiliser dans le template
+    private backendStatus: BackendStatusService,
+    private apiUrlService: ApiUrlService,
+    private renderer: Renderer2,
+    private el: ElementRef,
+    private router: Router
+  ) {
     this.currentUser$ = this.authService.currentUser$;
   }
 
@@ -34,37 +45,27 @@ export class AppComponent implements OnInit {
         this.backendStatus.checkHealthOnce();
       }
     });
+
+    this.routerSubscription = this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe();
   }
 
-  toggleDropdown(menu: string, event: Event): void {
+  toggleDropdown(menu: keyof typeof this.isDropdownOpen, event: Event): void {
+    console.log(`Clic détecté pour le menu : ${menu}`); // Log pour débogage
     event.preventDefault();
     event.stopPropagation();
-    
-    console.log('Toggle dropdown:', menu, 'Current state:', (this.isDropdownOpen as any)[menu]);
-    
-    // Fermer tous les autres menus
+
+    const currentState = this.isDropdownOpen[menu];
+
+    // Fermer tous les menus
     Object.keys(this.isDropdownOpen).forEach(key => {
-      if (key !== menu) {
-        (this.isDropdownOpen as any)[key] = false;
-      }
+      (this.isDropdownOpen as any)[key] = false;
     });
-    
-    // Basculer le menu sélectionné
-    (this.isDropdownOpen as any)[menu] = !(this.isDropdownOpen as any)[menu];
-    
-    console.log('New state:', (this.isDropdownOpen as any)[menu]);
-    console.log('All dropdown states:', this.isDropdownOpen);
-    
-    // Force la détection des changements Angular
+
+    // Ouvrir le menu cliqué s'il était fermé
+    this.isDropdownOpen[menu] = !currentState;
+
+    // Forcer manuellement la détection des changements
     this.cdr.detectChanges();
-    
-    console.log('DOM Element for', menu, ':', document.querySelector(`.dropdown.${menu} .dropdown-menu`));
-    
-    // Vérification après détection forcée
-    setTimeout(() => {
-      console.log('After timeout - dropdown state for', menu, ':', (this.isDropdownOpen as any)[menu]);
-      console.log('DOM Element after timeout:', document.querySelector(`.dropdown.${menu} .dropdown-menu`));
-    }, 100);
   }
 
   closeAllDropdowns(): void {
@@ -77,10 +78,12 @@ export class AppComponent implements OnInit {
     return this.apiUrlService.getMediaUrl(path, 'avatars');
   }
 
-  onLogout(): void {
-    this.authService.logout().subscribe({
-      next: () => {},
-      error: () => {}
-    });
+  async onLogout(): Promise<void> {
+    try {
+      await this.authService.logout();
+      // La redirection est gérée par onAuthStateChange dans auth.service.ts
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion', error);
+    }
   }
 }

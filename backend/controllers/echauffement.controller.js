@@ -5,7 +5,7 @@ const { prisma } = require('../services/prisma');
  * @param {Object} req - Requête Express
  * @param {Object} res - Réponse Express
  */
-exports.getAllEchauffements = async (req, res) => {
+exports.getAllEchauffements = async (req, res, next) => {
   try {
     const echauffements = await prisma.echauffement.findMany({
       include: {
@@ -18,11 +18,7 @@ exports.getAllEchauffements = async (req, res) => {
     
     res.json(echauffements);
   } catch (error) {
-    console.error('Erreur lors de la récupération des échauffements:', error);
-    res.status(500).json({ 
-      error: 'Erreur serveur lors de la récupération des échauffements', 
-      details: error.message 
-    });
+    next(error);
   }
 };
 
@@ -31,7 +27,7 @@ exports.getAllEchauffements = async (req, res) => {
  * @param {Object} req - Requête Express
  * @param {Object} res - Réponse Express
  */
-exports.getEchauffementById = async (req, res) => {
+exports.getEchauffementById = async (req, res, next) => {
   try {
     const { id } = req.params;
     
@@ -45,16 +41,14 @@ exports.getEchauffementById = async (req, res) => {
     });
     
     if (!echauffement) {
-      return res.status(404).json({ error: 'Échauffement non trouvé' });
+      const error = new Error('Échauffement non trouvé');
+      error.statusCode = 404;
+      return next(error);
     }
     
     res.json(echauffement);
   } catch (error) {
-    console.error('Erreur lors de la récupération de l\'échauffement:', error);
-    res.status(500).json({ 
-      error: 'Erreur serveur lors de la récupération de l\'échauffement', 
-      details: error.message 
-    });
+    next(error);
   }
 };
 
@@ -63,49 +57,25 @@ exports.getEchauffementById = async (req, res) => {
  * @param {Object} req - Requête Express
  * @param {Object} res - Réponse Express
  */
-exports.createEchauffement = async (req, res) => {
+exports.createEchauffement = async (req, res, next) => {
   try {
     const { nom, description, blocs } = req.body;
-    
-    if (!nom) {
-      return res.status(400).json({ error: 'Le nom est requis' });
-    }
-    
-    // description devient optionnelle (schema Prisma: String?)
     
     const nouvelEchauffement = await prisma.echauffement.create({
       data: {
         nom,
-        // Normalise une chaîne vide en null côté DB
-        description: (description && String(description).trim().length > 0) ? description : null,
-        // Si un fichier est uploadé, utiliser son URL Cloudinary, sinon garder la valeur du corps (pour la suppression)
+        description,
         imageUrl: req.file ? req.file.cloudinaryUrl : (req.body.imageUrl || null),
-        blocs: blocs && blocs.length > 0 ? {
-          create: blocs.map((bloc, index) => ({
-            ordre: bloc.ordre || index + 1,
-            titre: bloc.titre,
-            repetitions: bloc.repetitions || null,
-            temps: bloc.temps || null,
-            informations: bloc.informations || null,
-            fonctionnement: bloc.fonctionnement || null,
-            notes: bloc.notes || null
-          }))
-        } : undefined
-      },
-      include: {
         blocs: {
-          orderBy: { ordre: 'asc' }
+          create: (blocs || []).map((bloc, index) => ({ ...bloc, ordre: bloc.ordre || index + 1 }))
         }
-      }
+      },
+      include: { blocs: { orderBy: { ordre: 'asc' } } }
     });
     
     res.status(201).json(nouvelEchauffement);
   } catch (error) {
-    console.error('Erreur lors de la création de l\'échauffement:', error);
-    res.status(500).json({ 
-      error: 'Erreur serveur lors de la création de l\'échauffement', 
-      details: error.message 
-    });
+    next(error);
   }
 };
 
@@ -114,56 +84,30 @@ exports.createEchauffement = async (req, res) => {
  * @param {Object} req - Requête Express
  * @param {Object} res - Réponse Express
  */
-exports.updateEchauffement = async (req, res) => {
+exports.updateEchauffement = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { nom, description, blocs } = req.body;
-    
-    if (!nom) {
-      return res.status(400).json({ error: 'Le nom est requis' });
-    }
-    
-    // description optionnelle
-    
-    // Supprimer les blocs existants
-    await prisma.blocEchauffement.deleteMany({ 
-      where: { echauffementId: id } 
+
+    await prisma.$transaction(async (tx) => {
+      await tx.blocEchauffement.deleteMany({ where: { echauffementId: id } });
+
+      const echauffementMisAJour = await tx.echauffement.update({
+        where: { id },
+        data: {
+          nom,
+          description,
+          imageUrl: req.file ? req.file.cloudinaryUrl : (req.body.imageUrl !== undefined ? req.body.imageUrl : undefined),
+          blocs: {
+            create: (blocs || []).map((bloc, index) => ({ ...bloc, ordre: bloc.ordre || index + 1 }))
+          }
+        },
+        include: { blocs: { orderBy: { ordre: 'asc' } } }
+      });
+      res.json(echauffementMisAJour);
     });
-    
-    const echauffementMisAJour = await prisma.echauffement.update({
-      where: { id },
-      data: {
-        nom,
-        description: (description && String(description).trim().length > 0) ? description : null,
-        // Si un nouveau fichier est uploadé, il remplace l'ancien.
-        // Sinon, on vérifie si le champ imageUrl est présent dans le corps (pour permettre la suppression)
-        imageUrl: req.file ? req.file.cloudinaryUrl : (typeof req.body.imageUrl !== 'undefined' ? (req.body.imageUrl || null) : undefined),
-        blocs: blocs && blocs.length > 0 ? {
-          create: blocs.map((bloc, index) => ({
-            ordre: bloc.ordre || index + 1,
-            titre: bloc.titre,
-            repetitions: bloc.repetitions || null,
-            temps: bloc.temps || null,
-            informations: bloc.informations || null,
-            fonctionnement: bloc.fonctionnement || null,
-            notes: bloc.notes || null
-          }))
-        } : undefined
-      },
-      include: {
-        blocs: {
-          orderBy: { ordre: 'asc' }
-        }
-      }
-    });
-    
-    res.json(echauffementMisAJour);
   } catch (error) {
-    console.error('Erreur lors de la mise à jour de l\'échauffement:', error);
-    res.status(500).json({ 
-      error: 'Erreur serveur lors de la mise à jour de l\'échauffement', 
-      details: error.message 
-    });
+    next(error);
   }
 };
 
@@ -172,21 +116,15 @@ exports.updateEchauffement = async (req, res) => {
  * @param {Object} req - Requête Express
  * @param {Object} res - Réponse Express
  */
-exports.deleteEchauffement = async (req, res) => {
+exports.deleteEchauffement = async (req, res, next) => {
   try {
     const { id } = req.params;
     
-    await prisma.echauffement.delete({
-      where: { id }
-    });
+    await prisma.echauffement.delete({ where: { id } });
     
     res.status(204).send();
   } catch (error) {
-    console.error('Erreur lors de la suppression de l\'échauffement:', error);
-    res.status(500).json({ 
-      error: 'Erreur serveur lors de la suppression de l\'échauffement', 
-      details: error.message 
-    });
+    next(error);
   }
 };
 
@@ -195,25 +133,21 @@ exports.deleteEchauffement = async (req, res) => {
  * @param {Object} req - Requête Express
  * @param {Object} res - Réponse Express
  */
-exports.duplicateEchauffement = async (req, res) => {
+exports.duplicateEchauffement = async (req, res, next) => {
   try {
     const { id } = req.params;
     
-    // Récupérer l'échauffement original avec ses blocs
     const echauffementOriginal = await prisma.echauffement.findUnique({
       where: { id },
-      include: {
-        blocs: {
-          orderBy: { ordre: 'asc' }
-        }
-      }
+      include: { blocs: { orderBy: { ordre: 'asc' } } }
     });
     
     if (!echauffementOriginal) {
-      return res.status(404).json({ error: 'Échauffement non trouvé' });
+      const error = new Error('Échauffement non trouvé');
+      error.statusCode = 404;
+      return next(error);
     }
     
-    // Créer la copie
     const echauffementDuplique = await prisma.echauffement.create({
       data: {
         nom: `${echauffementOriginal.nom} (Copie)`,
@@ -231,19 +165,11 @@ exports.duplicateEchauffement = async (req, res) => {
           }))
         }
       },
-      include: {
-        blocs: {
-          orderBy: { ordre: 'asc' }
-        }
-      }
+      include: { blocs: { orderBy: { ordre: 'asc' } } }
     });
     
     res.status(201).json(echauffementDuplique);
   } catch (error) {
-    console.error('Erreur lors de la duplication de l\'échauffement:', error);
-    res.status(500).json({ 
-      error: 'Erreur serveur lors de la duplication de l\'échauffement', 
-      details: error.message 
-    });
+    next(error);
   }
 };

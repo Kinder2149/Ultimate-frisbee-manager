@@ -4,18 +4,26 @@
 const jwt = require('jsonwebtoken');
 const { prisma } = require('../services/prisma');
 
-// Clé secrète JWT (à déplacer dans .env en production)
-const JWT_SECRET = process.env.JWT_SECRET || 'ultimate-frisbee-secret-key-2024';
+const getJwtSecret = () => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('FATAL ERROR: JWT_SECRET is not defined at runtime.');
+  }
+  return secret;
+};
 
 /**
  * Middleware de vérification du token JWT
  */
 const authenticateToken = async (req, res, next) => {
+  console.log('[AUTH] Middleware authenticateToken triggered for path:', req.path);
   try {
+    const JWT_SECRET = getJwtSecret();
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
     if (!token) {
+      console.log('[AUTH] No token found. Rejecting with 401.');
       return res.status(401).json({ 
         error: 'Token d\'authentification requis',
         code: 'NO_TOKEN'
@@ -23,29 +31,45 @@ const authenticateToken = async (req, res, next) => {
     }
 
     // Vérifier et décoder le token
+    console.log('[AUTH] Token found, attempting to verify...');
     const decoded = jwt.verify(token, JWT_SECRET);
     
-    // Vérifier que l'utilisateur existe toujours
-    const user = await prisma.user.findFirst({
-      where: {
-        id: decoded.userId,
-        isActive: true
-      },
-      select: {
-        id: true,
-        email: true,
-        nom: true,
-        prenom: true,
-        role: true,
-        iconUrl: true,
-        isActive: true
-      }
+    // Vérifier si l'utilisateur existe dans notre base de données
+    let user = await prisma.user.findUnique({
+      where: { id: decoded.sub },
     });
 
+    // Si l'utilisateur n'existe pas, le créer à la volée (just-in-time provisioning)
     if (!user) {
+      console.log(`[Auth] User with sub ${decoded.sub} not found. Creating from Supabase token.`);
+      try {
+        user = await prisma.user.create({
+          data: {
+            id: decoded.sub, // ID de Supabase
+            email: decoded.email,
+            // Utiliser les métadonnées si elles existent, sinon des valeurs par défaut
+            nom: decoded.user_metadata?.last_name || '',
+            prenom: decoded.user_metadata?.first_name || decoded.email.split('@')[0],
+            iconUrl: decoded.user_metadata?.avatar_url || '',
+            role: 'USER', // Rôle par défaut pour les nouveaux utilisateurs
+            isActive: true,
+          },
+        });
+        console.log(`[Auth] New user created successfully: ${user.email}`);
+      } catch (creationError) {
+        console.error('[Auth] Error creating new user from token:', creationError);
+        return res.status(500).json({ 
+          error: 'Impossible de créer le profil utilisateur local.',
+          code: 'USER_PROVISIONING_ERROR'
+        });
+      }
+    }
+
+    // Vérifier si l'utilisateur est actif
+    if (!user.isActive) {
       return res.status(401).json({ 
-        error: 'Utilisateur non trouvé ou inactif',
-        code: 'USER_NOT_FOUND'
+        error: 'Utilisateur inactif',
+        code: 'USER_INACTIVE'
       });
     }
 
@@ -54,6 +78,7 @@ const authenticateToken = async (req, res, next) => {
     next();
 
   } catch (error) {
+    console.log('[AUTH] Caught error:', error.name);
     if (error.name === 'JsonWebTokenError') {
       return res.status(401).json({ 
         error: 'Token invalide',
@@ -96,7 +121,7 @@ const requireAdmin = (req, res, next) => {
 const generateToken = (userId) => {
   return jwt.sign(
     { userId },
-    JWT_SECRET,
+    getJwtSecret(),
     { expiresIn: '7d' } // Token valide 7 jours
   );
 };
@@ -107,7 +132,7 @@ const generateToken = (userId) => {
 const generateRefreshToken = (userId) => {
   return jwt.sign(
     { userId, type: 'refresh' },
-    JWT_SECRET,
+    getJwtSecret(),
     { expiresIn: '30d' } // Refresh token valide 30 jours
   );
 };
@@ -117,5 +142,4 @@ module.exports = {
   requireAdmin,
   generateToken,
   generateRefreshToken,
-  JWT_SECRET
 };

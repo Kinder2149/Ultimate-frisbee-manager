@@ -318,8 +318,7 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
 
           this.loadingTags = false;
         },
-        error: (error) => {
-          this.handleHttpError(error);
+        error: () => {
           this.loadingTags = false;
         }
       });
@@ -339,8 +338,7 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
           this.updateFormWithExercice(exercice);
           this.loading = false;
         },
-        error: (error) => {
-          this.handleHttpError(error);
+        error: () => {
           this.loading = false;
         }
       });
@@ -751,8 +749,7 @@ onSubmit(): void {
         
         saveSubscription.unsubscribe();
       },
-      error: (error) => {
-        this.handleHttpError(error);
+      error: () => {
         this.submitting = false;
         saveSubscription.unsubscribe();
       }
@@ -761,25 +758,6 @@ onSubmit(): void {
 
 
 
-  /**
-   * Gestion centralisée des erreurs HTTP
-   */
-  private handleHttpError(error: any): void {
-    // Logging console pour debug
-    console.error('Erreur HTTP:', error);
-    let errorMessage = 'Une erreur est survenue. Veuillez réessayer plus tard.';
-    if (error?.status === 401) {
-      this.router.navigate(['/login']);
-      errorMessage = 'Votre session a expiré. Veuillez vous reconnecter.';
-    } else if (error?.status === 403) {
-      errorMessage = "Vous n'avez pas les droits pour effectuer cette action.";
-    } else if (error?.status === 404) {
-      errorMessage = 'La ressource demandée est introuvable.';
-    } else if (error?.error && error.error.message) {
-      errorMessage = error.error.message;
-    }
-    this.snackBar.open(errorMessage, 'Fermer', { duration: 5000, panelClass: ['error-snackbar'] });
-  }
 
   ngOnDestroy(): void {
     this.destroy$.next();

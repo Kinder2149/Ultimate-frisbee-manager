@@ -3,6 +3,9 @@
 
 generator client {
   provider = "prisma-client-js"
+  // Pour le développement local, nous générons dans node_modules. 
+  // Pour le déploiement sur Supabase, cette ligne doit être décommentée.
+  // output = "../supabase/functions/_shared/generated/client"
 }
 
 datasource db {
@@ -149,7 +152,7 @@ model SituationMatch {
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
-  password  String   // Hash bcrypt
+  password  String?  // Hash bcrypt (optionnel, géré par Supabase)
   nom       String
   prenom    String?
   role      String   @default("ADMIN")

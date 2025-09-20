@@ -1,9 +1,12 @@
-import { NgModule, CUSTOM_ELEMENTS_SCHEMA, LOCALE_ID } from '@angular/core';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA, LOCALE_ID, ErrorHandler } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule, Routes } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule, registerLocaleData } from '@angular/common';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { HttpErrorInterceptor } from './core/errors/http-error.interceptor'; // Mise à jour du chemin
+import { GlobalErrorHandler } from './core/errors/global-error-handler'; // Import du gestionnaire global
 import localeFr from '@angular/common/locales/fr';
 
 import { AppComponent } from './app.component';
@@ -106,7 +109,11 @@ const routes: Routes = [
     // Tous les modules (ExercicesModule, TagsModule, TagsAdvancedModule, TrainingsModule) sont chargés en lazy loading
   ],
   providers: [
-    { provide: LOCALE_ID, useValue: 'fr-FR' }
+    { provide: LOCALE_ID, useValue: 'fr-FR' },
+    // Fournisseur pour le gestionnaire d'erreurs global
+    { provide: ErrorHandler, useClass: GlobalErrorHandler },
+    // Fournisseur pour l'intercepteur d'erreurs HTTP
+    { provide: HTTP_INTERCEPTORS, useClass: HttpErrorInterceptor, multi: true }
   ],
   bootstrap: [AppComponent]
 })

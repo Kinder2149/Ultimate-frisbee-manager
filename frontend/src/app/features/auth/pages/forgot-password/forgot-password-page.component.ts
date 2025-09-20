@@ -58,17 +58,17 @@ export class ForgotPasswordPageComponent {
     this.loading = true;
     this.error = null;
 
-    this.authService.getSecurityQuestion(this.form.value.email).pipe(take(1)).subscribe({
-      next: (res) => {
-        this.securityQuestion = res.securityQuestion;
-        this.state = 'answer-question';
-        this.loading = false;
-      },
-      error: (err) => {
-        this.error = err || 'Aucun compte trouvé ou aucune question de sécurité définie.';
-        this.loading = false;
-      }
-    });
+    // this.authService.getSecurityQuestion(this.form.value.email).pipe(take(1)).subscribe({
+    //   next: (res) => {
+    //     this.securityQuestion = res.securityQuestion;
+    //     this.state = 'answer-question';
+    //     this.loading = false;
+    //   },
+    //   error: (err) => {
+    //     this.error = err || 'Aucun compte trouvé ou aucune question de sécurité définie.';
+    //     this.loading = false;
+    //   }
+    // });
   }
 
   submitReset(): void {
@@ -85,15 +85,15 @@ export class ForgotPasswordPageComponent {
       confirmPassword: this.resetForm.value.confirmPassword
     };
 
-    this.authService.resetPassword(payload).pipe(take(1)).subscribe({
-      next: () => {
-        this.state = 'success';
-        this.loading = false;
-      },
-      error: (err) => {
-        this.error = err || 'La réponse est incorrecte. Veuillez réessayer.';
-        this.loading = false;
-      }
-    });
+    // this.authService.resetPassword(payload).pipe(take(1)).subscribe({
+    //   next: () => {
+    //     this.state = 'success';
+    //     this.loading = false;
+    //   },
+    //   error: (err) => {
+    //     this.error = err || 'La réponse est incorrecte. Veuillez réessayer.';
+    //     this.loading = false;
+    //   }
+    // });
   }
 }

@@ -21,8 +21,8 @@ import { MatIconModule } from '@angular/material/icon';
   imports: [CommonModule, FormsModule, TagFormComponent, TagListComponent, RouterModule, MatTabsModule, MatIconModule]
 })
 export class TagsManagerComponent implements OnInit {
-  // Tags groupés par catégorie
-  tagsByCategory: { [key: string]: Tag[] } = {};
+  // Liste de tous les tags
+  allTags: Tag[] = [];
   
   // Catégories disponibles
   categories = Object.values(TagCategory);
@@ -49,22 +49,7 @@ export class TagsManagerComponent implements OnInit {
   loadAllTags(): void {
     this.tagService.getTags().subscribe({
       next: (tags) => {
-        // Réinitialiser les tags par catégorie
-        this.tagsByCategory = {};
-        
-        // Initialiser les tableaux pour chaque catégorie
-        this.categories.forEach(category => {
-          this.tagsByCategory[category] = [];
-        });
-        
-        // Regrouper les tags par catégorie
-        tags.forEach(tag => {
-          if (this.tagsByCategory[tag.category]) {
-            this.tagsByCategory[tag.category].push(tag);
-          }
-        });
-        
-        // Réinitialiser les messages
+        this.allTags = tags;
         this.resetMessages();
       },
       error: (err) => {
@@ -72,6 +57,13 @@ export class TagsManagerComponent implements OnInit {
         this.errorMessage = 'Impossible de charger les tags. Veuillez réessayer.';
       }
     });
+  }
+
+  /**
+   * Filtre les tags pour une catégorie donnée
+   */
+  getTagsForCategory(category: string): Tag[] {
+    return this.allTags.filter(tag => tag.category === category);
   }
 
   /**
@@ -101,58 +93,58 @@ export class TagsManagerComponent implements OnInit {
     if (!tag.id) return;
     
     if (confirm(`Êtes-vous sûr de vouloir supprimer le tag "${tag.label}" ?`)) {
-      this.tagService.deleteTag(tag.id).subscribe({
-        next: () => {
-          this.successMessage = `Tag "${tag.label}" supprimé avec succès !`;
-          this.loadAllTags();
-        },
-        error: (err) => {
-          console.error('Erreur lors de la suppression du tag:', err);
+       // this.tagService.deleteTag(tag.id).subscribe({
+      //   next: () => {
+      //     this.successMessage = `Tag "${tag.label}" supprimé avec succès !`;
+      //     this.loadAllTags();
+      //   },
+      //   error: (err) => {
+      //     console.error('Erreur lors de la suppression du tag:', err);
           
-          // Vérifier s'il s'agit d'une erreur de tag utilisé par des exercices
-          if (err.status === 409) {
-            const ex = err.error?.exercicesCount ?? 0;
-            const en = err.error?.entrainementsCount ?? 0;
-            const si = err.error?.situationsCount ?? 0;
-            const total = ex + en + si;
-            this.errorMessage = `Impossible de supprimer ce tag car il est utilisé (${total} lien(s)): ${ex} exercice(s), ${en} entrainement(s), ${si} situation(s).`;
+      //     // Vérifier s'il s'agit d'une erreur de tag utilisé par des exercices
+      //     if (err.status === 409) {
+      //       const ex = err.error?.exercicesCount ?? 0;
+      //       const en = err.error?.entrainementsCount ?? 0;
+      //       const si = err.error?.situationsCount ?? 0;
+      //       const total = ex + en + si;
+      //       this.errorMessage = `Impossible de supprimer ce tag car il est utilisé (${total} lien(s)): ${ex} exercice(s), ${en} entrainement(s), ${si} situation(s).`;
 
-            const confirmForce = confirm(
-              `Ce tag est référencé (${total}).\n` +
-              `- Exercices: ${ex}\n- Entraînements: ${en}\n- Situations: ${si}\n\n` +
-              `Voulez-vous forcer la suppression ? (le tag sera détaché de toutes ces entités puis supprimé)`
-            );
+      //       const confirmForce = confirm(
+      //         `Ce tag est référencé (${total}).\n` +
+      //         `- Exercices: ${ex}\n- Entraînements: ${en}\n- Situations: ${si}\n\n` +
+      //         `Voulez-vous forcer la suppression ? (le tag sera détaché de toutes ces entités puis supprimé)`
+      //       );
 
-            if (confirmForce) {
-              this.tagService.deleteTag(tag.id!, true).subscribe({
-                next: () => {
-                  this.successMessage = `Tag "${tag.label}" supprimé (forcé) avec succès !`;
-                  this.errorMessage = '';
-                  this.loadAllTags();
-                },
-                error: (forceErr) => {
-                  console.error('Erreur lors de la suppression forcée du tag:', forceErr);
-                  if (forceErr?.status === 404) {
-                    // Considérer 404 comme un succès (déjà supprimé côté backend)
-                    this.successMessage = `Tag "${tag.label}" déjà supprimé.`;
-                    this.errorMessage = '';
-                    this.loadAllTags();
-                  } else {
-                    this.errorMessage = 'Échec de la suppression forcée du tag. Veuillez réessayer.';
-                  }
-                }
-              });
-            }
-          } else if (err.status === 404) {
-            // Traiter 404 comme succès (l'élément n'existe plus côté serveur)
-            this.successMessage = `Tag "${tag.label}" déjà supprimé.`;
-            this.errorMessage = '';
-            this.loadAllTags();
-          } else {
-            this.errorMessage = 'Erreur lors de la suppression du tag. Veuillez réessayer.';
-          }
-        }
-      });
+      //       if (confirmForce) {
+      //         this.tagService.deleteTag(tag.id!, true).subscribe({
+      //           next: () => {
+      //             this.successMessage = `Tag "${tag.label}" supprimé (forcé) avec succès !`;
+      //             this.errorMessage = '';
+      //             this.loadAllTags();
+      //           },
+      //           error: (forceErr) => {
+      //             console.error('Erreur lors de la suppression forcée du tag:', forceErr);
+      //             if (forceErr?.status === 404) {
+      //               // Considérer 404 comme un succès (déjà supprimé côté backend)
+      //               this.successMessage = `Tag "${tag.label}" déjà supprimé.`;
+      //               this.errorMessage = '';
+      //               this.loadAllTags();
+      //             } else {
+      //               this.errorMessage = 'Échec de la suppression forcée du tag. Veuillez réessayer.';
+      //             }
+      //           }
+      //         });
+      //       }
+      //     } else if (err.status === 404) {
+      //       // Traiter 404 comme succès (l'élément n'existe plus côté serveur)
+      //       this.successMessage = `Tag "${tag.label}" déjà supprimé.`;
+      //       this.errorMessage = '';
+      //       this.loadAllTags();
+      //     } else {
+      //       this.errorMessage = 'Erreur lors de la suppression du tag. Veuillez réessayer.';
+      //     }
+      //   }
+      // });
     }
   }
 

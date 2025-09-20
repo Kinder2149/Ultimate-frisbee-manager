@@ -92,7 +92,7 @@ const processExerciceVariables = (variablesText, variablesPlus, variablesMinus) 
  * Récupérer tous les exercices avec leurs tags
  * @route GET /api/exercices
  */
-exports.getAllExercices = async (req, res) => {
+exports.getAllExercices = async (req, res, next) => {
   try {
     const exercices = await prisma.exercice.findMany({
       include: {
@@ -102,8 +102,7 @@ exports.getAllExercices = async (req, res) => {
     
     res.json(exercices);
   } catch (error) {
-    console.error('Erreur lors de la récupération des exercices:', error);
-    res.status(500).json({ error: 'Erreur serveur lors de la récupération des exercices' });
+    next(error);
   }
 };
 
@@ -111,7 +110,7 @@ exports.getAllExercices = async (req, res) => {
  * Récupérer un exercice par son ID
  * @route GET /api/exercices/:id
  */
-exports.getExerciceById = async (req, res) => {
+exports.getExerciceById = async (req, res, next) => {
   try {
     const { id } = req.params;
     
@@ -126,8 +125,7 @@ exports.getExerciceById = async (req, res) => {
     
     res.json(exercice);
   } catch (error) {
-    console.error('Erreur lors de la récupération de l\'exercice:', error);
-    res.status(500).json({ error: 'Erreur serveur lors de la récupération de l\'exercice' });
+    next(error);
   }
 };
 
@@ -135,7 +133,7 @@ exports.getExerciceById = async (req, res) => {
  * Créer un nouvel exercice avec ses tags
  * @route POST /api/exercices
  */
-exports.createExercice = async (req, res) => {
+exports.createExercice = async (req, res, next) => {
   try {
     const { nom, description, schemaUrl, variablesText, variablesPlus, variablesMinus, tags, tagIds, materiel, notes } = req.body;
     
@@ -149,10 +147,6 @@ exports.createExercice = async (req, res) => {
       notes: notes ? `${String(notes).slice(0,30)}...` : 'absent'
     });
     
-    // Validation basique des données
-    if (!nom || !description) {
-      return res.status(400).json({ error: 'Nom et description sont requis' });
-    }
     
     // CORRECTION: Traitement des variables - Assurer la compatibilité entre les formats tableau et texte
     // La fonction processExerciceVariables convertit les tableaux en chaînes pour Prisma
@@ -254,8 +248,7 @@ exports.createExercice = async (req, res) => {
     // Renvoyer l'exercice avec les variables au format tableau attendu par le frontend
     res.status(201).json(clientResponse);
   } catch (error) {
-    console.error('Erreur lors de la création de l\'exercice:', error);
-    res.status(500).json({ error: 'Erreur serveur lors de la création de l\'exercice', details: error.message });
+    next(error);
   }
 };
 
@@ -263,7 +256,7 @@ exports.createExercice = async (req, res) => {
  * Mettre à jour un exercice
  * @route PUT /api/exercices/:id
  */
-exports.updateExercice = async (req, res) => {
+exports.updateExercice = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { 
@@ -431,11 +424,7 @@ exports.updateExercice = async (req, res) => {
 
     res.json(clientResponse);
   } catch (error) {
-    console.error('Erreur lors de la mise à jour de l\'exercice:', error);
-    res.status(500).json({ 
-      error: 'Erreur serveur lors de la mise à jour de l\'exercice',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
+    next(error);
   }
 };
 
@@ -443,7 +432,7 @@ exports.updateExercice = async (req, res) => {
  * Dupliquer un exercice
  * @route POST /api/exercices/:id/duplicate
  */
-exports.duplicateExercice = async (req, res) => {
+exports.duplicateExercice = async (req, res, next) => {
   try {
     const { id } = req.params;
     
@@ -494,11 +483,7 @@ exports.duplicateExercice = async (req, res) => {
     
     res.status(201).json(clientResponse);
   } catch (error) {
-    console.error('Erreur lors de la duplication de l\'exercice:', error);
-    res.status(500).json({ 
-      error: 'Erreur serveur lors de la duplication de l\'exercice',
-      details: error.message 
-    });
+    next(error);
   }
 };
 
@@ -506,7 +491,7 @@ exports.duplicateExercice = async (req, res) => {
  * Supprimer un exercice
  * @route DELETE /api/exercices/:id
  */
-exports.deleteExercice = async (req, res) => {
+exports.deleteExercice = async (req, res, next) => {
   try {
     const { id } = req.params;
     
@@ -521,7 +506,6 @@ exports.deleteExercice = async (req, res) => {
     
     res.status(204).send(); // No Content
   } catch (error) {
-    console.error('Erreur lors de la suppression de l\'exercice:', error);
-    res.status(500).json({ error: 'Erreur serveur lors de la suppression de l\'exercice' });
+    next(error);
   }
 };

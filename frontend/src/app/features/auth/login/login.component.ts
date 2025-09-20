@@ -46,33 +46,35 @@ export class LoginComponent implements OnInit {
   /**
    * Soumettre le formulaire de connexion
    */
-  onSubmit(): void {
-    if (this.loginForm.valid && !this.isLoading) {
-      this.isLoading = true;
-      
-      const credentials: LoginCredentials = {
-        email: this.loginForm.value.email.trim().toLowerCase(),
-        password: this.loginForm.value.password
-      };
+  async onSubmit(): Promise<void> {
+    if (this.loginForm.invalid || this.isLoading) {
+      return;
+    }
 
-      this.authService.login(credentials).subscribe({
-        next: (response) => {
-          this.isLoading = false;
-          this.snackBar.open(`Bienvenue ${response.user.nom}!`, 'Fermer', {
-            duration: 3000,
-            panelClass: ['success-snackbar']
-          });
-          
-          // Rediriger vers l'URL de retour ou le dashboard
-          this.router.navigate([this.returnUrl]);
-        },
-        error: (error) => {
-          this.isLoading = false;
-          this.snackBar.open(error || 'Erreur de connexion', 'Fermer', {
-            duration: 5000,
-            panelClass: ['error-snackbar']
-          });
-        }
+    this.isLoading = true;
+    
+    const credentials: LoginCredentials = {
+      email: this.loginForm.value.email.trim().toLowerCase(),
+      password: this.loginForm.value.password
+    };
+
+    try {
+      const { user } = await this.authService.login(credentials);
+      this.isLoading = false;
+
+      if (user) {
+        this.snackBar.open(`Bienvenue ${user.user_metadata['prenom']}!`, 'Fermer', {
+          duration: 3000,
+          panelClass: ['success-snackbar']
+        });
+        this.router.navigate([this.returnUrl]);
+      }
+
+    } catch (error: any) {
+      this.isLoading = false;
+      this.snackBar.open(error.message || 'Email ou mot de passe incorrect', 'Fermer', {
+        duration: 5000,
+        panelClass: ['error-snackbar']
       });
     }
   }

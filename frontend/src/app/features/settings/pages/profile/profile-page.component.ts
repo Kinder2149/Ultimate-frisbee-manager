@@ -66,21 +66,21 @@ export class ProfilePageComponent implements OnInit {
     }, { validators: passwordMatchValidator() });
     this.user$ = this.authService.currentUser$;
     // Charger user et initialiser le formulaire
-    this.authService.getProfile().subscribe({
-      next: (res) => {
-        const user = res.user;
-        this.form = this.fb.group({
-          prenom: [user.prenom || '', [Validators.maxLength(50)]],
-          nom: [user.nom || '', [Validators.maxLength(50)]],
-          email: [user.email || '', [Validators.required, Validators.email]]
-        });
-        if (user.securityQuestion) {
-          this.securityForm.patchValue({ securityQuestion: user.securityQuestion });
-        }
-        this.loading = false;
-      },
-      error: () => (this.loading = false)
-    });
+    // this.authService.getProfile().subscribe({
+    //   next: (res) => {
+    //     const user = res.user;
+    //     this.form = this.fb.group({
+    //       prenom: [user.prenom || '', [Validators.maxLength(50)]],
+    //       nom: [user.nom || '', [Validators.maxLength(50)]],
+    //       email: [user.email || '', [Validators.required, Validators.email]]
+    //     });
+    //     if (user.securityQuestion) {
+    //       this.securityForm.patchValue({ securityQuestion: user.securityQuestion });
+    //     }
+    //     this.loading = false;
+    //   },
+    //   error: () => (this.loading = false)
+    // });
   }
 
   submit(): void {
@@ -102,23 +102,23 @@ export class ProfilePageComponent implements OnInit {
     }
 
     this.loading = true;
-    this.authService.updateProfile(payload).pipe(take(1)).subscribe({
-      next: (res) => {
-        this.loading = false;
-        // Re-synchroniser le formulaire avec les données serveur
-        const u = res.user;
-        this.form.patchValue({
-          prenom: u.prenom || '',
-          nom: u.nom || '',
-          email: u.email || ''
-        });
-        this.snackBar.open('Profil mis à jour', 'Fermer', { duration: 2500, panelClass: ['success-snackbar'] });
-      },
-      error: (err) => {
-        this.loading = false;
-        this.snackBar.open(err || 'Échec de la mise à jour du profil', 'Fermer', { duration: 4000, panelClass: ['error-snackbar'] });
-      }
-    });
+    // this.authService.updateProfile(payload).pipe(take(1)).subscribe({
+    //   next: (res) => {
+    //     this.loading = false;
+    //     // Re-synchroniser le formulaire avec les données serveur
+    //     const u = res.user;
+    //     this.form.patchValue({
+    //       prenom: u.prenom || '',
+    //       nom: u.nom || '',
+    //       email: u.email || ''
+    //     });
+    //     this.snackBar.open('Profil mis à jour', 'Fermer', { duration: 2500, panelClass: ['success-snackbar'] });
+    //   },
+    //   error: (err) => {
+    //     this.loading = false;
+    //     this.snackBar.open(err || 'Échec de la mise à jour du profil', 'Fermer', { duration: 4000, panelClass: ['error-snackbar'] });
+    //   }
+    // });
   }
 
   resetForm(): void {
@@ -148,17 +148,17 @@ export class ProfilePageComponent implements OnInit {
     this.loading = true;
     const payload = this.passwordForm.getRawValue();
 
-    this.authService.changePassword(payload).pipe(take(1)).subscribe({
-      next: () => {
-        this.loading = false;
-        this.snackBar.open('Mot de passe mis à jour avec succès', 'Fermer', { duration: 3000, panelClass: ['success-snackbar'] });
-        this.passwordForm.reset();
-      },
-      error: (err) => {
-        this.loading = false;
-        this.snackBar.open(err || 'Échec de la mise à jour du mot de passe', 'Fermer', { duration: 4000, panelClass: ['error-snackbar'] });
-      }
-    });
+    // this.authService.changePassword(payload).pipe(take(1)).subscribe({
+    //   next: () => {
+    //     this.loading = false;
+    //     this.snackBar.open('Mot de passe mis à jour avec succès', 'Fermer', { duration: 3000, panelClass: ['success-snackbar'] });
+    //     this.passwordForm.reset();
+    //   },
+    //   error: (err) => {
+    //     this.loading = false;
+    //     this.snackBar.open(err || 'Échec de la mise à jour du mot de passe', 'Fermer', { duration: 4000, panelClass: ['error-snackbar'] });
+    //   }
+    // });
   }
 
   setSecurityQuestion(): void {
@@ -168,17 +168,17 @@ export class ProfilePageComponent implements OnInit {
     }
 
     this.loading = true;
-    this.authService.setSecurityQuestion(this.securityForm.value).pipe(take(1)).subscribe({
-      next: () => {
-        this.loading = false;
-        this.snackBar.open('Question de sécurité mise à jour', 'Fermer', { duration: 3000, panelClass: ['success-snackbar'] });
-        this.securityForm.get('securityAnswer')?.reset();
-      },
-      error: (err) => {
-        this.loading = false;
-        this.snackBar.open(err || 'Erreur lors de la mise à jour', 'Fermer', { duration: 4000, panelClass: ['error-snackbar'] });
-      }
-    });
+    // this.authService.setSecurityQuestion(this.securityForm.value).pipe(take(1)).subscribe({
+    //   next: () => {
+    //     this.loading = false;
+    //     this.snackBar.open('Question de sécurité mise à jour', 'Fermer', { duration: 3000, panelClass: ['success-snackbar'] });
+    //     this.securityForm.get('securityAnswer')?.reset();
+    //   },
+    //   error: (err) => {
+    //     this.loading = false;
+    //     this.snackBar.open(err || 'Erreur lors de la mise à jour', 'Fermer', { duration: 4000, panelClass: ['error-snackbar'] });
+    //   }
+    // });
   }
 
   getAvatarUrl(path?: string | null): string | null {
