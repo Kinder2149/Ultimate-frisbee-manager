@@ -29,7 +29,7 @@ import { DashboardService, DashboardStats } from '../../core/services/dashboard.
           <a class="database-card" routerLink="/echauffements">
             <div class="card-icon">🔥</div>
             <h3>Échauffements</h3>
-            <p>{{ echauffenementsCount }} échauffements</p>
+                        <p>{{ echauffementsCount }} échauffements</p>
           </a>
           
           <a class="database-card" routerLink="/situations-matchs">
@@ -309,7 +309,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // Données réelles depuis l'API
   exercicesCount = 0;
   entrainementsCount = 0;
-  echauffenementsCount = 0;
+  echauffementsCount: number = 0;
   situationsCount = 0;
   tagsCount = 0;
   tagsDetails: { [category: string]: number } = {};
@@ -317,7 +317,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   isLoading = true;
 
   get totalElements(): number {
-    return this.exercicesCount + this.entrainementsCount + this.echauffenementsCount + this.situationsCount;
+        return this.exercicesCount + this.entrainementsCount + this.echauffementsCount + this.situationsCount;
   }
 
   getTagsDescription(): string {
@@ -357,7 +357,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       next: (stats: DashboardStats) => {
         this.exercicesCount = stats.exercicesCount;
         this.entrainementsCount = stats.entrainementsCount;
-        this.echauffenementsCount = stats.echauffenementsCount;
+                this.echauffementsCount = stats.echauffementsCount;
         this.situationsCount = stats.situationsCount;
         this.tagsCount = stats.tagsCount;
         this.tagsDetails = stats.tagsDetails;

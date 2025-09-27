@@ -58,18 +58,18 @@ export class EchauffementFormComponent implements OnInit {
   onFormSubmit(formData: EchauffementFormData): void {
     this.isLoading = true;
 
-    const operation = this.isEditMode && this.echauffementId
+        const operation = this.isEditMode && this.echauffementId
       ? this.echauffementService.updateEchauffement(this.echauffementId, formData)
-      : this.echauffementService.ajouterEchauffement(formData);
+      : this.echauffementService.createEchauffement(formData);
 
     operation.subscribe({
-      next: (result) => {
+                  next: (result: Echauffement) => {
         const message = this.isEditMode ? 'Échauffement modifié avec succès' : 'Échauffement créé avec succès';
         this.snackBar.open(message, 'Fermer', { duration: 3000 });
         this.router.navigate(['/echauffements']);
         this.isLoading = false;
       },
-      error: (error) => {
+            error: (error: any) => {
         console.error('Erreur lors de la sauvegarde:', error);
         this.snackBar.open('Erreur lors de la sauvegarde', 'Fermer', { duration: 3000 });
         this.isLoading = false;

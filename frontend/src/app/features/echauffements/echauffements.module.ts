@@ -1,8 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { CoreModule } from '../../core/core.module';
+import { SharedModule } from '../../shared/shared.module';
 
 // Imports des composants
 import { EchauffementListComponent } from './pages/echauffement-list/echauffement-list.component';
@@ -21,10 +20,7 @@ const routes: Routes = [
 @NgModule({
   declarations: [],
   imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    CoreModule,
+    SharedModule,
     RouterModule.forChild(routes),
     EchauffementListComponent,
     EchauffementFormComponent

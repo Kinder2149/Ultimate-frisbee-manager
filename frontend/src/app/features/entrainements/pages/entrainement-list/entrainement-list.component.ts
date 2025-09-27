@@ -92,7 +92,7 @@ export class EntrainementListComponent implements OnInit {
   }
 
   private loadTags(): void {
-    this.tagService.getTags(TagCategory.THEME_ENTRAINEMENT).subscribe({
+        this.tagService.getTags('theme_entrainement').subscribe({
       next: (tags: Tag[]) => {
         this.themeEntrainementTags = [...tags].sort((a, b) => a.label.localeCompare(b.label));
         this.allTags = tags;
@@ -121,7 +121,7 @@ export class EntrainementListComponent implements OnInit {
     }
     if (this.selectedThemeEntrainementTags.length > 0) {
       list = list.filter(e =>
-        e.tags?.some(t => t.category === TagCategory.THEME_ENTRAINEMENT && this.selectedThemeEntrainementTags.includes(t.id || ''))
+                e.tags?.some(t => t.category === 'theme_entrainement' && this.selectedThemeEntrainementTags.includes(t.id || ''))
       );
     }
     this.filteredEntrainements = list;

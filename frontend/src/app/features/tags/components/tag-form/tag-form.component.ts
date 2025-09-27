@@ -2,7 +2,9 @@ import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChange
 import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, ValidatorFn, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { Tag, TagCategory, DEFAULT_TAG_COLORS, NIVEAU_LABELS } from '../../../../core/models/tag.model';
+import { Tag, TagCategory } from '../../../../core/models/tag.model';
+import { DEFAULT_TAG_COLORS, NIVEAU_LABELS } from '../../constants/tag.constants';
+import { TAG_CATEGORIES } from '@shared/constants/tag-categories';
 import { TagService } from '../../../../core/services/tag.service';
 
 /**
@@ -16,7 +18,12 @@ import { TagService } from '../../../../core/services/tag.service';
   imports: [CommonModule, ReactiveFormsModule, MatIconModule]
 })
 export class TagFormComponent implements OnInit, OnChanges {
-  @Input() category: TagCategory = TagCategory.OBJECTIF;
+
+  getCategoryDisplayName(category: string): string {
+    return category.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase());
+  }
+
+    @Input() category: TagCategory = 'objectif';
   @Input() editTag: Tag | null = null;
   @Output() tagSaved = new EventEmitter<Tag>();
   @Output() cancel = new EventEmitter<void>();
@@ -29,8 +36,8 @@ export class TagFormComponent implements OnInit, OnChanges {
   });
 
   // Référence aux énums pour le template
-  TagCategory = TagCategory;
-  niveauLabels = NIVEAU_LABELS;
+      niveauLabels = NIVEAU_LABELS;
+  tagCategories = TAG_CATEGORIES;
   
   // Messages d'erreur
   errorMessage: string = '';
@@ -86,7 +93,7 @@ export class TagFormComponent implements OnInit, OnChanges {
         label: '',
         category: this.category,
         color: DEFAULT_TAG_COLORS[this.category],
-        level: this.category === TagCategory.NIVEAU ? 1 : null
+                level: this.category === 'niveau' ? 1 : null
       });
       
       this.tagForm.get('category')?.enable();
@@ -108,7 +115,7 @@ export class TagFormComponent implements OnInit, OnChanges {
     
     const category = categoryControl.value;
     
-    if (category === TagCategory.NIVEAU) {
+        if (category === 'niveau') {
       // Pour la catégorie niveau, le level est obligatoire (1-5)
       levelControl.setValidators([
         Validators.required,
@@ -161,7 +168,7 @@ export class TagFormComponent implements OnInit, OnChanges {
       category: formValue.category,
       color: formValue.color || DEFAULT_TAG_COLORS[formValue.category as string],
       // Inclure le level si c'est un tag de niveau
-      level: formValue.category === TagCategory.NIVEAU ? formValue.level : undefined
+              level: formValue.category === 'niveau' ? formValue.level : undefined
     };
     
     // Ajouter ou mettre à jour le tag
@@ -232,7 +239,7 @@ export class TagFormComponent implements OnInit, OnChanges {
       const categoryControl = this.tagForm?.get('category');
       if (!categoryControl) return null;
       
-      const isNiveau = categoryControl.value === TagCategory.NIVEAU;
+            const isNiveau = categoryControl.value === 'niveau';
       const minLength = isNiveau ? 1 : 2;
       
       return control.value.length < minLength

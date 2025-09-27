@@ -7,13 +7,13 @@ const { prisma } = require('../services/prisma');
  * Récupère les statistiques pour le dashboard
  * @route GET /api/dashboard/stats
  */
-exports.getDashboardStats = async (req, res) => {
+exports.getDashboardStats = async (req, res, next) => {
   try {
     // Compter tous les éléments en parallèle
     const [
       exercicesCount,
       entrainementsCount,
-      echauffenementsCount,
+      echauffementsCount,
       situationsCount,
       tagsCount,
       tagsByCategory
@@ -56,7 +56,7 @@ exports.getDashboardStats = async (req, res) => {
     ]);
 
     const recentActivity = recentExercices + recentEntrainements + recentEchauffements + recentSituations;
-    const totalElements = exercicesCount + entrainementsCount + echauffenementsCount + situationsCount;
+    const totalElements = exercicesCount + entrainementsCount + echauffementsCount + situationsCount;
 
     // Organiser les tags par catégorie
     const tagsDetails = tagsByCategory.reduce((acc, item) => {
@@ -64,24 +64,17 @@ exports.getDashboardStats = async (req, res) => {
       return acc;
     }, {});
 
-    const stats = {
+    res.json({
       exercicesCount,
       entrainementsCount,
-      echauffenementsCount,
+      echauffementsCount,
       situationsCount,
       tagsCount,
       tagsDetails,
       totalElements,
       recentActivity
-    };
-
-    console.log('Statistiques dashboard récupérées:', stats);
-    res.json(stats);
-  } catch (error) {
-    console.error('Erreur lors de la récupération des statistiques:', error);
-    res.status(500).json({ 
-      error: 'Erreur serveur lors de la récupération des statistiques',
-      details: error.message 
     });
+  } catch (error) {
+    next(error);
   }
 };

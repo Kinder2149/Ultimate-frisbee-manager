@@ -144,11 +144,11 @@ export class ExerciceListComponent implements OnInit, OnDestroy {
    * @param tags Liste de tous les tags
    */
   processTagsByCategory(tags: Tag[]): void {
-    this.objectifTags = tags.filter(tag => tag.category === TagCategory.OBJECTIF);
-    this.travailSpecifiqueTags = tags.filter(tag => tag.category === TagCategory.TRAVAIL_SPECIFIQUE);
-    this.niveauTags = tags.filter(tag => tag.category === TagCategory.NIVEAU);
-    this.tempsTags = tags.filter(tag => tag.category === TagCategory.TEMPS);
-    this.formatTags = tags.filter(tag => tag.category === TagCategory.FORMAT);
+    this.objectifTags = tags.filter(tag => tag.category === 'objectif');
+    this.travailSpecifiqueTags = tags.filter(tag => tag.category === 'travail_specifique');
+    this.niveauTags = tags.filter(tag => tag.category === 'niveau');
+    this.tempsTags = tags.filter(tag => tag.category === 'temps');
+    this.formatTags = tags.filter(tag => tag.category === 'format');
     
     // Trier les tags par label pour une meilleure expérience utilisateur
     [this.objectifTags, this.travailSpecifiqueTags, this.tempsTags, this.formatTags].forEach(tagList => {
@@ -262,7 +262,7 @@ export class ExerciceListComponent implements OnInit, OnDestroy {
         if (!ex.tags) return false;
         
         return ex.tags.some(tag => 
-          tag.category === TagCategory.OBJECTIF && 
+          tag.category === 'objectif' && 
           this.selectedObjectifTags.includes(tag.id || '')
         );
       });
@@ -275,7 +275,7 @@ export class ExerciceListComponent implements OnInit, OnDestroy {
         if (!ex.tags) return false;
         
         return ex.tags.some(tag => 
-          tag.category === TagCategory.TRAVAIL_SPECIFIQUE && 
+          tag.category === 'travail_specifique' && 
           this.selectedTravailSpecifiqueTags.includes(tag.id || '')
         );
       });
@@ -288,7 +288,7 @@ export class ExerciceListComponent implements OnInit, OnDestroy {
         if (!ex.tags) return false;
         
         return ex.tags.some(tag => 
-          tag.category === TagCategory.NIVEAU && 
+          tag.category === 'niveau' && 
           this.selectedNiveauTags.includes(tag.id || '')
         );
       });
@@ -300,7 +300,7 @@ export class ExerciceListComponent implements OnInit, OnDestroy {
         if (!ex.tags) return false;
         
         return ex.tags.some(tag => 
-          tag.category === TagCategory.TEMPS && 
+          tag.category === 'temps' && 
           this.selectedTempsTags.includes(tag.id || '')
         );
       });
@@ -312,7 +312,7 @@ export class ExerciceListComponent implements OnInit, OnDestroy {
         if (!ex.tags) return false;
         
         return ex.tags.some(tag => 
-          tag.category === TagCategory.FORMAT && 
+          tag.category === 'format' && 
           this.selectedFormatTags.includes(tag.id || '')
         );
       });

@@ -17,12 +17,34 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatListModule } from '@angular/material/list';
 
 /**
  * Module centralisé pour tous les imports Angular Material
  * Cela facilite la maintenance et évite les problèmes d'importation
  */
 @NgModule({
+  imports: [
+    MatButtonModule,
+    MatCardModule,
+    MatChipsModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatProgressBarModule,
+    MatSelectModule,
+    MatSnackBarModule,
+    MatStepperModule,
+    MatTableModule,
+    MatTooltipModule,
+    MatCheckboxModule,
+    MatMenuModule,
+    MatProgressSpinnerModule,
+    MatButtonToggleModule,
+    MatExpansionModule,
+    MatListModule
+  ],
   exports: [
     MatButtonModule,
     MatCardModule,
@@ -41,7 +63,8 @@ import { MatExpansionModule } from '@angular/material/expansion';
     MatMenuModule,
     MatProgressSpinnerModule,
     MatButtonToggleModule,
-    MatExpansionModule
+    MatExpansionModule,
+    MatListModule
   ]
 })
 export class MaterialModule { }

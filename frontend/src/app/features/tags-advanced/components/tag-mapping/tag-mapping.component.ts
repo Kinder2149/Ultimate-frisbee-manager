@@ -11,23 +11,8 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 
-// Définition locale de l'interface TagMapping (anciennement dans pipeline-integration.service)
-export interface TagMapping {
-  sourceTag: {
-    label: string;
-    color?: string;
-  };
-  tagLabel?: string; // Champ de compatibilité pour la transition
-  confidence: number;
-  validated: boolean;
-  ignored: boolean;
-  mappedTag?: {
-    id: string;
-    label: string;
-    category: string;
-    color?: string;
-  };
-}
+import { TagMapping } from '../../models/tags-advanced.model';
+import { TagCategory } from '@shared/constants/tag-categories';
 
 import { Tag } from '../../services/tag-recommendation.service';
 
@@ -118,7 +103,7 @@ export class TagMappingComponent implements OnInit {
       mapping.mappedTag = {
         id: validTag.id,
         label: validTag.label,
-        category: validTag.category,
+                category: validTag.category as TagCategory,
         color: validTag.color
       };
     } else {

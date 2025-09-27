@@ -27,36 +27,6 @@
           </ng-container>
           <ng-template #imagePlaceholder>
             <div class="image-placeholder">
-              <span class="material-icons">image</span>
-              <span>Ajouter une image</span>
-            </div>
-          </ng-template>
-        </section>
-
-        <!-- Ligne: Objectif | Travail Spécifique | Critère de réussite -->
-        <section class="view-section">
-          <h3 class="view-heading light-blue">Objectif</h3>
-          <div class="tags-display" *ngIf="selectedObjectifTag">
-            <span class="tag" [style.background-color]="selectedObjectifTag.color || '#e0e0e0'">{{ selectedObjectifTag.label }}</span>
-          </div>
-          <div *ngIf="!selectedObjectifTag && exerciceForm.get('objectif')?.value" class="muted">{{ exerciceForm.get('objectif')?.value }}</div>
-        </section>
-
-        <section class="view-section">
-          <h3 class="view-heading light-blue">Travail Spécifique</h3>
-          <div class="tags-display">
-            <span class="tag" *ngFor="let tag of selectedTravailSpecifiqueTags" [style.background-color]="tag.color || '#e0e0e0'">{{ tag.label }}</span>
-          </div>
-        </section>
-
-        <section class="view-section">
-          <h3 class="view-heading light-blue">Critère de réussite</h3>
-          <div class="view-text muted" *ngIf="exerciceForm.get('variables')?.value as vars">{{ vars.objectifsPedagogiques || '—' }}</div>
-        </section>
-
-        <!-- Variables (+) | Variables (-) -->
-        <section class="view-section">
-          <h3 class="view-heading green">Variable (+)</h3>
           <ul class="dot-list" *ngIf="exerciceForm.get('variables')?.value as vars">
             <li *ngFor="let v of (vars.variablesPlus || [])">{{ v }}</li>
             <li *ngIf="!(vars.variablesPlus?.length)">—</li>

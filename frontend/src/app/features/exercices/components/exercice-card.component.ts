@@ -176,22 +176,22 @@ export class ExerciceCardComponent implements OnInit {
   private populateTagCategories(exerciceTags: Tag[]): void {
     // Répartir par catégorie
     this.objectifTag = exerciceTags.find(tag => 
-      tag.category === TagCategory.OBJECTIF) || null;
+      tag.category === 'objectif') || null;
     
     this.travailSpecifiqueTags = exerciceTags.filter(tag => 
-      tag.category === TagCategory.TRAVAIL_SPECIFIQUE);
+      tag.category === 'travail_specifique');
     
     // Catégorie Variable supprimée
     
     this.niveauTags = exerciceTags.filter(tag => 
-      tag.category === TagCategory.NIVEAU);
+      tag.category === 'niveau');
       
     // Nouvelles catégories
     this.tempsTags = exerciceTags.filter(tag => 
-      tag.category === TagCategory.TEMPS);
+      tag.category === 'temps');
       
     this.formatTags = exerciceTags.filter(tag => 
-      tag.category === TagCategory.FORMAT);
+      tag.category === 'format');
 
     console.log('Tags par catégorie:', {
       objectif: this.objectifTag ? 1 : 0,

@@ -12,5 +12,8 @@
     "sport"
   ],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  }
 }

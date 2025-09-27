@@ -12,8 +12,9 @@ export class AuthInterceptor implements HttpInterceptor {
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     // Intercepter uniquement les requêtes vers notre API backend
+    // Intercepter uniquement les requêtes vers notre API backend
     if (req.url.startsWith(environment.apiUrl)) {
-      // from(Promise) convertit la promesse en observable
+      // Utiliser from pour convertir la promesse en observable, puis switchMap
       return from(this.authService.getAccessToken()).pipe(
         switchMap(token => {
           if (token) {
@@ -22,11 +23,10 @@ export class AuthInterceptor implements HttpInterceptor {
               headers: req.headers.set('Authorization', `Bearer ${token}`)
             });
             return next.handle(clonedReq);
-          } else {
-            // S'il n'y a pas de token, envoyer la requête originale
-            // Le backend la rejettera avec une erreur 401, ce qui est le comportement attendu
-            return next.handle(req);
           }
+          // S'il n'y a pas de token, envoyer la requête originale.
+          // Le backend la rejettera avec une erreur 401 si la route est protégée.
+          return next.handle(req);
         })
       );
     }

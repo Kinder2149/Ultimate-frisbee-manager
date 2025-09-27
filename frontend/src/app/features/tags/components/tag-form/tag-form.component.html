@@ -33,12 +33,8 @@
         id="tag-category" 
         formControlName="category"
         (change)="onCategoryChange()">
-        <option *ngFor="let cat of [TagCategory.OBJECTIF, TagCategory.TRAVAIL_SPECIFIQUE, TagCategory.NIVEAU, TagCategory.TEMPS, TagCategory.FORMAT, TagCategory.THEME_ENTRAINEMENT]" [value]="cat">
-          {{ cat === TagCategory.OBJECTIF ? 'Objectif' : 
-             cat === TagCategory.TRAVAIL_SPECIFIQUE ? 'Travail Spécifique' : 
-             cat === TagCategory.NIVEAU ? 'Niveau' :
-             cat === TagCategory.TEMPS ? 'Temps moyen' : 
-             cat === TagCategory.FORMAT ? 'Format' : 'Thème Entraînement' }}
+                <option *ngFor="let cat of tagCategories" [value]="cat">
+                    {{ getCategoryDisplayName(cat) }}
         </option>
       </select>
     </div>
@@ -62,7 +58,7 @@
     </div>
     
     <!-- Niveau (nombre d'étoiles) - uniquement visible pour la catégorie "niveau" -->
-    <div class="form-group" *ngIf="tagForm.get('category')?.value === TagCategory.NIVEAU">
+        <div class="form-group" *ngIf="tagForm.get('category')?.value === 'niveau'">
       <label for="tag-level">Nombre d'étoiles:</label>
       <select id="tag-level" formControlName="level" class="form-select">
         <option *ngFor="let n of niveaux" [value]="n">{{ n }} étoile{{ n > 1 ? 's' : '' }} - {{ niveauLabels[n] }}</option>

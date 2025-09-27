@@ -22,13 +22,13 @@ export class AuthGuard implements CanActivate {
     state: RouterStateSnapshot
   ): Observable<boolean> {
     return this.authService.isAuthenticated$.pipe(
-      take(1),
+      take(1), // On ne s'intéresse qu'à l'état actuel au moment de la navigation
       map(isAuthenticated => {
         if (isAuthenticated) {
-          return true;
+          return true; // L'utilisateur est authentifié, on autorise l'accès.
         }
 
-        // Rediriger vers la page de connexion si non authentifié
+        // L'utilisateur n'est pas authentifié, on le redirige vers la page de connexion.
         this.router.navigate(['/login'], {
           queryParams: { returnUrl: state.url }
         });

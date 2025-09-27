@@ -8,16 +8,7 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { MatIconModule } from '@angular/material/icon';
 
 import { Tag } from '../../services/tag-recommendation.service';
-
-// Définition locale de l'interface TagSuggestion (anciennement dans pipeline-integration.service)
-export interface TagSuggestion {
-  id: string;
-  label: string;
-  category: string;
-  confidence: number;
-  source?: string;
-  color?: string;
-}
+import { TagSuggestion } from '../../models/tags-advanced.model';
 
 // Interface locale pour remplacer TagUsageStats supprimé
 interface TagUsageStats {
@@ -134,7 +125,7 @@ export class TagVisualizationComponent {
    */
   getConfidence(tag: Tag | TagSuggestion | TagUsageStats): number {
     if (this.isTagSuggestion(tag)) {
-      return tag.confidence;
+            return tag.confidence || 0;
     } else if (this.isTagUsageStats(tag)) {
       // Pour les statistiques, utiliser le pourcentage comme indice de confiance
       return tag.percentage / 100;
@@ -235,8 +226,8 @@ export class TagVisualizationComponent {
       return `${tag.tagLabel} (${tag.tagCategory})
 Utilisations: ${tag.count} (${tag.percentage.toFixed(1)}%)`;
     } else if (this.isTagSuggestion(tag)) {
-      return `${tag.label} (${tag.category})
-Confiance: ${this.formatConfidence(tag.confidence)}
+            return `${tag.label} (${tag.category})
+Confiance: ${this.formatConfidence(tag.confidence || 0)}
 Source: ${tag.source}`;
     }
     return `${tag.label} (${tag.category})`;

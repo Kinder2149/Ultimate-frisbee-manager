@@ -1,6 +1,7 @@
 import { Tag } from './tag.model';
 import { SituationMatch } from './situationmatch.model';
 import { Exercice } from './exercice.model';
+import { Echauffement } from './echauffement.model';
 
 /**
  * Modèle représentant un entraînement d'ultimate frisbee avec ses exercices
@@ -20,7 +21,6 @@ export interface Entrainement {
   situationMatchId?: string;
   echauffement?: Echauffement;
   situationMatch?: SituationMatch;
-  [key: string]: any;
 }
 
 export interface EntrainementExercice {
@@ -31,27 +31,5 @@ export interface EntrainementExercice {
   duree?: number;
   notes?: string;
   exercice?: Exercice;
-}
-
-
-// Interfaces pour les nouvelles relations
-export interface Echauffement {
-  id?: string;
-  nom: string;
-  description?: string;
-  createdAt?: Date | string;
-  blocs?: BlocEchauffement[];
-}
-
-export interface BlocEchauffement {
-  id?: string;
-  echauffementId: string;
-  ordre: number;
-  titre: string;
-  repetitions?: string;
-  temps?: string;
-  informations?: string;
-  fonctionnement?: string;
-  notes?: string;
 }
 

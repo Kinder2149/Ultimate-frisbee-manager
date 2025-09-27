@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TagService } from '../../../core/services/tag.service';
 import { Tag, TagCategory } from '../../../core/models/tag.model';
+import { TAG_CATEGORIES } from '@shared/constants/tag-categories';
 import { TagFormComponent } from '../components/tag-form/tag-form.component';
 import { TagListComponent } from '../components/tag-list/tag-list.component';
 import { RouterModule } from '@angular/router';
@@ -25,10 +26,10 @@ export class TagsManagerComponent implements OnInit {
   allTags: Tag[] = [];
   
   // Catégories disponibles
-  categories = Object.values(TagCategory);
+  tagCategories = TAG_CATEGORIES;
   
   // Catégorie actuellement sélectionnée pour l'ajout d'un tag
-  selectedCategory: TagCategory = TagCategory.OBJECTIF;
+  selectedCategory: TagCategory = 'objectif';
   
   // Messages de succès et d'erreur
   successMessage: string = '';

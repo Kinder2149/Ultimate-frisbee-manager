@@ -50,10 +50,11 @@ exports.getSituationMatchById = async (req, res, next) => {
  */
 exports.createSituationMatch = async (req, res, next) => {
   try {
-    const { type, description, temps, tagIds } = req.body;
+    const { nom, type, description, temps, tagIds } = req.body;
     
     const nouvelleSituationMatch = await prisma.situationMatch.create({
       data: {
+        nom,
         type,
         description,
         temps,
@@ -76,9 +77,10 @@ exports.createSituationMatch = async (req, res, next) => {
 exports.updateSituationMatch = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { type, description, temps, tagIds } = req.body;
+    const { nom, type, description, temps, tagIds } = req.body;
 
     const updateData = {
+      nom,
       type,
       description,
       temps,
@@ -133,9 +135,11 @@ exports.duplicateSituationMatch = async (req, res, next) => {
     
     const situationMatchDupliquee = await prisma.situationMatch.create({
       data: {
+        nom: situationMatchOriginale.nom ? `${situationMatchOriginale.nom} (Copie)` : `Copie de ${situationMatchOriginale.type}`,
         type: situationMatchOriginale.type,
-        description: situationMatchOriginale.description ? `${situationMatchOriginale.description} (Copie)` : `${situationMatchOriginale.type} (Copie)`,
+        description: situationMatchOriginale.description,
         temps: situationMatchOriginale.temps,
+        imageUrl: situationMatchOriginale.imageUrl,
         tags: { connect: situationMatchOriginale.tags.map(tag => ({ id: tag.id })) }
       },
       include: { tags: true }

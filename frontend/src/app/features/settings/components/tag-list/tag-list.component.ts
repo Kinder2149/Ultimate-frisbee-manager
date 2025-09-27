@@ -16,7 +16,9 @@ import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { Router } from '@angular/router';
-import { Tag, TagCategory, DEFAULT_TAG_COLORS } from '../../../../core/models/tag.model';
+import { Tag, TagCategory } from '../../../../core/models/tag.model';
+import { DEFAULT_TAG_COLORS } from '../../../tags/constants/tag.constants';
+import { TAG_CATEGORIES } from '@shared/constants/tag-categories';
 
 export interface TagItem {
   id: string;
@@ -88,9 +90,9 @@ export class TagListComponent implements OnInit, AfterViewInit {
   }
 
   setupFilters(): void {
-    const categoryOptions = Object.values(TagCategory).map(category => ({
+        const categoryOptions = TAG_CATEGORIES.map((category: string) => ({
       value: category,
-      label: category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+            label: category.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()),
       color: DEFAULT_TAG_COLORS[category] || '#757575'
     }));
 

@@ -3,9 +3,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  // Pour le développement local, nous générons dans node_modules. 
-  // Pour le déploiement sur Supabase, cette ligne doit être décommentée.
-  // output = "../supabase/functions/_shared/generated/client"
 }
 
 datasource db {
@@ -22,9 +19,8 @@ model Exercice {
   schemaUrl   String?  // URL facultative vers un schéma tactique
   materiel    String?  // Matériel nécessaire pour l'exercice (optionnel)
   notes       String?  // Notes générales de l'exercice (optionnel)
-  variablesText String? // Ancienne version (à migrer et supprimer ultérieurement)
-  variablesPlus String?  // Variables qui augmentent la difficulté (+)
-  variablesMinus String? // Variables qui diminuent la difficulté (-)
+  variablesPlus String[]  // Variables qui augmentent la difficulté (+)
+  variablesMinus String[] // Variables qui diminuent la difficulté (-)
   createdAt   DateTime @default(now())
   
   // Relations avec les tags (caractéristiques de l'exercice)
@@ -152,18 +148,13 @@ model SituationMatch {
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
-  password  String?  // Hash bcrypt (optionnel, géré par Supabase)
   nom       String
   prenom    String?
-  role      String   @default("ADMIN")
+  role      String   @default("USER")
   isActive  Boolean  @default(true)
   iconUrl   String?  // URL vers l'icône de l'utilisateur
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  // Champs pour la réinitialisation par question de sécurité
-  securityQuestion String?
-  securityAnswer   String? // Hash de la réponse
 
 
 }

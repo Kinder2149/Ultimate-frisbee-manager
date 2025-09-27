@@ -4,7 +4,7 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { AuthGuard } from '../../core/guards/auth.guard';
 import { RoleGuard } from '../../core/guards/role.guard';
-import { CoreModule } from '../../core/core.module';
+import { SharedModule } from '../../shared/shared.module';
 import { TagsManagerComponent } from '../tags/pages/tags-manager.component';
 import { ProfilePageComponent } from './pages/profile/profile-page.component';
 import { ImportExercicesComponent } from './pages/import-exercices/import-exercices.component';
@@ -41,7 +41,7 @@ const routes: Routes = [
 @NgModule({
   imports: [
     CommonModule,
-    CoreModule,
+    SharedModule,
     RouterModule.forChild(routes),
     // standalone components imported directly (only those used in templates)
     TagsManagerComponent,

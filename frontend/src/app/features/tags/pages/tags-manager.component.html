@@ -14,7 +14,7 @@
 
   <mat-tab-group class="tags-tabs" animationDuration="300ms">
     <!-- Onglet par catégorie -->
-    <mat-tab *ngFor="let category of categories" [label]="getCategoryDisplayName(category)">
+        <mat-tab *ngFor="let category of tagCategories" [label]="getCategoryDisplayName(category)">
       <div class="category-content">
         <!-- Statistiques de la catégorie -->
         <div class="category-stats">

@@ -1,6 +1,134 @@
 # Plan de Développement - Ultimate Frisbee Manager
 
-## 🚀 PLAN PRIORITAIRE - DÉPLOIEMENT EN LIGNE
+## 📋 Audit Complet de Cohérence et Qualité (Septembre 2025)
+
+**Objectif :** Analyser l'intégralité du code source après la migration vers Supabase/Render pour garantir la cohérence, la maintenabilité, la sécurité et la robustesse de l'application.
+
+---
+
+### **Phase 1 : Analyse des Fondations (Configuration & Déploiement)**
+
+*   **Objectif :** Valider que l'environnement de production est sécurisé, optimisé et correctement configuré.
+*   **Tâches :**
+    *   [ ] **Backend (`.env`, `render.yaml`) :**
+        *   [ ] Vérifier que `DATABASE_URL` pointe vers Supabase.
+        *   [ ] Confirmer la présence et la sécurisation de `JWT_SECRET` (non-hardcodé).
+        *   [ ] Valider la configuration `CORS_ORIGINS` pour n'autoriser que l'URL de Vercel.
+        *   [ ] Analyser les commandes de build et de démarrage dans `render.yaml`.
+    *   [ ] **Frontend (`environments/`, `angular.json`) :**
+        *   [ ] Confirmer que `environment.prod.ts` utilise l'URL de l'API Render.
+        *   [ ] Inspecter les optimisations de build pour la production dans `angular.json` (AOT, budgets, etc.).
+    *   [ ] **Gestion des fichiers (`uploads/`) :**
+        *   [ ] **Point critique :** Rechercher dans le code backend toute utilisation du dossier `uploads/`.
+        *   [ ] Valider si une intégration avec un service de stockage externe (ex: Supabase Storage) est en place. Si non, c'est une anomalie majeure à corriger.
+
+---
+
+### **Phase 2 : Audit de la Base de Données et des Données**
+
+*   **Objectif :** S'assurer de l'intégrité et de la cohérence de la structure des données.
+*   **Tâches :**
+    *   [ ] **Schéma Prisma (`prisma/schema.prisma`) :**
+        *   [ ] Analyser en détail chaque modèle et ses relations (notamment les relations optionnelles sur `Entrainement`).
+        *   [ ] Vérifier la cohérence des types de données avec PostgreSQL.
+    *   [ ] **Migrations (`prisma/migrations/`) :**
+        *   [ ] Examiner l'historique des migrations pour comprendre l'évolution du schéma.
+    *   [ ] **Données initiales (`prisma/seed.js`) :**
+        *   [ ] Valider que le script de seeding crée correctement l'utilisateur admin avec le rôle approprié.
+    *   [ ] **Synchronisation Modèles (Backend ↔ Frontend) :**
+        *   [ ] Comparer les modèles Prisma avec les interfaces TypeScript dans `frontend/src/app/core/models/` pour détecter toute désynchronisation.
+
+---
+
+### **Phase 3 : Audit de Sécurité et d'Authentification**
+
+*   **Objectif :** Valider la robustesse du système d'authentification et des contrôles d'accès.
+*   **Tâches :**
+    *   [ ] **Backend (Auth) :**
+        *   [ ] Analyser le `auth.controller.js` pour la logique de login (hashage `bcrypt`).
+        *   [ ] Vérifier le middleware `authenticateToken` et s'assurer qu'il est appliqué à toutes les routes métier.
+        *   [ ] Analyser le middleware `requireAdmin` et son application sur les routes d'administration (`/api/admin/overview`).
+    *   [ ] **Frontend (Auth) :**
+        *   [ ] Examiner `AuthService` pour la gestion des tokens JWT et du `localStorage`.
+        *   [ ] Valider le `AuthGuard` qui protège les routes.
+        *   [ ] Valider le `RoleGuard` qui protège les routes d'administration.
+        *   [ ] Analyser l'intercepteur HTTP pour l'ajout automatique du header `Authorization`.
+
+---
+
+### **Phase 4 : Audit des Fonctionnalités et de la Logique Métier**
+
+*   **Objectif :** Examiner le code des fonctionnalités clés pour déceler des bugs, des incohérences ou des optimisations.
+*   **Tâches :**
+    *   [ ] **Système d'Exercices et Tags (Point de vigilance élevé) :**
+        *   [ ] Investiguer les problèmes de chargement et de sauvegarde des tags décrits dans `plan.md`.
+        *   [ ] Analyser `exercice-form.component.ts` pour la gestion des formulaires réactifs.
+        *   [ ] Examiner l'incohérence de l'UI de sélection des tags (notamment pour "Niveau") et proposer une stratégie d'harmonisation.
+    *   [ ] **Système d'Entraînements :**
+        *   [ ] Clarifier la présence des dossiers `entrainements` et `trainings` dans le frontend et recommander une fusion/suppression.
+        *   [ ] Valider la logique d'intégration des échauffements et situations de match (relations optionnelles).
+    *   [ ] **Cohérence des Services :**
+        *   [ ] Vérifier que tous les services métier (ExerciceService, TagService, etc.) utilisent le `HttpGenericService` s'il est prévu pour cela.
+
+---
+
+### **Phase 5 : Audit de la Qualité et de l'Architecture du Code**
+
+*   **Objectif :** Évaluer la maintenabilité, la réutilisabilité et le respect des bonnes pratiques.
+*   **Tâches :**
+    *   [ ] **Réutilisabilité (`shared/`) :**
+        *   [ ] Analyser les composants dans `shared/components` et `widgets` pour évaluer leur généricité.
+        *   [ ] Proposer la création de nouveaux composants partagés si des duplications de code sont identifiées (ex: `TagSelectComponent`).
+    *   [ ] **Qualité du Code Frontend :**
+        *   [ ] Rechercher l'utilisation excessive du type `any` et suggérer un typage plus strict.
+        *   [ ] Analyser la gestion des souscriptions aux Observables (RxJS) pour prévenir les fuites de mémoire (utilisation de `takeUntil`, `async` pipe, etc.).
+    *   [ ] **Stratégie de Tests (`cypress/`, `jest.config.js`) :**
+        *   [ ] Évaluer la couverture et la pertinence des tests E2E (Cypress) et unitaires (Jest) existants.
+        *   [ ] Identifier les zones critiques du code manquant de tests.
+
+---
+
+### **Phase 6 : Rapport Final et Recommandations**
+
+*   **Objectif :** Synthétiser les résultats de l'audit et fournir un plan d'action clair.
+*   **Tâches :**
+    *   [ ] **Rédiger un rapport de synthèse** incluant :
+        *   Les points forts de l'architecture actuelle.
+        *   La liste détaillée des anomalies, risques et incohérences.
+        *   Des recommandations concrètes et priorisées pour chaque point identifié.
+
+---
+
+### **Phase 7 : Migration vers Supabase Auth (Décision du 27/09/2025)**
+
+*   **Objectif :** Remplacer le système d'authentification "maison" par une intégration complète avec Supabase Auth pour améliorer la sécurité et la maintenabilité.
+
+*   **Tâches Backend :**
+    *   [ ] **Nettoyer `schema.prisma` :**
+        *   [ ] Supprimer le champ `password` du modèle `User`.
+        *   [ ] Supprimer les champs `securityQuestion` et `securityAnswer`.
+    *   [ ] **Générer une nouvelle migration Prisma** pour appliquer les changements.
+    *   [ ] **Nettoyer `auth.controller.js` :**
+        *   [ ] Supprimer les fonctions `login`, `changePassword`, `setSecurityQuestion`, `resetPasswordWithAnswer`.
+    *   [ ] **Nettoyer `auth.routes.js`** en supprimant les routes correspondantes.
+    *   [ ] **Valider le middleware `authenticateToken`** et sa logique de création d'utilisateur à la volée.
+
+*   **Tâches Frontend :**
+    *   [ ] **Ajouter la dépendance** `@supabase/supabase-js`.
+    *   [ ] **Créer un service client Supabase** avec les variables d'environnement (`SUPABASE_URL`, `SUPABASE_ANON_KEY`).
+    *   [ ] **Refactoriser `AuthService` :**
+        *   [ ] Remplacer la logique de `login` par `supabase.auth.signInWithPassword()`.
+        *   [ ] Remplacer la logique de `logout` par `supabase.auth.signOut()`.
+        *   [ ] Utiliser `supabase.auth.onAuthStateChange` comme source de vérité pour l'état de connexion.
+        *   [ ] Supprimer la gestion manuelle des tokens dans `localStorage`.
+    *   [ ] **Adapter `LoginComponent`** pour utiliser le nouvel `AuthService`.
+    *   [ ] **Adapter `AuthGuard`** pour vérifier l'état de connexion via le nouvel `AuthService`.
+    *   [ ] **Adapter `AuthInterceptor`** pour récupérer le token de session depuis Supabase et l'attacher aux requêtes sortantes.
+
+---
+
+## 🚀 PLAN PRIORITAIRE - DÉPLOIEMENT EN LIGNE (ARCHIVÉ)
+
 
 ### **OBJECTIF PRINCIPAL** 🎯
 Rendre l'application Ultimate Frisbee Manager accessible en ligne pour une dizaine d'utilisateurs occasionnels avec un système de déploiement continu via GitHub.

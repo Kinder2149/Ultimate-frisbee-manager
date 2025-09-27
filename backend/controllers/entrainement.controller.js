@@ -17,7 +17,7 @@ exports.getAllEntrainements = async (req, res, next) => {
       orderBy: { createdAt: 'desc' }
     });
 
-    const resultats = entrainements.map(e => ({ ...e, dureeTotal: calculerDureeTotal(e.exercices.map(ex => ex.exercice)) }));
+        const resultats = entrainements.map(e => ({ ...e, dureeTotal: calculerDureeTotal(e.exercices) }));
     res.json(resultats);
   } catch (error) {
     next(error);
@@ -43,7 +43,7 @@ exports.getEntrainementById = async (req, res, next) => {
       return next(error);
     }
 
-    const resultat = { ...entrainement, dureeTotal: calculerDureeTotal(entrainement.exercices.map(ex => ex.exercice)) };
+        const resultat = { ...entrainement, dureeTotal: calculerDureeTotal(entrainement.exercices) };
     res.json(resultat);
   } catch (error) {
     next(error);

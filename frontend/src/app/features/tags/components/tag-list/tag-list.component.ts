@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Tag, TagCategory, NIVEAU_LABELS } from '../../../../core/models/tag.model';
+import { Tag, TagCategory } from '../../../../core/models/tag.model';
+import { NIVEAU_LABELS } from '../../constants/tag.constants';
 
 /**
  * Composant d'affichage de liste de tags avec options d'édition et suppression
@@ -19,8 +20,7 @@ export class TagListComponent {
   @Output() deleteTag = new EventEmitter<Tag>();
   
   // Référence aux énums pour le template
-  TagCategory = TagCategory;
-  niveauLabels = NIVEAU_LABELS;
+    niveauLabels = NIVEAU_LABELS;
   
   /**
    * Renvoie le texte à afficher pour un niveau

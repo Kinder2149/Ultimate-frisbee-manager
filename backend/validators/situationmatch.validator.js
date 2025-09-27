@@ -2,6 +2,7 @@ const { z } = require('zod');
 
 // Schéma pour la création d'une situation/match
 const createSituationMatchSchema = z.object({
+  nom: z.string().min(3, 'Le nom doit contenir au moins 3 caractères.').optional().nullable(),
   type: z.enum(['Match', 'Situation'], {
     required_error: 'Le type est requis et doit être "Match" ou "Situation".',
   }),

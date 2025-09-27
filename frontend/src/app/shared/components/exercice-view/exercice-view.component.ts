@@ -78,11 +78,11 @@ export class ExerciceViewComponent implements OnInit {
   }
 
   private splitTagsByCategory(tags: Tag[]) {
-    this.objectifTag = tags.find(t => t.category === TagCategory.OBJECTIF) || null;
-    this.travailSpecifiqueTags = tags.filter(t => t.category === TagCategory.TRAVAIL_SPECIFIQUE);
-    this.niveauTags = tags.filter(t => t.category === TagCategory.NIVEAU);
-    this.tempsTags = tags.filter(t => t.category === TagCategory.TEMPS);
-    this.formatTags = tags.filter(t => t.category === TagCategory.FORMAT);
+        this.objectifTag = tags.find(t => t.category === 'objectif') || null;
+        this.travailSpecifiqueTags = tags.filter(t => t.category === 'travail_specifique');
+        this.niveauTags = tags.filter(t => t.category === 'niveau');
+        this.tempsTags = tags.filter(t => t.category === 'temps');
+        this.formatTags = tags.filter(t => t.category === 'format');
   }
 
   get variables(): any | null {

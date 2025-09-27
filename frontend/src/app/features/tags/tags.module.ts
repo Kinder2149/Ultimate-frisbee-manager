@@ -1,8 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { CoreModule } from '../../core/core.module';
+import { SharedModule } from '../../shared/shared.module';
 
 // Imports des composants depuis leurs nouveaux emplacements
 import { TagsManagerComponent } from './pages/tags-manager.component';
@@ -22,10 +21,7 @@ const routes: Routes = [
   declarations: [],
   // Les composants sont maintenant tous en standalone
   imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    CoreModule,
+    SharedModule,
     RouterModule.forChild(routes),
     TagsManagerComponent
   ],

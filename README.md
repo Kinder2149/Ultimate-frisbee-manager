@@ -2,91 +2,75 @@
 
 Application web pour gérer une base d'exercices d'ultimate frisbee, permettant à un coach sportif d'organiser ses séances d'entraînement. Cette application permet de créer, stocker et gérer une bibliothèque d'exercices pour les entraînements d'ultimate frisbee.
 
-## Architecture du projet
+## Architecture
 
-- **Backend**: Node.js + Express + Prisma + PostgreSQL
-- **Frontend**: Angular 17+ avec système de composants réactifs et formulaires
+L'architecture de ce projet est une **architecture hybride** moderne, séparant clairement les responsabilités entre le frontend, le backend et la base de données.
+
+- **Frontend**: Angular 17+, hébergé sur **Vercel**.
+- **Backend**: API RESTful en Node.js avec Express.js et Prisma, hébergée sur **Render**.
+- **Base de données**: PostgreSQL, hébergée sur **Supabase**.
+
+Pour une description détaillée des choix d'architecture, veuillez consulter le document [**STRATEGY.md**](STRATEGY.md).
 
 ## Prérequis
 
-- Node.js (v14+)
-- PostgreSQL (v12+)
-- Angular CLI (dernière version)
+- **Node.js**: Version `20.x` ou supérieure.
+- **PostgreSQL**: Une instance locale ou distante (par exemple, via Supabase) est nécessaire.
+- **Angular CLI**: `v17` ou supérieure.
 
-## Structure du projet
+## Démarrage Rapide (Développement Local)
 
-```
-ultimate-frisbee-manager/
-├── backend/                # API REST avec Express et Prisma
-│   ├── controllers/        # Contrôleurs pour la logique métier
-│   ├── prisma/             # Schéma et migrations Prisma
-│   ├── routes/             # Routes API organisées par domaine
-│   ├── scripts/            # Scripts utilitaires et de migration
-│   └── server.js           # Point d'entrée du backend
-└── frontend/               # Application Angular 17+
-    └── src/                # Code source Angular
-        └── app/
-            ├── core/       # Services et modèles partagés
-            │   ├── models/ # Interfaces et modèles de données
-            │   └── services/ # Services globaux
-            ├── features/   # Fonctionnalités organisées par domaine
-            │   ├── exercices/ # Feature d'exercices
-            │   └── tags/      # Feature de gestion des tags
-            └── shared/     # Composants et pipes partagés
-```
+Suivez ces étapes pour lancer le projet sur votre machine.
 
-## Installation
+### 1. Configuration de l'environnement
 
-### Configuration de la base de données
+- **Base de données**: Assurez-vous d'avoir une base de données PostgreSQL accessible.
+- **Fichier d'environnement**:
+  - À la racine du dossier `backend/`, copiez le fichier `.env.example` et renommez-le en `.env`.
+  - Modifiez la variable `DATABASE_URL` pour qu'elle pointe vers votre base de données.
 
-1. Installez PostgreSQL si ce n'est pas déjà fait
-2. Créez une base de données nommée `ultimate_frisbee_db`
-3. Configurez les informations de connexion dans le fichier `backend/.env` :
+    ```
+    # Exemple de configuration pour une base de données locale
+    DATABASE_URL="postgresql://user:password@localhost:5432/ultimate_frisbee_db?schema=public"
+    ```
 
-```
-DATABASE_URL="postgresql://username:password@localhost:5432/ultimate_frisbee_db?schema=public"
-```
+### 2. Lancer le Backend
 
-### Installation du Backend
+Ouvrez un terminal à la racine du projet :
 
 ```bash
+# 1. Aller dans le dossier du backend
 cd backend
+
+# 2. Installer les dépendances
 npm install
-npx prisma generate
-npx prisma migrate dev --name init
-```
 
-### Lancement du Backend
+# 3. Appliquer les migrations et remplir la base de données (seed)
+npm run db:migrate
+npm run db:seed
 
-```bash
-cd backend
+# 4. Lancer le serveur de développement
 npm run dev
 ```
 
-Le serveur démarrera sur http://localhost:3000
+Le serveur backend démarrera sur `http://localhost:3002` (ou le port défini dans votre `.env`).
 
-Pour exécuter le script de migration des tags (si nécessaire) :
+### 3. Lancer le Frontend
 
-```bash
-cd backend
-node scripts/migrate-tags.js
-```
-
-### Installation du Frontend
+Ouvrez un **second terminal** à la racine du projet :
 
 ```bash
+# 1. Aller dans le dossier du frontend
 cd frontend
+
+# 2. Installer les dépendances
 npm install
+
+# 3. Lancer l'application Angular
+npm start
 ```
 
-### Lancement du Frontend
-
-```bash
-cd frontend
-ng serve
-```
-
-L'application sera accessible sur http://localhost:4200
+L'application sera accessible sur `http://localhost:4200` et se connectera automatiquement au backend.
 
 ## Fonctionnalités
 

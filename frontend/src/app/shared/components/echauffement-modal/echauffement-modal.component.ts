@@ -12,7 +12,7 @@ import { Observable, of } from 'rxjs';
 import { catchError, finalize } from 'rxjs/operators';
 
 import { EchauffementService } from '../../../core/services/echauffement.service';
-import { Echauffement } from '../../../core/models/entrainement.model';
+import { Echauffement } from '../../../core/models/echauffement.model';
 import { EchauffementFormComponent, EchauffementFormData } from '../forms/echauffement-form/echauffement-form.component';
 
 export interface EchauffementModalData {
@@ -103,7 +103,7 @@ export class EchauffementModalComponent implements OnInit {
   onEchauffementFormSubmit(formData: EchauffementFormData): void {
     this.isLoading = true;
 
-    this.echauffementService.ajouterEchauffement(formData)
+        this.echauffementService.createEchauffement(formData)
       .pipe(
         catchError(error => {
           console.error('Erreur lors de la création de l\'échauffement:', error);
@@ -112,7 +112,7 @@ export class EchauffementModalComponent implements OnInit {
         }),
         finalize(() => this.isLoading = false)
       )
-      .subscribe(echauffement => {
+      .subscribe((echauffement: Echauffement | null) => {
         if (echauffement) {
           this.snackBar.open('Échauffement créé avec succès', 'Fermer', { duration: 3000 });
           this.dialogRef.close({ 

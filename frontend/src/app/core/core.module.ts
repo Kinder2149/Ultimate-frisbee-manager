@@ -23,20 +23,16 @@ import { AuthService } from './services/auth.service';
 import { AuthGuard } from './guards/auth.guard';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { BackendStatusInterceptor } from './interceptors/backend-status.interceptor';
-import { StatusBubbleComponent } from './components/status-bubble/status-bubble.component';
 
 /**
  * Module Core regroupant tous les services et modules partagés
  * Ce module doit être importé uniquement dans AppModule
  */
 @NgModule({
-  declarations: [StatusBubbleComponent],
   imports: [
     CommonModule,
-    HttpClientModule,
-    MaterialModule
+    HttpClientModule
   ],
-  exports: [StatusBubbleComponent],
   providers: [
     ExerciceService,
     TagService,

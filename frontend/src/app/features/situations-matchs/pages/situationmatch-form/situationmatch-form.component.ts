@@ -5,7 +5,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { SituationMatchService } from '../../../../core/services/situationmatch.service';
 import { TagService } from '../../../../core/services/tag.service';
-import { SituationMatch, CreateSituationMatchRequest, UpdateSituationMatchRequest } from '../../../../core/models/situationmatch.model';
+import { SituationMatch } from '../../../../core/models/situationmatch.model';
 import { Tag } from '../../../../core/models/tag.model';
 import { SituationMatchFormComponent as SharedSituationMatchFormComponent, SituationMatchFormData } from '../../../../shared/components/forms/situationmatch-form/situationmatch-form.component';
 
@@ -87,12 +87,12 @@ export class SituationMatchFormComponent implements OnInit {
     
     if (this.isEditMode && this.situationMatchId) {
       // Mode édition
-      const updateData: UpdateSituationMatchRequest = {
+                        const updateData: Partial<SituationMatch> = {
         type: formData.type as 'Match' | 'Situation',
         description: formData.description,
         temps: formData.temps,
         imageUrl: formData.imageUrl,
-        tagIds: formData.tagIds
+        tags: formData.tagIds.map(id => ({ id })) as any // Le backend gère la connexion via les IDs dans le tableau de tags
       };
 
       this.situationMatchService.updateSituationMatch(this.situationMatchId, updateData).subscribe({
@@ -108,15 +108,15 @@ export class SituationMatchFormComponent implements OnInit {
       });
     } else {
       // Mode création
-      const createData: CreateSituationMatchRequest = {
+                        const createData: Partial<SituationMatch> = {
         type: formData.type as 'Match' | 'Situation',
         description: formData.description,
         temps: formData.temps,
         imageUrl: formData.imageUrl,
-        tagIds: formData.tagIds
+        tags: formData.tagIds.map(id => ({ id })) as any // Le backend gère la connexion via les IDs dans le tableau de tags
       };
 
-      this.situationMatchService.ajouterSituationMatch(createData).subscribe({
+            this.situationMatchService.createSituationMatch(createData).subscribe({
         next: () => {
           this.snackBar.open('Situation/Match créée avec succès', 'Fermer', { duration: 3000 });
           this.router.navigate(['/situations-matchs']);

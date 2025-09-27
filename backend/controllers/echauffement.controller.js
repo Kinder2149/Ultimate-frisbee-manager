@@ -89,10 +89,12 @@ exports.updateEchauffement = async (req, res, next) => {
     const { id } = req.params;
     const { nom, description, blocs } = req.body;
 
-    await prisma.$transaction(async (tx) => {
+    const echauffementMisAJour = await prisma.$transaction(async (tx) => {
+      // 1. Supprimer les anciens blocs
       await tx.blocEchauffement.deleteMany({ where: { echauffementId: id } });
 
-      const echauffementMisAJour = await tx.echauffement.update({
+      // 2. Mettre à jour l'échauffement et recréer les blocs
+      const updated = await tx.echauffement.update({
         where: { id },
         data: {
           nom,
@@ -104,8 +106,11 @@ exports.updateEchauffement = async (req, res, next) => {
         },
         include: { blocs: { orderBy: { ordre: 'asc' } } }
       });
-      res.json(echauffementMisAJour);
+
+      return updated;
     });
+
+    res.json(echauffementMisAJour);
   } catch (error) {
     next(error);
   }

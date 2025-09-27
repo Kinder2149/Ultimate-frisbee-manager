@@ -130,6 +130,10 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
   // Propriétés pour la gestion des tags
   allTags: Tag[] = [];
   objectifTags: Tag[] = [];
+  travailSpecifiqueTags: Tag[] = [];
+  niveauTags: Tag[] = [];
+  tempsTags: Tag[] = [];
+  formatTags: Tag[] = [];
   selectedTags: Tag[] = [];
   filteredTags: Tag[] = [];
   selectedTagCategory: TagCategory | 'all' = 'all';
@@ -281,18 +285,18 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
           this.filteredTags = [...tags];
 
           // Répartition par catégories pour les dropdowns
-          this.objectifTags = this.allTags.filter(t => t.category === TagCategory.OBJECTIF);
-          const travailTags = this.allTags.filter(t => t.category === TagCategory.TRAVAIL_SPECIFIQUE);
-          const niveauTags = this.allTags.filter(t => t.category === TagCategory.NIVEAU);
-          const tempsTags = this.allTags.filter(t => t.category === TagCategory.TEMPS);
-          const formatTags = this.allTags.filter(t => t.category === TagCategory.FORMAT);
+          this.objectifTags = this.allTags.filter(tag => tag.category === 'objectif');
+          this.travailSpecifiqueTags = this.allTags.filter(tag => tag.category === 'travail_specifique');
+          this.niveauTags = this.allTags.filter(tag => tag.category === 'niveau');
+          this.tempsTags = this.allTags.filter(tag => tag.category === 'temps');
+          this.formatTags = this.allTags.filter(tag => tag.category === 'format');
 
           // Initialiser les listes filtrées affichées dans les menus
-          this.filteredTravailSpecifiqueTags = [...travailTags];
+          this.filteredTravailSpecifiqueTags = [...this.travailSpecifiqueTags];
           this.filteredObjectifTags = [...this.objectifTags];
-          this.filteredNiveauTags = [...niveauTags];
-          this.filteredTempsTags = [...tempsTags];
-          this.filteredFormatTags = [...formatTags];
+          this.filteredNiveauTags = [...this.niveauTags];
+          this.filteredTempsTags = [...this.tempsTags];
+          this.filteredFormatTags = [...this.formatTags];
 
           // Si un exercice est déjà chargé mais ne contient que des tagIds, mapper maintenant
           if (this.exercice) {
@@ -595,28 +599,20 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
     // Répartir les tags dans les tableaux correspondants
     this.selectedTags.forEach(tag => {
       switch (tag.category) {
-        case TagCategory.OBJECTIF:
+        case 'objectif':
           this.selectedObjectifTag = tag;
           break;
-        case TagCategory.TRAVAIL_SPECIFIQUE:
-          if (!this.selectedTravailSpecifiqueTags.some(t => t.id === tag.id)) {
-            this.selectedTravailSpecifiqueTags.push(tag);
-          }
+        case 'travail_specifique':
+          this.selectedTravailSpecifiqueTags.push(tag);
           break;
-        case TagCategory.NIVEAU:
-          if (!this.selectedNiveauTags.some(t => t.id === tag.id)) {
-            this.selectedNiveauTags.push(tag);
-          }
+        case 'temps':
+          this.selectedTempsTags.push(tag);
           break;
-        case TagCategory.TEMPS:
-          if (!this.selectedTempsTags.some(t => t.id === tag.id)) {
-            this.selectedTempsTags.push(tag);
-          }
+        case 'format':
+          this.selectedFormatTags.push(tag);
           break;
-        case TagCategory.FORMAT:
-          if (!this.selectedFormatTags.some(t => t.id === tag.id)) {
-            this.selectedFormatTags.push(tag);
-          }
+        case 'niveau':
+          this.selectedNiveauTags.push(tag);
           break;
       }
     });
@@ -718,12 +714,12 @@ onSubmit(): void {
   private saveExercice(formData: any): void {
     const saveObservable = this.exerciceId
       ? this.exerciceService.updateExercice(this.exerciceId, formData)
-      : this.exerciceService.ajouterExercice(formData);
+      : this.exerciceService.createExercice(formData);
 
     const saveSubscription = saveObservable.pipe(
       takeUntil(this.destroy$)
     ).subscribe({
-      next: (savedExercice) => {
+      next: (savedExercice: Exercice) => {
         this.submitting = false;
         this.snackBar.open(
           `Exercice ${this.exerciceId ? 'mis à jour' : 'créé'} avec succès`,

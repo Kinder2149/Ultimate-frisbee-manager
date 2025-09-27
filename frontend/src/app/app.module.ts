@@ -6,6 +6,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule, registerLocaleData } from '@angular/common';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { HttpErrorInterceptor } from './core/errors/http-error.interceptor'; // Mise à jour du chemin
+import { AuthInterceptor } from './core/interceptors/auth.interceptor'; // Import de l'intercepteur d'authentification
 import { GlobalErrorHandler } from './core/errors/global-error-handler'; // Import du gestionnaire global
 import localeFr from '@angular/common/locales/fr';
 
@@ -113,7 +114,9 @@ const routes: Routes = [
     // Fournisseur pour le gestionnaire d'erreurs global
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
     // Fournisseur pour l'intercepteur d'erreurs HTTP
-    { provide: HTTP_INTERCEPTORS, useClass: HttpErrorInterceptor, multi: true }
+    { provide: HTTP_INTERCEPTORS, useClass: HttpErrorInterceptor, multi: true },
+    // Fournisseur pour l'intercepteur d'authentification
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
   ],
   bootstrap: [AppComponent]
 })

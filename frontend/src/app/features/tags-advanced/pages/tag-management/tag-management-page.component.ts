@@ -21,14 +21,7 @@ import { Observable, Subject, of } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { Tag } from '../../services/tag-recommendation.service';
-// Définition locale de l'interface TagSuggestion (anciennement dans pipeline-integration.service)
-export interface TagSuggestion {
-  id: string;
-  label: string;
-  category: string;
-  confidence: number;
-  color?: string;
-}
+import { TagSuggestion } from '../../models/tags-advanced.model';
 
 import { TagEditorComponent } from '../../shared/tag-editor/tag-editor.component';
 import { TagVisualizationComponent } from '../../shared/tag-visualization/tag-visualization.component';

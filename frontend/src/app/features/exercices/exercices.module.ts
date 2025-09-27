@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
-import { CoreModule } from '../../core/core.module';
+import { SharedModule } from '../../shared/shared.module';
 import { ExerciceListComponent } from './pages/exercice-list.component';
 import { ExerciceFormComponent } from './pages/exercice-form/exercice-form.component';
 
@@ -38,7 +38,7 @@ const routes: Routes = [
 @NgModule({
   imports: [
     CommonModule,
-    CoreModule,
+    SharedModule,
     RouterModule.forChild(routes),
     // Import des composants standalone
     ExerciceListComponent,

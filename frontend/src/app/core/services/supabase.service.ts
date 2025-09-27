@@ -6,15 +6,12 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root'
 })
 export class SupabaseService {
-  public supabase: SupabaseClient;
+  public readonly supabase: SupabaseClient;
 
   constructor() {
-    this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey, {
-      auth: {
-        // Forcer la désactivation de la synchronisation entre onglets.
-        // C'est la cause racine du conflit avec zone.js d'Angular.
-        multiTab: false
-      }
-    } as any); // Utiliser 'as any' pour contourner le typage strict qui ne reconnaît pas cette option pourtant fonctionnelle.
+    if (!environment.supabaseUrl || !environment.supabaseKey) {
+      throw new Error('Supabase URL and Key must be provided in environment files.');
+    }
+    this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
   }
 }

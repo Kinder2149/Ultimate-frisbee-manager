@@ -135,7 +135,7 @@ exports.getExerciceById = async (req, res, next) => {
  */
 exports.createExercice = async (req, res, next) => {
   try {
-    const { nom, description, schemaUrl, variablesText, variablesPlus, variablesMinus, tags, tagIds, materiel, notes } = req.body;
+    const { nom, description, schemaUrl, variablesText, variablesPlus, variablesMinus, tags, tagIds, materiel, notes, objectif } = req.body;
     
     // Journalisation des données reçues pour débogage
     console.log('Données reçues pour création d\'exercice:', { 
@@ -156,6 +156,7 @@ exports.createExercice = async (req, res, next) => {
     let createData = {
       nom,
       description: description || '', // S'assurer que description n'est jamais null/undefined
+      objectif: objectif || '', // Ajout du champ objectif
       imageUrl: req.file ? req.file.cloudinaryUrl : (req.body.imageUrl || null),
       schemaUrl: schemaUrl || null,
       materiel: materiel || null,

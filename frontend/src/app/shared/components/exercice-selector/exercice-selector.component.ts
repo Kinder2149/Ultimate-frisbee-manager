@@ -183,11 +183,11 @@ export class ExerciceSelectorComponent implements OnInit {
    */
   private groupTagsByCategory() {
     return {
-      objectif: this.allTags.filter(tag => tag.category === TagCategory.OBJECTIF),
-      travailSpecifique: this.allTags.filter(tag => tag.category === TagCategory.TRAVAIL_SPECIFIQUE),
-      niveau: this.allTags.filter(tag => tag.category === TagCategory.NIVEAU),
-      temps: this.allTags.filter(tag => tag.category === TagCategory.TEMPS),
-      format: this.allTags.filter(tag => tag.category === TagCategory.FORMAT)
+            objectif: this.allTags.filter(tag => tag.category === 'objectif'),
+            travailSpecifique: this.allTags.filter(tag => tag.category === 'travail_specifique'),
+            niveau: this.allTags.filter(tag => tag.category === 'niveau'),
+            temps: this.allTags.filter(tag => tag.category === 'temps'),
+            format: this.allTags.filter(tag => tag.category === 'format')
     };
   }
 

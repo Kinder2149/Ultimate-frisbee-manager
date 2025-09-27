@@ -10,7 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { ImageUploadComponent } from '../../image-upload/image-upload.component';
 
-import { SituationMatch, SITUATION_MATCH_TYPES } from '../../../../core/models/situationmatch.model';
+import { SituationMatch } from '../../../../core/models/situationmatch.model';
 import { Tag } from '../../../../core/models/tag.model';
 
 export interface SituationMatchFormData {

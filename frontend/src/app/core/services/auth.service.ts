@@ -1,15 +1,19 @@
-import { Injectable, NgZone } from '@angular/core';
-import { BehaviorSubject, Observable, from } from 'rxjs';
-import { map, catchError, tap } from 'rxjs/operators';
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, from, of } from 'rxjs';
+import { map, catchError, switchMap } from 'rxjs/operators';
 import { Router } from '@angular/router';
-import { SupabaseService } from './supabase.service';
-import { User as SupabaseUser, AuthChangeEvent, Session } from '@supabase/supabase-js';
 import { User, LoginCredentials } from '../models/user.model';
+import { environment } from '../../../environments/environment';
+import { SupabaseService } from './supabase.service';
+import { AuthChangeEvent, Session, User as SupabaseUser } from '@supabase/supabase-js';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
+  private apiUrl = `${environment.apiUrl}/auth`;
+
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
@@ -17,104 +21,90 @@ export class AuthService {
   public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
   constructor(
-    private supabaseService: SupabaseService,
+    private http: HttpClient,
     private router: Router,
-    private zone: NgZone
+    private supabaseService: SupabaseService
   ) {
-    this.initializeAuthState(); // Vérifier l'état au démarrage
-    this.supabaseService.supabase.auth.onAuthStateChange((event, session) => {
-      this.zone.run(() => {
-        this.handleAuthStateChange(event, session);
-      });
-    });
+    this.listenToAuthStateChanges();
   }
 
-  async initializeAuthState(): Promise<void> {
-    const { data: { session } } = await this.supabaseService.supabase.auth.getSession();
-    this.updateUserState(session?.user || null);
+  private listenToAuthStateChanges(): void {
+    this.supabaseService.supabase.auth.onAuthStateChange(
+      (event: AuthChangeEvent, session: Session | null) => {
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+          if (session?.user) {
+            // Le token est maintenant disponible, on peut synchroniser notre profil BDD
+            this.syncUserProfile().subscribe();
+          } else {
+            this.clearStateAndRedirect();
+          }
+        } else if (event === 'SIGNED_OUT') {
+          this.clearStateAndRedirect();
+        }
+      }
+    );
   }
 
-  private handleAuthStateChange(event: AuthChangeEvent, session: Session | null) {
-    if (event === 'SIGNED_IN') {
-      this.updateUserState(session?.user || null);
-    } else if (event === 'SIGNED_OUT') {
-      this.updateUserState(null);
-      this.router.navigate(['/login']);
-    } else if (event === 'TOKEN_REFRESHED') {
-      // La session a été rafraîchie, on peut mettre à jour l'état si nécessaire
-      this.updateUserState(session?.user || null);
-    }
+  login(credentials: LoginCredentials): Observable<void> {
+    return from(this.supabaseService.supabase.auth.signInWithPassword(credentials)).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        // La magie opère dans onAuthStateChange, ici on ne fait rien de plus
+        return;
+      }),
+      catchError(error => {
+        console.error('Erreur de connexion Supabase:', error);
+        this.clearStateAndRedirect();
+        throw error;
+      })
+    );
   }
 
-  private updateUserState(supabaseUser: SupabaseUser | null) {
-    if (supabaseUser) {
-      // Mapper l'utilisateur Supabase vers notre modèle User
-      const user: User = {
-        id: supabaseUser.id,
-        email: supabaseUser.email || '',
-        nom: supabaseUser.user_metadata['nom'] || '',
-        prenom: supabaseUser.user_metadata['prenom'] || '',
-        role: supabaseUser.user_metadata['role'] || 'USER',
-        isActive: true, // A adapter si vous avez cette info
-        iconUrl: supabaseUser.user_metadata['iconUrl'] || null,
-      };
-      this.currentUserSubject.next(user);
-      this.isAuthenticatedSubject.next(true);
-    } else {
-      this.currentUserSubject.next(null);
-      this.isAuthenticatedSubject.next(false);
-    }
+  logout(): Observable<void> {
+    return from(this.supabaseService.supabase.auth.signOut()).pipe(
+      map(({ error }) => {
+        if (error) throw error;
+        // onAuthStateChange s'occupera du reste
+        return;
+      })
+    );
   }
 
-  async login(credentials: LoginCredentials): Promise<any> {
-    const { data, error } = await this.supabaseService.supabase.auth.signInWithPassword({
-      email: credentials.email,
-      password: credentials.password,
-    });
-
-    if (error) {
-      console.error('Erreur de connexion:', error);
-      throw error;
-    }
-
-    return data;
-  }
-
-  async logout(): Promise<void> {
-    const { error } = await this.supabaseService.supabase.auth.signOut();
-    if (error) {
-      console.error('Erreur de déconnexion:', error);
-      throw error;
-    }
-  }
-
-  async getCurrentUser(): Promise<User | null> {
-    const { data: { session } } = await this.supabaseService.supabase.auth.getSession();
-    if (session?.user) {
-      const supabaseUser = session.user;
-      const user: User = {
-        id: supabaseUser.id,
-        email: supabaseUser.email || '',
-        nom: supabaseUser.user_metadata['nom'] || '',
-        prenom: supabaseUser.user_metadata['prenom'] || '',
-        role: supabaseUser.user_metadata['role'] || 'USER',
-        isActive: true,
-        iconUrl: supabaseUser.user_metadata['iconUrl'] || null,
-      };
-      return user;
-    } 
-    return null;
+  async getAccessToken(): Promise<string | null> {
+    const { data } = await this.supabaseService.supabase.auth.getSession();
+    return data.session?.access_token || null;
   }
 
   isAuthenticated(): boolean {
     return this.isAuthenticatedSubject.value;
   }
 
-  async getAccessToken(): Promise<string | null> {
-    const { data: { session } } = await this.supabaseService.supabase.auth.getSession();
-    return session?.access_token || null;
+  isAdmin(): boolean {
+    const user = this.currentUserSubject.value;
+    return !!user && user.role === 'ADMIN';
   }
-  
-  // Les autres méthodes (changePassword, updateProfile, etc.) seront migrées plus tard
-  // en utilisant les fonctions de Supabase Auth ou des Edge Functions.
+
+  private syncUserProfile(): Observable<User> {
+    // L'intercepteur ajoutera le token JWT de Supabase à cette requête
+    return this.http.get<{ user: User }>(`${this.apiUrl}/profile`).pipe(
+      map(response => {
+        this.currentUserSubject.next(response.user);
+        this.isAuthenticatedSubject.next(true);
+        return response.user;
+      }),
+      catchError(error => {
+        console.error('Erreur de synchronisation du profil:', error);
+        // Si la synchro échoue, on déconnecte pour éviter un état incohérent
+        this.logout(); 
+        throw error;
+      })
+    );
+  }
+
+  private clearStateAndRedirect(): void {
+    this.currentUserSubject.next(null);
+    this.isAuthenticatedSubject.next(false);
+    this.router.navigate(['/login']);
+  }
 }
+

@@ -46,7 +46,7 @@ export class LoginComponent implements OnInit {
   /**
    * Soumettre le formulaire de connexion
    */
-  async onSubmit(): Promise<void> {
+  onSubmit(): void {
     if (this.loginForm.invalid || this.isLoading) {
       return;
     }
@@ -58,25 +58,26 @@ export class LoginComponent implements OnInit {
       password: this.loginForm.value.password
     };
 
-    try {
-      const { user } = await this.authService.login(credentials);
-      this.isLoading = false;
-
-      if (user) {
-        this.snackBar.open(`Bienvenue ${user.user_metadata['prenom']}!`, 'Fermer', {
+    this.authService.login(credentials).subscribe({
+      next: () => {
+        // La redirection est gérée par le service ou un guard, mais on peut forcer ici si besoin.
+        this.router.navigate([this.returnUrl]);
+        this.snackBar.open('Connexion réussie !', 'Fermer', {
           duration: 3000,
           panelClass: ['success-snackbar']
         });
-        this.router.navigate([this.returnUrl]);
+      },
+      error: (error) => {
+        // Les erreurs de Supabase ont une structure différente. On affiche un message générique.
+        this.snackBar.open('Email ou mot de passe incorrect.', 'Fermer', {
+          duration: 5000,
+          panelClass: ['error-snackbar']
+        });
+      },
+      complete: () => {
+        this.isLoading = false;
       }
-
-    } catch (error: any) {
-      this.isLoading = false;
-      this.snackBar.open(error.message || 'Email ou mot de passe incorrect', 'Fermer', {
-        duration: 5000,
-        panelClass: ['error-snackbar']
-      });
-    }
+    });
   }
 
   /**

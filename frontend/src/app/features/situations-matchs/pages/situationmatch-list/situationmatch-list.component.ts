@@ -69,14 +69,14 @@ export class SituationMatchListComponent implements OnInit {
 
   private loadTags(): void {
     // Charger les catégories pertinentes pour Situations/Matchs: TEMPS et FORMAT
-    this.tagService.getTags(TagCategory.TEMPS).subscribe({
+        this.tagService.getTags('temps').subscribe({
       next: (tags) => {
         this.tempsTags = [...tags].sort((a, b) => a.label.localeCompare(b.label));
         this.allTags = [...this.allTags, ...tags];
       },
       error: () => {}
     });
-    this.tagService.getTags(TagCategory.FORMAT).subscribe({
+        this.tagService.getTags('format').subscribe({
       next: (tags) => {
         this.formatTags = [...tags].sort((a, b) => a.label.localeCompare(b.label));
         this.allTags = [...this.allTags, ...tags];
@@ -127,10 +127,10 @@ export class SituationMatchListComponent implements OnInit {
     }
 
     if (this.selectedTempsTags.length > 0) {
-      list = list.filter(sm => sm.tags?.some(t => t.category === TagCategory.TEMPS && this.selectedTempsTags.includes(t.id || '')));
+      list = list.filter(sm => sm.tags?.some(t => t.category === 'temps' && this.selectedTempsTags.includes(t.id || '')));
     }
     if (this.selectedFormatTags.length > 0) {
-      list = list.filter(sm => sm.tags?.some(t => t.category === TagCategory.FORMAT && this.selectedFormatTags.includes(t.id || '')));
+      list = list.filter(sm => sm.tags?.some(t => t.category === 'format' && this.selectedFormatTags.includes(t.id || '')));
     }
 
     this.filteredSituationsMatchs = list;

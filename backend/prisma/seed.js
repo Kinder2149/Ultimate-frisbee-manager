@@ -1,6 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const { v4: uuidv4 } = require('uuid');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const { TAG_CATEGORIES } = require('../../shared/constants/tag-categories');
 
 const prisma = new PrismaClient();

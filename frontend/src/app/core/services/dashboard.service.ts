@@ -6,7 +6,7 @@ import { ApiUrlService } from './api-url.service';
 export interface DashboardStats {
   exercicesCount: number;
   entrainementsCount: number;
-  echauffenementsCount: number;
+  echauffementsCount: number;
   situationsCount: number;
   tagsCount: number;
   tagsDetails: { [category: string]: number };

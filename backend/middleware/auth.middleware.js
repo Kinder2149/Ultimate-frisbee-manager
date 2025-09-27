@@ -39,19 +39,25 @@ const authenticateToken = async (req, res, next) => {
       where: { id: decoded.sub },
     });
 
-    // Si l'utilisateur n'existe pas, le créer à la volée (just-in-time provisioning)
+    // Si l'utilisateur n'existe pas via son ID Supabase, tenter de le trouver par email.
     if (!user) {
-      console.log(`[Auth] User with sub ${decoded.sub} not found. Creating from Supabase token.`);
+      user = await prisma.user.findUnique({
+        where: { email: decoded.email },
+      });
+    }
+
+    // Si l'utilisateur n'existe toujours pas, le créer (provisioning).
+    if (!user) {
+      console.log(`[Auth] User with email ${decoded.email} not found. Creating new user.`);
       try {
         user = await prisma.user.create({
           data: {
             id: decoded.sub, // ID de Supabase
             email: decoded.email,
-            // Utiliser les métadonnées si elles existent, sinon des valeurs par défaut
             nom: decoded.user_metadata?.last_name || '',
             prenom: decoded.user_metadata?.first_name || decoded.email.split('@')[0],
             iconUrl: decoded.user_metadata?.avatar_url || '',
-            role: 'USER', // Rôle par défaut pour les nouveaux utilisateurs
+            role: 'USER',
             isActive: true,
           },
         });
@@ -118,9 +124,9 @@ const requireAdmin = (req, res, next) => {
 /**
  * Générer un token JWT
  */
-const generateToken = (userId) => {
+const generateToken = (user) => {
   return jwt.sign(
-    { userId },
+    { sub: user.id, email: user.email, role: user.role },
     getJwtSecret(),
     { expiresIn: '7d' } // Token valide 7 jours
   );
@@ -129,9 +135,9 @@ const generateToken = (userId) => {
 /**
  * Générer un refresh token
  */
-const generateRefreshToken = (userId) => {
+const generateRefreshToken = (user) => {
   return jwt.sign(
-    { userId, type: 'refresh' },
+    { sub: user.id, type: 'refresh' },
     getJwtSecret(),
     { expiresIn: '30d' } // Refresh token valide 30 jours
   );

@@ -159,7 +159,7 @@ export class SituationMatchModalComponent implements OnInit {
 
     console.log('Création situation/match avec données:', createRequest);
 
-    this.situationMatchService.ajouterSituationMatch(createRequest)
+        this.situationMatchService.createSituationMatch(createRequest)
       .pipe(
         catchError(error => {
           console.error('Erreur lors de la création de la situation/match:', error);
@@ -168,7 +168,7 @@ export class SituationMatchModalComponent implements OnInit {
         }),
         finalize(() => this.isLoading = false)
       )
-      .subscribe(situationMatch => {
+      .subscribe((situationMatch: SituationMatch | null) => {
         if (situationMatch) {
           console.log('Situation/Match créée avec succès:', situationMatch);
           this.snackBar.open('Situation/Match créée avec succès', 'Fermer', { duration: 3000 });

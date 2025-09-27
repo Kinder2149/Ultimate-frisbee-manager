@@ -49,8 +49,8 @@
           </div>
           <div *ngIf="showConfidence" 
                class="confidence-indicator" 
-               [ngClass]="getConfidenceClass(mapping.confidence)">
-            {{ (mapping.confidence * 100) | number:'1.0-0' }}%
+               [ngClass]="getConfidenceClass(mapping.sourceTag.confidence ?? 0)">
+            {{ ((mapping.sourceTag.confidence ?? 0) * 100) | number:'1.0-0' }}%
           </div>
         </div>
         

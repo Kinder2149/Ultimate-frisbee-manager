@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
+import { MaterialModule } from '../core/material/material.module'; // Import du module centralisé pour Angular Material
 
 // Composants partagés
 import { ContentCardComponent } from './components/content-card/content-card.component';
@@ -11,10 +11,6 @@ import { AlertComponent } from './components/alert/alert.component';
 import { ActionButtonComponent } from './components/action-button/action-button.component';
 
 // Services partagés
-import { HttpGenericService } from './services/http-generic.service';
-import { MapperService } from './services/mapper.service';
-import { ErrorHandlerService } from './services/error-handler.service';
-import { ValidationService } from './services/validation.service';
 
 // Composants et interfaces exportés
 export { ConfirmationDialogComponent } from './components/confirmation-dialog/confirmation-dialog.component';
@@ -31,7 +27,7 @@ export { ConfirmationDialogData } from './components/confirmation-dialog/confirm
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    HttpClientModule,
+    MaterialModule, // Ajout de MaterialModule
     
     // Composants standalone (Angular 14+)
     ContentCardComponent,
@@ -45,6 +41,7 @@ export { ConfirmationDialogData } from './components/confirmation-dialog/confirm
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    MaterialModule, // Ré-export de MaterialModule,
     
     // Composants partagés
     ContentCardComponent,
@@ -52,13 +49,6 @@ export { ConfirmationDialogData } from './components/confirmation-dialog/confirm
     DataTableComponent,
     AlertComponent,
     ActionButtonComponent
-  ],
-  providers: [
-    // Services partagés
-    HttpGenericService,
-    MapperService,
-    ErrorHandlerService,
-    ValidationService
   ]
 })
 export class SharedModule { }

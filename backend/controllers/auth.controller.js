@@ -1,84 +1,8 @@
 /**
- * Contrôleur pour l'authentification
+ * Contrôleur pour l'authentification et la gestion de profil
  */
-const bcrypt = require('bcryptjs');
-const { generateToken, generateRefreshToken } = require('../middleware/auth.middleware');
 const { prisma } = require('../services/prisma');
-const crypto = require('crypto');
-
-/**
- * Connexion utilisateur
- */
-const login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    // Validation des données
-    if (!email || !password) {
-      return res.status(400).json({
-        error: 'Email et mot de passe requis',
-        code: 'MISSING_CREDENTIALS'
-      });
-    }
-
-    // Rechercher l'utilisateur
-    const normalizedEmail = (email || '').toLowerCase();
-    const user = await prisma.user.findUnique({
-      where: { email: normalizedEmail }
-    });
-
-    if (!user) {
-      console.warn('[AUTH] Login échec: utilisateur introuvable pour email=', normalizedEmail);
-    }
-
-    if (!user || !user.isActive) {
-      if (user && !user.isActive) {
-        console.warn('[AUTH] Login échec: utilisateur inactif email=', normalizedEmail);
-      }
-      return res.status(401).json({
-        error: 'Identifiants invalides',
-        code: 'INVALID_CREDENTIALS'
-      });
-    }
-
-    // Vérifier le mot de passe
-    const isValidPassword = await bcrypt.compare(password, user.password);
-    
-    if (!isValidPassword) {
-      console.warn('[AUTH] Login échec: mot de passe invalide pour email=', normalizedEmail);
-      return res.status(401).json({
-        error: 'Identifiants invalides',
-        code: 'INVALID_CREDENTIALS'
-      });
-    }
-
-    // Générer les tokens
-    const token = generateToken(user.id);
-    const refreshToken = generateRefreshToken(user.id);
-
-    // Réponse avec les données utilisateur (sans le mot de passe)
-    res.json({
-      message: 'Connexion réussie',
-      user: {
-        id: user.id,
-        email: user.email,
-        nom: user.nom,
-        prenom: user.prenom,
-        role: user.role,
-        iconUrl: user.iconUrl
-      },
-      token,
-      refreshToken
-    });
-
-  } catch (error) {
-    console.error('Erreur login:', error);
-    res.status(500).json({
-      error: 'Erreur serveur lors de la connexion',
-      code: 'LOGIN_ERROR'
-    });
-  }
-};
+const { generateToken, generateRefreshToken } = require('../middleware/auth.middleware');
 
 /**
  * Récupérer le profil utilisateur
@@ -102,6 +26,9 @@ const getProfile = async (req, res) => {
  * Rafraîchir le token
  */
 const refreshToken = async (req, res) => {
+  // NOTE: Cette logique de refresh token est spécifique à l'ancien système JWT.
+  // Avec Supabase Auth, le rafraîchissement est géré automatiquement par la bibliothèque client.
+  // Cette route pourrait être dépréciée ou supprimée.
   try {
     const { refreshToken } = req.body;
 
@@ -118,34 +45,27 @@ const refreshToken = async (req, res) => {
     
     const decoded = jwt.verify(refreshToken, JWT_SECRET);
     
-    if (decoded.type !== 'refresh') {
-      return res.status(401).json({
-        error: 'Token de rafraîchissement invalide',
-        code: 'INVALID_REFRESH_TOKEN'
-      });
-    }
-
-    // Vérifier que l'utilisateur existe (utiliser findFirst pour la condition composite)
+    // Avec Supabase, le 'sub' est l'ID utilisateur.
     const user = await prisma.user.findFirst({
       where: {
-        id: decoded.userId,
+        id: decoded.sub,
         isActive: true
       }
     });
 
     if (!user) {
       return res.status(401).json({
-        error: 'Utilisateur non trouvé',
+        error: 'Utilisateur non trouvé pour ce token',
         code: 'USER_NOT_FOUND'
       });
     }
 
-    // Générer un nouveau token
-    const newToken = generateToken(user.id);
+    // Générer un nouveau token d'accès
+    const newAccessToken = generateToken(user);
 
     res.json({
       message: 'Token rafraîchi avec succès',
-      token: newToken
+      token: newAccessToken
     });
 
   } catch (error) {
@@ -168,11 +88,11 @@ const refreshToken = async (req, res) => {
  * Déconnexion (côté client principalement)
  */
 const logout = async (req, res) => {
+  // Avec Supabase Auth, la déconnexion est gérée par le client.
+  // Cette route peut être conservée pour des raisons de cohérence de l'API, mais elle n'a pas d'effet côté serveur.
   try {
-    // La déconnexion est principalement gérée côté client
-    // (suppression des tokens du localStorage)
     res.json({
-      message: 'Déconnexion réussie'
+      message: 'Déconnexion initiée côté client.'
     });
   } catch (error) {
     console.error('Erreur logout:', error);
@@ -183,132 +103,10 @@ const logout = async (req, res) => {
   }
 };
 
-
-
-const setSecurityQuestion = async (req, res) => {
-    try {
-        const { id } = req.user;
-        const { securityQuestion, securityAnswer } = req.body;
-
-        if (!securityQuestion || !securityAnswer) {
-            return res.status(400).json({ error: 'La question et la réponse sont requises.', code: 'MISSING_FIELDS' });
-        }
-
-        const hashedAnswer = await bcrypt.hash(securityAnswer, 10);
-
-        await prisma.user.update({
-            where: { id },
-            data: { securityQuestion, securityAnswer: hashedAnswer },
-        });
-
-        res.json({ message: 'Question de sécurité mise à jour avec succès.' });
-    } catch (error) {
-        console.error('Erreur setSecurityQuestion:', error);
-        res.status(500).json({ error: 'Erreur serveur.', code: 'SERVER_ERROR' });
-    }
-};
-
-const getSecurityQuestion = async (req, res) => {
-    try {
-        const { email } = req.query;
-        if (!email) {
-            return res.status(400).json({ error: 'Adresse e-mail requise.', code: 'EMAIL_REQUIRED' });
-        }
-
-        const user = await prisma.user.findUnique({ where: { email: String(email).toLowerCase() } });
-
-        if (!user || !user.securityQuestion) {
-            return res.status(404).json({ error: 'Aucune question de sécurité trouvée pour cet utilisateur.', code: 'NO_SECURITY_QUESTION' });
-        }
-
-        res.json({ securityQuestion: user.securityQuestion });
-    } catch (error) {
-        console.error('Erreur getSecurityQuestion:', error);
-        res.status(500).json({ error: 'Erreur serveur.', code: 'SERVER_ERROR' });
-    }
-};
-
-const resetPasswordWithAnswer = async (req, res) => {
-    try {
-        const { email, securityAnswer, newPassword, confirmPassword } = req.body;
-
-        if (!email || !securityAnswer || !newPassword || !confirmPassword) {
-            return res.status(400).json({ error: 'Tous les champs sont requis.', code: 'MISSING_FIELDS' });
-        }
-
-        if (newPassword !== confirmPassword) {
-            return res.status(400).json({ error: 'Les mots de passe ne correspondent pas.', code: 'PASSWORD_MISMATCH' });
-        }
-
-        const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
-
-        if (!user || !user.securityAnswer) {
-            return res.status(401).json({ error: 'Réponse incorrecte ou utilisateur invalide.', code: 'INVALID_ANSWER' });
-        }
-
-        const isAnswerValid = await bcrypt.compare(securityAnswer, user.securityAnswer);
-
-        if (!isAnswerValid) {
-            return res.status(401).json({ error: 'Réponse incorrecte ou utilisateur invalide.', code: 'INVALID_ANSWER' });
-        }
-
-        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-        await prisma.user.update({
-            where: { id: user.id },
-            data: { password: hashedNewPassword },
-        });
-
-        res.json({ message: 'Mot de passe réinitialisé avec succès.' });
-
-    } catch (error) {
-        console.error('Erreur resetPasswordWithAnswer:', error);
-        res.status(500).json({ error: 'Erreur serveur.', code: 'SERVER_ERROR' });
-    }
-};
-
 module.exports = {
-  login,
   getProfile,
   refreshToken,
   logout,
-  setSecurityQuestion,
-  getSecurityQuestion,
-  resetPasswordWithAnswer,
-  /**
-   * Changement de mot de passe
-   */
-  async changePassword(req, res) {
-    try {
-      const authUser = req.user;
-      const { newPassword, confirmPassword } = req.body;
-
-      // Validation
-      if (!newPassword || !confirmPassword) {
-        return res.status(400).json({ error: 'Tous les champs sont requis', code: 'MISSING_FIELDS' });
-      }
-      if (newPassword !== confirmPassword) {
-        return res.status(400).json({ error: 'Les nouveaux mots de passe ne correspondent pas', code: 'PASSWORD_MISMATCH' });
-      }
-      if (newPassword.length < 6) {
-        return res.status(400).json({ error: 'Le nouveau mot de passe doit faire au moins 6 caractères', code: 'PASSWORD_TOO_SHORT' });
-      }
-
-
-
-      // Mettre à jour le mot de passe
-      const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-      await prisma.user.update({
-        where: { id: authUser.id },
-        data: { password: hashedNewPassword }
-      });
-
-      return res.json({ message: 'Mot de passe mis à jour avec succès' });
-
-    } catch (error) {
-      console.error('Erreur changePassword:', error);
-      return res.status(500).json({ error: 'Erreur serveur lors du changement de mot de passe', code: 'PASSWORD_CHANGE_ERROR' });
-    }
-  },
   /**
    * Mise à jour du profil utilisateur
    */
