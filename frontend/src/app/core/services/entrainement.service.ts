@@ -2,50 +2,54 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Entrainement } from '../models/entrainement.model';
-import { EntityCrudService } from '../../shared/services/entity-crud.service';
+import { EntityCrudService, CrudOptions } from '../../shared/services/entity-crud.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class EntrainementService {
-  private entrainementCrudService: EntityCrudService<Entrainement>;
+  private endpoint = 'entrainements';
+  private crudOptions: Partial<CrudOptions<Entrainement>> = {
+    fileUploadField: 'image'
+  };
 
-  constructor(private entityCrudService: EntityCrudService<Entrainement>) {
-    this.entrainementCrudService = this.entityCrudService.configure('entrainements', {
-      fileUploadField: 'schemaUrl'
-    });
-  }
+  constructor(private entityCrudService: EntityCrudService<Entrainement>) {}
 
   getEntrainements(): Observable<Entrainement[]> {
-    return this.entrainementCrudService.getAll();
+    return this.entityCrudService.getAll(this.endpoint);
   }
 
   getEntrainementById(id: string): Observable<Entrainement> {
-    return this.entrainementCrudService.getById(id);
+    return this.entityCrudService.getById(this.endpoint, id);
   }
 
   createEntrainement(data: Partial<Entrainement>): Observable<Entrainement> {
-    return this.entrainementCrudService.create(data as Entrainement).pipe(
-      tap(() => this.entrainementCrudService.invalidateCache())
+    return this.entityCrudService.create(this.endpoint, data as Entrainement, this.crudOptions).pipe(
+      tap(() => this.entityCrudService.invalidateCache())
     );
   }
 
   updateEntrainement(id: string, data: Partial<Entrainement>): Observable<Entrainement> {
-    return this.entrainementCrudService.update(id, data as Entrainement).pipe(
-      tap(() => this.entrainementCrudService.invalidateCache())
+    return this.entityCrudService.update(this.endpoint, id, data, this.crudOptions).pipe(
+      tap(() => this.entityCrudService.invalidateCache())
     );
   }
 
   deleteEntrainement(id: string): Observable<void> {
-    return this.entrainementCrudService.delete(id).pipe(
-      tap(() => this.entrainementCrudService.invalidateCache())
+    return this.entityCrudService.delete(this.endpoint, id).pipe(
+      tap(() => this.entityCrudService.invalidateCache())
     );
   }
 
   duplicateEntrainement(id: string): Observable<Entrainement> {
-    const endpoint = `entrainements/${id}/duplicate`;
-    return this.entrainementCrudService.http.post<Entrainement>(endpoint, {}).pipe(
-      tap(() => this.entrainementCrudService.invalidateCache())
+    const url = `${this.endpoint}/${id}/duplicate`;
+    return this.entityCrudService.http.post<Entrainement>(url, {}).pipe(
+      tap(() => this.entityCrudService.invalidateCache())
     );
+  }
+
+  // Wrapper utilisé par le flux d'import pour normaliser et déléguer la création
+  createFromImport(data: Partial<Entrainement>): Observable<Entrainement> {
+    return this.createEntrainement(data);
   }
 }
