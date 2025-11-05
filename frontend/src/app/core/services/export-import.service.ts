@@ -3,6 +3,9 @@ import { firstValueFrom } from 'rxjs';
 import { EntrainementService } from './entrainement.service';
 import { ExerciceService } from './exercice.service';
 import { EXPORT_DIR, FILE_EXT_UFM, DEFAULT_SCHEMA_VERSION, IMPORT_LOG_DIR, UFM_ALLOWED_TYPES, UfmAllowedType } from '@ufm/shared/constants/export-import';
+import { validate } from '../utils/import-validator';
+import { MatDialog } from '@angular/material/dialog';
+import { ImportResolverComponent } from '../components/import-resolver/import-resolver.component';
 
 export interface Conflict {
   field: string;
@@ -21,6 +24,7 @@ export class ExportImportService {
   constructor(
     private entrainementService: EntrainementService,
     private exerciceService: ExerciceService,
+    private dialog: MatDialog,
   ) {}
 
   async exportElement(type: string, id: string): Promise<string> {
@@ -67,7 +71,57 @@ export class ExportImportService {
         return { success: false, message: `Version de schéma non supportée: ${meta.schema_version} (> ${DEFAULT_SCHEMA_VERSION})`, conflicts: [{ field: 'meta.schema_version', message: 'Version non supportée' }], insertedIds: [] };
       }
 
-      const mapped = this.mapForImport(type, data, conflicts);
+      // Validation et pré-mapping
+      const validation = validate(type, data);
+      // unknownFields: ignorés mais logués
+      if (validation.unknownFields.length) {
+        conflicts.push({ field: 'unknownFields', message: `Champs ignorés: ${validation.unknownFields.join(', ')}` });
+      }
+      for (const mf of validation.missingFields) {
+        if (mf.critical) {
+          conflicts.push({ field: mf.field, message: 'Champ requis manquant' });
+        }
+      }
+
+      // Tag mismatches: mapping automatique si possible; en interactif, proposer une résolution
+      let dataToImport = { ...data };
+      if (Array.isArray(dataToImport.tags)) {
+        const tags: string[] = dataToImport.tags as string[];
+        if (validation.tagMismatches.length) {
+          if (interactive) {
+            const tagItems = validation.tagMismatches.map(mm => ({ original: mm.original, mapped: mm.mapped, choice: 'mapped' as const }));
+            const resolved: string[] | undefined = await firstValueFrom(
+              this.dialog.open(ImportResolverComponent, {
+                data: { title: 'Résolution des tags hérités', tagItems }
+              }).afterClosed()
+            );
+            if (resolved && resolved.length === validation.tagMismatches.length) {
+              // Remapper par position des mismatches uniquement
+              let idxMismatch = 0;
+              dataToImport.tags = tags.map(tg => {
+                const found = validation.tagMismatches.find(mm => mm.original === tg);
+                if (!found) return tg;
+                const r = resolved[idxMismatch++];
+                return r || tg;
+              });
+            } else {
+              // Fallback: mapping auto
+              dataToImport.tags = tags.map(tg => {
+                const mm = validation.tagMismatches.find(m => m.original === tg);
+                return mm?.mapped || `legacy:${tg}`;
+              });
+            }
+          } else {
+            // Non interactif: appliquer mapping proposé, sinon legacy
+            dataToImport.tags = tags.map(tg => {
+              const mm = validation.tagMismatches.find(m => m.original === tg);
+              return mm?.mapped || `legacy:${tg}`;
+            });
+          }
+        }
+      }
+
+      const mapped = this.mapForImport(type, dataToImport, conflicts);
       const insertedId = await this.createViaManager(type, mapped);
 
       const result: ImportResult = {
