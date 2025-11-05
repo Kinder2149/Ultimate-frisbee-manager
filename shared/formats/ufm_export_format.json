@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ultimate-frisbee-manager/shared/formats/ufm_export_format.json",
+  "title": "Ultimate Frisbee Manager Export/Import Format (UFM)",
+  "type": "object",
+  "required": ["meta", "data"],
+  "additionalProperties": false,
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["type", "schema_version", "exported_at", "source", "origin_path"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "entrainement",
+            "exercice",
+            "echauffement",
+            "situation",
+            "match"
+          ],
+          "description": "Type fonctionnel du payload exporté/importé"
+        },
+        "schema_version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+$",
+          "description": "Version du schéma UFM (ex: '1.0')"
+        },
+        "exported_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Horodatage ISO8601 de l'export"
+        },
+        "source": {
+          "type": "string",
+          "description": "Identifiant de la source d'export (ex: 'old_system_vX')"
+        },
+        "origin_path": {
+          "type": "string",
+          "description": "Chemin ou identifiant d'origine de la donnée exportée"
+        }
+      }
+    },
+    "data": {
+      "type": "object",
+      "description": "Payload fonctionnel spécifique au type. Doit contenir les champs métier (id, nom, tags, elements, etc.).",
+      "additionalProperties": true
+    }
+  },
+  "examples": [
+    {
+      "meta": {
+        "type": "entrainement",
+        "schema_version": "1.0",
+        "exported_at": "2025-11-05T18:59:00Z",
+        "source": "old_system_v1",
+        "origin_path": "/frontend/src/app/features/entrainements/123"
+      },
+      "data": {
+        "id": 123,
+        "nom": "Séance du mardi",
+        "tags": ["physique", "collectif"],
+        "elements": [
+          { "type": "echauffement", "refId": 12 },
+          { "type": "exercice", "refId": 45 }
+        ]
+      }
+    }
+  ]
+}
