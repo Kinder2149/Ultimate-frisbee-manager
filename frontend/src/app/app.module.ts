@@ -8,6 +8,7 @@ import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { HttpErrorInterceptor } from './core/errors/http-error.interceptor'; // Mise à jour du chemin
 import { AuthInterceptor } from './core/interceptors/auth.interceptor'; // Import de l'intercepteur d'authentification
 import { GlobalErrorHandler } from './core/errors/global-error-handler'; // Import du gestionnaire global
+import { EntityCrudService } from './shared/services/entity-crud.service'; // Import du service CRUD générique
 import localeFr from '@angular/common/locales/fr';
 
 import { AppComponent } from './app.component';
@@ -22,6 +23,7 @@ import { TagsAdvancedModule } from './features/tags-advanced/tags-advanced.modul
 
 // Import du guard d'authentification
 import { AuthGuard } from './core/guards/auth.guard';
+import { DevGuard } from './core/guards/dev.guard';
 
 // Définition des routes de l'application
 const routes: Routes = [
@@ -82,10 +84,10 @@ const routes: Routes = [
     loadChildren: () => import('./features/situations-matchs/situations-matchs.module').then(m => m.SituationsMatchsModule),
     canActivate: [AuthGuard]
   },
-  { 
-    path: 'exercices', 
-    loadChildren: () => import('./features/exercices/exercices.module').then(m => m.ExercicesModule),
-    canActivate: [AuthGuard]
+  {
+    path: 'debug/export-import',
+    loadComponent: () => import('./features/debug/export-import-debug.component').then(c => c.ExportImportDebugComponent),
+    canActivate: [AuthGuard, DevGuard]
   },
   
   // Route de fallback
@@ -116,7 +118,8 @@ const routes: Routes = [
     // Fournisseur pour l'intercepteur d'erreurs HTTP
     { provide: HTTP_INTERCEPTORS, useClass: HttpErrorInterceptor, multi: true },
     // Fournisseur pour l'intercepteur d'authentification
-    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
+    EntityCrudService // Fournir le service CRUD générique
   ],
   bootstrap: [AppComponent]
 })
