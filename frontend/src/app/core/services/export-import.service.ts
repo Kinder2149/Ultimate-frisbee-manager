@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { EntrainementService } from './entrainement.service';
 import { ExerciceService } from './exercice.service';
+import { EchauffementService } from './echauffement.service';
+import { SituationMatchService } from './situationmatch.service';
 import { EXPORT_DIR, FILE_EXT_UFM, DEFAULT_SCHEMA_VERSION, IMPORT_LOG_DIR, UFM_ALLOWED_TYPES, UfmAllowedType } from '@ufm/shared/constants/export-import';
 import { validate } from '../utils/import-validator';
 import { MatDialog } from '@angular/material/dialog';
@@ -24,6 +26,8 @@ export class ExportImportService {
   constructor(
     private entrainementService: EntrainementService,
     private exerciceService: ExerciceService,
+    private echauffementService: EchauffementService,
+    private situationMatchService: SituationMatchService,
     private dialog: MatDialog,
   ) {}
 
@@ -154,6 +158,10 @@ export class ExportImportService {
         return await firstValueFrom(this.entrainementService.getEntrainementById(id));
       case 'exercice':
         return await firstValueFrom(this.exerciceService.getExerciceById(id));
+      case 'echauffement':
+        return await firstValueFrom(this.echauffementService.getEchauffementById(id));
+      case 'situation':
+        return await firstValueFrom(this.situationMatchService.getSituationMatchById(id));
       default:
         throw new Error(`Export non implémenté pour le type: ${type}`);
     }
@@ -215,6 +223,14 @@ export class ExportImportService {
       }
       case 'exercice': {
         const created = await firstValueFrom(this.exerciceService.createFromImport(data));
+        return created.id as string | number;
+      }
+      case 'echauffement': {
+        const created = await firstValueFrom(this.echauffementService.createFromImport(data));
+        return created.id as string | number;
+      }
+      case 'situation': {
+        const created = await firstValueFrom(this.situationMatchService.createFromImport(data));
         return created.id as string | number;
       }
       default:

@@ -17,6 +17,9 @@
           </div>
           <div class="header-badge">
             <span class="badge badge-exercice">Exercice</span>
+            <!-- Tags essentiels dans l'en-tête -->
+            <mat-chip *ngIf="objectifTag" [style.background-color]="objectifTag.color || '#34A853'" [style.color]="'#fff'">{{ objectifTag.label }}</mat-chip>
+            <mat-chip *ngFor="let tag of travailSpecifiqueTags" [style.background-color]="tag.color || '#1E88E5'" [style.color]="'#fff'">{{ tag.label }}</mat-chip>
             <span *ngIf="dureeDisplay && !allowEditDuration" class="duration-pill">
               <mat-icon class="duration-icon">schedule</mat-icon>
               {{ dureeDisplay }}
@@ -53,14 +56,24 @@
 
 <!-- TEMPLATE REUTILISABLE POUR LE CONTENU DE LA CARTE -->
 <ng-template #cardContent>
-  <!-- Image -->
-  <div class="image-container" *ngIf="exercice.imageUrl as url">
-    <img [src]="mediaUrl(exercice.imageUrl)" alt="Illustration de l'exercice" class="clickable" (click)="onImageClicked(exercice.imageUrl)">
+  <!-- Image ou espace réservé -->
+  <div class="image-container" [class.has-image]="exercice.imageUrl" [class.no-image]="!exercice.imageUrl">
+    <img *ngIf="exercice.imageUrl" [src]="mediaUrl(exercice.imageUrl)" alt="Illustration de l'exercice" class="clickable" (click)="onImageClicked(exercice.imageUrl)">
   </div>
 
   <!-- CONTENU -->
   <div class="card-content">
-    <p class="description" *ngIf="exercice.description">{{ exercice.description }}</p>
+    <!-- Description simple -->
+    <div class="description-section" *ngIf="exercice.description">
+      <h4 class="section-title">Description</h4>
+      <p class="description">{{ exercice.description }}</p>
+    </div>
+
+    <!-- Critère de réussite -->
+    <div class="description-section" *ngIf="exercice.critereReussite">
+      <h4 class="section-title">Critère de réussite</h4>
+      <p class="description">{{ exercice.critereReussite }}</p>
+    </div>
     
     <div class="variables-text" *ngIf="exercice.variablesText">
       <h4>Variables:</h4>
@@ -72,18 +85,6 @@
     </div>
     
     <div class="tags-section">
-      <div class="tag-group" *ngIf="objectifTag">
-        <h4>Objectif:</h4>
-        <div class="tags-container">
-          <mat-chip-listbox><mat-chip [style.background-color]="objectifTag.color || '#34A853'" [style.color]="'#fff'">{{ objectifTag.label }}</mat-chip></mat-chip-listbox>
-        </div>
-      </div>
-      <div class="tag-group" *ngIf="travailSpecifiqueTags?.length">
-        <h4>Travail Spécifique:</h4>
-        <div class="tags-container">
-          <mat-chip-listbox><mat-chip *ngFor="let tag of travailSpecifiqueTags" [style.background-color]="tag.color || '#1E88E5'" [style.color]="'#fff'">{{ tag.label }}</mat-chip></mat-chip-listbox>
-        </div>
-      </div>
       <div class="tag-group" *ngIf="niveauTags.length > 0">
         <h4>Niveau:</h4>
         <div class="tags-container"><span class="tag tag--niveau" *ngFor="let tag of niveauTags" [style.background-color]="tag.color || '#34A853'">{{ tag.level ? '★'.repeat(tag.level) : tag.label }}</span></div>

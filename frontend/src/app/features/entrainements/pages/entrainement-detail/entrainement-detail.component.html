@@ -1,191 +1,110 @@
-<ng-template #loadingOrError>
-  <div class="loading-container" *ngIf="loading; else errorTemplate">
-    <mat-spinner></mat-spinner>
-    <p>Chargement de l'entraînement...</p>
-  </div>
-  <ng-template #errorTemplate>
-    <div class="error-container">
-      <p>{{ error }}</p>
-      <button class="btn btn-secondary" (click)="loadEntrainement(entrainementId!)">Réessayer</button>
-    </div>
-  </ng-template>
-</ng-template>
-
-<ng-container *ngIf="entrainement; else loadingOrError">
-  <div class="detail-page">
-
-  <!-- En-tête de la page -->
-  <div class="page-header">
-    <div class="header-main-info">
-      <h1 class="training-title">{{ entrainement.titre }}</h1>
-      <div class="header-meta">
-        <div class="meta-item" *ngIf="entrainement.date">
-          <i class="material-icons">event</i>
-          <span>{{ formatDate(entrainement.date) }}</span>
+<div class="detail-container">
+  <ng-container *ngIf="entrainement; else loadingOrError">
+    <mat-card class="training-card">
+      <mat-card-header>
+        <mat-card-title>{{ entrainement.titre }}</mat-card-title>
+        <mat-card-subtitle>{{ formatDate(entrainement.date) }}</mat-card-subtitle>
+        <div class="header-actions">
+          <button mat-icon-button (click)="modifierEntrainement()" matTooltip="Modifier l'entraînement">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button (click)="retourListe()" matTooltip="Retour à la liste">
+            <mat-icon>close</mat-icon>
+          </button>
         </div>
-        <div class="meta-item duration-highlight">
-          <i class="material-icons">timer</i>
-          <span>{{ calculateTotalDuration() }}</span>
-        </div>
-      </div>
-      <div class="header-tags" *ngIf="entrainement.tags && entrainement.tags.length > 0">
-        <span *ngFor="let tag of entrainement.tags" class="tag" [style.background-color]="tag.color || '#e0e0e0'">
-          {{ tag.label }}
-        </span>
-      </div>
-    </div>
-    <div class="header-actions">
-      <button class="btn btn-secondary" (click)="retourListe()">
-        <i class="material-icons">arrow_back</i>
-        <span>Retour</span>
-      </button>
-      <button class="btn btn-primary" (click)="modifierEntrainement()">
-        <i class="material-icons">edit</i>
-        <span>Modifier</span>
-      </button>
-    </div>
-  </div>
+      </mat-card-header>
 
-  <!-- Timeline de l'entraînement -->
-  <div class="timeline">
-
-    <!-- 1. Échauffement -->
-    <div class="timeline-item" *ngIf="entrainement.echauffement">
-      <div class="timeline-icon echauffement">
-        <i class="material-icons">whatshot</i>
-      </div>
-      <div class="timeline-content">
-        <div class="timeline-card expandable" [class.expanded]="echauffementExpanded">
-          <div class="card-header" (click)="toggleEchauffement()">
-            <div class="card-title">
-              <h3>Échauffement: {{ entrainement.echauffement.nom }}</h3>
-              <div class="card-summary">
-                <span class="summary-item">
-                  <i class="material-icons">schedule</i>
-                  {{ getTotalEchauffementLabel() }}
-                </span>
-              </div>
-            </div>
-            <div class="card-actions">
-              <button mat-icon-button [matMenuTriggerFor]="echauffementMenu" (click)="$event.stopPropagation()">
-                <mat-icon>more_vert</mat-icon>
-              </button>
-              <mat-menu #echauffementMenu="matMenu">
-                <button mat-menu-item (click)="openEchauffementView()"><mat-icon>visibility</mat-icon><span>Voir</span></button>
-                <!-- Placeholder for future actions -->
-                <button mat-menu-item disabled><mat-icon>edit</mat-icon><span>Modifier</span></button>
-                <button mat-menu-item disabled><mat-icon>content_copy</mat-icon><span>Dupliquer</span></button>
-                <button mat-menu-item disabled><mat-icon>delete</mat-icon><span>Supprimer</span></button>
-              </mat-menu>
-              <button class="expand-icon">
-                <i class="material-icons">{{ echauffementExpanded ? 'expand_less' : 'expand_more' }}</i>
-              </button>
-            </div>
+      <mat-card-content>
+        <div class="training-meta">
+          <div class="meta-item block-indicators">
+            <mat-icon>layers</mat-icon>
+            <span class="block-chip echauffement" *ngIf="entrainement.echauffement">Échauffement</span>
+            <span class="block-chip exercices" *ngIf="entrainement.exercices && entrainement.exercices.length > 0">Exercices</span>
+            <span class="block-chip situation" *ngIf="entrainement.situationMatch">Match</span>
           </div>
-          <div class="card-expansion-content">
-            <div>
-              <app-echauffement-view [echauffement]="entrainement.echauffement" [isSummary]="!echauffementExpanded"></app-echauffement-view>
-            </div>
+          <div class="meta-item duration-highlight">
+            <mat-icon>timer</mat-icon>
+            <span>{{ calculateTotalDuration() }}</span>
+          </div>
+          <div class="meta-item tags" *ngIf="entrainement.tags && entrainement.tags.length > 0">
+            <mat-icon>label</mat-icon>
+            <mat-chip-listbox>
+              <mat-chip *ngFor="let tag of entrainement.tags" [style.background-color]="tag.color || '#e0e0e0'" selected>{{ tag.label }}</mat-chip>
+            </mat-chip-listbox>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- 2. Exercices -->
-    <ng-container *ngFor="let exerciceEntrainement of entrainement.exercices; let i = index">
-      <div class="timeline-item" *ngIf="exerciceEntrainement.exercice">
-        <div class="timeline-icon exercice">
-          <i class="material-icons">fitness_center</i>
-        </div>
-        <div class="timeline-content">
-          <div class="timeline-card expandable" [class.expanded]="expandedExercices[i]">
-            <div class="card-header" (click)="toggleExercice(i)">
-              <div class="card-title">
-                <h3>{{ i + 1 }}. {{ exerciceEntrainement.exercice.nom }}</h3>
-                <div class="card-summary">
-                  <span class="summary-item">
-                    <i class="material-icons">schedule</i>
-                    {{ formatDuree(exerciceEntrainement.duree) }}
-                  </span>
-                  <div class="summary-tags" *ngIf="exerciceEntrainement.exercice.tags?.length">
-                    <span *ngFor="let tag of getImportantTags(exerciceEntrainement.exercice.tags)" class="summary-tag" [style.background-color]="tag.color">{{ tag.label }}</span>
+        <mat-accordion multi="true">
+          <!-- 1. Échauffement -->
+          <mat-expansion-panel *ngIf="entrainement.echauffement" [expanded]="true">
+            <mat-expansion-panel-header class="echauffement-header">
+              <mat-panel-title>
+                <mat-icon>whatshot</mat-icon>
+                Échauffement: {{ entrainement.echauffement.nom }}
+              </mat-panel-title>
+              <mat-panel-description>
+                {{ getTotalEchauffementLabel() }}
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+            <app-echauffement-view [echauffement]="entrainement.echauffement"></app-echauffement-view>
+          </mat-expansion-panel>
+
+          <!-- 2. Exercices -->
+          <mat-expansion-panel *ngIf="entrainement.exercices && entrainement.exercices.length > 0" [expanded]="true">
+            <mat-expansion-panel-header class="exercices-header">
+              <mat-panel-title>
+                <mat-icon>fitness_center</mat-icon>
+                Exercices ({{ entrainement.exercices.length }})
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <mat-list role="list">
+              <ng-container *ngFor="let exerciceEntrainement of entrainement.exercices; let i = index">
+                <mat-list-item *ngIf="exerciceEntrainement.exercice" role="listitem">
+                  <div class="exercice-item-content">
+                    <div class="exercice-title">{{ i + 1 }}. {{ exerciceEntrainement.exercice.nom }}</div>
+                    <div class="exercice-meta">
+                      <mat-icon>schedule</mat-icon> {{ formatDuree(exerciceEntrainement.duree) }}
+                    </div>
+                    <app-exercice-view [exercice]="exerciceEntrainement.exercice" [isSummary]="true"></app-exercice-view>
                   </div>
-                </div>
-              </div>
-              <div class="card-actions">
-                <button mat-icon-button [matMenuTriggerFor]="exerciceMenu" (click)="$event.stopPropagation()">
-                  <mat-icon>more_vert</mat-icon>
-                </button>
-                <mat-menu #exerciceMenu="matMenu">
-                  <button mat-menu-item (click)="openExerciceView(exerciceEntrainement.exercice)"><mat-icon>visibility</mat-icon><span>Voir</span></button>
-                  <!-- Placeholder for future actions -->
-                  <button mat-menu-item disabled><mat-icon>edit</mat-icon><span>Modifier</span></button>
-                  <button mat-menu-item disabled><mat-icon>content_copy</mat-icon><span>Dupliquer</span></button>
-                  <button mat-menu-item disabled><mat-icon>delete</mat-icon><span>Supprimer</span></button>
-                </mat-menu>
-                <button class="expand-icon">
-                  <i class="material-icons">{{ expandedExercices[i] ? 'expand_less' : 'expand_more' }}</i>
-                </button>
-              </div>
-            </div>
-            <div class="card-expansion-content">
-              <div>
-                <app-exercice-view [exercice]="exerciceEntrainement.exercice" [isSummary]="!expandedExercices[i]"></app-exercice-view>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </ng-container>
+                  <button mat-icon-button (click)="openExerciceView(exerciceEntrainement.exercice)" matTooltip="Voir le détail de l'exercice">
+                    <mat-icon>visibility</mat-icon>
+                  </button>
+                </mat-list-item>
+              </ng-container>
+            </mat-list>
+          </mat-expansion-panel>
 
-    <!-- 3. Situation/Match -->
-    <div class="timeline-item" *ngIf="entrainement.situationMatch">
-      <div class="timeline-icon situation">
-        <i class="material-icons">sports_soccer</i>
-      </div>
-      <div class="timeline-content">
-        <div class="timeline-card expandable" [class.expanded]="situationMatchExpanded">
-          <div class="card-header" (click)="toggleSituationMatch()">
-            <div class="card-title">
-              <h3>Match: {{ entrainement.situationMatch.nom || entrainement.situationMatch.type }}</h3>
-              <div class="card-summary">
-                <span class="summary-item">
-                  <i class="material-icons">schedule</i>
-                  {{ entrainement.situationMatch.temps }}
-                </span>
-                <div class="summary-tags" *ngIf="entrainement.situationMatch.tags?.length">
-                  <span *ngFor="let tag of entrainement.situationMatch.tags" class="summary-tag" [style.background-color]="tag.color">{{ tag.label }}</span>
-                </div>
-              </div>
-            </div>
-            <div class="card-actions">
-              <button mat-icon-button [matMenuTriggerFor]="situationMenu" (click)="$event.stopPropagation()">
-                <mat-icon>more_vert</mat-icon>
-              </button>
-              <mat-menu #situationMenu="matMenu">
-                <button mat-menu-item (click)="openSituationView()"><mat-icon>visibility</mat-icon><span>Voir</span></button>
-                <!-- Placeholder for future actions -->
-                <button mat-menu-item disabled><mat-icon>edit</mat-icon><span>Modifier</span></button>
-                <button mat-menu-item disabled><mat-icon>content_copy</mat-icon><span>Dupliquer</span></button>
-                <button mat-menu-item disabled><mat-icon>delete</mat-icon><span>Supprimer</span></button>
-              </mat-menu>
-              <button class="expand-icon">
-                <i class="material-icons">{{ situationMatchExpanded ? 'expand_less' : 'expand_more' }}</i>
-              </button>
-            </div>
-          </div>
-          <div class="card-expansion-content">
-            <div>
-              <app-situationmatch-view [situationMatch]="entrainement.situationMatch" [isSummary]="!situationMatchExpanded"></app-situationmatch-view>
-            </div>
-          </div>
-        </div>
-      </div>
+          <!-- 3. Situation/Match -->
+          <mat-expansion-panel *ngIf="entrainement.situationMatch" [expanded]="true">
+            <mat-expansion-panel-header class="situation-header">
+              <mat-panel-title>
+                <mat-icon>sports_soccer</mat-icon>
+                Match: {{ entrainement.situationMatch.nom || entrainement.situationMatch.type }}
+              </mat-panel-title>
+              <mat-panel-description>
+                {{ entrainement.situationMatch.temps }}
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+            <app-situationmatch-view [situationMatch]="entrainement.situationMatch"></app-situationmatch-view>
+          </mat-expansion-panel>
+        </mat-accordion>
+
+      </mat-card-content>
+    </mat-card>
+  </ng-container>
+
+  <ng-template #loadingOrError>
+    <div class="loading-container" *ngIf="loading; else errorTemplate">
+      <mat-spinner></mat-spinner>
+      <p>Chargement de l'entraînement...</p>
     </div>
-
-  </div>
+    <ng-template #errorTemplate>
+      <div class="error-container">
+        <p>{{ error || 'Erreur inconnue' }}</p>
+        <button mat-stroked-button (click)="loadEntrainement(entrainementId!)">Réessayer</button>
+      </div>
+    </ng-template>
+  </ng-template>
 </div>
-
-<!-- Force refresh -->
-<ng-container class="clearfix"></ng-container>
 

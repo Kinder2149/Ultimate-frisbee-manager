@@ -1,0 +1,83 @@
+{
+  "phase": "docs-cleanup",
+  "timestamp": "2025-11-05T17:44:00Z",
+  "summary": "Nettoyage documentaire: consolidation README, création docs/ARCHITECTURE.md et docs/DEPLOYMENT-DETAILS.md, archivage des documents obsolètes, vérification des liens.",
+  "actions_performed": [
+    {
+      "action": "moved",
+      "from": "projet.md",
+      "to": "documentation/archive/projet.md",
+      "reason": "Document obsolète et contradictoire; contenu consolidé dans README et docs/*."
+    },
+    {
+      "action": "moved",
+      "from": "documentation/TAGS_DOCUMENTATION.md",
+      "to": "documentation/archive/TAGS_DOCUMENTATION.md",
+      "reason": "Doublon avec docs/tags-documentation.md / TAGS_SYSTEM.md; conservé en archive."
+    },
+    {
+      "action": "created",
+      "path": "docs/ARCHITECTURE.md",
+      "reason": "Déplacer/centraliser les détails d'architecture en dehors du README."
+    },
+    {
+      "action": "created",
+      "path": "docs/DEPLOYMENT-DETAILS.md",
+      "reason": "Déployer les détails Render/Vercel/CI et matrice d'envs."
+    },
+    {
+      "action": "updated",
+      "path": "README.md",
+      "reason": "README consolidé (onboarding, run, tests, deploy, sécurité, liens)."
+    },
+    {
+      "action": "updated",
+      "path": "DEPLOYMENT.md",
+      "reason": "Note Auth: suppression /api/auth/refresh."
+    }
+  ],
+  "candidates_for_removal": [
+    {
+      "path": "documentation/archive/projet.md.old",
+      "present": false
+    },
+    {
+      "path": "documentation/projet.md",
+      "present": false
+    },
+    {
+      "path": "documentation/README.md",
+      "present": false
+    },
+    {
+      "path": "documentation/old_versions/",
+      "present": false
+    },
+    {
+      "path": "documentation/00_ANALYSE_INITIALE/temp/",
+      "present": false
+    }
+  ],
+  "kept": [
+    "documentation/00_ANALYSE_INITIALE",
+    "documentation/archive (projet.md archivé)",
+    "docs/ARCHITECTURE.md",
+    "docs/DEPLOYMENT-DETAILS.md",
+    "DEPLOYMENT.md (racine)"
+  ],
+  "link_checks": [
+    {
+      "from": "README.md",
+      "links": [
+        {"target": "docs/ARCHITECTURE.md", "status": "exists"},
+        {"target": "docs/DEPLOYMENT-DETAILS.md", "status": "exists"},
+        {"target": "documentation/00_ANALYSE_INITIALE/", "status": "exists"}
+      ]
+    }
+  ],
+  "next_steps": [
+    "Optionnel: déplacer/archiver certains documents sous docs/ (ameliorations-recentes.md, code-quality-recommendations.md) si redondants.",
+    "Ajouter un index docs (docs/index.md) pointant vers ARCHITECTURE et DEPLOYMENT-DETAILS.",
+    "Valider les liens après push via un job CI de link-check."
+  ]
+}

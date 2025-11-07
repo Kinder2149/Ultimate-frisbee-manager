@@ -14,7 +14,7 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
-    "db:seed:destructive": "SEED_DESTRUCTIVE=true prisma db seed",
+    "db:seed:destructive": "cross-env SEED_DESTRUCTIVE=true prisma db seed",
     "db:studio": "prisma studio",
     "db:reset": "prisma migrate reset",
     "deploy:render": "prisma migrate deploy",
@@ -34,6 +34,7 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "5.22.0",
+    "@ufm/shared": "file:../shared",
     "bcryptjs": "^3.0.2",
     "cloudinary": "^2.7.0",
     "cors": "^2.8.5",
@@ -45,14 +46,14 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
     "pg": "^8.11.3",
+    "pino-http": "^9.0.0",
     "streamifier": "^0.1.1",
-    "ultimate-frisbee-manager": "file:..",
     "uuid": "^11.1.0",
     "zod": "^4.1.9"
   },
   "devDependencies": {
     "@types/pg": "^8.10.7",
-    "cross-env": "^10.0.0",
+    "cross-env": "^10.1.0",
     "jest": "^30.1.3",
     "nodemon": "^3.0.1",
     "prisma": "5.22.0",

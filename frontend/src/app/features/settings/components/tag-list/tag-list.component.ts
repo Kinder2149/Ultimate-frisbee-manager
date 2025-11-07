@@ -18,7 +18,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
 import { Router } from '@angular/router';
 import { Tag, TagCategory } from '../../../../core/models/tag.model';
 import { DEFAULT_TAG_COLORS } from '../../../tags/constants/tag.constants';
-import { TAG_CATEGORIES } from '@shared/constants/tag-categories';
+import { TAG_CATEGORIES } from '@ufm/shared/constants/tag-categories';
 
 export interface TagItem {
   id: string;

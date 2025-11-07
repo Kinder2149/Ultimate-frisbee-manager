@@ -1,0 +1,84 @@
+{
+  "phase": "ci-env",
+  "branch": "ops/render/env",
+  "mode": "lecture_seule",
+  "timestamp": "2025-11-05T17:27:00Z",
+  "summary": "Liste consolidée des variables d'environnement requises pour Render (backend) et Vercel (frontend), avec emplacements et contrôle CI avant déploiement.",
+  "inputs": {
+    "render_yaml": "render.yaml",
+    "vercel_json": "vercel.json"
+  },
+  "current_config_detected": {
+    "render": {
+      "service": "ultimate-frisbee-manager-api",
+      "buildCommand": "cd backend && npm install && npm run deploy:render",
+      "startCommand": "cd backend && npm start",
+      "envVars_present": [
+        "NODE_VERSION=20",
+        "NODE_ENV=production",
+        "DATABASE_URL=<fromDatabase>",
+        "CORS_ORIGINS=...",
+        "JWT_SECRET=<fromSecret:jwt-secret>"
+      ],
+      "envVars_missing_recommended": [
+        "JWT_REFRESH_SECRET",
+        "CLOUDINARY_URL (ou CLOUDINARY_CLOUD_NAME / CLOUDINARY_API_KEY / CLOUDINARY_API_SECRET)"
+      ]
+    },
+    "vercel": {
+      "builds": [{"src": "frontend/package.json", "use": "@vercel/angular"}],
+      "routes": [{"src": "/(.*)", "dest": "/index.html"}],
+      "envVars_missing_recommended": [
+        "SUPABASE_URL",
+        "SUPABASE_ANON_KEY"
+      ]
+    }
+  },
+  "env_matrix": [
+    {
+      "scope": "Render (backend)",
+      "vars": [
+        {"key":"NODE_ENV","required":true,"notes":"production"},
+        {"key":"DATABASE_URL","required":true,"notes":"déjà mappé via managed DB Render"},
+        {"key":"CORS_ORIGINS","required":true,"notes":"CSV whitelist, cf. tâche 3"},
+        {"key":"JWT_SECRET","required":true,"notes":"présent via secret"},
+        {"key":"JWT_REFRESH_SECRET","required":true,"notes":"à ajouter"},
+        {"key":"CLOUDINARY_URL","required":false,"notes":"alternativement fournir CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET"},
+        {"key":"CLOUDINARY_CLOUD_NAME","required":false},
+        {"key":"CLOUDINARY_API_KEY","required":false},
+        {"key":"CLOUDINARY_API_SECRET","required":false}
+      ]
+    },
+    {
+      "scope": "Vercel (frontend)",
+      "vars": [
+        {"key":"SUPABASE_URL","required":true,"notes":"clé publique"},
+        {"key":"SUPABASE_ANON_KEY","required":true,"notes":"clé publique anon"}
+      ]
+    }
+  ],
+  "render_ui_template": {
+    "path": "Render → Service ultimate-frisbee-manager-api → Environment",
+    "entries": [
+      {"key":"JWT_REFRESH_SECRET","type":"Secret","value":"<new-strong-secret>"},
+      {"key":"CLOUDINARY_URL","type":"Secret","value":"cloudinary://<api_key>:<api_secret>@<cloud_name>"}
+    ],
+    "notes": ["Si pas d'URL, renseigner le triplet CLOUDINARY_* séparément."]
+  },
+  "vercel_ui_template": {
+    "path": "Vercel → Project (frontend) → Settings → Environment Variables (Production/Preview)",
+    "entries": [
+      {"key":"SUPABASE_URL","value":"https://xxxx.supabase.co"},
+      {"key":"SUPABASE_ANON_KEY","value":"<anon-key>"}
+    ]
+  },
+  "gh_actions_predeploy_check": {
+    "filename": ".github/workflows/predeploy-env-check.yml",
+    "snippet": "name: Predeploy Env Check\non:\n  pull_request:\n    branches: [ main ]\n  workflow_dispatch: {}\njobs:\n  check-envs:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - name: Check backend envs (Render secrets expected)\n        run: |\n          missing=0\n          for v in DATABASE_URL CORS_ORIGINS JWT_SECRET JWT_REFRESH_SECRET; do\n            if [ -z \"${!v}\" ]; then echo \"MISSING $v\"; missing=1; fi\n          done\n          if [ $missing -ne 0 ]; then echo 'Missing backend envs'; exit 1; fi\n        env:\n          DATABASE_URL: ${{ secrets.RENDER_DATABASE_URL }}\n          CORS_ORIGINS: ${{ vars.CORS_ORIGINS }}\n          JWT_SECRET: ${{ secrets.JWT_SECRET }}\n          JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}\n      - name: Check frontend envs (Vercel)\n        run: |\n          missing=0\n          for v in SUPABASE_URL SUPABASE_ANON_KEY; do\n            if [ -z \"${!v}\" ]; then echo \"MISSING $v\"; missing=1; fi\n          done\n          if [ $missing -ne 0 ]; then echo 'Missing frontend envs'; exit 1; fi\n        env:\n          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}\n          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}\n"
+  },
+  "acceptance": [
+    "Render: toutes les variables renseignées (backend démarre sans erreur)",
+    "Vercel: SUPABASE_* configurées et build front OK",
+    "CI: le job predeploy échoue si une variable requise est manquante"
+  ]
+}

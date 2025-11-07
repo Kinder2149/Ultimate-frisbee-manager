@@ -1,139 +1,88 @@
 # Ultimate Frisbee Manager
 
-Application web pour gérer une base d'exercices d'ultimate frisbee, permettant à un coach sportif d'organiser ses séances d'entraînement. Cette application permet de créer, stocker et gérer une bibliothèque d'exercices pour les entraînements d'ultimate frisbee.
+Application web pour gérer les entraînements d'ultimate frisbee (Angular + Express + Prisma).
+
+---
+
+## Onboarding rapide
+
+### Prérequis
+- Node.js 20+
+- npm 10+
+- PostgreSQL (prod) / SQLite (dev)
+
+### Installation (monorepo)
+```bash
+# build du package partagé
+npm --prefix shared run build
+# installer backend et frontend
+npm --prefix backend i
+npm --prefix frontend i
+```
+
+### Lancer en local
+```bash
+# Backend (dev)
+npm --prefix backend run dev
+# Frontend (Angular)
+npm --prefix frontend start
+```
+
+### Variables d'environnement (exemples)
+- Backend (Render/local): `DATABASE_URL`, `CORS_ORIGINS`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `CLOUDINARY_URL` (ou triplet `CLOUDINARY_*`).
+- Frontend: `SUPABASE_URL`, `SUPABASE_ANON_KEY` (sur Vercel en production). En local, voir `frontend/src/environments/environment.ts`.
+
+### Tests / Qualité
+```bash
+# Backend - Jest
+npm --prefix backend test
+npm --prefix backend test -- --coverage
+# Frontend - Cypress (si configuré)
+npm --prefix frontend run cypress:run
+# Lint
+npm --prefix frontend run lint
+```
+
+### Déploiement (résumé)
+- Backend: Render (build `cd backend && npm install && npm run deploy:render`, start `cd backend && npm start`).
+- Frontend: Vercel (preset Angular, root=frontend). Définir `SUPABASE_URL`, `SUPABASE_ANON_KEY` dans les Variables.
+- CORS: whitelist via `CORS_ORIGINS` (CSV), `credentials: true`.
+
+Pour le guide complet, voir `docs/DEPLOYMENT-DETAILS.md`.
+
+---
 
 ## Architecture
+- Frontend: Angular 17 (Material), lazy-loading, Cypress E2E.
+- Backend: Express + Prisma, JWT middleware, Cloudinary uploads, CORS strict.
+- Base de données: SQLite (dev) / PostgreSQL (prod recommandé).
 
-L'architecture de ce projet est une **architecture hybride** moderne, séparant clairement les responsabilités entre le frontend, le backend et la base de données.
+Détails et choix techniques: `docs/ARCHITECTURE.md`.
 
-- **Frontend**: Angular 17+, hébergé sur **Vercel**.
-- **Backend**: API RESTful en Node.js avec Express.js et Prisma, hébergée sur **Render**.
-- **Base de données**: PostgreSQL, hébergée sur **Supabase**.
+---
 
-Pour une description détaillée des choix d'architecture, veuillez consulter le document [**STRATEGY.md**](STRATEGY.md).
+## Sécurité (synthèse)
+- Aucun secret en repo (.env exclus, purge historique recommandée en cas de fuite).
+- CORS verrouillé par `CORS_ORIGINS`.
+- Secrets JWT obligatoires en production (startup fail si manquants).
+- Logging HTTP avec redaction (pas d'Authorization/Cookie en logs).
 
-## Prérequis
+---
 
-- **Node.js**: Version `20.x` ou supérieure.
-- **PostgreSQL**: Une instance locale ou distante (par exemple, via Supabase) est nécessaire.
-- **Angular CLI**: `v17` ou supérieure.
+## Documentation utile
+- Audit initial (P0–P11): `documentation/00_ANALYSE_INITIALE/` (phases techniques + recommandations).
+- Détails d'architecture: `docs/ARCHITECTURE.md`.
+- Déploiement détaillé: `docs/DEPLOYMENT-DETAILS.md`.
+- Système de documentation: `DOCUMENTATION_SYSTEM.md`.
 
-## Démarrage Rapide (Développement Local)
+---
 
-Suivez ces étapes pour lancer le projet sur votre machine.
+## Maintenance
+- Migrations Prisma (dev): `npm --prefix backend run db:migrate`.
+- Déploiement Prisma (prod): `npm --prefix backend run db:deploy`.
+- Rotation clés (procédure): `documentation/00_ANALYSE_INITIALE/phase-sec-rotate-*.md/json`.
 
-### 1. Configuration de l'environnement
+---
 
-- **Base de données**: Assurez-vous d'avoir une base de données PostgreSQL accessible.
-- **Fichier d'environnement**:
-  - À la racine du dossier `backend/`, copiez le fichier `.env.example` et renommez-le en `.env`.
-  - Modifiez la variable `DATABASE_URL` pour qu'elle pointe vers votre base de données.
-
-    ```
-    # Exemple de configuration pour une base de données locale
-    DATABASE_URL="postgresql://user:password@localhost:5432/ultimate_frisbee_db?schema=public"
-    ```
-
-### 2. Lancer le Backend
-
-Ouvrez un terminal à la racine du projet :
-
-```bash
-# 1. Aller dans le dossier du backend
-cd backend
-
-# 2. Installer les dépendances
-npm install
-
-# 3. Appliquer les migrations et remplir la base de données (seed)
-npm run db:migrate
-npm run db:seed
-
-# 4. Lancer le serveur de développement
-npm run dev
-```
-
-Le serveur backend démarrera sur `http://localhost:3002` (ou le port défini dans votre `.env`).
-
-### 3. Lancer le Frontend
-
-Ouvrez un **second terminal** à la racine du projet :
-
-```bash
-# 1. Aller dans le dossier du frontend
-cd frontend
-
-# 2. Installer les dépendances
-npm install
-
-# 3. Lancer l'application Angular
-npm start
-```
-
-L'application sera accessible sur `http://localhost:4200` et se connectera automatiquement au backend.
-
-## Fonctionnalités
-
-- Création d'exercices d'ultimate frisbee via un formulaire
-- Stockage des exercices en base de données
-- Affichage des exercices existants
-- Gestion avancée des tags par catégories (objectif, élément, variable, niveau)
-- Sélection dynamique de tags pour les exercices
-- Attribution de couleurs et niveaux aux tags
-
-## Exemple d'exercice (format JSON)
-
-```json
-{
-  "nom": "3v3 zone haute",
-  "description": "Travail du bloc haut en zone",
-  "objectif": "Tactique",
-  "travailSpecifique": ["placement", "déclenchement", "appel"],
-  "variables": ["nb joueurs", "taille de zone"],
-  "niveau": ["Intermédiaire"],
-  "temps": ["15-20 min"],
-  "format": ["3vs3", "Small sided"],
-  "schemaUrl": "https://monlien.fr/schema.png",
-  "tagIds": ["id-tag-tactique", "id-tag-placement", "id-tag-declenchement", "id-tag-appel", "id-tag-nbjoueurs", "id-tag-taillezone", "id-tag-intermediaire", "id-tag-15-20min", "id-tag-3vs3", "id-tag-smallsided"]
-}
-```
-
-## Système de gestion des tags
-
-L'application dispose désormais d'un système complet de gestion des tags, permettant :
-
-- La création et l'édition de tags par catégorie
-- L'attribution de couleurs personnalisées
-- Un système de niveau (étoiles) pour les tags de catégorie "niveau"
-- La réutilisation des tags entre différents exercices
-
-### Catégories de tags
-
-1. **Objectif** : Défini l'objectif principal de l'exercice (Technique, Tactique, Physique, Mental)
-2. **Travail Spécifique** : Décrit les compétences ou aspects travaillés dans l'exercice
-3. **Variable** : Représente les paramètres qui peuvent être ajustés dans l'exercice
-4. **Niveau** : Indique le niveau de difficulté ou de progression
-5. **Temps moyen** : Indique la durée approximative de l'exercice
-6. **Format** : Précise le nombre de joueurs ou la configuration de l'exercice
-
-### Migration depuis l'ancien système
-
-Si vous utilisez déjà cette application et avez des exercices existants, consultez le [guide de migration](docs/MIGRATION.md) pour passer au nouveau système de tags.
-
-## Architecture et refactorisation
-
-L'application a été entièrement refactorisée pour suivre les principes d'architecture Angular modernes :
-
-- **Architecture modulaire** : Organisation par fonctionnalités (features) pour une meilleure séparation des préoccupations
-- **Core Module** : Services et modèles partagés centralisés
-- **Composants réutilisables** : Extraction de composants communs dans des modules partagés
-- **Gestion optimisée du state** : Services centralisés pour la gestion des données
-
-### Mise à jour des catégories de tags
-
-La catégorie "Élément travaillé" a été renommée en "Travail Spécifique" pour mieux refléter son usage. De plus, deux nouvelles catégories ont été ajoutées :
-
-- **Temps moyen** : Pour indiquer la durée estimée d'un exercice (ex: "5-10 min", "15-20 min", etc.)
-- **Format** : Pour préciser le format de jeu ou le nombre de joueurs (ex: "3vs3", "Small sided", "7vs7", etc.)
-
-Ces évolutions permettent une meilleure catégorisation et recherche des exercices.
+## Licence
+ISC

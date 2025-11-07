@@ -20,7 +20,7 @@ export class ApiUrlService {
 
   /**
    * Construit une URL pour une ressource statique (média) à partir de son nom de fichier et de son contexte.
-   * @param fileName Le nom du fichier (ex: 'image.jpg')
+   * @param fileName Le nom du fichier (ex: 'image.jpg') ou une URL complète.
    * @param context Le dossier de la ressource (ex: 'entrainements', 'exercices')
    * @returns URL relative ou absolue en fonction de l'environnement.
    */
@@ -29,16 +29,16 @@ export class ApiUrlService {
       return null;
     }
 
-    // Nettoyer le nom du fichier pour ne garder que le nom de base
+    // Si le chemin est déjà une URL complète (http, https), on le retourne directement.
+    if (/^https?:\/\//i.test(fileName)) {
+      return fileName;
+    }
+
+    // Pour les chemins relatifs, on continue le traitement
     const baseFileName = fileName.split('/').pop();
 
     if (!baseFileName) {
-        return null;
-    }
-
-    // Si le chemin est déjà une URL complète, on le retourne.
-    if (/^https?:\/\//i.test(baseFileName)) {
-      return baseFileName;
+      return null;
     }
 
     const relativePath = `uploads/${context}/${baseFileName}`;

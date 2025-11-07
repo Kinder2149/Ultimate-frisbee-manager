@@ -1,0 +1,19 @@
+<!-- Page détail Situation/Match -->
+<div class="detail-container">
+  <button mat-button color="primary" (click)="retourListe()">
+    <mat-icon>arrow_back</mat-icon>
+    Retour à la liste
+  </button>
+
+  <div *ngIf="loading" class="loading">Chargement...</div>
+
+  <ng-container *ngIf="!loading && situationMatch as sm">
+    <!-- Réutilisation de la vue -->
+    <app-situationmatch-view [situationMatch]="sm"></app-situationmatch-view>
+  </ng-container>
+
+  <div *ngIf="!loading && !situationMatch" class="empty">
+    Aucune donnée à afficher.
+  </div>
+</div>
+

@@ -1,0 +1,136 @@
+{
+  "phase": "prisma-db",
+  "timestamp": "2025-11-05T13:25:00Z",
+  "inputs_provided": [
+    "backend/prisma/schema.prisma (raw)",
+    "backend/prisma (listing): dev.db, migrations/, migrations_archived/, seed.js, seed-tags.js, seed-auth.js, reset-admin.js"
+  ],
+  "summary": "Schéma Prisma SQLite avec modèles Exercice, Tag, Entrainement, EntrainementExercice, Echauffement, BlocEchauffement, SituationMatch, User. M2M via relations nommées; index FK à expliciter; seeds et migrations présents.",
+  "details": [
+    {
+      "path": "backend/prisma/schema.prisma",
+      "type": "file",
+      "role": "manifest",
+      "size_bytes": 6369,
+      "notes": "provider=sqlite; url=env(DATABASE_URL); generator prisma-client-js"
+    },
+    {
+      "path": "model Exercice",
+      "type": "code",
+      "role": "model",
+      "size_bytes": 0,
+      "notes": "{id:String@id@default(uuid), nom:String, description:String, imageUrl?:String, schemaUrl?:String, materiel?:String, notes?:String, critereReussite?:String, variablesPlus:String@default(\"\"), variablesMinus:String@default(\"\"), createdAt:DateTime@default(now), tags:Tag[]@relation(ExerciseTags), entrainements:EntrainementExercice[]}"
+    },
+    {
+      "path": "model Tag",
+      "type": "code",
+      "role": "model",
+      "size_bytes": 0,
+      "notes": "{id:String@id@default(uuid), label:String, category:String, color?:String, level?:Int, createdAt:DateTime@default(now), exercices:Exercice[]@relation(ExerciseTags), entrainements:Entrainement[]@relation(EntrainementTags), situationsMatchs:SituationMatch[]@relation(SituationMatchTags); @@unique([label, category])}"
+    },
+    {
+      "path": "model Entrainement",
+      "type": "code",
+      "role": "model",
+      "size_bytes": 0,
+      "notes": "{id:String@id@default(uuid), titre:String, date?:DateTime, imageUrl?:String, createdAt:DateTime@default(now), echauffementId?:String, situationMatchId?:String, exercices:EntrainementExercice[], tags:Tag[]@relation(EntrainementTags), echauffement:Echauffement?@relation(fields:[echauffementId],references:[id], onDelete:SetNull), situationMatch:SituationMatch?@relation(fields:[situationMatchId],references:[id], onDelete:SetNull)}"
+    },
+    {
+      "path": "model EntrainementExercice",
+      "type": "code",
+      "role": "model",
+      "size_bytes": 0,
+      "notes": "{id:String@id@default(uuid), entrainementId:String, exerciceId:String, ordre:Int, duree?:Int, notes?:String, createdAt:DateTime@default(now), entrainement:Entrainement@relation(fields:[entrainementId],references:[id], onDelete:Cascade), exercice:Exercice@relation(fields:[exerciceId],references:[id], onDelete:Cascade); @@unique([entrainementId, exerciceId])}"
+    },
+    {
+      "path": "model Echauffement",
+      "type": "code",
+      "role": "model",
+      "size_bytes": 0,
+      "notes": "{id:String@id@default(uuid), nom:String, description?:String, imageUrl?:String, createdAt:DateTime@default(now), blocs:BlocEchauffement[], entrainements:Entrainement[]}"
+    },
+    {
+      "path": "model BlocEchauffement",
+      "type": "code",
+      "role": "model",
+      "size_bytes": 0,
+      "notes": "{id:String@id@default(uuid), echauffementId:String, ordre:Int, titre:String, repetitions?:String, temps?:String, informations?:String, fonctionnement?:String, notes?:String, createdAt:DateTime@default(now), echauffement:Echauffement@relation(fields:[echauffementId],references:[id], onDelete:Cascade); @@unique([echauffementId, ordre])}"
+    },
+    {
+      "path": "model SituationMatch",
+      "type": "code",
+      "role": "model",
+      "size_bytes": 0,
+      "notes": "{id:String@id@default(uuid), nom?:String, type:String, description?:String, temps?:String, imageUrl?:String, createdAt:DateTime@default(now), tags:Tag[]@relation(SituationMatchTags), entrainements:Entrainement[]}"
+    },
+    {
+      "path": "model User",
+      "type": "code",
+      "role": "model",
+      "size_bytes": 0,
+      "notes": "{id:String@id@default(uuid), email:String@unique, passwordHash:String, nom:String, prenom?:String, role:String@default(\"USER\"), isActive:Boolean@default(true), iconUrl?:String, createdAt:DateTime@default(now), updatedAt:DateTime@updatedAt}"
+    },
+    { "path": "backend/prisma/seed.js", "type": "file", "role": "seed", "size_bytes": 0, "notes": "Seeds présents (seed.js, seed-tags.js, seed-auth.js) + reset-admin.js." },
+    { "path": "backend/prisma/migrations", "type": "dir", "role": "migrations", "size_bytes": 0, "notes": "Dossier migrations et migrations_archived présents (non détaillés ici)." }
+  ],
+  "findings": [
+    {
+      "id": "DB-INDEX-FK-001",
+      "title": "Index manquants sur clés étrangères",
+      "severity": "medium",
+      "description": "Les champs relationnels (entrainementId, exerciceId, echauffementId, situationMatchId) n'ont pas d'@@index explicites.",
+      "evidence": [
+        "EntrainementExercice(entrainementId, exerciceId) sans @@index dédié",
+        "BlocEchauffement(echauffementId) sans @@index",
+        "Entrainement(echauffementId, situationMatchId) sans @@index"
+      ],
+      "recommendation": "Ajouter @@index([entrainementId]), @@index([exerciceId]), @@index([echauffementId]), @@index([situationMatchId]) pour accélérer les jointures."
+    },
+    {
+      "id": "DB-INDEX-ORDER-002",
+      "title": "Index sur colonnes d'ordre/filtrage",
+      "severity": "low",
+      "description": "Les colonnes createdAt et ordre sont souvent utilisées pour trier/filtrer.",
+      "evidence": [
+        "Plusieurs contrôleurs utilisent orderBy createdAt",
+        "BlocEchauffement.ordre est clé de tri"
+      ],
+      "recommendation": "Ajouter @@index([createdAt]) sur principaux modèles et @@index([ordre, echauffementId]) si requêtes par bloc/ordre."
+    },
+    {
+      "id": "DB-DATATYPE-JSON-003",
+      "title": "Stockage JSON en String",
+      "severity": "low",
+      "description": "Exercice.variablesPlus/Minus stockés en String ; sur Postgres une colonne Json serait préférable.",
+      "evidence": [
+        "Exercice.variablesPlus:String",
+        "Exercice.variablesMinus:String"
+      ],
+      "recommendation": "Si migration vers Postgres, passer ces champs en Json (type Json Prisma) avec migration appropriée."
+    },
+    {
+      "id": "DB-UNIQUENESS-004",
+      "title": "Contraintes d'unicité globales à vérifier",
+      "severity": "low",
+      "description": "Unicités présentes: Tag(label,category), EntrainementExercice(entrainementId,exerciceId), User.email. Vérifier si d'autres uniques logiques sont attendues (ex: Exercice.nom).",
+      "evidence": [
+        "@@unique sur Tag et EntrainementExercice",
+        "@unique sur User.email"
+      ],
+      "recommendation": "Confirmer les règles métier; ajouter des uniques supplémentaires si nécessaire."
+    }
+  ],
+  "commands_to_reproduce": [
+    "Get-Content .\\backend\\prisma\\schema.prisma -Raw",
+    "npx --yes prisma validate --schema .\\backend\\prisma\\schema.prisma",
+    "npx --yes prisma format --schema .\\backend\\prisma\\schema.prisma",
+    "npx --yes prisma db pull --schema .\\backend\\prisma\\schema.prisma",
+    "npx --yes prisma migrate dev --name add_indexes --schema .\\backend\\prisma\\schema.prisma"
+  ],
+  "next_steps": [
+    "Ajouter @@index sur clés étrangères et createdAt/ordre selon besoin.",
+    "Envisager type Json pour variablesPlus/Minus si passage à Postgres.",
+    "Vérifier les seeds existants (seed.js, seed-tags.js, seed-auth.js) et documenter la procédure.",
+    "Exécuter prisma validate/format et préparer une migration 'add_indexes'."
+  ]
+}

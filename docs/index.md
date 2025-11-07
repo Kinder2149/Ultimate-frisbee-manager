@@ -23,7 +23,6 @@ Ce document sert de point d'entrée pour toute la documentation du projet Ultima
 ### Tests
 
 - [Guide de tests API](./api-tests-guide.md) - Guide pour les tests de l'API backend
-- [Guide de tests frontend](./frontend-tests-guide.md) - Guide pour les tests du frontend
 
 ## Organisation de la documentation
 

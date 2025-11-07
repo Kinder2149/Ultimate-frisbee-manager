@@ -1,0 +1,46 @@
+{
+  "phase": "code-cleanup",
+  "timestamp": "2025-11-05T17:52:00Z",
+  "objective": "Supprimer les fichiers/répertoires de code non utilisés (old/test/temp/playground/examples) sans toucher au code de prod.",
+  "scan_targets": [
+    "frontend/src/app/old_*",
+    "frontend/src/app/test*",
+    "frontend/src/environments/.old/",
+    "backend/__tests__/old*",
+    "backend/mocks/",
+    "shared/old/",
+    "temp/",
+    "playground/",
+    "examples/"
+  ],
+  "findings": [
+    {
+      "path": "frontend/src/app/test-simple.component.ts",
+      "reason": "Composant de test manuel non référencé (aucune import/utilisation)",
+      "evidence": [
+        "grep: aucune occurrence de 'TestSimpleComponent' ni 'test-simple' dans le code",
+        "fichier standalone avec UI de test"
+      ],
+      "action": "moved_to_archive",
+      "destination": "documentation/archive/removed/test-simple.component.ts"
+    }
+  ],
+  "not_found": [
+    "frontend/src/app/old_*",
+    "frontend/src/app/test*/ (autres que test-simple)",
+    "frontend/src/environments/.old/",
+    "backend/__tests__/old*",
+    "backend/mocks/",
+    "shared/old/",
+    "temp/",
+    "playground/",
+    "examples/"
+  ],
+  "kept_safeguards": [
+    "Aucun fichier de prod critique supprimé (main.ts, app.module.ts, server.js, schema.prisma, etc.)"
+  ],
+  "next_steps": [
+    "Exécuter la validation locale (build front/back) pour confirmer aucune dépendance au composant de test.",
+    "Optionnel: automatiser un check grep 'old|playground|examples' sur PR."
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "phase": "global-synthesis",
+  "timestamp": "2025-11-05T14:00:00Z",
+  "inputs_provided": [
+    "phase-init-technical.json",
+    "phase-inventory-technical.json",
+    "phase-manifests-deps-technical.json",
+    "phase-backend-routes-technical.json",
+    "phase-prisma-db-technical.json",
+    "phase-frontend-angular-technical.json",
+    "phase-shared-constants-technical.json",
+    "phase-ci-cd-deploy-technical.json",
+    "phase-tests-quality-technical.json",
+    "phase-security-secrets-technical.json"
+  ],
+  "summary": "Synthèse d'audit complète: sécurité (leaks, CORS, JWT), cohérence DB (SQLite vs Postgres), packaging (workspaces), CI/CD (env manquants, doc), qualité (tests/lint), et docs à consolider. Priorisation fournie avec risques et efforts.",
+  "details": [
+    {"path":"backend/config/index.js","type":"code","role":"security","size_bytes":0,"notes":"CORS ouvert, defaults JWT."},
+    {"path":"frontend/src/environments/*","type":"file","role":"security","size_bytes":0,"notes":"Supabase URL/Key committées."},
+    {"path":"backend/.env(.test)","type":"file","role":"security","size_bytes":0,"notes":"Cloudinary/JWT/DATABASE_URL committés."},
+    {"path":"backend/package.json","type":"file","role":"manifest","size_bytes":0,"notes":"dépendance locale 'file:..'"},
+    {"path":"backend/prisma/schema.prisma","type":"file","role":"db","size_bytes":0,"notes":"SQLite provider; indexes manquants."},
+    {"path":"frontend/app.module.ts","type":"code","role":"routes","size_bytes":0,"notes":"route /exercices dupliquée."},
+    {"path":"render.yaml","type":"file","role":"deploy","size_bytes":0,"notes":"build deploy:render, variables manquantes (Cloudinary/JWT refresh)."}
+  ],
+  "findings": [
+    {"id":"SEC-LEAK-0001-0002","title":"Clés Supabase committées (dev/prod)","severity":"high","description":"Supabase URL/anon key dans environment.ts/prod.ts.","evidence":["frontend/src/environments/environment*.ts: supabaseUrl, supabaseKey"],"recommendation":"Retirer, purger l'historique, rotater, injecter via Vercel env."},
+    {"id":"SEC-LEAK-0003-0007","title":"Secrets .env committés (Cloudinary/JWT/DB)","severity":"high","description":"backend/.env et .env.test committés.","evidence":["backend/.env*, CLOUDINARY_*, JWT_*, DATABASE_URL"],"recommendation":"gitignore, git rm --cached, purge historique, rotation clés."},
+    {"id":"SEC-CORS-OPEN","title":"CORS ouvert","severity":"high","description":"app.use(cors()) sans whitelist.","evidence":["backend/app.js"],"recommendation":"Brancher CORS_ORIGINS whitelist CSV; credentials true."},
+    {"id":"SEC-RATELIMIT-MISSING","title":"Rate limiting manquant","severity":"medium","description":"Aucun rate-limit global ni sur /auth.","evidence":["auth.routes.js import non utilisé"],"recommendation":"Limiter /api/auth (et admin/import)."},
+    {"id":"SEC-JWT-DEFAULT-SECRET","title":"Defaults secrets JWT en clair","severity":"high","description":"Fallback secrets dans config/index.js.","evidence":["backend/config/index.js"],"recommendation":"Interdire démarrage sans secrets en prod."},
+    {"id":"DB-MISMATCH","title":"Incohérence DB: SQLite vs PostgreSQL","severity":"medium","description":"Code sur SQLite; docs/Render indiquent PostgreSQL.","evidence":["schema.prisma provider=sqlite","STRATEGY/README PostgreSQL"],"recommendation":"Décider: dev=SQLite, prod=Postgres; documenter migrations."},
+    {"id":"DB-INDEXES","title":"Indexes FK manquants","severity":"medium","description":"Aucune @@index sur FK clés.","evidence":["schema.prisma"],"recommendation":"Ajouter @@index sur FKs et createdAt/ordre."},
+    {"id":"PKG-LOCAL-FILE","title":"Dépendance locale 'file:..'","severity":"medium","description":"backend/package.json dépend sur le repo parent.","evidence":["backend/package.json"],"recommendation":"Créer @ufm/shared en workspace et remplacer."},
+    {"id":"FE-ROUTE-DUP","title":"Route /exercices dupliquée","severity":"low","description":"Deux entrées route /exercices.","evidence":["app.module.ts"],"recommendation":"Supprimer duplication."},
+    {"id":"CI-CD-ENV-MISSING","title":"Env manquants sur Render","severity":"medium","description":"Cloudinary/JWT_REFRESH non définis.","evidence":["render.yaml"],"recommendation":"Ajouter secrets dans Render."},
+    {"id":"DOC-CONTRADICTS","title":"Docs incohérentes","severity":"medium","description":"DB/Auth/Deploy contradictoires.","evidence":["README, STRATEGY, DEPLOYMENT, projet.md"],"recommendation":"Consolidation docs (plan fourni)."},
+    {"id":"OBS-NO-HTTP-LOGGING","title":"Pas de logging HTTP","severity":"low","description":"Aucun morgan/pino-http.","evidence":["backend/app.js"],"recommendation":"Ajouter logging centralisé."},
+    {"id":"OBS-REFRESH-DEPRECATED","title":"/api/auth/refresh obsolète","severity":"low","description":"Commentée dépréciée.","evidence":["auth.routes.js"],"recommendation":"Planifier suppression."},
+    {"id":"FE-AUDIT-MODERATE","title":"Vulnérabilités modérées (front tooling)","severity":"medium","description":"10 vulnérabilités modérées/basses.","evidence":["tmp_frontend_audit.json"],"recommendation":"maj @angular-devkit/build-angular >=20.3.8, vite, webpack-dev-server, esbuild."}
+  ],
+  "commands_to_reproduce": [
+    "Select-String -Path frontend/src/environments/environment*.ts -Pattern 'supabase'",
+    "Select-String -Path backend/.env* -Pattern 'CLOUDINARY|JWT|DATABASE_URL'",
+    "Select-String -Path backend/app.js -Pattern 'cors\('",
+    "Select-String -Path backend/package.json -Pattern 'file:..'",
+    "npx prisma validate --schema backend/prisma/schema.prisma"
+  ],
+  "prioritized_tasks": [
+    {"priority":1,"issue":"SEC-LEAK-keys-removal","risk":5,"effort":"M","commands":["git rm --cached backend/.env backend/.env.test","pip install git-filter-repo","git filter-repo --path frontend/src/environments/environment.ts --invert-paths --force","git filter-repo --path frontend/src/environments/environment.prod.ts --invert-paths --force"],"branch":"fix/security/remove-secrets"},
+    {"priority":1,"issue":"SEC-rotate-keys","risk":5,"effort":"S","commands":["Rotate Supabase anon key","Rotate Cloudinary keys","Set JWT_SECRET/JWT_REFRESH_SECRET in Render"],"branch":"ops/rotate-20251105"},
+    {"priority":2,"issue":"SEC-cors-whitelist","risk":4,"effort":"S","commands":["Edit backend/app.js to use cors origin callback with CORS_ORIGINS"],"branch":"feat/security/cors-whitelist"},
+    {"priority":2,"issue":"SEC-no-default-secrets","risk":4,"effort":"S","commands":["Edit backend/config/index.js to throw if secrets missing in prod"],"branch":"fix/security/jwt-config"},
+    {"priority":3,"issue":"DB-indexes","risk":3,"effort":"M","commands":["Add @@index on FKs/createdAt and run npx prisma migrate dev --name add_indexes"],"branch":"feat/db/indexes"},
+    {"priority":3,"issue":"PKG-workspaces-shared","risk":3,"effort":"M","commands":["Init @ufm/shared package","Enable npm workspaces","Replace 'file:..'"],"branch":"chore/workspaces/shared"},
+    {"priority":4,"issue":"CI-env-render","risk":3,"effort":"S","commands":["Add CLOUDINARY_URL or triplet + JWT_REFRESH_SECRET in Render env"],"branch":"ops/render/env"},
+    {"priority":4,"issue":"FE-audit-update","risk":2,"effort":"M","commands":["npm --prefix frontend i @angular-devkit/build-angular@^20.3.8 webpack-dev-server@latest esbuild@latest vite@latest","npm --prefix frontend audit"],"branch":"chore/frontend/deps-audit"},
+    {"priority":5,"issue":"FE-route-dup","risk":1,"effort":"S","commands":["Remove duplicate route /exercices in app.module.ts"],"branch":"fix/frontend/routes"},
+    {"priority":5,"issue":"DOCs-consolidation","risk":2,"effort":"M","commands":["Update DEPLOYMENT.md, STRATEGY.md, README.md; archive projet.md"],"branch":"docs/consolidation"},
+    {"priority":5,"issue":"HTTP-logging","risk":1,"effort":"S","commands":["Add morgan/pino-http to backend/app.js"],"branch":"chore/backend/logging"},
+    {"priority":5,"issue":"Remove-auth-refresh","risk":1,"effort":"S","commands":["Deprecate and remove /api/auth/refresh"],"branch":"chore/auth/remove-refresh"}
+  ]
+}

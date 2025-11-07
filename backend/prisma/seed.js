@@ -1,7 +1,15 @@
 const { PrismaClient } = require('@prisma/client');
 const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcryptjs');
-const { TAG_CATEGORIES } = require('../../shared/constants/tag-categories');
+// Catégories normalisées (slugs) alignées avec @ufm/shared/constants/tag-categories
+const TAG_CATEGORIES = {
+  OBJECTIF: 'objectif',
+  TRAVAIL_SPECIFIQUE: 'travail_specifique',
+  NIVEAU: 'niveau',
+  TEMPS: 'temps',
+  FORMAT: 'format',
+  THEME_ENTRAINEMENT: 'theme_entrainement',
+};
 
 const prisma = new PrismaClient();
 
@@ -28,8 +36,8 @@ async function main() {
     const passwordHash = await bcrypt.hash(adminPlainPassword, 10);
     await prisma.user.upsert({
       where: { email: adminEmail },
-      update: { password: passwordHash, nom: 'Admin', role: 'ADMIN', isActive: true },
-      create: { id: uuidv4(), email: adminEmail, password: passwordHash, nom: 'Admin', prenom: 'Ultimate', role: 'ADMIN', isActive: true },
+      update: { passwordHash: passwordHash, nom: 'Admin', role: 'ADMIN', isActive: true },
+      create: { id: uuidv4(), email: adminEmail, passwordHash: passwordHash, nom: 'Admin', prenom: 'Ultimate', role: 'ADMIN', isActive: true },
     });
     console.log('✅ Compte admin opérationnel: admin@ultimate.com / Ultim@t+');
   } catch (e) {

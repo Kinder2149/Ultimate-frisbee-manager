@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Entrainement } from '../../../../core/models/entrainement.model';
 import { EntrainementService } from '../../../../core/services/entrainement.service';
+import { DialogService } from '../../../../shared/components/dialog/dialog.service';
+import { EntrainementDetailComponent } from '../entrainement-detail/entrainement-detail.component';
 import { DuplicateButtonComponent } from '../../../../shared/components/duplicate-button/duplicate-button.component';
 import { ExerciceFiltersComponent, ExerciceFiltersValue } from '../../../exercices/components/exercice-filters.component';
 import { TagService } from '../../../../core/services/tag.service';
@@ -37,7 +39,8 @@ export class EntrainementListComponent implements OnInit {
     private tagService: TagService,
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private apiUrlService: ApiUrlService
+    private apiUrlService: ApiUrlService,
+    private dialogService: DialogService
   ) {}
 
   getFullImageUrl(imageName?: string): string | null {
@@ -149,7 +152,17 @@ export class EntrainementListComponent implements OnInit {
   }
 
   voirEntrainement(id: string): void {
-    this.router.navigate(['/entrainements', id]);
+    // Ouvre le détail dans une modale au lieu de naviguer
+    this.entrainementService.getEntrainementById(id).subscribe(entrainement => {
+      this.dialogService.open(EntrainementDetailComponent, {
+        title: entrainement.titre,
+        width: '1100px',
+        maxWidth: '95vw',
+        height: '95vh',
+        panelClass: 'entity-view-dialog',
+        customData: { entrainementId: id }
+      });
+    });
   }
 
   voirEchauffement(id: string): void {

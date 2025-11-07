@@ -19,6 +19,8 @@ export interface Exercice {
   materiel?: string;
   /** Notes générales associées à l'exercice */
   notes?: string;
+  /** Critère de réussite de l'exercice */
+  critereReussite?: string;
   /** Date de création de l'exercice */
   createdAt?: Date;
   /** Liste des tags associés à cet exercice */

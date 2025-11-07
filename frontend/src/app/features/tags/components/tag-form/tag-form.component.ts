@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { Tag, TagCategory } from '../../../../core/models/tag.model';
 import { DEFAULT_TAG_COLORS, NIVEAU_LABELS } from '../../constants/tag.constants';
-import { TAG_CATEGORIES } from '@shared/constants/tag-categories';
+import { TAG_CATEGORIES } from '@ufm/shared/constants/tag-categories';
 import { TagService } from '../../../../core/services/tag.service';
 
 /**
@@ -174,28 +174,28 @@ export class TagFormComponent implements OnInit, OnChanges {
     // Ajouter ou mettre à jour le tag
     if (this.editTag && this.editTag.id) {
       // Mode édition
-      // this.tagService.updateTag(this.editTag.id, tagData).subscribe({
-      //   next: (updatedTag) => {
-      //     this.tagSaved.emit(updatedTag);
-      //     this.resetForm();
-      //   },
-      //   error: (err) => {
-      //     console.error('Erreur lors de la mise à jour du tag:', err);
-      //     this.handleError(err);
-      //   }
-      // });
+      this.tagService.updateTag(this.editTag.id, tagData).subscribe({
+        next: (updatedTag) => {
+          this.tagSaved.emit(updatedTag);
+          this.resetForm();
+        },
+        error: (err) => {
+          console.error('Erreur lors de la mise à jour du tag:', err);
+          this.handleError(err);
+        }
+      });
     } else {
       // Mode création
-      // this.tagService.ajouterTag(tagData).subscribe({
-      //   next: (newTag) => {
-      //     this.tagSaved.emit(newTag);
-      //     this.resetForm();
-      //   },
-      //   error: (err) => {
-      //     console.error('Erreur lors de la création du tag:', err);
-      //     this.handleError(err);
-      //   }
-      // });
+      this.tagService.createTag(tagData).subscribe({
+        next: (newTag) => {
+          this.tagSaved.emit(newTag);
+          this.resetForm();
+        },
+        error: (err) => {
+          console.error('Erreur lors de la création du tag:', err);
+          this.handleError(err);
+        }
+      });
     }
   }
 

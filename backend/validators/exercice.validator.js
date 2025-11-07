@@ -10,12 +10,13 @@ const createExerciceSchema = z.object({
   description: z.string({
     required_error: 'La description est requise.',
     invalid_type_error: 'La description doit être une chaîne de caractères.',
-  }).min(10, { message: 'La description doit contenir au moins 10 caractères.' }),
+  }).optional(), // On retire .min(10) qui est trop strict
 
   imageUrl: z.string().url({ message: "L'URL de l'image est invalide." }).optional().nullable(),
   schemaUrl: z.string().url({ message: "L'URL du schéma est invalide." }).optional().nullable(),
   materiel: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
+  critereReussite: z.string().optional().nullable(),
 
   // Les variables sont attendues comme des tableaux de chaînes
   variablesPlus: z.array(z.string()).optional().default([]),
@@ -26,7 +27,19 @@ const createExerciceSchema = z.object({
 });
 
 // Schéma pour la mise à jour (tous les champs sont optionnels)
-const updateExerciceSchema = createExerciceSchema.partial();
+// On n'utilise pas .partial() car il ne conserve pas les transformations comme .default([])
+const updateExerciceSchema = z.object({
+  nom: z.string().min(3).optional(),
+  description: z.string().optional(),
+  imageUrl: z.string().url().optional().nullable(),
+  schemaUrl: z.string().url().optional().nullable(),
+  materiel: z.string().optional().nullable(),
+  notes: z.string().optional().nullable(),
+  critereReussite: z.string().optional().nullable(),
+  variablesPlus: z.array(z.string()).optional().default([]),
+  variablesMinus: z.array(z.string()).optional().default([]),
+  tagIds: z.array(z.string().uuid()).optional().default([]),
+});
 
 module.exports = {
   createExerciceSchema,

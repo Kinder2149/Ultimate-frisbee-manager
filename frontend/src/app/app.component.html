@@ -63,8 +63,18 @@
           
           <!-- Menu utilisateur fusionné (Avatar + Paramètres) -->
           <li class="dropdown parametres user-avatar" [class.open]="isDropdownOpen.parametres">
-            <a class="nav-link dropdown-toggle" href="#" (click)="toggleDropdown('parametres', $event)">
-              <i class="fas fa-cog"></i> Paramètres
+            <a class="nav-link dropdown-toggle" href="#" (click)="toggleDropdown('parametres', $event)" matTooltip="Paramètres">
+              <!-- Avatar avec photo de profil -->
+              <div class="user-avatar-container">
+                <img 
+                  *ngIf="getAvatarUrl((currentUser$ | async)?.iconUrl)" 
+                  [src]="getAvatarUrl((currentUser$ | async)?.iconUrl)" 
+                  alt="Avatar" 
+                  class="user-avatar-img"
+                />
+                <mat-icon *ngIf="!getAvatarUrl((currentUser$ | async)?.iconUrl)" class="user-avatar-icon">account_circle</mat-icon>
+              </div>
+              <span class="nav-text">Paramètres</span>
               <mat-icon class="dropdown-icon">expand_more</mat-icon>
             </a>
             <ul class="dropdown-menu" *ngIf="isDropdownOpen.parametres">

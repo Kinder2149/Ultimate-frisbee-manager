@@ -54,7 +54,7 @@
       <div class="image-upload-section">
         <h3>Image</h3>
         <app-image-upload 
-          [currentImageUrl]="form.get('imageUrl')?.value"
+          [currentImageUrl]="imagePreview"
           (imageSelected)="onImageSelected($event)">
         </app-image-upload>
       </div>

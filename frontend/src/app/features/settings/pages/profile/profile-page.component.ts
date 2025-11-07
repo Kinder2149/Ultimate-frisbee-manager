@@ -12,6 +12,7 @@ import { UserProfileCardComponent } from '../../../../shared/ui/user-profile-car
 import { AuthService } from '../../../../core/services/auth.service';
 import { User } from '../../../../core/models/user.model';
 import { Observable } from 'rxjs';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { ApiUrlService } from '../../../../core/services/api-url.service';
 import { take } from 'rxjs/operators';
 
@@ -53,7 +54,7 @@ export class ProfilePageComponent implements OnInit {
   hideNewPassword = true;
   hideConfirmPassword = true;
 
-  constructor(private authService: AuthService, private fb: FormBuilder, private snackBar: MatSnackBar, private apiUrlService: ApiUrlService) {}
+  constructor(private authService: AuthService, private fb: FormBuilder, private snackBar: MatSnackBar, private apiUrlService: ApiUrlService, private http: HttpClient) {}
 
   ngOnInit(): void {
     this.securityForm = this.fb.group({
@@ -65,22 +66,19 @@ export class ProfilePageComponent implements OnInit {
       confirmPassword: ['', [Validators.required]]
     }, { validators: passwordMatchValidator() });
     this.user$ = this.authService.currentUser$;
-    // Charger user et initialiser le formulaire
-    // this.authService.getProfile().subscribe({
-    //   next: (res) => {
-    //     const user = res.user;
-    //     this.form = this.fb.group({
-    //       prenom: [user.prenom || '', [Validators.maxLength(50)]],
-    //       nom: [user.nom || '', [Validators.maxLength(50)]],
-    //       email: [user.email || '', [Validators.required, Validators.email]]
-    //     });
-    //     if (user.securityQuestion) {
-    //       this.securityForm.patchValue({ securityQuestion: user.securityQuestion });
-    //     }
-    //     this.loading = false;
-    //   },
-    //   error: () => (this.loading = false)
-    // });
+    this.user$.pipe(take(1)).subscribe(user => {
+      if (user) {
+        this.form = this.fb.group({
+          prenom: [user.prenom || '', [Validators.maxLength(50)]],
+          nom: [user.nom || '', [Validators.maxLength(50)]],
+          email: [user.email || '', [Validators.required, Validators.email]]
+        });
+        if (user.securityQuestion) {
+          this.securityForm.patchValue({ securityQuestion: user.securityQuestion });
+        }
+      }
+      this.loading = false;
+    });
   }
 
   submit(): void {
@@ -90,35 +88,46 @@ export class ProfilePageComponent implements OnInit {
     }
 
     const raw = this.form.getRawValue();
-    const payload: any = {
-      prenom: raw.prenom?.trim(),
-      nom: raw.nom?.trim(),
-      email: raw.email?.trim().toLowerCase()
-    };
+    
+    // Utiliser FormData pour envoyer le fichier (multipart/form-data)
+    const formData = new FormData();
+    formData.append('prenom', raw.prenom?.trim() || '');
+    formData.append('nom', raw.nom?.trim() || '');
+    formData.append('email', raw.email?.trim().toLowerCase() || '');
 
-    // Si un nouveau fichier a été sélectionné, l'ajouter au payload
+    // Si un nouveau fichier a été sélectionné, l'ajouter au FormData
     if (this.selectedFile) {
-      payload.icon = this.selectedFile;
+      formData.append('icon', this.selectedFile, this.selectedFile.name);
     }
 
     this.loading = true;
-    // this.authService.updateProfile(payload).pipe(take(1)).subscribe({
-    //   next: (res) => {
-    //     this.loading = false;
-    //     // Re-synchroniser le formulaire avec les données serveur
-    //     const u = res.user;
-    //     this.form.patchValue({
-    //       prenom: u.prenom || '',
-    //       nom: u.nom || '',
-    //       email: u.email || ''
-    //     });
-    //     this.snackBar.open('Profil mis à jour', 'Fermer', { duration: 2500, panelClass: ['success-snackbar'] });
-    //   },
-    //   error: (err) => {
-    //     this.loading = false;
-    //     this.snackBar.open(err || 'Échec de la mise à jour du profil', 'Fermer', { duration: 4000, panelClass: ['error-snackbar'] });
-    //   }
-    // });
+    // Correction : utiliser 'auth/profile' au lieu de 'users/profile' (route backend sur /api/auth)
+    this.http.put<{ user: User }>(this.apiUrlService.getUrl('auth/profile'), formData).pipe(take(1)).subscribe({
+      next: (res) => {
+        this.loading = false;
+        const u = res.user;
+        this.form.patchValue({
+          prenom: u.prenom || '',
+          nom: u.nom || '',
+          email: u.email || ''
+        });
+        this.selectedFile = null; // Réinitialiser le fichier sélectionné
+        
+        // Rafraîchir les données utilisateur pour mettre à jour l'avatar affiché
+        this.authService.refreshUserProfile().pipe(take(1)).subscribe({
+          next: () => {
+            this.snackBar.open('Profil mis à jour avec succès', 'Fermer', { duration: 2500, panelClass: ['success-snackbar'] });
+          },
+          error: () => {
+            this.snackBar.open('Profil mis à jour mais erreur de rafraîchissement', 'Fermer', { duration: 2500, panelClass: ['warning-snackbar'] });
+          }
+        });
+      },
+      error: (err: HttpErrorResponse) => {
+        this.loading = false;
+        this.snackBar.open(err.error?.message || 'Échec de la mise à jour du profil', 'Fermer', { duration: 4000, panelClass: ['error-snackbar'] });
+      }
+    });
   }
 
   resetForm(): void {
@@ -148,17 +157,18 @@ export class ProfilePageComponent implements OnInit {
     this.loading = true;
     const payload = this.passwordForm.getRawValue();
 
-    // this.authService.changePassword(payload).pipe(take(1)).subscribe({
-    //   next: () => {
-    //     this.loading = false;
-    //     this.snackBar.open('Mot de passe mis à jour avec succès', 'Fermer', { duration: 3000, panelClass: ['success-snackbar'] });
-    //     this.passwordForm.reset();
-    //   },
-    //   error: (err) => {
-    //     this.loading = false;
-    //     this.snackBar.open(err || 'Échec de la mise à jour du mot de passe', 'Fermer', { duration: 4000, panelClass: ['error-snackbar'] });
-    //   }
-    // });
+    // Correction : utiliser 'auth/change-password' au lieu de 'users/change-password'
+    this.http.post(this.apiUrlService.getUrl('auth/change-password'), payload).pipe(take(1)).subscribe({
+      next: () => {
+        this.loading = false;
+        this.snackBar.open('Mot de passe mis à jour avec succès', 'Fermer', { duration: 3000, panelClass: ['success-snackbar'] });
+        this.passwordForm.reset();
+      },
+      error: (err: HttpErrorResponse) => {
+        this.loading = false;
+        this.snackBar.open(err.error?.message || 'Échec de la mise à jour du mot de passe', 'Fermer', { duration: 4000, panelClass: ['error-snackbar'] });
+      }
+    });
   }
 
   setSecurityQuestion(): void {
@@ -168,17 +178,18 @@ export class ProfilePageComponent implements OnInit {
     }
 
     this.loading = true;
-    // this.authService.setSecurityQuestion(this.securityForm.value).pipe(take(1)).subscribe({
-    //   next: () => {
-    //     this.loading = false;
-    //     this.snackBar.open('Question de sécurité mise à jour', 'Fermer', { duration: 3000, panelClass: ['success-snackbar'] });
-    //     this.securityForm.get('securityAnswer')?.reset();
-    //   },
-    //   error: (err) => {
-    //     this.loading = false;
-    //     this.snackBar.open(err || 'Erreur lors de la mise à jour', 'Fermer', { duration: 4000, panelClass: ['error-snackbar'] });
-    //   }
-    // });
+    // Correction : utiliser 'auth/security-question' au lieu de 'users/security-question'
+    this.http.post(this.apiUrlService.getUrl('auth/security-question'), this.securityForm.value).pipe(take(1)).subscribe({
+      next: () => {
+        this.loading = false;
+        this.snackBar.open('Question de sécurité mise à jour', 'Fermer', { duration: 3000, panelClass: ['success-snackbar'] });
+        this.securityForm.get('securityAnswer')?.reset();
+      },
+      error: (err: HttpErrorResponse) => {
+        this.loading = false;
+        this.snackBar.open(err.error?.message || 'Erreur lors de la mise à jour', 'Fermer', { duration: 4000, panelClass: ['error-snackbar'] });
+      }
+    });
   }
 
   getAvatarUrl(path?: string | null): string | null {

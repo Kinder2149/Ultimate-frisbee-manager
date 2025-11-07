@@ -58,9 +58,13 @@ export class EchauffementFormComponent implements OnInit {
   onFormSubmit(formData: EchauffementFormData): void {
     this.isLoading = true;
 
-        const operation = this.isEditMode && this.echauffementId
-      ? this.echauffementService.updateEchauffement(this.echauffementId, formData)
-      : this.echauffementService.createEchauffement(formData);
+        // Le cast en 'any' est une solution pragmatique ici. Le service générique 'entityCrudService'
+    // est conçu pour chercher une propriété 'image' (un File) sur l'objet de données,
+    // mais le type 'Partial<Echauffement>' ne la déclare pas, causant une erreur TypeScript.
+    // En castant, on contourne cette vérification de type pour permettre à l'upload de fonctionner.
+    const operation = this.isEditMode && this.echauffementId
+      ? this.echauffementService.updateEchauffement(this.echauffementId, formData as any)
+      : this.echauffementService.createEchauffement(formData as any);
 
     operation.subscribe({
                   next: (result: Echauffement) => {

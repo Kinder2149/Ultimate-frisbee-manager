@@ -19,42 +19,18 @@
 
         <!-- Colonne droite: Image ou placeholder -->
         <section class="view-section">
-          <ng-container *ngIf="exerciceForm.get('imageUrl')?.value; else imagePlaceholder">
+          <ng-container *ngIf="imagePreview; else imagePlaceholder">
             <div class="media-item">
-              <img [src]="mediaUrl(exerciceForm.get('imageUrl')?.value)" alt="Illustration de l'exercice" />
+              <img [src]="imagePreview" alt="Illustration de l'exercice" />
               <div class="media-caption">Illustration</div>
             </div>
           </ng-container>
           <ng-template #imagePlaceholder>
             <div class="image-placeholder">
-          <ul class="dot-list" *ngIf="exerciceForm.get('variables')?.value as vars">
-            <li *ngFor="let v of (vars.variablesPlus || [])">{{ v }}</li>
-            <li *ngIf="!(vars.variablesPlus?.length)">—</li>
-          </ul>
-        </section>
-
-        <section class="view-section">
-          <h3 class="view-heading red">Variable (−)</h3>
-          <ul class="dot-list" *ngIf="exerciceForm.get('variables')?.value as vars">
-            <li *ngFor="let v of (vars.variablesMinus || [])">{{ v }}</li>
-            <li *ngIf="!(vars.variablesMinus?.length)">—</li>
-          </ul>
-        </section>
-
-        <!-- Format | Matériel | Durée -->
-        <section class="view-section">
-          <h3 class="view-heading sand">Format</h3>
-          <div class="tags-display">
-            <span class="tag" *ngFor="let tag of selectedFormatTags" [style.background-color]="tag.color || '#e0e0e0'">{{ tag.label }}</span>
-          </div>
-        </section>
-
-        <section class="view-section">
-          <h3 class="view-heading sand">Matériel</h3>
-          <ul class="dot-list" *ngIf="exerciceForm.get('variables')?.value as vars">
-            <li *ngIf="(f['materiel'].value || vars.materiel); else noMat">{{ f['materiel'].value || vars.materiel }}</li>
-          </ul>
-          <ng-template #noMat><div class="muted">—</div></ng-template>
+              <span class="material-icons">image</span>
+              <span>Ajouter une image</span>
+            </div>
+          </ng-template>
         </section>
 
         <section class="view-section">
@@ -72,6 +48,12 @@
         <section class="view-section view-span-3">
           <h3 class="view-heading violet">Notes</h3>
           <div class="view-text" *ngIf="exerciceForm.get('variables')?.value as vars">{{ f['notes'].value || vars.consignes || '—' }}</div>
+        </section>
+
+        <!-- Critère de réussite -->
+        <section class="view-section view-span-3">
+          <h3 class="view-heading">Critère de réussite</h3>
+          <div class="view-text">{{ f['critereReussite'].value || '—' }}</div>
         </section>
       </div>
     </div>
@@ -129,45 +111,26 @@
       <!-- Objectif -->
       <section class="form-section">
         <h3 class="view-heading light-blue">Objectif</h3>
-        <div *ngIf="submitted && !selectedObjectifTag" class="error-message">L'objectif est requis</div>
-        <div class="selected-tags-container">
-          <div *ngIf="selectedObjectifTag" class="tag-badge" [style.background-color]="selectedObjectifTag.color || '#e0e0e0'">
-            {{ selectedObjectifTag.label }}
-            <button type="button" class="remove-tag-btn" (click)="removeObjectifTag()">×</button>
-          </div>
-        </div>
-        <div class="autocomplete-container" id="objectifContainer">
-          <div class="tag-dropdown-toggle" (click)="toggleObjectifDropdown()">Choisir un objectif</div>
-          <div class="tag-dropdown-menu" [class.show]="showObjectifDropdown">
-            <div *ngIf="filteredObjectifTags.length === 0" class="tag-dropdown-item no-results">Aucun objectif trouvé</div>
-            <div *ngFor="let tag of filteredObjectifTags" class="tag-dropdown-item" (mousedown)="selectObjectifTag(tag)">
-              <span class="color-dot" [style.background-color]="tag.color || '#e0e0e0'"></span>
+        <mat-form-field appearance="fill" class="w-full">
+          <mat-label>Objectif principal</mat-label>
+          <mat-select formControlName="objectifTag" [compareWith]="compareTags">
+            <mat-option [value]="null">Aucun</mat-option>
+            <mat-option *ngFor="let tag of objectifTags" [value]="tag">
               {{ tag.label }}
-            </div>
-          </div>
-        </div>
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
       </section>
 
       <!-- Travail spécifique -->
       <section class="form-section">
         <h3 class="view-heading light-blue">Travail Spécifique</h3>
-        <div class="selected-tags-container">
-          <div *ngFor="let tag of selectedTravailSpecifiqueTags; let i = index" class="tag-badge" [style.background-color]="tag.color || '#e0e0e0'">
-            {{ tag.label }}
-            <button type="button" class="remove-tag-btn" (click)="removeTravailSpecifiqueTag(i)">×</button>
-          </div>
-        </div>
-        <div class="autocomplete-container" id="travailSpecifiqueContainer">
-          <div class="tag-dropdown-toggle" (click)="toggleTravailDropdown()">Choisir un travail spécifique</div>
-          <div class="tag-dropdown-menu" [class.show]="showTravailSpecifiqueDropdown">
-            <div *ngIf="filteredTravailSpecifiqueTags.length === 0" class="tag-dropdown-item no-results">Aucun travail spécifique trouvé</div>
-            <div *ngFor="let tag of filteredTravailSpecifiqueTags" class="tag-dropdown-item" (mousedown)="selectTravailSpecifiqueTag(tag)">
-              <span class="color-dot" [style.background-color]="tag.color || '#e0e0e0'"></span>
-              {{ tag.label }}
-            </div>
-          </div>
-        </div>
-        <div *ngIf="submitted && selectedTravailSpecifiqueTags.length === 0" class="error-message">Au moins un travail spécifique est requis</div>
+        <mat-form-field appearance="fill" class="w-full">
+          <mat-label>Travaux spécifiques</mat-label>
+          <mat-select formControlName="travailSpecifiqueTags" multiple [compareWith]="compareTags">
+            <mat-option *ngFor="let tag of travailSpecifiqueTags" [value]="tag">{{ tag.label }}</mat-option>
+          </mat-select>
+        </mat-form-field>
       </section>
 
       <!-- Variables (plein largeur) -->
@@ -200,67 +163,49 @@
         ></textarea>
       </section>
 
+      <!-- Critère de réussite (plein largeur) -->
+      <section class="form-section form-span-3">
+        <h3 class="view-heading">Critère de réussite</h3>
+        <textarea
+          id="critereReussite"
+          formControlName="critereReussite"
+          class="form-control"
+          rows="3"
+          placeholder="Ex: Réussir 8 passes consécutives sans turnover"
+        ></textarea>
+      </section>
+
       <!-- Niveau -->
       <section class="form-section">
         <h3 class="view-heading">Niveau</h3>
-        <div class="selected-tags-container">
-          <div *ngFor="let tag of selectedNiveauTags; let i = index" class="tag-badge" [style.background-color]="tag.color || '#e0e0e0'">
-            {{ tag.level ? '★'.repeat(tag.level) : tag.label }}
-            <button type="button" class="remove-tag-btn" (click)="removeNiveauTag(i)">×</button>
-          </div>
-        </div>
-        <div class="autocomplete-container" id="niveauContainer">
-          <div class="tag-dropdown-toggle" (click)="toggleNiveauDropdown()">Choisir un niveau</div>
-          <div class="tag-dropdown-menu" [class.show]="showNiveauDropdown">
-            <div *ngIf="filteredNiveauTags.length === 0" class="tag-dropdown-item no-results">Aucun niveau trouvé</div>
-            <div *ngFor="let tag of filteredNiveauTags" class="tag-dropdown-item" (mousedown)="selectNiveauTag(tag)">
-              <span class="color-dot" [style.background-color]="tag.color || '#e0e0e0'"></span>
-              {{ tag.level ? '★'.repeat(tag.level) : tag.label }}
-            </div>
-          </div>
-        </div>
+        <mat-form-field appearance="fill" class="w-full">
+          <mat-label>Niveaux</mat-label>
+          <mat-select formControlName="niveauTags" multiple [compareWith]="compareTags">
+            <mat-option *ngFor="let tag of niveauTags" [value]="tag">{{ tag.label }}</mat-option>
+          </mat-select>
+        </mat-form-field>
       </section>
 
       <!-- Temps moyen -->
       <section class="form-section">
         <h3 class="view-heading">Temps moyen</h3>
-        <div class="selected-tags-container">
-          <div *ngFor="let tag of selectedTempsTags; let i = index" class="tag-badge" [style.background-color]="tag.color || '#e0e0e0'">
-            {{ tag.label }}
-            <button type="button" class="remove-tag-btn" (click)="removeTempsTag(i)">×</button>
-          </div>
-        </div>
-        <div class="autocomplete-container" id="tempsContainer">
-          <div class="tag-dropdown-toggle" (click)="toggleTempsDropdown()">Choisir un temps moyen</div>
-          <div class="tag-dropdown-menu" [class.show]="showTempsDropdown">
-            <div *ngIf="filteredTempsTags.length === 0" class="tag-dropdown-item no-results">Aucune durée trouvée</div>
-            <div *ngFor="let tag of filteredTempsTags" class="tag-dropdown-item" (mousedown)="selectTempsTag(tag)">
-              <span class="color-dot" [style.background-color]="tag.color || '#e0e0e0'"></span>
-              {{ tag.label }}
-            </div>
-          </div>
-        </div>
+        <mat-form-field appearance="fill" class="w-full">
+          <mat-label>Temps</mat-label>
+          <mat-select formControlName="tempsTags" multiple [compareWith]="compareTags">
+            <mat-option *ngFor="let tag of tempsTags" [value]="tag">{{ tag.label }}</mat-option>
+          </mat-select>
+        </mat-form-field>
       </section>
 
       <!-- Format -->
       <section class="form-section">
         <h3 class="view-heading sand">Format</h3>
-        <div class="selected-tags-container">
-          <div *ngFor="let tag of selectedFormatTags; let i = index" class="tag-badge" [style.background-color]="tag.color || '#e0e0e0'">
-            {{ tag.label }}
-            <button type="button" class="remove-tag-btn" (click)="removeFormatTag(i)">×</button>
-          </div>
-        </div>
-        <div class="autocomplete-container" id="formatContainer">
-          <div class="tag-dropdown-toggle" (click)="toggleFormatDropdown()">Choisir un format</div>
-          <div class="tag-dropdown-menu" [class.show]="showFormatDropdown">
-            <div *ngIf="filteredFormatTags.length === 0" class="tag-dropdown-item no-results">Aucun format trouvé</div>
-            <div *ngFor="let tag of filteredFormatTags" class="tag-dropdown-item" (mousedown)="selectFormatTag(tag)">
-              <span class="color-dot" [style.background-color]="tag.color || '#e0e0e0'"></span>
-              {{ tag.label }}
-            </div>
-          </div>
-        </div>
+        <mat-form-field appearance="fill" class="w-full">
+          <mat-label>Formats</mat-label>
+          <mat-select formControlName="formatTags" multiple [compareWith]="compareTags">
+            <mat-option *ngFor="let tag of formatTags" [value]="tag">{{ tag.label }}</mat-option>
+          </mat-select>
+        </mat-form-field>
       </section>
 
       <!-- Boutons d'action (plein largeur) -->

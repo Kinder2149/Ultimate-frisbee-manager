@@ -97,6 +97,14 @@ Project Name: ultimate-frisbee-manager
 Root Directory: frontend
 ```
 
+### 3.4 Variables d'environnement (Supabase)
+Dans Vercel → Project Settings → Environment Variables, ajouter:
+```
+SUPABASE_URL=https://<votre-ref>.supabase.co
+SUPABASE_ANON_KEY=<clé anonyme publishable>
+```
+Déployer à nouveau pour prendre en compte les variables.
+
 ---
 
 ## 🔗 Étape 4 : Configuration CORS
@@ -219,6 +227,11 @@ npm run prisma:generate
 ### HTTPS
 - Activé automatiquement sur Render/Vercel
 - Redirection HTTP → HTTPS
+
+### Authentification (mise à jour)
+- L'endpoint `POST /api/auth/refresh` a été supprimé: aucun rafraîchissement côté serveur.
+- Les clients doivent utiliser le flux d'auth standard (login) et gérer l'expiration en ré-authentifiant si nécessaire.
+- Les en-têtes sensibles ne sont pas loggés (HTTP logging avec redaction active côté backend).
 
 ---
 

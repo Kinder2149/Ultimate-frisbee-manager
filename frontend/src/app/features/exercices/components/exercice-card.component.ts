@@ -21,6 +21,7 @@ export interface ExerciceInput {
   nom?: string;
   createdAt?: string | number | Date | null | undefined;
   description?: string;
+  critereReussite?: string;
   variablesText?: string;
   imageUrl?: string;
   schemaUrl?: string;

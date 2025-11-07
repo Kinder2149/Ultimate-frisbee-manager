@@ -1,0 +1,74 @@
+{
+  "phase": "sec-leak-removal",
+  "timestamp": "2025-11-05T14:20:00Z",
+  "summary": "Redaction des valeurs Supabase dans les fichiers d'environnement frontend. Préparation à l'arrêt du tracking des fichiers sensibles et à la purge d'historique.",
+  "findings": [
+    {
+      "id": "SEC-LEAK-0001",
+      "file": "frontend/src/environments/environment.ts",
+      "line": 7,
+      "snippet_redacted": "supabaseUrl: '<REDACTED>'",
+      "verify_command": "Select-String -Path .\\frontend\\src\\environments\\environment.ts -Pattern 'supabaseUrl' -CaseSensitive:$false",
+      "remediation_hint": "Remplacer par variables d'environnement Vercel (SUPABASE_URL)."
+    },
+    {
+      "id": "SEC-LEAK-0002",
+      "file": "frontend/src/environments/environment.ts",
+      "line": 8,
+      "snippet_redacted": "supabaseKey: '<REDACTED>'",
+      "verify_command": "Select-String -Path .\\frontend\\src\\environments\\environment.ts -Pattern 'supabaseKey' -CaseSensitive:$false",
+      "remediation_hint": "Remplacer par variables d'environnement Vercel (SUPABASE_ANON_KEY)."
+    },
+    {
+      "id": "SEC-LEAK-0001-PROD",
+      "file": "frontend/src/environments/environment.prod.ts",
+      "line": 7,
+      "snippet_redacted": "supabaseUrl: '<REDACTED>'",
+      "verify_command": "Select-String -Path .\\frontend\\src\\environments\\environment.prod.ts -Pattern 'supabaseUrl' -CaseSensitive:$false",
+      "remediation_hint": "Remplacer par variables d'environnement Vercel (SUPABASE_URL)."
+    },
+    {
+      "id": "SEC-LEAK-0002-PROD",
+      "file": "frontend/src/environments/environment.prod.ts",
+      "line": 8,
+      "snippet_redacted": "supabaseKey: '<REDACTED>'",
+      "verify_command": "Select-String -Path .\\frontend\\src\\environments\\environment.prod.ts -Pattern 'supabaseKey' -CaseSensitive:$false",
+      "remediation_hint": "Remplacer par variables d'environnement Vercel (SUPABASE_ANON_KEY)."
+    }
+  ],
+  "stop_tracking": {
+    "gitignore_already_contains": [
+      "backend/.env",
+      "backend/.env.test",
+      ".env",
+      ".env.test",
+      ".env.production"
+    ],
+    "recommended_git_commands": [
+      "git rm --cached backend/.env backend/.env.test",
+      "git commit -m 'chore(security): stop tracking env files'"
+    ]
+  },
+  "history_purge_instructions": {
+    "backup": [
+      "git clone --mirror <REMOTE_URL> ../ufm-mirror-backup.git",
+      "git bundle create ../ufm-backup.bundle --all"
+    ],
+    "git_filter_repo": [
+      "pip install git-filter-repo",
+      "git filter-repo --path frontend/src/environments/environment.ts --invert-paths --force",
+      "git filter-repo --path frontend/src/environments/environment.prod.ts --invert-paths --force",
+      "git filter-repo --path backend/.env --invert-paths --force",
+      "git filter-repo --path backend/.env.test --invert-paths --force"
+    ],
+    "push_force": [
+      "git push --force --all",
+      "git push --force --tags"
+    ]
+  },
+  "next_steps": [
+    "Rotation des clés (Supabase/Cloudinary/JWT) et injection via Vercel/Render",
+    "Alignement DEPLOYMENT.md avec la politique de secrets",
+    "Vérifier via Select-String qu'aucune valeur sensible n'est committée"
+  ]
+}

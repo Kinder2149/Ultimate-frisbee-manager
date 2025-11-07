@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -6,7 +8,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { EntrainementService } from '../../../../core/services/entrainement.service';
 import { ExerciceService } from '../../../../core/services/exercice.service';
 import { TagService } from '../../../../core/services/tag.service';
-import { Entrainement, EntrainementExercice, Echauffement } from '../../../../core/models/entrainement.model';
+import { Entrainement, EntrainementExercice } from '../../../../core/models/entrainement.model';
+import { Echauffement, BlocEchauffement } from '../../../../core/models/echauffement.model';
 import { SituationMatch } from '../../../../core/models/situationmatch.model';
 import { Exercice } from '../../../../core/models/exercice.model';
 import { Tag } from '../../../../core/models/tag.model';
@@ -30,6 +33,7 @@ export class EntrainementFormComponent implements OnInit {
   loading = false;
   error: string | null = null;
   selectedImageFile: File | null = null;
+  imagePreview: string | null = null;
   
   // Gestion des exercices
   availableExercices: Exercice[] = [];
@@ -141,6 +145,10 @@ export class EntrainementFormComponent implements OnInit {
       date: entrainement.date ? new Date(entrainement.date).toISOString().split('T')[0] : '',
       imageUrl: entrainement.imageUrl || ''
     });
+
+    if (entrainement.imageUrl) {
+      this.imagePreview = entrainement.imageUrl;
+    }
     
     // Charger les relations échauffement et situation/match
     if (entrainement.echauffement) {
@@ -172,32 +180,41 @@ export class EntrainementFormComponent implements OnInit {
       this.loading = true;
       this.error = null;
 
-      const formData = this.entrainementForm.value;
+      const formValue = this.entrainementForm.value;
       const entrainementData: any = {
         id: this.isEditMode ? this.entrainementId! : undefined,
-        titre: formData.titre,
-        date: formData.date ? new Date(formData.date) : undefined,
-        createdAt: new Date(),
-        exercices: formData.exercices || [],
-        echauffementId: this.selectedEchauffement?.id || undefined,
-        situationMatchId: this.selectedSituationMatch?.id || undefined,
+        titre: formValue.titre,
+        date: formValue.date ? new Date(formValue.date) : undefined,
+                // Nettoyage des données d'exercices pour ne garder que les champs pertinents
+        exercices: (formValue.exercices || []).map((exo: any) => ({
+          id: exo.id,
+          exerciceId: exo.exerciceId,
+          ordre: exo.ordre,
+          duree: exo.duree,
+          notes: exo.notes
+        })),
+        echauffementId: this.selectedEchauffement?.id || null,
+        situationMatchId: this.selectedSituationMatch?.id || null,
         tagIds: this.selectedThemeTags.map(tag => tag.id).filter(id => id),
-        imageUrl: formData.imageUrl || undefined,
-        schemaUrl: this.selectedImageFile || undefined // Attach the file for upload
+        imageUrl: formValue.imageUrl || null
       };
 
-      const operation = this.isEditMode && this.entrainementId
-        ? this.entrainementService.updateEntrainement(this.entrainementId, entrainementData)
-        : this.entrainementService.ajouterEntrainement(entrainementData);
+      if (this.selectedImageFile) {
+        entrainementData.image = this.selectedImageFile;
+      } else if (this.isEditMode && !this.imagePreview) {
+        entrainementData.imageUrl = '';
+      }
 
-      operation.subscribe({
+      const saveOperation$ = this.isEditMode && this.entrainementId
+        ? this.entrainementService.updateEntrainement(this.entrainementId, entrainementData)
+        : this.entrainementService.createEntrainement(entrainementData);
+
+      saveOperation$.subscribe({
         next: () => {
           console.log(`Entraînement ${this.isEditMode ? 'modifié' : 'créé'} avec succès`);
           this.loading = false;
-          // Navigation avec rechargement forcé de la page
-          this.router.navigate(['/entrainements']).then(() => {
-            window.location.reload();
-          });
+          // Navigation simple, sans rechargement
+          this.router.navigate(['/entrainements']);
         },
         error: (err: unknown) => {
           console.error(`Erreur lors de la ${this.isEditMode ? 'modification' : 'création'} de l'entraînement:`, err);
@@ -511,7 +528,7 @@ export class EntrainementFormComponent implements OnInit {
 
   getEchauffementTotalSeconds(): number {
     if (!this.selectedEchauffement || !this.selectedEchauffement.blocs) return 0;
-    return this.selectedEchauffement.blocs.reduce((acc, b) => acc + this.parseTempsToSeconds(b.temps), 0);
+    return this.selectedEchauffement.blocs.reduce((acc: number, b: BlocEchauffement) => acc + this.parseTempsToSeconds(b.temps), 0);
   }
 
   getEchauffementTotalLabel(): string {
@@ -535,8 +552,13 @@ export class EntrainementFormComponent implements OnInit {
 
   onImageSelected(file: File | null): void {
     this.selectedImageFile = file;
-    // Mettre à jour le champ imageUrl pour que la suppression d'image fonctionne
-    this.entrainementForm.get('imageUrl')?.setValue(file ? 'file-present' : null);
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => this.imagePreview = reader.result as string;
+      reader.readAsDataURL(file);
+    } else {
+      this.imagePreview = null;
+    }
   }
 
   getExerciceTags(index: number): Tag[] {

@@ -39,7 +39,7 @@ export class SituationMatchViewComponent {
   }
 
   mediaUrl(path?: string | null): string | null {
-    return this.apiUrl.getMediaUrl(path ?? undefined, 'situations');
+    return this.apiUrl.getMediaUrl(path ?? undefined, 'situations-matchs');
   }
 
   openImageViewer(imageUrl: string): void {

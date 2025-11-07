@@ -128,18 +128,26 @@ const generateToken = (user) => {
   return jwt.sign(
     { sub: user.id, email: user.email, role: user.role },
     getJwtSecret(),
-    { expiresIn: '7d' } // Token valide 7 jours
+    { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
   );
 };
 
 /**
  * Générer un refresh token
  */
+const getJwtRefreshSecret = () => {
+  const secret = process.env.JWT_REFRESH_SECRET;
+  if (!secret) {
+    throw new Error('FATAL ERROR: JWT_REFRESH_SECRET is not defined at runtime.');
+  }
+  return secret;
+};
+
 const generateRefreshToken = (user) => {
   return jwt.sign(
     { sub: user.id, type: 'refresh' },
-    getJwtSecret(),
-    { expiresIn: '30d' } // Refresh token valide 30 jours
+    getJwtRefreshSecret(),
+    { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d' }
   );
 };
 

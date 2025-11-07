@@ -1,0 +1,25 @@
+{
+  "name": "@ufm/shared",
+  "version": "0.1.0",
+  "description": "Constantes et utilitaires partagés pour Ultimate Frisbee Manager",
+  "license": "ISC",
+  "private": false,
+  "main": "dist/constants/tag-categories.js",
+  "types": "dist/constants/tag-categories.d.ts",
+  "exports": {
+    ".": "./dist/constants/tag-categories.js",
+    "./constants/*": "./dist/constants/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rimraf dist"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "rimraf": "^6.0.1"
+  }
+}

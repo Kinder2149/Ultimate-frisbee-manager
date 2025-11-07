@@ -1,7 +1,11 @@
+// Charger la configuration centralisée au tout début du processus.
+// Ce module gère dotenv et valide les variables d'environnement.
+const config = require('./config');
+
 const app = require('./app');
 const { prisma } = require('./services/prisma');
 
-const PORT = process.env.PORT || 3002;
+const PORT = config.port;
 
 const server = app.listen(PORT, '0.0.0.0', async () => {
   if (process.env.NODE_ENV !== 'test') {

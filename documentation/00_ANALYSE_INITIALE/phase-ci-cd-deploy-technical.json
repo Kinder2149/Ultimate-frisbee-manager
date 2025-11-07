@@ -1,0 +1,123 @@
+{
+  "phase": "ci-cd-deploy",
+  "timestamp": "2025-11-05T13:40:00Z",
+  "inputs_provided": [
+    "./vercel.json",
+    "./render.yaml",
+    "./DEPLOYMENT.md"
+  ],
+  "summary": "Frontend: Vercel (@vercel/angular) build sur frontend/package.json, SPA routing. Backend: Render web service, build cd backend && npm install && npm run deploy:render, start cd backend && npm start; DB provisionnée par Render. Variables d'env clés listées.",
+  "details": [
+    { "path": "vercel.json", "type": "file", "role": "config", "size_bytes": 200, "notes": "version 2; builds: {src: frontend/package.json, use: @vercel/angular}; routes SPA /(.*) -> /index.html." },
+    { "path": "render.yaml", "type": "file", "role": "config", "size_bytes": 797, "notes": "service web node: buildCommand 'cd backend && npm install && npm run deploy:render'; startCommand 'cd backend && npm start'; envVars: NODE_VERSION=20, NODE_ENV=production, DATABASE_URL from Render DB, CORS_ORIGINS whitelist (Vercel apps), JWT_SECRET fromSecret." },
+    { "path": "DEPLOYMENT.md", "type": "file", "role": "doc", "size_bytes": 0, "notes": "Guide déploiement: Backend Render (Node), Frontend Vercel (Angular). Liste de variables (CLOUDINARY_*), procédure CORS et CI auto sur push main." }
+  ],
+  "findings": [
+    {
+      "id": "CI-MISMATCH-BUILD-CMD",
+      "title": "Differences build/start entre render.yaml et DEPLOYMENT.md",
+      "severity": "low",
+      "description": "render.yaml utilise 'cd backend && npm install && npm run deploy:render' tandis que DEPLOYMENT.md recommande 'npm install' (root) et 'npm start'.",
+      "evidence": [
+        "render.yaml: buildCommand cd backend && npm install && npm run deploy:render",
+        "DEPLOYMENT.md: Build Command: npm install; Start Command: npm start (root)"
+      ],
+      "recommendation": "Aligner la doc et la config: préférer des commandes ancrées dans backend/ pour éviter les effets de chemin; documenter deploy:render." 
+    },
+    {
+      "id": "CI-ENV-CLOUDINARY-MISSING",
+      "title": "Variables Cloudinary absentes de render.yaml",
+      "severity": "medium",
+      "description": "config/index.js exige CLOUDINARY_URL ou les triplets CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET; non présentes dans render.yaml.",
+      "evidence": [
+        "backend/config/index.js: validation Cloudinary stricte",
+        "render.yaml: aucune clé CLOUDINARY_*"
+      ],
+      "recommendation": "Ajouter CLOUDINARY_URL (ou CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET) dans envVars Render (via secrets)."
+    },
+    {
+      "id": "CI-ENV-JWT-REFRESH-MISSING",
+      "title": "JWT_REFRESH_SECRET/EXPIRES absents",
+      "severity": "medium",
+      "description": "Le middleware auth utilise un refresh secret; render.yaml ne définit que JWT_SECRET.",
+      "evidence": [
+        "backend/middleware/auth.middleware.js: getJwtRefreshSecret()",
+        "render.yaml: pas de JWT_REFRESH_SECRET"
+      ],
+      "recommendation": "Ajouter JWT_REFRESH_SECRET (et éventuellement JWT_EXPIRES_IN/JWT_REFRESH_EXPIRES_IN) dans Render." 
+    },
+    {
+      "id": "DOC-ENV-PROD-SNIPPET-OUTDATED",
+      "title": "Snippet environment.prod.ts dans DEPLOYMENT.md partiel",
+      "severity": "low",
+      "description": "La doc montre seulement apiUrl alors que le fichier inclut aussi supabaseUrl/supabaseKey.",
+      "evidence": [
+        "DEPLOYMENT.md: environment.prod.ts exemple minimal",
+        "frontend/src/environments/environment.prod.ts: supabaseUrl/supabaseKey présents"
+      ],
+      "recommendation": "Mettre à jour la doc ou retirer les clés du code source et documenter l'injection Vercel (env public)."
+    },
+    {
+      "id": "CI-CORS-WHITELIST-CHECK",
+      "title": "CORS_ORIGINS whitelist à valider",
+      "severity": "low",
+      "description": "La liste inclut des patterns Vercel; s'assurer qu'elle couvre prod et previews, sans wildcard large.",
+      "evidence": [
+        "render.yaml: CORS_ORIGINS=... vercel.app et sous-domaines"
+      ],
+      "recommendation": "Maintenir une liste précise (prod + previews) et brancher cors() sur cette whitelist (cf. finding SEC-CORS-OPEN)."
+    }
+  ],
+  "commands_to_reproduce": [
+    "Get-Content .\\vercel.json",
+    "Get-Content .\\render.yaml",
+    "Get-Content .\\DEPLOYMENT.md -TotalCount 300"
+  ],
+  "next_steps": [
+    "Ajouter CLOUDINARY_* et JWT_REFRESH_SECRET dans Render (secrets).",
+    "Mettre à jour DEPLOYMENT.md pour refléter les commandes Build/Start réelles et les envs front (Supabase).",
+    "Créer un workflow CI minimal (lint/test/build) pour backend et frontend; laisser Render/Vercel déployer sur push main.",
+    "Rotater les clés exposées (Supabase) et migrer vers envs CI/CD."
+  ],
+  "ci_minimal_github_actions_example": {
+    "name": "ci",
+    "on": { "push": { "branches": ["main", "dev"] }, "pull_request": {} },
+    "jobs": {
+      "backend": {
+        "runs-on": "ubuntu-latest",
+        "defaults": { "run": { "working-directory": "backend" } },
+        "steps": [
+          {"uses": "actions/checkout@v4"},
+          {"uses": "actions/setup-node@v4", "with": {"node-version": "20", "cache": "npm", "cache-dependency-path": "backend/package-lock.json"}},
+          {"run": "npm ci"},
+          {"run": "npx prisma generate"},
+          {"run": "npm test", "env": {"NODE_ENV": "test"}},
+          {"run": "npm run build", "if": "hashFiles('backend/tsconfig.json') != ''", "continue-on-error": true}
+        ]
+      },
+      "frontend": {
+        "runs-on": "ubuntu-latest",
+        "defaults": { "run": { "working-directory": "frontend" } },
+        "steps": [
+          {"uses": "actions/checkout@v4"},
+          {"uses": "actions/setup-node@v4", "with": {"node-version": "20", "cache": "npm", "cache-dependency-path": "frontend/package-lock.json"}},
+          {"run": "npm ci"},
+          {"run": "npm run lint", "continue-on-error": true},
+          {"run": "npm run build"}
+        ]
+      }
+    }
+  },
+  "env_variables_required": [
+    {"name": "DATABASE_URL", "where": "Render", "notes": "PostgreSQL internal URL (ou SQLite file pour dev)."},
+    {"name": "CORS_ORIGINS", "where": "Render", "notes": "Liste CSV d'origines front autorisées."},
+    {"name": "JWT_SECRET", "where": "Render Secret", "notes": "Obligatoire"},
+    {"name": "JWT_REFRESH_SECRET", "where": "Render Secret", "notes": "Recommandé/Obligatoire si refresh utilisé."},
+    {"name": "JWT_EXPIRES_IN", "where": "Render", "notes": "Optionnel (par défaut 7d)"},
+    {"name": "JWT_REFRESH_EXPIRES_IN", "where": "Render", "notes": "Optionnel (par défaut 30d)"},
+    {"name": "CLOUDINARY_URL", "where": "Render Secret", "notes": "Ou CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET"},
+    {"name": "SUPABASE_URL", "where": "Vercel (Frontend)", "notes": "Clé publique côté client acceptable (anon), mais à injecter via env"},
+    {"name": "SUPABASE_ANON_KEY", "where": "Vercel (Frontend)", "notes": "Clé publique anon, ne pas committer dans repo"},
+    {"name": "API_URL", "where": "Vercel (Frontend)", "notes": "https://ultimate-frisbee-manager-api.onrender.com/api"}
+  ]
+}

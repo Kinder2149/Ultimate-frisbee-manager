@@ -103,7 +103,8 @@ export class EchauffementModalComponent implements OnInit {
   onEchauffementFormSubmit(formData: EchauffementFormData): void {
     this.isLoading = true;
 
-        this.echauffementService.createEchauffement(formData)
+        // Le cast en 'any' est une solution pragmatique. Voir le commentaire dans 'echauffement-form-page.component.ts' pour l'explication.
+        this.echauffementService.createEchauffement(formData as any)
       .pipe(
         catchError(error => {
           console.error('Erreur lors de la création de l\'échauffement:', error);

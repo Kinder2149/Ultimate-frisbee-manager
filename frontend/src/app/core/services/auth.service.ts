@@ -84,6 +84,13 @@ export class AuthService {
     return !!user && user.role === 'ADMIN';
   }
 
+  /**
+   * Rafraîchit le profil utilisateur depuis le backend
+   */
+  refreshUserProfile(): Observable<User> {
+    return this.syncUserProfile();
+  }
+
   private syncUserProfile(): Observable<User> {
     // L'intercepteur ajoutera le token JWT de Supabase à cette requête
     return this.http.get<{ user: User }>(`${this.apiUrl}/profile`).pipe(

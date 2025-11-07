@@ -1,0 +1,48 @@
+{
+  "phase": "tests-quality",
+  "timestamp": "2025-11-05T13:45:00Z",
+  "inputs_provided": [
+    "backend/tests (listing)",
+    "frontend/cypress (listing)",
+    "backend/jest.config.js",
+    "frontend/cypress.config.ts",
+    "frontend/.eslintrc.json",
+    "backend/.eslintrc.js",
+    "tmp_backend_audit.json",
+    "tmp_frontend_audit.json"
+  ],
+  "summary": "Tests: backend configuré avec Jest (coverage activé), frontend avec Cypress E2E; lint présent des deux côtés. npm audit: backend 0 vulnérabilités; frontend 10 (low/moderate), aucune critique.
+",
+  "details": [
+    { "path": "backend/tests", "type": "dir", "role": "tests_setup", "size_bytes": 0, "notes": "load-env.js, setup.js (globalSetup, setupFiles dans Jest)." },
+    { "path": "backend/jest.config.js", "type": "file", "role": "jest_config", "size_bytes": 0, "notes": "testEnvironment=node; collectCoverage=true; coverageDirectory=coverage; ignore prisma/validators/server.js/app.js." },
+    { "path": "backend/__tests__", "type": "dir", "role": "tests_unit", "size_bytes": 0, "notes": "Tests présents (ex: tag.test.js repéré auparavant)." },
+
+    { "path": "frontend/cypress", "type": "dir", "role": "tests_e2e", "size_bytes": 0, "notes": "e2e/api-tests/api-endpoints.cy.js; support et fixtures présents; cypress.config.ts minimal." },
+    { "path": "frontend/.eslintrc.json", "type": "file", "role": "lint_frontend", "size_bytes": 0, "notes": "@angular-eslint configuré; règles de sélecteurs; templates a11y." },
+    { "path": "backend/.eslintrc.js", "type": "file", "role": "lint_backend", "size_bytes": 0, "notes": "eslint:recommended + règles de style et bonnes pratiques." },
+
+    { "path": "tmp_backend_audit.json", "type": "file", "role": "npm_audit_backend", "size_bytes": 0, "notes": "vulnerabilities.total=0; dependencies total ~519." },
+    { "path": "tmp_frontend_audit.json", "type": "file", "role": "npm_audit_frontend", "size_bytes": 0, "notes": "metadata: low=4, moderate=6, high=0, critical=0, total=10. Packages notables: @angular-devkit/build-angular (moderate, major fix to 20.3.8), http-proxy-middleware (moderate), webpack-dev-server (moderate), esbuild (moderate), vite (moderate), inquirer (low), external-editor/tmp (low)." }
+  ],
+  "findings": [
+    {"id":"TESTS-BE-COVERAGE","title":"Coverage backend activé mais non publié","severity":"low","description":"Jest collecte la couverture dans backend/coverage mais pas de publication CI.","evidence":["backend/jest.config.js: collectCoverage: true"],"recommendation":"Publier le rapport en artefact CI et/ou badge; ajouter seuils coverage si pertinent."},
+    {"id":"TESTS-FE-CYPRESS-API","title":"E2E Cypress présent (API tests)","severity":"low","description":"Un test E2E API est présent; compléter avec scénarios UI critiques.","evidence":["frontend/cypress/e2e/api-tests/api-endpoints.cy.js"],"recommendation":"Ajouter des specs UI pour flux login/exercices CRUD; exécuter en CI sur PR."},
+    {"id":"AUDIT-FE-MODERATE","title":"Vulnérabilités modérées côté frontend","severity":"medium","description":"10 vulnérabilités (4 low, 6 moderate) affectant dev tooling (Angular devkit, webpack-dev-server, vite, esbuild, http-proxy-middleware). Aucune critique/haute.","evidence":["tmp_frontend_audit.json: totals low=4, moderate=6"],"recommendation":"Mettre à jour @angular-devkit/build-angular vers 20.3.8; mettre à jour webpack-dev-server, vite et esbuild aux dernières patchs; relancer audit."}
+  ],
+  "commands_to_reproduce": [
+    "npm --prefix backend test",
+    "npm --prefix backend test -- --coverage",
+    "npm --prefix frontend run cypress:open",
+    "npm --prefix frontend run cypress:run",
+    "npm --prefix backend audit",
+    "npm --prefix frontend audit",
+    "npm --prefix frontend outdated @angular-devkit/build-angular webpack-dev-server vite esbuild"
+  ],
+  "next_steps": [
+    "Configurer un job CI pour exécuter Jest (backend) avec couverture et Cypress (frontend) en mode headless.",
+    "Mettre à jour @angular-devkit/build-angular vers >=20.3.8 et patcher webpack-dev-server, vite, esbuild.",
+    "Ajouter des seuils de couverture et des règles lint obligatoires sur PR.",
+    "Planifier des tests E2E UI essentiels (auth, navigation, CRUD)."
+  ]
+}

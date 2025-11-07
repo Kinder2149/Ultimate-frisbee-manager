@@ -13,13 +13,19 @@ import { ImageUploadComponent } from '../../image-upload/image-upload.component'
 import { SituationMatch } from '../../../../core/models/situationmatch.model';
 import { Tag } from '../../../../core/models/tag.model';
 
+// Définition locale des types pour le formulaire
+const SITUATION_MATCH_TYPES: { value: 'Match' | 'Situation'; label: string }[] = [
+  { value: 'Match', label: 'Match' },
+  { value: 'Situation', label: 'Situation' }
+];
+
 export interface SituationMatchFormData {
   type: 'Match' | 'Situation';
   description?: string;
   temps?: string;
   imageUrl?: string;
+  image?: File;
   tagIds: string[];
-  schemaUrl?: File;
 }
 
 @Component({
@@ -52,6 +58,7 @@ export class SituationMatchFormComponent implements OnInit, OnChanges {
   form: FormGroup;
   selectedTags: Tag[] = [];
   selectedImageFile: File | null = null;
+  imagePreview: string | null = null;
   
   // Options pour le sélecteur de type
   typeOptions = SITUATION_MATCH_TYPES;
@@ -114,6 +121,10 @@ export class SituationMatchFormComponent implements OnInit, OnChanges {
       tempsUnite: parsed.unite,
       imageUrl: situationMatch.imageUrl || ''
     });
+
+    if (situationMatch.imageUrl) {
+      this.imagePreview = situationMatch.imageUrl;
+    }
     
     // Charger les tags sélectionnés
     this.selectedTags = situationMatch.tags || [];
@@ -152,7 +163,7 @@ export class SituationMatchFormComponent implements OnInit, OnChanges {
       description: formData.description || undefined,
       temps,
       imageUrl: formData.imageUrl || undefined,
-      schemaUrl: this.selectedImageFile || undefined, // Attach the file for upload
+      image: this.selectedImageFile || undefined, // Attach the file for upload
       tagIds: this.selectedTags.map(tag => tag.id).filter(id => id !== undefined) as string[]
     };
 
@@ -161,7 +172,13 @@ export class SituationMatchFormComponent implements OnInit, OnChanges {
 
   onImageSelected(file: File | null): void {
     this.selectedImageFile = file;
-    this.form.get('imageUrl')?.setValue(file ? 'file-present' : null);
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => this.imagePreview = reader.result as string;
+      reader.readAsDataURL(file);
+    } else {
+      this.imagePreview = null;
+    }
   }
 
   onCancel(): void {

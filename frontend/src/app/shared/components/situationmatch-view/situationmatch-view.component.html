@@ -17,12 +17,23 @@
     <div class="dialog-container">
       <!-- En-tête (uniquement en mode dialogue) -->
       <div class="dialog-header sticky" *ngIf="dialogRef">
-        <h2 class="title"><mat-icon class="title-icon">sports</mat-icon>{{ situationMatch.nom || (situationMatch.type || 'Situation/Match') }}</h2>
+        <h2 class="title"><mat-icon class="title-icon">sports</mat-icon>{{ situationMatch.nom || situationMatch.type }} <span class="type-badge" [ngClass]="situationMatch.type.toLowerCase()">{{ situationMatch.type }}</span></h2>
         <button mat-icon-button aria-label="Fermer" (click)="close()"><mat-icon>close</mat-icon></button>
       </div>
       <mat-divider *ngIf="dialogRef"></mat-divider>
 
       <div class="dialog-content">
+        <div class="meta-grid">
+          <div class="meta-item" *ngIf="situationMatch.temps as temps">
+            <mat-icon>timer</mat-icon>
+            <span>{{ temps }}</span>
+          </div>
+          <div class="meta-item" *ngIf="situationMatch.createdAt as createdAt">
+            <mat-icon>calendar_today</mat-icon>
+            <span>Créé le {{ createdAt | date:'dd/MM/yyyy' }}</span>
+          </div>
+        </div>
+        <mat-divider></mat-divider>
         <!-- Contenu détaillé ici -->
         <div class="section" *ngIf="situationMatch.description as description"><h3 class="hl">Description</h3><p>{{ description }}</p></div>
         <div class="section" *ngIf="situationMatch.imageUrl as url"><img [src]="mediaUrl(url)" [alt]="'Illustration de ' + situationMatch.nom" class="preview-image clickable" (click)="openImageViewer(url)"></div>

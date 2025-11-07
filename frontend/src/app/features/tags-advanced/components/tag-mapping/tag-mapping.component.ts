@@ -12,7 +12,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 
 import { TagMapping } from '../../models/tags-advanced.model';
-import { TagCategory } from '@shared/constants/tag-categories';
+import { TagCategory } from '@ufm/shared/constants/tag-categories';
 
 import { Tag } from '../../services/tag-recommendation.service';
 

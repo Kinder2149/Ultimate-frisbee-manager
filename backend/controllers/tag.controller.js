@@ -1,4 +1,4 @@
-const { TAG_CATEGORIES, isValidCategory, isValidLevel } = require('../../shared/constants/tag-categories');
+const { TAG_CATEGORIES } = require('../../shared/constants/tag-categories');
 const { prisma } = require('../services/prisma');
 
 /**
@@ -127,6 +127,52 @@ exports.updateTag = async (req, res, next) => {
  * Supprimer un tag
  * @route DELETE /api/tags/:id
  */
+/**
+ * Récupérer tous les tags groupés par catégorie
+ * @route GET /api/tags/grouped
+ */
+exports.getGroupedTags = async (req, res, next) => {
+  try {
+    const tags = await prisma.tag.findMany({
+      orderBy: [
+        { category: 'asc' },
+        { label: 'asc' }
+      ]
+    });
+
+    // Construire une base contenant toutes les catégories (même vides)
+    const base = (TAG_CATEGORIES || []).reduce((acc, cat) => {
+      acc[cat] = [];
+      return acc;
+    }, {});
+
+    // Répartir les tags par catégorie
+    const filled = tags.reduce((acc, tag) => {
+      const { category } = tag;
+      if (!acc[category]) acc[category] = [];
+      acc[category].push(tag);
+      return acc;
+    }, {});
+
+    // Logs de diagnostic: catégories présentes et comptages
+    try {
+      const presentCats = Object.keys(filled);
+      const counts = presentCats.reduce((m, k) => { m[k] = filled[k].length; return m; }, {});
+      // eslint-disable-next-line no-console
+      console.log('[TAGS] Categories in DB:', presentCats);
+      // eslint-disable-next-line no-console
+      console.log('[TAGS] Counts per category:', counts);
+      // eslint-disable-next-line no-console
+      console.log('[TAGS] Expected categories (TAG_CATEGORIES):', TAG_CATEGORIES);
+    } catch {}
+
+    // Fusionner la base et les catégories remplies pour garantir la présence de toutes les clés
+    res.json({ ...base, ...filled });
+  } catch (error) {
+    next(error);
+  }
+};
+
 exports.deleteTag = async (req, res, next) => {
   try {
     const { id } = req.params;

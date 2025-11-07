@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -19,8 +19,9 @@ model Exercice {
   schemaUrl   String?  // URL facultative vers un schéma tactique
   materiel    String?  // Matériel nécessaire pour l'exercice (optionnel)
   notes       String?  // Notes générales de l'exercice (optionnel)
-  variablesPlus String[]  // Variables qui augmentent la difficulté (+)
-  variablesMinus String[] // Variables qui diminuent la difficulté (-)
+  critereReussite String? // Critère de réussite (optionnel)
+  variablesPlus String  @default("") // Stocké comme une chaîne JSON: '["var1", "var2"]'
+  variablesMinus String @default("") // Stocké comme une chaîne JSON: '["var1", "var2"]'
   createdAt   DateTime @default(now())
   
   // Relations avec les tags (caractéristiques de l'exercice)
@@ -28,6 +29,8 @@ model Exercice {
   
   // Relation avec les entraînements
   entrainements EntrainementExercice[]
+
+  @@index([createdAt])
 }
 
 // Modèle pour les tags
@@ -50,6 +53,7 @@ model Tag {
   
   // Contrainte d'unicité pour éviter les doublons par catégorie
   @@unique([label, category])
+  @@index([createdAt])
 }
 
 
@@ -74,6 +78,10 @@ model Entrainement {
   // Relations avec échauffement et situation (optionnelles)
   echauffement    Echauffement?    @relation(fields: [echauffementId], references: [id], onDelete: SetNull)
   situationMatch  SituationMatch?  @relation(fields: [situationMatchId], references: [id], onDelete: SetNull)
+
+  @@index([echauffementId])
+  @@index([situationMatchId])
+  @@index([createdAt])
 }
 
 // Table de liaison entre entraînements et exercices
@@ -91,6 +99,9 @@ model EntrainementExercice {
   exercice       Exercice     @relation(fields: [exerciceId], references: [id], onDelete: Cascade)
   
   @@unique([entrainementId, exerciceId]) // Un exercice ne peut être ajouté qu'une fois par entraînement
+  @@index([entrainementId])
+  @@index([exerciceId])
+  @@index([createdAt])
 }
 
 // Modèle pour les échauffements
@@ -106,6 +117,8 @@ model Echauffement {
   
   // Relation avec les entraînements (un échauffement peut être utilisé dans plusieurs entraînements)
   entrainements Entrainement[]
+
+  @@index([createdAt])
 }
 
 // Modèle pour les blocs d'échauffement
@@ -125,6 +138,8 @@ model BlocEchauffement {
   echauffement   Echauffement @relation(fields: [echauffementId], references: [id], onDelete: Cascade)
   
   @@unique([echauffementId, ordre]) // Un ordre unique par échauffement
+  @@index([echauffementId])
+  @@index([createdAt])
 }
 
 // Modèle pour les situations et matchs
@@ -142,12 +157,15 @@ model SituationMatch {
   
   // Relation avec les entraînements (une situation peut être utilisée dans plusieurs entraînements)
   entrainements Entrainement[]
+
+  @@index([createdAt])
 }
 
 // Modèle pour les utilisateurs
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
+  passwordHash String
   nom       String
   prenom    String?
   role      String   @default("USER")
@@ -157,4 +175,5 @@ model User {
   updatedAt DateTime @updatedAt
 
 
+  @@index([createdAt])
 }

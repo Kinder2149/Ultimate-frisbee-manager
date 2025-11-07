@@ -6,6 +6,7 @@ const router = express.Router();
 const exerciceController = require('../controllers/exercice.controller');
 const { createUploader } = require('../middleware/upload.middleware');
 const { validate } = require('../middleware/validation.middleware');
+const { transformFormData } = require('../middleware/transform.middleware'); // Ajout
 const { createExerciceSchema, updateExerciceSchema } = require('../validators/exercice.validator');
 
 // GET /api/exercices - Récupérer tous les exercices avec leurs tags
@@ -15,10 +16,25 @@ router.get('/', exerciceController.getAllExercices);
 router.get('/:id', exerciceController.getExerciceById);
 
 // POST /api/exercices - Ajouter un nouvel exercice avec des tags et une image (via Cloudinary)
-router.post('/', createUploader('image', 'exercices'), validate(createExerciceSchema), exerciceController.createExercice);
+// Middleware de logging pour débogage
+const logBody = (req, res, next) => {
+  console.log('--- Contenu de req.body avant validation ---');
+  console.dir(req.body, { depth: null });
+  console.log('------------------------------------------');
+  next();
+};
+
+router.post('/', 
+  createUploader('image', 'exercices'), 
+  transformFormData, 
+  logBody, // Ajout du logging
+  validate(createExerciceSchema),
+  exerciceController.createExercice
+);
 
 // PUT /api/exercices/:id - Mettre à jour un exercice avec une image (via Cloudinary)
-router.put('/:id', createUploader('image', 'exercices'), validate(updateExerciceSchema), exerciceController.updateExercice);
+// Réactivation de la validation Zod suite à la correction du middleware
+router.put('/:id', createUploader('image', 'exercices'), transformFormData, logBody, validate(updateExerciceSchema), exerciceController.updateExercice);
 
 // POST /api/exercices/:id/duplicate - Dupliquer un exercice
 router.post('/:id/duplicate', exerciceController.duplicateExercice);

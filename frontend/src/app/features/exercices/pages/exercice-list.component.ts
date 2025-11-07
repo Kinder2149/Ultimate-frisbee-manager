@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subscription, forkJoin } from 'rxjs';
+import { Subscription, forkJoin, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -47,6 +48,7 @@ import { ExerciceFiltersComponent, ExerciceFiltersValue } from '../components/ex
   }
 })
 export class ExerciceListComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
   // Injecter les services nécessaires
   private routeSubscription?: Subscription;
   
@@ -72,6 +74,8 @@ export class ExerciceListComponent implements OnInit, OnDestroy {
     if (this.routeSubscription) {
       this.routeSubscription.unsubscribe();
     }
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   /**
@@ -106,6 +110,17 @@ export class ExerciceListComponent implements OnInit, OnDestroy {
 
 
   ngOnInit(): void {
+    this.reloadData();
+
+    // S'abonner aux mises à jour pour rafraîchir la liste
+    this.exerciceService.exercicesUpdated$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.reloadData();
+      });
+  }
+
+  reloadData(): void {
     this.loading = true;
     // Charger les tags et les exercices simultanément pour optimiser les performances
     forkJoin({
@@ -321,7 +336,7 @@ export class ExerciceListComponent implements OnInit, OnDestroy {
     // Le filtre par tags de variables a été supprimé car la catégorie Variable n'existe plus
 
     // Trier les exercices par nom (nouveau)
-    filtered.sort((a, b) => a.nom.localeCompare(b.nom));
+    filtered.sort((a, b) => (a.nom || '').localeCompare(b.nom || ''));
     
     this.filteredExercices = filtered;
     console.log(`Filtres appliqués: ${filtered.length} exercices correspondants`);

@@ -87,13 +87,17 @@ export class SituationMatchFormComponent implements OnInit {
     
     if (this.isEditMode && this.situationMatchId) {
       // Mode édition
-                        const updateData: Partial<SituationMatch> = {
+      const updateData: Partial<SituationMatch> = {
         type: formData.type as 'Match' | 'Situation',
         description: formData.description,
         temps: formData.temps,
-        imageUrl: formData.imageUrl,
-        tags: formData.tagIds.map(id => ({ id })) as any // Le backend gère la connexion via les IDs dans le tableau de tags
-      };
+        // N'envoyer imageUrl que si non vide
+        ...(formData.imageUrl ? { imageUrl: formData.imageUrl } : {}),
+        // Inclure le fichier pour déclencher le FormData
+        ...(formData.image ? { image: formData.image } : {}),
+        // Aligner avec le backend: utiliser tagIds
+        tagIds: formData.tagIds
+      } as any;
 
       this.situationMatchService.updateSituationMatch(this.situationMatchId, updateData).subscribe({
         next: () => {
@@ -108,15 +112,19 @@ export class SituationMatchFormComponent implements OnInit {
       });
     } else {
       // Mode création
-                        const createData: Partial<SituationMatch> = {
+      const createData: Partial<SituationMatch> = {
         type: formData.type as 'Match' | 'Situation',
         description: formData.description,
         temps: formData.temps,
-        imageUrl: formData.imageUrl,
-        tags: formData.tagIds.map(id => ({ id })) as any // Le backend gère la connexion via les IDs dans le tableau de tags
-      };
+        // N'envoyer imageUrl que si non vide
+        ...(formData.imageUrl ? { imageUrl: formData.imageUrl } : {}),
+        // Inclure le fichier pour déclencher le FormData
+        ...(formData.image ? { image: formData.image } : {}),
+        // Aligner avec le backend: utiliser tagIds
+        tagIds: formData.tagIds
+      } as any;
 
-            this.situationMatchService.createSituationMatch(createData).subscribe({
+      this.situationMatchService.createSituationMatch(createData).subscribe({
         next: () => {
           this.snackBar.open('Situation/Match créée avec succès', 'Fermer', { duration: 3000 });
           this.router.navigate(['/situations-matchs']);

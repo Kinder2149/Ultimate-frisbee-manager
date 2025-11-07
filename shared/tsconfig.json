@@ -3,10 +3,10 @@
     "target": "es2016",
     "module": "commonjs",
     "declaration": true,
-    "outDir": "./constants",
+    "outDir": "./dist",
     "rootDir": "./constants",
     "strict": true,
     "esModuleInterop": true
   },
-  "include": ["constants/tag-categories.ts"]
+  "include": ["constants/**/*.ts"]
 }

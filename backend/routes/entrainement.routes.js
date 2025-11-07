@@ -8,15 +8,25 @@ const entrainementController = require('../controllers/entrainement.controller')
 const { createUploader } = require('../middleware/upload.middleware');
 const { validate } = require('../middleware/validation.middleware');
 const { createEntrainementSchema, updateEntrainementSchema } = require('../validators/entrainement.validator');
-
-// Middleware d'upload pour les images d'entraînements
-const uploadMiddleware = createUploader('schemaUrl', 'entrainements');
+const { transformFormData } = require('../middleware/transform.middleware');
 
 // Routes pour les entraînements
 router.get('/', entrainementController.getAllEntrainements);
 router.get('/:id', entrainementController.getEntrainementById);
-router.post('/', uploadMiddleware, validate(createEntrainementSchema), entrainementController.createEntrainement);
-router.put('/:id', uploadMiddleware, validate(updateEntrainementSchema), entrainementController.updateEntrainement);
+
+router.post('/', 
+  createUploader('image', 'entrainements'), 
+  transformFormData, 
+  validate(createEntrainementSchema), 
+  entrainementController.createEntrainement
+);
+
+router.put('/:id', 
+  createUploader('image', 'entrainements'), 
+  transformFormData, 
+  validate(updateEntrainementSchema), 
+  entrainementController.updateEntrainement
+);
 router.post('/:id/duplicate', entrainementController.duplicateEntrainement);
 router.delete('/:id', entrainementController.deleteEntrainement);
 

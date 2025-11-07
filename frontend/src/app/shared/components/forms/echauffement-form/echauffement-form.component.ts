@@ -13,10 +13,13 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Echauffement, BlocEchauffement } from '../../../../core/models/echauffement.model';
 import { EchauffementService } from '../../../../core/services/echauffement.service';
 import { ApiUrlService } from '../../../../core/services/api-url.service';
+import { ImageUploadComponent } from '../../image-upload/image-upload.component';
 
 export interface EchauffementFormData {
   nom: string;
   description: string;
+  imageUrl?: string | null;
+  image?: File;
   blocs: BlocEchauffement[];
 }
 
@@ -33,7 +36,8 @@ export interface EchauffementFormData {
     MatIconModule,
     MatDividerModule,
     MatSelectModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    ImageUploadComponent
   ],
   templateUrl: './echauffement-form.component.html',
   styleUrls: ['./echauffement-form.component.scss']
@@ -51,7 +55,7 @@ export class EchauffementFormComponent implements OnInit, OnChanges {
   // Image globale
   selectedImageFile: File | null = null;
   uploading = false;
-  imagePreview: string | ArrayBuffer | null = null;
+  imagePreview: string | null = null;
 
   constructor(private fb: FormBuilder, private echauffementService: EchauffementService, private apiUrl: ApiUrlService) {
     this.echauffementForm = this.createForm();
@@ -199,11 +203,13 @@ export class EchauffementFormComponent implements OnInit, OnChanges {
         })
       };
 
-      // Ajouter l'URL d'image si elle existe, ou le fichier pour l'upload
+      // Ajouter l'image pour l'upload
       if (this.selectedImageFile) {
-        (echauffementData as any).schemaUrl = this.selectedImageFile;
+        echauffementData.image = this.selectedImageFile;
+      } else if (this.isEditMode && !this.imagePreview) {
+        echauffementData.imageUrl = '';
       } else {
-        (echauffementData as any).imageUrl = this.echauffementForm.get('imageUrl')?.value || null;
+        echauffementData.imageUrl = this.echauffementForm.get('imageUrl')?.value || undefined;
       }
 
       this.formSubmit.emit(echauffementData);
@@ -213,17 +219,15 @@ export class EchauffementFormComponent implements OnInit, OnChanges {
   }
 
   // ===== Gestion image globale =====
-  onImageSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (!input?.files || input.files.length === 0) return;
-    const file = input.files[0];
+  onImageSelected(file: File | null): void {
     this.selectedImageFile = file;
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.imagePreview = reader.result;
-    };
-    reader.readAsDataURL(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => this.imagePreview = reader.result as string;
+      reader.readAsDataURL(file);
+    } else {
+      this.imagePreview = null;
+    }
   }
 
   mediaUrl(path?: string | null): string | null {

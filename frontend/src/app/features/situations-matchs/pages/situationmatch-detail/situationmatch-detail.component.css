@@ -1,0 +1,16 @@
+.detail-container {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.loading {
+  color: rgba(0,0,0,0.6);
+}
+
+.empty {
+  color: rgba(0,0,0,0.6);
+  font-style: italic;
+}
+

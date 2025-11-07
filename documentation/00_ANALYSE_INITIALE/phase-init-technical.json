@@ -1,0 +1,8 @@
+{
+  "project": "Ultimate Frisbee Manager",
+  "branch": "audit/reprise-20251105",
+  "date": "2025-11-05T13:01:00Z",
+  "auditeur": "Cascade",
+  "scopes": ["backend", "frontend", "documentation"],
+  "commit_short_hash": "4ee5e64"
+}

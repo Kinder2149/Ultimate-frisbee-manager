@@ -2,7 +2,7 @@
  * Contrôleur pour l'authentification et la gestion de profil
  */
 const { prisma } = require('../services/prisma');
-const { generateToken, generateRefreshToken } = require('../middleware/auth.middleware');
+const { generateToken } = require('../middleware/auth.middleware');
 
 /**
  * Récupérer le profil utilisateur
@@ -22,67 +22,6 @@ const getProfile = async (req, res) => {
   }
 };
 
-/**
- * Rafraîchir le token
- */
-const refreshToken = async (req, res) => {
-  // NOTE: Cette logique de refresh token est spécifique à l'ancien système JWT.
-  // Avec Supabase Auth, le rafraîchissement est géré automatiquement par la bibliothèque client.
-  // Cette route pourrait être dépréciée ou supprimée.
-  try {
-    const { refreshToken } = req.body;
-
-    if (!refreshToken) {
-      return res.status(400).json({
-        error: 'Refresh token requis',
-        code: 'MISSING_REFRESH_TOKEN'
-      });
-    }
-
-    // Vérifier le refresh token
-    const jwt = require('jsonwebtoken');
-    const { JWT_SECRET } = require('../middleware/auth.middleware');
-    
-    const decoded = jwt.verify(refreshToken, JWT_SECRET);
-    
-    // Avec Supabase, le 'sub' est l'ID utilisateur.
-    const user = await prisma.user.findFirst({
-      where: {
-        id: decoded.sub,
-        isActive: true
-      }
-    });
-
-    if (!user) {
-      return res.status(401).json({
-        error: 'Utilisateur non trouvé pour ce token',
-        code: 'USER_NOT_FOUND'
-      });
-    }
-
-    // Générer un nouveau token d'accès
-    const newAccessToken = generateToken(user);
-
-    res.json({
-      message: 'Token rafraîchi avec succès',
-      token: newAccessToken
-    });
-
-  } catch (error) {
-    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
-      return res.status(401).json({
-        error: 'Refresh token invalide ou expiré',
-        code: 'INVALID_REFRESH_TOKEN'
-      });
-    }
-
-    console.error('Erreur refreshToken:', error);
-    res.status(500).json({
-      error: 'Erreur serveur lors du rafraîchissement',
-      code: 'REFRESH_ERROR'
-    });
-  }
-};
 
 /**
  * Déconnexion (côté client principalement)
@@ -105,7 +44,6 @@ const logout = async (req, res) => {
 
 module.exports = {
   getProfile,
-  refreshToken,
   logout,
   /**
    * Mise à jour du profil utilisateur

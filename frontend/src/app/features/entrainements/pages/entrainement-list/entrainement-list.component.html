@@ -38,24 +38,25 @@
     </div>
 
     <!-- Cartes des entraînements -->
-    <div *ngFor="let entrainement of filteredEntrainements" class="entrainement-card entity-card">
+    <div *ngFor="let entrainement of filteredEntrainements">
+      <div class="entrainement-card entity-card">
         <div class="card-header">
           <div class="title-section">
-            <h3 class="card-title" (click)="voirEntrainement(entrainement.id!)">{{ entrainement.titre }}</h3>
+            <h3 class="card-title">{{ entrainement.titre }}</h3>
             <div class="header-badge">
               <span class="badge badge-entrainement">ENTRAÎNEMENT</span>
             </div>
           </div>
           <div class="card-actions">
-            <button mat-icon-button *ngIf="entrainement.echauffement" (click)="voirEchauffement(entrainement.id!)" title="Voir l'échauffement"><mat-icon>fitness_center</mat-icon></button>
-            <button mat-icon-button (click)="modifierEntrainement(entrainement.id!)" title="Modifier"><mat-icon>edit</mat-icon></button>
+            <button mat-icon-button (click)="voirEntrainement(entrainement.id!); $event.stopPropagation()" title="Voir le détail"><mat-icon>visibility</mat-icon></button>
+            <button mat-icon-button (click)="$event.stopPropagation(); modifierEntrainement(entrainement.id!)" title="Modifier"><mat-icon>edit</mat-icon></button>
             <app-duplicate-button 
               [entityId]="entrainement.id!" 
               entityType="entraînement"
               [loading]="duplicatingIds.has(entrainement.id!)"
-              (duplicate)="dupliquerEntrainement($event)">
+              (click)="$event.stopPropagation()" (duplicate)="dupliquerEntrainement($event)">
             </app-duplicate-button>
-            <button mat-icon-button class="delete-btn" (click)="supprimerEntrainement(entrainement)" title="Supprimer"><mat-icon>delete</mat-icon></button>
+            <button mat-icon-button class="delete-btn" (click)="$event.stopPropagation(); supprimerEntrainement(entrainement)" title="Supprimer"><mat-icon>delete</mat-icon></button>
           </div>
         </div>
 

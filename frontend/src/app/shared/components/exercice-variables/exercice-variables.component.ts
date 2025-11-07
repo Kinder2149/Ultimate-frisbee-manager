@@ -91,20 +91,16 @@ export class ExerciceVariablesComponent implements OnInit, ControlValueAccessor 
   ngOnInit(): void {
     // S'assurer que les tableaux sont initialisés
     this.ensureArraysInitialized();
-    
-    // S'abonner aux changements pour propager les valeurs
-    this.variablesForm.valueChanges.subscribe(() => {
-      if (!this.disabled) {
-        this.updateFormValues();
-      }
-    });
+    // La souscription à valueChanges a été supprimée car elle est redondante
+    // et peut causer des effets de bord. La mise à jour est gérée par les
+    // actions utilisateur (add/remove) et writeValue.
   }
   
   /**
    * Met à jour le formulaire à partir des tableaux de variables
    * et propage les changements au formulaire parent
    */
-  private updateFormValues(): void {
+  private updateFormValues(propagateChange = true): void {
     // S'assurer que les tableaux sont initialisés et nettoyés
     this.ensureArraysInitialized();
     
@@ -142,7 +138,9 @@ export class ExerciceVariablesComponent implements OnInit, ControlValueAccessor 
       variablesMinus: [...this.variablesMinusArray]
     };
     
-    this.onChange(valueToEmit);
+    if (propagateChange) {
+      this.onChange(valueToEmit);
+    }
     this.onTouched();
   }
   
@@ -207,45 +205,19 @@ export class ExerciceVariablesComponent implements OnInit, ControlValueAccessor 
    * @param value Les nouvelles valeurs à afficher
    */
   writeValue(value: ExerciceVariables | null): void {
+    // Cette méthode reçoit la valeur du formulaire parent.
+    // Elle doit mettre à jour l'état interne du composant SANS notifier le parent en retour.
     if (value) {
-      // Initialiser les tableaux à partir des valeurs fournies
-      // variablesPlus: accepter string | string[] | FormArray-like
-      if (value.variablesPlus !== undefined && value.variablesPlus !== null) {
-        const vp: any = value.variablesPlus as any;
-        const vpArray: any[] = Array.isArray(vp)
-          ? vp
-          : (typeof vp?.value !== 'undefined' && Array.isArray(vp.value))
-            ? vp.value
-            : [vp];
-        this.variablesPlusArray = vpArray
-          .map(v => (typeof v === 'string' ? v : (v != null ? String(v) : '')))
-          .filter(s => s && s.trim && s.trim() !== '');
-      } else {
-        this.variablesPlusArray = [];
-      }
-
-      // variablesMinus: accepter string | string[] | FormArray-like
-      if (value.variablesMinus !== undefined && value.variablesMinus !== null) {
-        const vm: any = value.variablesMinus as any;
-        const vmArray: any[] = Array.isArray(vm)
-          ? vm
-          : (typeof vm?.value !== 'undefined' && Array.isArray(vm.value))
-            ? vm.value
-            : [vm];
-        this.variablesMinusArray = vmArray
-          .map(v => (typeof v === 'string' ? v : (v != null ? String(v) : '')))
-          .filter(s => s && s.trim && s.trim() !== '');
-      } else {
-        this.variablesMinusArray = [];
-      }
+      this.variablesPlusArray = Array.isArray(value.variablesPlus) ? [...value.variablesPlus] : [];
+      this.variablesMinusArray = Array.isArray(value.variablesMinus) ? [...value.variablesMinus] : [];
     } else {
-      // Aucune valeur fournie: réinitialiser proprement
       this.variablesPlusArray = [];
       this.variablesMinusArray = [];
     }
 
-    // Mettre à jour les FormArray à partir des tableaux (et propager la valeur propre)
-    this.updateFormValues();
+    // Mettre à jour les FormArray internes sans propager le changement vers le parent.
+    // C'est crucial pour éviter une boucle infinie.
+    this.updateFormValues(false);
   }
   
   /**

@@ -49,7 +49,7 @@
       <div class="form-group">
         <label>Image de l'entraînement</label>
         <app-image-upload 
-          [currentImageUrl]="entrainementForm.get('imageUrl')?.value"
+          [currentImageUrl]="imagePreview"
           (imageSelected)="onImageSelected($event)">
         </app-image-upload>
       </div>

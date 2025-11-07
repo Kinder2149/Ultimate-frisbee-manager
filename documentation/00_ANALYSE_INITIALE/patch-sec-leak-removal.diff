@@ -1,0 +1,72 @@
+=== INSTRUCTIONS ===
+1) Sauvegarde du dépôt (recommandé)
+- git rev-parse --is-inside-work-tree
+- git remote -v
+- git clone --mirror <REMOTE_URL> ../ufm-mirror-backup.git
+- (option) Archive: git bundle create ../ufm-backup.bundle --all
+
+2) Arrêt du tracking des fichiers sensibles (déjà ignorés par .gitignore)
+- git rm --cached backend/.env backend/.env.test
+- git commit -m "chore(security): stop tracking env files"
+
+3) Purge de l’historique (exécuter au choix)
+- pip install git-filter-repo
+- git filter-repo --path frontend/src/environments/environment.ts --invert-paths --force
+- git filter-repo --path frontend/src/environments/environment.prod.ts --invert-paths --force
+- git filter-repo --path backend/.env --invert-paths --force
+- git filter-repo --path backend/.env.test --invert-paths --force
+# Alternative BFG (optionnel)
+# java -jar bfg.jar --delete-files environment.ts --no-blob-protection .
+# java -jar bfg.jar --delete-files environment.prod.ts --no-blob-protection .
+# java -jar bfg.jar --delete-files .env --no-blob-protection .
+
+4) Force-push après purge (coordination requise)
+- git push --force --all
+- git push --force --tags
+
+5) Vérifications post-purge
+- git ls-files | Select-String -Pattern ".env|environment.ts|environment.prod.ts|SUPABASE|JWT_SECRET|API_KEY|DATABASE_URL" -List
+- Select-String -Path .\ -Pattern "SUPABASE|JWT_SECRET|CLOUDINARY|DATABASE_URL" -List
+
+=== DIFF (.gitignore) ===
+# Aucune modification nécessaire: les entrées existent déjà
+# backend/.env
+# backend/.env.test
+
+=== DIFF (frontend/src/environments/environment.ts) ===
+*** Begin Patch
+*** Update File: frontend/src/environments/environment.ts
+ /**
+  * Configuration d'environnement pour le développement
+  */
+ export const environment = {
+   production: false,
+   apiUrl: 'http://localhost:3002/api',
+-  supabaseUrl: 'https://rnreaaeiccqkwgwxwxeg.supabase.co', // À REMPLACER PAR VOTRE URL SUPABASE
+-  supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJucmVhYWVpY2Nxa3dnd3h3eGVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzMDA1MTcsImV4cCI6MjA3Mzg3NjUxN30.e7v4UKUUBacpz-X4XIDFsDfpiER_Y5Bm76jIubyFZJ0'  // À REMPLACER PAR VOTRE CLÉ ANONYME SUPABASE
++  supabaseUrl: '<REDACTED>', // À REMPLACER PAR VOTRE URL SUPABASE
++  supabaseKey: '<REDACTED>'  // À REMPLACER PAR VOTRE CLÉ ANONYME SUPABASE
+ };
+*** End Patch
+
+=== DIFF (frontend/src/environments/environment.prod.ts) ===
+*** Begin Patch
+*** Update File: frontend/src/environments/environment.prod.ts
+ /**
+  * Configuration d'environnement pour la production
+  */
+ export const environment = {
+   production: true,
+   apiUrl: 'https://ultimate-frisbee-manager-api.onrender.com/api',
+-  supabaseUrl: 'https://rnreaaeiccqkwgwxwxeg.supabase.co', // À REMPLACER PAR VOTRE URL SUPABASE
+-  supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJucmVhYWVpY2Nxa3dnd3h3eGVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzMDA1MTcsImV4cCI6MjA3Mzg3NjUxN30.e7v4UKUUBacpz-X4XIDFsDfpiER_Y5Bm76jIubyFZJ0'
++  supabaseUrl: '<REDACTED>', // À REMPLACER PAR VOTRE URL SUPABASE
++  supabaseKey: '<REDACTED>'
+ };
+*** End Patch
+
+=== COMMIT MESSAGE RECOMMANDÉ ===
+chore(security): redact Supabase values and prepare history purge
+- Redact supabaseUrl/supabaseKey in frontend environments
+- Stop tracking env files and plan git-filter-repo purge
+- Next: rotate Supabase/Cloudinary/JWT keys and inject via Vercel/Render

@@ -22,10 +22,7 @@ const routes: Routes = [
     path: 'modifier/:id',
     component: EntrainementFormComponent
   },
-  {
-    path: ':id',
-    component: EntrainementDetailComponent
-  }
+
 ];
 
 @NgModule({

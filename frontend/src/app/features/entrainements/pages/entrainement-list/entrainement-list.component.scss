@@ -45,12 +45,21 @@
 
 .entrainement-card {
   &.entity-card {
+
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    }
+
     .card-header {
       background-color: #f4f6f8;
       border-bottom: 1px solid #e6e8eb;
 
+
+
       h3 {
-        cursor: pointer;
         &:hover {
           color: #007bff;
         }

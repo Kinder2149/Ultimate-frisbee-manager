@@ -1,4 +1,4 @@
-import { TAG_CATEGORIES } from "@shared/constants/tag-categories";
+import { TAG_CATEGORIES } from "@ufm/shared/constants/tag-categories";
 
 /**
  * Crée un type TypeScript à partir du tableau de constantes partagé.

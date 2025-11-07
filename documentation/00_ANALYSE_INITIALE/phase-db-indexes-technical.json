@@ -1,0 +1,35 @@
+{
+  "phase": "db-indexes",
+  "branch": "feat/db/indexes",
+  "mode": "modification",
+  "timestamp": "2025-11-05T17:10:00Z",
+  "summary": "Ajout d'indexes Prisma sur champs FK et createdAt pour améliorer les performances de requêtes et jointures.",
+  "schema_file": "backend/prisma/schema.prisma",
+  "indexes_added": [
+    {"model":"Exercice","indexes":["@@index([createdAt])"]},
+    {"model":"Tag","indexes":["@@index([createdAt])"]},
+    {"model":"Entrainement","indexes":["@@index([echauffementId])","@@index([situationMatchId])","@@index([createdAt])"]},
+    {"model":"EntrainementExercice","indexes":["@@index([entrainementId])","@@index([exerciceId])","@@index([createdAt])"]},
+    {"model":"Echauffement","indexes":["@@index([createdAt])"]},
+    {"model":"BlocEchauffement","indexes":["@@index([echauffementId])","@@index([createdAt])"]},
+    {"model":"SituationMatch","indexes":["@@index([createdAt])"]},
+    {"model":"User","indexes":["@@index([createdAt])"]}
+  ],
+  "commands": [
+    "# Validation du schéma",
+    "npx prisma validate --schema ./backend/prisma/schema.prisma",
+    "# Génération et application de migration en DEV",
+    "npx prisma migrate dev --schema ./backend/prisma/schema.prisma --name add_indexes",
+    "# Déploiement migration en PROD (via Render build)",
+    "npx prisma migrate deploy --schema ./backend/prisma/schema.prisma"
+  ],
+  "verification": [
+    "Prisma validate passe sans erreur",
+    "Les migrations sont créées dans backend/prisma/migrations/*/steps.json",
+    "Les requêtes sur relations (joins) présentent de meilleures performances sur datasets significatifs"
+  ],
+  "notes": [
+    "Sur SQLite local, les indexes améliorent les scans mais l'impact est limité. En PostgreSQL (prod), le gain est plus notable.",
+    "Penser à indexer d'autres colonnes de tri/filtre si usage intensif (ex: ordre)."
+  ]
+}

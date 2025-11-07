@@ -23,6 +23,9 @@ async function upsertTag({ label, category, color, level = null }) {
 async function main() {
   console.log('🌱 Upsert des tags requis pour l\'import Markdown');
 
+  // Le contenu de ce script a été volontairement commenté pour empêcher la création automatique de tags.
+  // L'objectif est de gérer tous les tags via l'interface utilisateur.
+  /*
   // OBJECTIF
   const objectifs = ['Échauffement', 'Technique', 'Tactique', 'Physique'];
   for (const label of objectifs) {
@@ -84,6 +87,7 @@ async function main() {
       color: DEFAULT_TAG_COLORS[TAG_CATEGORIES.THEME_ENTRAINEMENT],
     });
   }
+  */
 
   console.log('✅ Upsert des tags terminé.');
 }

@@ -20,7 +20,9 @@ export class AuthInterceptor implements HttpInterceptor {
           if (token) {
             // Cloner la requête pour ajouter le header d'autorisation
             const clonedReq = req.clone({
-              headers: req.headers.set('Authorization', `Bearer ${token}`)
+              headers: req.headers
+                .set('Authorization', `Bearer ${token}`)
+                .set('apikey', environment.supabaseKey)
             });
             return next.handle(clonedReq);
           }

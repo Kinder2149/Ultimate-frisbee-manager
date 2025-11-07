@@ -1,0 +1,122 @@
+{
+  "phase": "sec-rotate",
+  "branch": "ops/rotate-20251105",
+  "timestamp": "2025-11-05T14:30:00Z",
+  "mode": "lecture_seule",
+  "summary": "Procédure opérable de rotation et d’injection des clés Supabase, Cloudinary et JWT (Render/Vercel), avec validations et rollback.",
+  "services": [
+    {
+      "name": "Supabase (anon/public keys)",
+      "vars": [
+        { "key": "SUPABASE_URL", "where": "Vercel → Project → Settings → Environment Variables (Production/Preview)" },
+        { "key": "SUPABASE_ANON_KEY", "where": "Vercel → Project → Settings → Environment Variables (Production/Preview)" }
+      ],
+      "rotation_steps_ui": [
+        "Supabase → Project Settings → API",
+        "Cliquer ‘Generate new anon/public key’ (retenir l’ancienne pour rollback pendant la bascule courte)",
+        "Copier la nouvelle ‘anon/public key’",
+        "Mettre à jour Vercel: SUPABASE_ANON_KEY (Production et Preview) + vérifier SUPABASE_URL",
+        "Redeployer le frontend"
+      ],
+      "validation": {
+        "checks": [
+          "Vercel: vérifier que SUPABASE_* sont bien visibles dans ‘Environment Variables’",
+          "Frontend: recharger l’app; vérifier les appels réseau vers Supabase (200)"
+        ],
+        "curl_examples": [
+          {
+            "purpose": "Vérifier CORS/accès API backend (connectivité front→back)",
+            "cmd": "curl -i https://ultimate-frisbee-manager-api.onrender.com/api/ -H 'Origin: https://<your-vercel-app>.vercel.app'"
+          },
+          {
+            "purpose": "Vérifier que le build front a pris les variables",
+            "cmd": "curl -I https://<your-vercel-app>.vercel.app"
+          }
+        ]
+      },
+      "rollback": [
+        "Réinjecter l’ancienne SUPABASE_ANON_KEY dans Vercel (Production/Preview)",
+        "Redeployer le frontend"
+      ]
+    },
+    {
+      "name": "Cloudinary",
+      "vars": [
+        { "key": "CLOUDINARY_URL", "where": "Render → Service (backend) → Environment → Add Secret" },
+        { "key": "CLOUDINARY_CLOUD_NAME", "where": "Render → Service (backend) → Environment → Add Secret" },
+        { "key": "CLOUDINARY_API_KEY", "where": "Render → Service (backend) → Environment → Add Secret" },
+        { "key": "CLOUDINARY_API_SECRET", "where": "Render → Service (backend) → Environment → Add Secret" }
+      ],
+      "rotation_steps_ui": [
+        "Cloudinary Console → Settings → Access Keys",
+        "Générer un nouveau pair API Key/Secret (ou utiliser CLOUDINARY_URL formaté)",
+        "Mettre à jour Render: CLOUDINARY_URL (ou triplet C_N/C_K/C_S)",
+        "Redeployer le backend"
+      ],
+      "validation": {
+        "checks": [
+          "Logs Render: backend démarre sans erreur de config Cloudinary",
+          "Upload d’un petit fichier (si endpoint dédié)"
+        ],
+        "curl_examples": [
+          {
+            "purpose": "Ping API backend",
+            "cmd": "curl -i https://ultimate-frisbee-manager-api.onrender.com/api/health || curl -i https://ultimate-frisbee-manager-api.onrender.com/api/"
+          }
+        ]
+      },
+      "rollback": [
+        "Remettre CLOUDINARY_URL (ou triplet) précédent dans Render",
+        "Redeployer le backend"
+      ]
+    },
+    {
+      "name": "JWT (backend)",
+      "vars": [
+        { "key": "JWT_SECRET", "where": "Render → Service (backend) → Environment → Add Secret" },
+        { "key": "JWT_REFRESH_SECRET", "where": "Render → Service (backend) → Environment → Add Secret" },
+        { "key": "JWT_EXPIRES_IN", "where": "Render (optionnel)" },
+        { "key": "JWT_REFRESH_EXPIRES_IN", "where": "Render (optionnel)" }
+      ],
+      "rotation_steps_ui": [
+        "Générer de nouvelles valeurs cryptographiquement fortes (32+ bytes)",
+        "Mettre à jour JWT_SECRET et JWT_REFRESH_SECRET sur Render",
+        "Redeployer le backend",
+        "Informer que les sessions existantes seront invalidées (logout global)"
+      ],
+      "validation": {
+        "checks": [
+          "Un appel sur une route protégée doit renvoyer 401 avec l’ancien token",
+          "Login (ou flux d’obtention de token) doit renvoyer un JWT signé valide"
+        ],
+        "curl_examples": [
+          {
+            "purpose": "Requête protégée (doit 401 si ancien token)",
+            "cmd": "curl -i https://ultimate-frisbee-manager-api.onrender.com/api/tags -H 'Authorization: Bearer <OLD_TOKEN>'"
+          },
+          {
+            "purpose": "Requête sans token (doit 401)",
+            "cmd": "curl -i https://ultimate-frisbee-manager-api.onrender.com/api/tags"
+          }
+        ]
+      },
+      "rollback": [
+        "Ré-appliquer temporairement les anciens secrets JWT sur Render",
+        "Redéployer et planifier une nouvelle rotation hors charge"
+      ]
+    }
+  ],
+  "global_checklist": [
+    "Sauvegarde de la configuration (export des envs Vercel/Render)",
+    "Planification d’un créneau de bascule (impact: déconnexion JWT)",
+    "Rotation Supabase (front), puis Cloudinary/JWT (back)",
+    "Redeploy front (Vercel) puis back (Render)",
+    "Exécuter les tests de validation et vérifier les logs",
+    "Archiver les anciennes clés et les révoquer si possible"
+  ],
+  "notes": [
+    "Ne jamais committer les clés dans le dépôt",
+    "Documenter les nouvelles valeurs uniquement dans les consoles d’hébergement",
+    "Aligner DEPLOYMENT.md après la rotation"
+  ]
+}

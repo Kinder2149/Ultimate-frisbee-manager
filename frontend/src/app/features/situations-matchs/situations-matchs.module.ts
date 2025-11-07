@@ -4,6 +4,7 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { SituationMatchListComponent } from './pages/situationmatch-list/situationmatch-list.component';
 import { SituationMatchFormComponent } from './pages/situationmatch-form/situationmatch-form.component';
+import { SituationMatchDetailComponent } from './pages/situationmatch-detail/situationmatch-detail.component';
 
 const routes: Routes = [
   {
@@ -17,6 +18,10 @@ const routes: Routes = [
   {
     path: 'modifier/:id',
     component: SituationMatchFormComponent
+  },
+  {
+    path: ':id',
+    component: SituationMatchDetailComponent
   }
 ];
 
@@ -26,7 +31,8 @@ const routes: Routes = [
     CommonModule,
     RouterModule.forChild(routes),
     SituationMatchListComponent,
-    SituationMatchFormComponent
+    SituationMatchFormComponent,
+    SituationMatchDetailComponent
   ]
 })
 export class SituationsMatchsModule { }

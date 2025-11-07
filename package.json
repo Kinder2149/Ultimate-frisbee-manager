@@ -2,6 +2,12 @@
   "name": "ultimate-frisbee-manager",
   "version": "1.0.0",
   "description": "Application de gestion d'entraînements d'ultimate frisbee",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend",
+    "shared"
+  ],
   "scripts": {
     "start": "cd frontend && ng serve"
   },

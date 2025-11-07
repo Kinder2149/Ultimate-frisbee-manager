@@ -53,22 +53,46 @@ exports.getEntrainementById = async (req, res, next) => {
 exports.createEntrainement = async (req, res, next) => {
   try {
     const { titre, date, exercices, echauffementId, situationMatchId, tagIds } = req.body;
+    // Log minimal pour diagnostiquer les erreurs 500 côté création
+    console.log('[createEntrainement] payload reçu', {
+      titre,
+      date,
+      echauffementId,
+      situationMatchId,
+      tagIdsCount: Array.isArray(tagIds) ? tagIds.length : 0,
+      exercicesCount: Array.isArray(exercices) ? exercices.length : 0,
+    });
+
+    // Gestion robuste de la date: null si vide; si invalide -> fallback null (pas d'erreur bloquante)
+    let finalDate = null;
+    if (date != null && String(date).trim() !== '') {
+      const tmp = new Date(date);
+      if (isNaN(tmp.getTime())) {
+        console.warn('[createEntrainement] date invalide reçue, fallback à null. Valeur:', date);
+        finalDate = null;
+      } else {
+        finalDate = tmp;
+      }
+    }
 
     const nouvelEntrainement = await prisma.entrainement.create({
       data: {
         titre,
-        date: date ? new Date(date) : null,
+        date: finalDate,
         imageUrl: req.file ? req.file.cloudinaryUrl : (req.body.imageUrl || null),
         echauffementId: echauffementId || null,
         situationMatchId: situationMatchId || null,
         tags: { connect: (tagIds || []).map(id => ({ id })) },
         exercices: {
-          create: (exercices || []).map((ex, i) => ({ 
-            exerciceId: ex.exerciceId, 
-            ordre: ex.ordre || i + 1, 
-            duree: ex.duree || null, 
-            notes: ex.notes || null 
-          }))
+          // Filtrer les entrées invalides et construire proprement
+          create: (Array.isArray(exercices) ? exercices : [])
+            .filter((ex) => ex && typeof ex.exerciceId === 'string' && ex.exerciceId.trim().length > 0)
+            .map((ex, i) => ({
+              exerciceId: ex.exerciceId,
+              ordre: ex.ordre || i + 1,
+              duree: ex.duree || null,
+              notes: ex.notes || null
+            }))
         }
       },
       include: { exercices: { include: { exercice: true } }, tags: true, echauffement: true, situationMatch: true }
@@ -76,6 +100,7 @@ exports.createEntrainement = async (req, res, next) => {
 
     res.status(201).json(nouvelEntrainement);
   } catch (error) {
+    console.error('[createEntrainement] erreur', error);
     next(error);
   }
 };
@@ -85,24 +110,29 @@ exports.updateEntrainement = async (req, res, next) => {
     const { id } = req.params;
     const { titre, date, exercices, echauffementId, situationMatchId, tagIds } = req.body;
 
+    // La logique de mise à jour des relations many-to-many avec Prisma
+    // est de supprimer les anciennes relations, puis de recréer les nouvelles.
+    // Cela doit être fait dans une transaction pour garantir l'atomicité.
     await prisma.$transaction(async (tx) => {
+      // 1. Supprimer les anciennes liaisons
       await tx.entrainementExercice.deleteMany({ where: { entrainementId: id } });
 
+      // 2. Mettre à jour l'entraînement et recréer les nouvelles liaisons
       await tx.entrainement.update({
         where: { id },
         data: {
           titre,
-          date: date ? new Date(date) : null,
+          date: date ? new Date(date) : undefined,
           imageUrl: req.file ? req.file.cloudinaryUrl : (req.body.imageUrl !== undefined ? req.body.imageUrl : undefined),
           echauffementId: echauffementId,
           situationMatchId: situationMatchId,
-          tags: { set: (tagIds || []).map(id => ({ id })) },
+          tags: { set: (tagIds || []).map(tagId => ({ id: tagId })) },
           exercices: {
-            create: (exercices || []).map((ex, i) => ({
-              exerciceId: ex.exerciceId,
-              ordre: ex.ordre || i + 1,
-              duree: ex.duree || null,
-              notes: ex.notes || null
+            create: (exercices || []).map(exo => ({
+              ordre: exo.ordre,
+              duree: exo.duree,
+              notes: exo.notes,
+              exercice: { connect: { id: exo.exerciceId } } // La syntaxe correcte pour connecter un exercice existant
             }))
           }
         }

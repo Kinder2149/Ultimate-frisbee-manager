@@ -82,8 +82,9 @@ export class ExerciceDialogService {
   openViewDialog(exercice: Exercice): Observable<any> {
     const config = {
       title: exercice.nom || 'Exercice',
-      width: '720px',
-      maxWidth: '90vw',
+      width: '1100px',
+      maxWidth: '95vw',
+      height: '95vh',
       disableClose: false,
       panelClass: 'entity-view-dialog',
       customData: {

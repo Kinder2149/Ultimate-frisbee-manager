@@ -2,19 +2,15 @@
  * Service de configuration pour Cloudinary
  */
 const cloudinary = require('cloudinary').v2;
-const dotenv = require('dotenv');
+const config = require('../config');
 
-// Charger les variables d'environnement depuis le fichier .env
-dotenv.config();
-
-// Configuration de Cloudinary avec les clés d'API
-// Ces variables doivent être définies dans votre environnement de production (ex: Render)
-// et dans votre fichier .env pour le développement local.
+// Configurer Cloudinary en utilisant la configuration centralisée
+// Le module config a déjà validé la présence des clés nécessaires
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-  secure: true, // Toujours utiliser HTTPS
+  cloud_name: config.cloudinary.cloudName,
+  api_key: config.cloudinary.apiKey,
+  api_secret: config.cloudinary.apiSecret,
+  secure: true
 });
 
 module.exports = { cloudinary };

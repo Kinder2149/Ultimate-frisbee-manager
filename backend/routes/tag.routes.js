@@ -7,6 +7,9 @@ const tagController = require('../controllers/tag.controller');
 const { validate } = require('../middleware/validation.middleware');
 const { createTagSchema, updateTagSchema } = require('../validators/tag.validator');
 
+// GET /api/tags/grouped - Récupérer tous les tags groupés par catégorie
+router.get('/grouped', tagController.getGroupedTags);
+
 // GET /api/tags - Récupérer tous les tags
 router.get('/', tagController.getAllTags);
 

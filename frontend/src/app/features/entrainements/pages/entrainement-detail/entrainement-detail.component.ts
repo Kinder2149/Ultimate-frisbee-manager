@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ChangeDetectionStrategy } from '@angular/core';
 import { Entrainement, EntrainementExercice } from '../../../../core/models/entrainement.model';
 import { Echauffement } from '../../../../core/models/echauffement.model';
@@ -12,6 +13,11 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatListModule } from '@angular/material/list';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ApiUrlService } from '../../../../core/services/api-url.service';
 import { ImageViewerComponent, ImageViewerData } from '../../../../shared/components/image-viewer/image-viewer.component';
 import { EchauffementViewComponent } from '../../../../shared/components/echauffement-view/echauffement-view.component';
@@ -35,7 +41,12 @@ import { ActionButtonComponent } from '../../../../shared/components/action-butt
     MatProgressSpinnerModule,
     EchauffementViewComponent,
     ExerciceViewComponent,
-    SituationMatchViewComponent
+    SituationMatchViewComponent,
+    MatCardModule,
+    MatExpansionModule,
+    MatListModule,
+    MatChipsModule,
+    MatTooltipModule
   ]
 })
 export class EntrainementDetailComponent implements OnInit {
@@ -48,20 +59,22 @@ export class EntrainementDetailComponent implements OnInit {
   situationMatchExpanded: boolean = false;
 
   constructor(
-    private route: ActivatedRoute,
+    @Inject(MAT_DIALOG_DATA) public data: { customData: { entrainementId: string } },
     private router: Router,
     private entrainementService: EntrainementService,
     private dialogService: DialogService,
     private dialog: MatDialog,
-    private apiUrl: ApiUrlService
+    private apiUrl: ApiUrlService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    this.entrainementId = this.route.snapshot.paramMap.get('id');
+    this.entrainementId = this.data.customData.entrainementId;
     if (this.entrainementId) {
       this.loadEntrainement(this.entrainementId);
     } else {
       this.error = 'ID d\'entraînement manquant';
+      this.cdr.detectChanges();
     }
   }
 
@@ -89,19 +102,13 @@ export class EntrainementDetailComponent implements OnInit {
         }
         this.loading = false;
         console.log('Entraînement chargé:', entrainement);
-        // Scroll vers la section d'échauffement si demandée via le fragment
-        const fragment = this.route.snapshot.fragment;
-        if (fragment === 'echauffement') {
-          setTimeout(() => {
-            const el = document.getElementById('echauffement');
-            el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }, 0);
-        }
+        this.cdr.detectChanges(); // Notifier Angular du changement
       },
       error: (err) => {
         console.error('Erreur lors du chargement de l\'entraînement:', err);
         this.error = 'Erreur lors du chargement de l\'entraînement';
         this.loading = false;
+        this.cdr.detectChanges(); // Notifier Angular du changement
       }
     });
   }
@@ -110,7 +117,8 @@ export class EntrainementDetailComponent implements OnInit {
    * Retourne à la liste des entraînements
    */
   retourListe(): void {
-    this.router.navigate(['/entrainements']);
+    // La modale est fermée par le service de dialogue, mais on peut ajouter une logique ici si nécessaire.
+    // Pour l'instant, on ne fait rien, le bouton 'close' de la modale suffit.
   }
 
   /**
