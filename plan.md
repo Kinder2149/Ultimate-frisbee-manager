@@ -2,6 +2,69 @@
 
 Ce document suit les analyses et les actions menées sur le projet.
 
+## Sommaire
+- [Missions récentes (consolidé)](#missions-récentes-consolidé)
+- [Organisation par domaines](#organisation-par-domaines)
+- [Analyse Fonctionnelle : Gestion de l'Image d'un Exercice (Audit du 07/10/2025)](#analyse-fonctionnelle--gestion-de-limage-dun-exercice-audit-du-07102025)
+- [Standardisation de la Gestion des Images (07/10/2025)](#standardisation-de-la-gestion-des-images-07102025)
+- [Correction des Erreurs de Compilation et Backend (08/10/2025)](#correction-des-erreurs-de-compilation-et-backend-08102025)
+- [Correction du Bug 500 sur la Mise à Jour avec Image (08/10/2025)](#correction-du-bug-500-sur-la-mise-à-jour-avec-image-08102025)
+- [Plan horodaté — Refonte Export/Import & Nettoyage Trainings (feature/export-import-service)](#plan-horodaté--refonte-exportimport--nettoyage-trainings-featureexport-import-service)
+- [Documentation — Module Cloudinary (08/11/2025)](#documentation--module-cloudinary-08112025)
+- [Mission ENV — Cloudinary et variables globales (08/11/2025)](#mission-env--cloudinary-et-variables-globales-08112025)
+- [Mission Import/Export — Généralisation (08/11/2025)](#mission-importexport--généralisation-08112025)
+- [Mission API Cleanup — Uniformisation des routes (08/11/2025)](#mission-api-cleanup--uniformisation-des-routes-08112025)
+- [État du projet](#état-du-projet)
+- [Prochaines étapes](#prochaines-étapes)
+
+## Missions récentes (consolidé)
+
+- **ENV / Cloudinary**
+  - Objectif: Standardiser les variables (priorité `CLOUDINARY_URL`) et valider au démarrage.
+  - Fichiers: `backend/.env`, `backend/.env.example`, `backend/config/index.js`, `backend/services/cloudinary.js`, `backend/server.js`, `render.yaml`, `README.md`.
+  - Résultat: Config unifiée, avertissements clairs, secrets Render ajoutés. `JWT_REFRESH_SECRET` rendu optionnel (warning au démarrage si absent). Cloudinary: fallback URL → triplet documenté + log du mode utilisé.
+  - Tests: Démarrage → logs (inclut ping Cloudinary et info de mode), upload image → OK.
+  - Points manuels: Créer secrets Render `jwt-secret`, `jwt-refresh-secret`, `cloudinary-url`; vérifier `CORS_ORIGINS`.
+
+- **Module Cloudinary**
+  - Objectif: Centraliser upload/suppression/URL et ajouter un ping de connexion.
+  - Fichiers: `backend/services/cloudinary.js`, `backend/services/upload.service.js`, `backend/middleware/upload.middleware.js`.
+  - Résultat: Upload via service, erreurs catchées, `testCloudinaryConnection()` au démarrage.
+  - Tests: Upload exercice/profil; ping Cloudinary en log.
+  - Points manuels: Aucun.
+
+- **Import/Export Generalization**
+  - Objectif: Unifier import/export sur 4 catégories, façade générique côté front.
+  - Fichiers: `backend/controllers/import.controller.js`, `backend/services/export.service.js`, `backend/controllers/export.controller.js`, `backend/routes/import.routes.js`, `backend/routes/admin.routes.js`, `frontend/src/app/core/services/{import.service.ts,data-transfer.service.ts}`, `features/settings/pages/import-export/...`.
+  - Résultat: Payload multi-types orchestré côté front; export générique backend; tests couvrent 4 catégories.
+  - Tests: `backend/tests/import_export.test.js` (dryRun/apply/export) + UI Import/Export.
+  - Points manuels: Option V2 `/api/import/payload` si besoin d’un call unique.
+
+- **API Cleanup**
+  - Objectif: Uniformiser et documenter les routes, ajouter alias EN sans casser l’existant.
+  - Fichiers: `backend/routes/index.js`, `docs/API_ROUTES.md`.
+  - Résultat: Alias `/api/exercises|trainings|warmups|matches` ajoutés; page `/api` documente FR+EN.
+  - Tests: GET listes FR et EN → mêmes réponses; UI continue de fonctionner.
+  - Points manuels: Migration progressive du front possible via `ApiUrlService`.
+
+## Organisation par domaines
+
+- **Configuration**
+  - ENV/Secrets: `backend/.env`, `backend/.env.example`, `render.yaml`.
+  - Config runtime/validation: `backend/config/index.js`, `backend/server.js`.
+- **Services**
+  - Cloudinary: `backend/services/cloudinary.js`, `backend/services/upload.service.js`.
+  - Export: `backend/services/export.service.js`.
+- **API**
+  - Routes FR + alias EN: `backend/routes/index.js`, `docs/API_ROUTES.md`.
+  - Import: `backend/routes/import.routes.js`, `backend/controllers/import.controller.js`.
+  - Export: `backend/controllers/export.controller.js`.
+  - Ressources: exercices/entrainements/echauffements/situations (routes + contrôleurs).
+- **UI**
+  - Import/Export: `frontend/src/app/core/services/data-transfer.service.ts`, `frontend/src/app/core/services/import.service.ts`, `features/settings/pages/import-export/...`.
+- **Données**
+  - Prisma: `backend/services/prisma.js`, `backend/prisma/*`.
+
 ## Analyse Fonctionnelle : Gestion de l'Image d'un Exercice (Audit du 07/10/2025)
 
 ### Objectif
@@ -218,3 +281,215 @@ Mettre en place un service d’export/import standardisé, documenté et testabl
 - Revert Git de la branche `feature/export-import-service` (commit de rollback)
 - Restauration du module `features/trainings` depuis `archive/old_trainings_module/<timestamp>` si nécessaire
 - Désactivation temporaire des routes/export-import via feature flag (constante partagée) si problème en prod
+
+## Refonte Import/Export – Implémentation UI/UX + Connexion (07/11/2025)
+
+### Objectif
+Créer un onglet unique "Import/Export" cohérent avec le thème, connecté au nouveau service backend d'import, et supprimer l'ancien système frontend (service local, écran debug, resolver tags).
+
+### Actions réalisées
+- Suppression/archivage de l'ancien système (frontend):
+  - core/services/export-import.service.ts → documentation/archive/removed/
+  - core/components/import-resolver/import-resolver.component.ts → documentation/archive/removed/
+  - features/debug/export-import-debug.component.ts → documentation/archive/removed/
+  - core/utils/import-validator.ts → documentation/archive/removed/
+  - shared/constants/export-import.ts → documentation/archive/removed/
+- Nettoyage des routes/menus:
+  - app.module.ts: suppression de la route debug/export-import
+  - app.component.html: menu Paramètres → lien vers /parametres/import-export
+  - settings.module.ts: ajout de la route /parametres/import-export (standalone)
+- Nouveau service central:
+  - core/services/data-transfer.service.ts (pont vers ImportService; placeholders export)
+- Nouvel écran:
+  - features/settings/pages/import-export/import-export.component.ts
+  - features/settings/pages/import-export/missing-fields-dialog.component.ts (dialogue tolérant champs manquants)
+
+### Connexions backend
+- Import Markdown/JSON via endpoints existants:
+  - POST /api/import/markdown?dryRun=true|false
+  - POST /api/import/exercices?dryRun=true|false
+- Export: en attente d'un endpoint backend (placeholders côté UI/service).
+
+### Tests rapides (manuels)
+- Navigation: Paramètres → Import/Export.
+- Import Markdown: sélectionner .md, Dry-run puis Appliquer → rapport visible, création/maj OK.
+- Import JSON: coller { exercices: [...] }, tester cas champs manquants → ouverture du dialogue, appliquer/ignorer puis exécuter.
+- Snackbars: messages succès/erreur visibles.
+
+### Points d'attention / suites
+- Créer endpoint(s) d'export backend et brancher DataTransferService.export*.
+- Journal des transferts: V1 local, V2 backend.
+
+## Documentation de la Refonte Import/Export
+
+## Documentation — Module Cloudinary (08/11/2025)
+
+### Services et fonctions
+- `services/cloudinary.js`
+  - `cloudinary`: instance configurée (v2). Priorité à `CLOUDINARY_URL`, fallback triplet. `secure: true`.
+  - `testCloudinaryConnection(): Promise<{ ok: boolean, details?: any, error?: any }>`
+    - Appelle `cloudinary.api.ping()`.
+    - Retourne `{ ok: true }` si la config est valide; sinon `{ ok: false, error }`.
+- `services/upload.service.js`
+  - `uploadBuffer(buffer: Buffer, folder: string, options?): Promise<{ secure_url: string, public_id: string }>`
+  - `deleteByPublicId(publicId: string): Promise<any>`
+  - `getUrl(publicId: string, options?): string`
+- `middleware/upload.middleware.js`
+  - `createUploader(fieldName: string, subfolder: string)`
+    - Utilise Multer mémoire + `uploadBuffer`.
+    - Enrichit `req.file.cloudinaryUrl` et `req.file.cloudinaryPublicId`.
+
+### Inputs/Outputs
+- Input upload: fichier image (`.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`) via `multipart/form-data` champ `image`.
+- Output upload: `req.file` enrichi avec `cloudinaryUrl` (string) et `cloudinaryPublicId` (string).
+
+### Gestion d’erreurs
+- Upload: erreurs Cloudinary catched → `next(new Error('Erreur lors de l'upload sur Cloudinary.'))` → standardisé par `errorHandler.middleware` côté API.
+- Startup: logs d’avertissement si `CLOUDINARY_URL` absente; `api.ping` logge succès/échec.
+
+### Tests à réaliser
+- Upload Exercice (POST /api/exercices):
+  - Cas OK: image valide → `imageUrl` persistée en base (vérifier via GET).
+  - Cas KO: extension non autorisée → erreur 400 depuis middleware Multer.
+  - Cas KO: Cloudinary mal configuré → 500 avec message générique et log serveur détaillé.
+- Avatar utilisateur (PUT /api/auth/profile avec `image`):
+  - `req.file.cloudinaryUrl` utilisé pour `iconUrl`.
+- `testCloudinaryConnection()` au démarrage: vérifier log ✅/⚠️.
+
+### Notes
+- Aucune clé ou URL Cloudinary en dur dans le code source.
+- Config unifiée via `.env`/Render secrets.
+
+## Mission ENV — Cloudinary et variables globales (08/11/2025)
+
+## Mission Import/Export — Généralisation (08/11/2025)
+
+## Mission API Cleanup — Uniformisation des routes (08/11/2025)
+
+### Reformulation
+Uniformiser et documenter les routes API. Conserver les routes FR historiques et ajouter des alias REST en EN (`/api/exercises`, `/api/trainings`, `/api/warmups`, `/api/matches`).
+
+### Fichiers impactés
+- `backend/routes/index.js` (ajout des alias EN + listing dans `/api`)
+- `docs/API_ROUTES.md` (nouveau, catalogue des routes+méthodes)
+
+### Audit (résumé)
+- Routes FR: `/api/exercices`, `/api/entrainements`, `/api/echauffements`, `/api/situations-matchs`, `/api/tags`, `/api/dashboard`, `/api/import`, `/api/admin`, `/api/health`, `/api/auth`.
+- Alias EN ajoutés: `/api/exercises`, `/api/trainings`, `/api/warmups`, `/api/matches` → mappés sur les mêmes routeurs.
+- Frontend: `ApiUrlService` utilise des endpoints FR; compat maintenue. Migration possible vers EN sans breaking change.
+
+### Validation
+- Vérifier que les appels existants (FR) continuent de répondre 200.
+- Vérifier qu’un appel sur alias EN renvoie la même réponse (ex: GET `/api/exercises`).
+
+### Suites
+- Option: migrer progressivement le frontend vers les alias EN via `ApiUrlService`.
+- Maintenir `docs/API_ROUTES.md` à jour à chaque ajout/modif de route.
+
+### Reformulation
+Unifier l’import/export sur 4 catégories (exercice, entrainement, echauffement, situation) via un service réutilisable sans duplication, avec tests et documentation.
+
+### Contexte
+- Backend dispose déjà des routes par catégorie: `/api/import/{exercices|entrainements|echauffements|situations-matchs}` et d’un export générique `GET /api/admin/export-ufm`.
+- Frontend dispose d’un service centralisé: `core/services/data-transfer.service.ts` capable d’orchestrer payload multi-types et d’appeler chaque endpoint.
+- Tests backend présents: `backend/tests/import_export.test.js` couvrant les 4 catégories (dryRun/apply/export).
+
+### Fichiers impliqués (audit)
+- Backend
+  - `backend/controllers/import.controller.js` (handlers d’import par type + Markdown→Exercices)
+  - `backend/services/export.service.js` (export générique par type)
+  - `backend/controllers/export.controller.js` (contrôleur d’export)
+  - `backend/routes/import.routes.js`, `backend/routes/admin.routes.js`, `backend/routes/index.js`
+  - `backend/tests/import_export.test.js`
+- Frontend
+  - `frontend/src/app/core/services/import.service.ts` (endpoints import)
+  - `frontend/src/app/core/services/data-transfer.service.ts` (façade générique import/export)
+  - `frontend/src/app/features/settings/pages/import-export/import-export.component.ts` (UI)
+
+### Solutions
+- Conserver l’API par catégorie (stabilité, granularité) et exposer un flux multi-types côté front via `DataTransferService.importPayload()` déjà implémenté.
+- Option (V2): ajouter `POST /api/import/payload` qui accepterait un payload mixte et dispatcherait côté backend (façade), sans réécrire la logique métier par type.
+
+### Validation
+- Import/Export validés par les tests existants (voir `backend/tests/import_export.test.js`).
+- Encodage UTF-8: lecture fichiers front via `FileReader.readAsText(..., 'utf-8')`.
+- Idempotence: dryRun détecte create/update/skip, apply applique avec upsert/replace contrôlés.
+
+### Format JSON attendu (par type, extrait)
+- Exercices: `{ exercices: [{ nom, description, imageUrl?, schemaUrl?, variablesPlus?, variablesMinus?, tags?: [{label, category, level?}] }] }`
+- Entrainements: `{ entrainements: [{ titre, date?, imageUrl?, echauffementId?, situationMatchId?, tags?[], exercices?: [{ exerciceId, ordre?, duree?, notes? }] }] }`
+- Échauffements: `{ echauffements: [{ nom, description?, imageUrl?, blocs?: [{ ordre?, titre, repetitions?, temps?, informations?, fonctionnement?, notes? }] }] }`
+- Situations: `{ situations: [{ type, nom?, description?, temps?, imageUrl?, tags?: [{label, category, level?}] }] }`
+
+### Améliorations futures
+- Endpoint unique backend `/api/import/payload` (façade), journal des transferts, exportMultiple côté front.
+
+### Statut
+- Unification effective via service frontend générique + endpoints backend par catégorie + export générique.
+- Documentation mise à jour; tests existants couvrent les 4 catégories.
+
+### Reformulation
+Uniformiser la gestion des variables d’environnement (dev/prod), corriger Cloudinary (préférence `CLOUDINARY_URL`), ajouter validations au démarrage et documenter.
+
+### Contexte
+- Backend Express avec upload Cloudinary via middleware mémoire + stream.
+- Déploiement Render (PostgreSQL) et Frontend Vercel.
+- Variables existantes mais incomplètes/incohérentes (manque JWT_REFRESH_SECRET en prod, pas d’URL Cloudinary unique, warning non explicite).
+
+### Fichiers impactés
+- `backend/.env` (ajout `CLOUDINARY_URL`, section Cloudinary)
+- `backend/.env.example` (complétée: DB, CORS, JWT, Cloudinary)
+- `backend/config/index.js` (chemin `.env`, validation Cloudinary, warning si pas d’URL)
+- `backend/services/cloudinary.js` (support URL directe + fallback clés séparées)
+- `backend/server.js` (warning explicite au démarrage si `CLOUDINARY_URL` absente)
+- `render.yaml` (ajout `JWT_REFRESH_SECRET`, `CLOUDINARY_URL` via secrets)
+- `README.md` (section Configuration enrichie)
+
+### Hypothèses
+- En prod Render: secrets gérés via Render Secrets; l’URL Cloudinary est préférée.
+- En dev: SQLite et URL Cloudinary de test.
+
+### Solutions retenues
+- Standardisation sur `CLOUDINARY_URL` (format `cloudinary://<api_key>:<api_secret>@dmiqnc2o6`) avec fallback `CLOUDINARY_*`.
+- Validation/avertissements centralisés dans `config/index.js` + log au démarrage.
+- Exemple d’environnement exhaustif dans `.env.example`.
+- Déclaration des secrets manquants dans `render.yaml`.
+
+### Implémentation
+- Voir commits sur les fichiers listés (sections ci-dessus).
+
+### Vérification
+- Démarrage local: logs affichent l’avertissement si `CLOUDINARY_URL` manquante et connexion DB OK.
+- Import d’image: middleware utilise bien `cloudinary.uploader.upload_stream` (pas d’erreur SDK).
+- Recherche code: aucune clé Cloudinary en dur hors `.env`.
+
+### Instructions post-déploiement (Render)
+- Créer/mettre à jour Secrets: `jwt-secret`, `jwt-refresh-secret`, `cloudinary-url`.
+- Vérifier CORS_ORIGINS selon le domaine Vercel effectif.
+- Déclencher un redeploy.
+
+### Objectif
+Documenter la refonte de l'import/export, en mettant en avant les changements apportés, les avantages et les points d'attention.
+
+### Changements apportés
+
+*   Suppression de l'ancien système d'import/export et remplacement par un nouveau service backend.
+*   Création d'un onglet unique "Import/Export" pour une expérience utilisateur plus cohérente.
+*   Connexion au nouveau service backend pour l'import de données.
+*   Suppression des anciens composants et services non utilisés.
+
+### Avantages
+
+*   Une expérience utilisateur plus cohérente et plus facile à utiliser.
+*   Une architecture plus robuste et plus maintenable.
+*   Une meilleure gestion des erreurs et des logs.
+
+### Points d'attention
+
+*   La création d'endpoints backend pour l'export de données.
+*   La mise en place d'un journal des transferts pour suivre les opérations d'import/export.
+*   La documentation de l'API pour les développeurs.
+
+### Conclusion
+
+La refonte de l'import/export a permis d'améliorer l'expérience utilisateur et la robustesse de l'application. Il est important de poursuivre les efforts pour finaliser les derniers points d'attention et assurer une documentation complète de l'API.

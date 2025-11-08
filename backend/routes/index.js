@@ -38,6 +38,7 @@ module.exports = (app) => {
   app.use('/api/health', healthRoutes);
   
   // Routes protégées (nécessitent authentification)
+  // Routes FR historiques
   app.use('/api/exercices', authenticateToken, exerciceRoutes);
   app.use('/api/tags', authenticateToken, tagRoutes);
   app.use('/api/entrainements', authenticateToken, entrainementRoutes);
@@ -46,6 +47,12 @@ module.exports = (app) => {
   app.use('/api/dashboard', authenticateToken, dashboardRoutes);
   app.use('/api/import', authenticateToken, importRoutes);
   app.use('/api/admin', adminRoutes);
+
+  // Alias REST en EN (compatibilité avec conventions)
+  app.use('/api/exercises', authenticateToken, exerciceRoutes);
+  app.use('/api/trainings', authenticateToken, entrainementRoutes);
+  app.use('/api/warmups', authenticateToken, echauffementRoutes);
+  app.use('/api/matches', authenticateToken, situationMatchRoutes);
   
   // Route d'accueil de l'API
   app.get('/api', (req, res) => {
@@ -54,10 +61,14 @@ module.exports = (app) => {
       version: '2.0.0',
       routes: {
         exercices: '/api/exercices',
+        exercises: '/api/exercises',
         tags: '/api/tags',
         entrainements: '/api/entrainements',
+        trainings: '/api/trainings',
         echauffements: '/api/echauffements',
+        warmups: '/api/warmups',
         situationsMatchs: '/api/situations-matchs',
+        matches: '/api/matches',
         dashboard: '/api/dashboard',
         admin: '/api/admin',
         import: '/api/import'

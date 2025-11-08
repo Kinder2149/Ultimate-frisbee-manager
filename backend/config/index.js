@@ -1,9 +1,12 @@
 const dotenv = require('dotenv');
 const path = require('path');
 
+// Chemin du .env backend
+const envPath = path.resolve(__dirname, '..', '.env');
+
 // Charge les variables d'environnement depuis le fichier .env à la racine du backend
 const result = dotenv.config({ 
-  path: path.resolve(__dirname, '..', '.env'),
+  path: envPath,
   override: true // Force l'utilisation des variables du .env par-dessus celles du système
 });
 
@@ -16,13 +19,13 @@ if (result.error) {
 
 // Validation préalable des secrets JWT
 const isProd = process.env.NODE_ENV === 'production';
-if (!process.env.JWT_SECRET || !process.env.JWT_REFRESH_SECRET) {
-  if (isProd) {
-    console.error('[Config] FATAL: JWT secrets are missing in production (JWT_SECRET/JWT_REFRESH_SECRET).');
-    process.exit(1);
-  } else {
-    console.warn('[Config] Warning: JWT secrets missing; provide them via backend/.env (not tracked).');
-  }
+if (!process.env.JWT_SECRET) {
+  console.error('[Config] FATAL: JWT_SECRET manquant.');
+  process.exit(1);
+}
+if (!process.env.JWT_REFRESH_SECRET) {
+  // Refresh optionnel: démarrage autorisé avec avertissement clair
+  console.warn('[Config] Warning: JWT_REFRESH_SECRET absent — rafraîchissement de token désactivé.');
 }
 
 // Valider et exporter la configuration
@@ -41,12 +44,22 @@ const config = {
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
     refreshSecret: process.env.JWT_REFRESH_SECRET,
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d',
+  },
+  rateLimit: {
+    windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000),
+    max: Number(process.env.RATE_LIMIT_MAX || 100),
+    enabled: (process.env.RATE_LIMIT_ENABLED || 'true').toLowerCase() !== 'false'
   }
 };
 
 // Validation critique pour Cloudinary
 if (!config.cloudinary.url && (!config.cloudinary.cloudName || !config.cloudinary.apiKey || !config.cloudinary.apiSecret)) {
   throw new Error('Configuration Cloudinary manquante ou incomplète. Définissez soit CLOUDINARY_URL, soit les clés séparées.');
+}
+
+// Aide au diagnostic: avertir si CLOUDINARY_URL manquante (fallback sur clés séparées possible)
+if (!config.cloudinary.url) {
+  console.warn('[Config] CLOUDINARY_URL non définie. Le système tentera d\'utiliser CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET si fournis.');
 }
 
 module.exports = config;

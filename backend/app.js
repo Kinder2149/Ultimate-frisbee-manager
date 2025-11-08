@@ -3,6 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const pinoHttp = require('pino-http');
 const errorHandler = require('./middleware/errorHandler.middleware');
+const { writeMethodsRateLimit } = require('./middleware/rateLimit.middleware');
 const app = express();
 
 // Middlewares de sécurité
@@ -19,20 +20,65 @@ app.use(pinoHttp({
     remove: true
   }
 }));
-const allowedOrigins = (process.env.CORS_ORIGINS || '')
+
+// CORS dynamique sécurisé
+const allowedExactOrigins = (process.env.CORS_ORIGINS || '')
   .split(',')
   .map(s => s.trim())
   .filter(Boolean);
 
+function isLocalhost(originUrl) {
+  try {
+    const u = new URL(originUrl);
+    return (
+      u.hostname === 'localhost' ||
+      u.hostname === '127.0.0.1' ||
+      u.hostname === '::1'
+    );
+  } catch { return false; }
+}
+
+function isVercelPreview(originUrl) {
+  try {
+    const u = new URL(originUrl);
+    // Ex: 123-he112y0mx-kinder2149s-projects.vercel.app
+    return u.hostname.endsWith('-kinder2149s-projects.vercel.app');
+  } catch { return false; }
+}
+
+function isVercelProd(originUrl) {
+  try {
+    const u = new URL(originUrl);
+    // Adapter au domaine de prod Vercel effectif du frontend
+    return (
+      u.hostname === 'ultimate-frisbee-manager-kinder.vercel.app' ||
+      u.hostname === 'ultimate-frisbee-manager.vercel.app'
+    );
+  } catch { return false; }
+}
+
+function isAllowedOrigin(origin) {
+  if (!origin) return true; // requêtes server-to-server ou outils
+  if (allowedExactOrigins.includes(origin)) return true; // exacts ENV
+  if (isLocalhost(origin)) return true; // dev local
+  if (isVercelProd(origin)) return true; // prod Vercel
+  if (isVercelPreview(origin)) return true; // previews Vercel
+  return false;
+}
+
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
-    return allowedOrigins.includes(origin)
-      ? callback(null, true)
-      : callback(new Error('CORS not allowed'), false);
+    if (isAllowedOrigin(origin)) return callback(null, true);
+    const err = new Error('CORS not allowed');
+    // hint non sensible en log
+    console.warn('[CORS] Origin rejetée:', origin);
+    return callback(err, false);
   },
   credentials: true
 }));
+
+// Rate limiting sur méthodes d'écriture
+app.use(writeMethodsRateLimit);
 
 // Middleware pour parser le JSON
 app.use(express.json());

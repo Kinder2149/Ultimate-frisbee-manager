@@ -17,9 +17,13 @@ services:
           name: ultimate-frisbee-manager-db
           property: connectionString
       - key: CORS_ORIGINS
-        value: https://ultimate-frisbee-manager-kinder.vercel.app,https://ultimate-frisbee-manager-*.vercel.app,https://*-kinder2149s-projects.vercel.app
+        value: https://ultimate-frisbee-manager-kinder.vercel.app,http://localhost:4200
       - key: JWT_SECRET
         fromSecret: jwt-secret
+      - key: JWT_REFRESH_SECRET
+        fromSecret: jwt-refresh-secret
+      - key: CLOUDINARY_URL
+        fromSecret: cloudinary-url
 
 databases:
   - name: ultimate-frisbee-manager-db

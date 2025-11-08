@@ -3,8 +3,7 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { SituationMatch } from '../models/situationmatch.model';
 import { EntityCrudService, CrudOptions } from '../../shared/services/entity-crud.service';
-import { validate } from '../utils/import-validator';
-import { mapLegacyTag } from '@ufm/shared/constants/tag-mapping';
+ 
 
 @Injectable({
   providedIn: 'root'
@@ -48,30 +47,5 @@ export class SituationMatchService {
     return this.entityCrudService.http.post<SituationMatch>(url, {}).pipe(
       tap(() => this.entityCrudService.invalidateCache())
     );
-  }
-
-  /**
-   * Crée une Situation de match depuis un payload d'import non-securisé.
-   * Valide et applique les mappings de tags avant de déléguer à createSituationMatch.
-   * @throws Error si champs critiques manquants
-   */
-  createFromImport(data: Partial<SituationMatch>): Observable<SituationMatch> {
-    const payload: any = { ...(data || {}) };
-    const result = validate('situation', payload);
-    const criticalMissing = result.missingFields.filter(m => m.critical).map(m => m.field);
-    if (criticalMissing.length) {
-      throw new Error(`Champs requis manquants: ${criticalMissing.join(', ')}`);
-    }
-    if (Array.isArray(payload.tags)) {
-      payload.tags = (payload.tags as unknown[]).map(t => {
-        if (typeof t !== 'string') return t;
-        const m = mapLegacyTag(t);
-        return m.mapped || t;
-      });
-    }
-    if ('updatedAt' in payload) {
-      payload.updatedAt = new Date().toISOString();
-    }
-    return this.createSituationMatch(payload);
   }
 }

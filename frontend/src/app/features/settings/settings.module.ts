@@ -10,6 +10,7 @@ import { ProfilePageComponent } from './pages/profile/profile-page.component';
 import { ImportExercicesComponent } from './pages/import-exercices/import-exercices.component';
 import { AdminDashboardComponent } from './pages/admin-dashboard/admin-dashboard.component';
 import { DataExplorerPageComponent } from './pages/data-explorer/data-explorer-page.component';
+import { ImportExportComponent } from './pages/import-export/import-export.component';
 
 const routes: Routes = [
   {
@@ -17,6 +18,7 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     children: [
       { path: 'tags', component: TagsManagerComponent },
+      { path: 'import-export', component: ImportExportComponent },
       { path: 'import-exercices', component: ImportExercicesComponent },
       { path: 'profil', component: ProfilePageComponent },
       { 
@@ -45,10 +47,10 @@ const routes: Routes = [
     RouterModule.forChild(routes),
     // standalone components imported directly (only those used in templates)
     TagsManagerComponent,
+    ImportExportComponent,
     ImportExercicesComponent,
     AdminDashboardComponent,
     DataExplorerPageComponent
   ]
 })
 export class SettingsModule {}
-

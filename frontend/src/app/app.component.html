@@ -79,7 +79,7 @@
             </a>
             <ul class="dropdown-menu" *ngIf="isDropdownOpen.parametres">
               <li *ngIf="((currentUser$ | async)?.role || '').toLowerCase() === 'admin'"><a routerLink="/parametres/admin" routerLinkActive="active">Tableau de bord Admin</a></li>
-              <li *ngIf="((currentUser$ | async)?.role || '').toLowerCase() === 'admin'"><a routerLink="/parametres/import-exercices" routerLinkActive="active">Import d'exercices</a></li>
+              <li *ngIf="((currentUser$ | async)?.role || '').toLowerCase() === 'admin'"><a routerLink="/parametres/import-export" routerLinkActive="active">Import/Export</a></li>
               <li *ngIf="isAuthenticated$ | async"><a routerLink="/parametres/profil" routerLinkActive="active">Profil</a></li>
               <li *ngIf="isAuthenticated$ | async"><a href="#" (click)="$event.preventDefault(); onLogout()">Déconnexion</a></li>
             </ul>

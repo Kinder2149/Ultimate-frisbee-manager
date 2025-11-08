@@ -164,6 +164,335 @@ exports.importExercicesFromMarkdown = async (req, res) => {
   }
 };
 
+// --- Nouveaux Handlers d'Import ---
+
+// Body attendu: { entrainements: [ { titre, date?, imageUrl?, tagIds? or tags?, echauffementId?, situationMatchId?, exercices?: [{ exerciceId, ordre?, duree?, notes? }] } ] }
+exports.importEntrainements = async (req, res) => {
+  const dryRun = boolFromQuery(req.query.dryRun, true);
+  const payload = req.body;
+
+  if (!payload || !Array.isArray(payload.entrainements)) {
+    return res.status(400).json({ error: 'Payload invalide: attendez { entrainements: [...] }' });
+  }
+
+  const report = {
+    dryRun,
+    totals: { input: payload.entrainements.length, created: 0, updated: 0, skipped: 0 },
+    entrainements: [],
+    tagsCreated: 0
+  };
+
+  try {
+    const tagKeysSeen = new Set();
+
+    if (dryRun) {
+      for (const ent of payload.entrainements) {
+        try {
+          const titre = String(ent.titre || '').trim();
+          if (!titre) throw new Error('titre manquant');
+
+          // Vérifier tags (ids ou objets)
+          const tagIdsSimu = [];
+          if (Array.isArray(ent.tags)) {
+            for (const t of ent.tags) {
+              if (!t.label || !isValidCategory(t.category) || !isValidLevel(t.level, t.category)) {
+                throw new Error(`Tag invalide: ${JSON.stringify(t)}`);
+              }
+              const existing = await prisma.tag.findUnique({ where: { label_category: { label: t.label.trim(), category: t.category } }, select: { id: true } });
+              if (!existing) {
+                const key = `${t.label.trim()}|${t.category}`;
+                if (!tagKeysSeen.has(key)) { tagKeysSeen.add(key); report.tagsCreated += 1; }
+              } else { tagIdsSimu.push(existing.id); }
+            }
+          }
+
+          const existing = await prisma.entrainement.findFirst({ where: { titre }, select: { id: true } });
+          const action = existing ? 'update' : 'create';
+          report.totals[action === 'create' ? 'created' : 'updated'] += 1;
+          report.entrainements.push({ titre, action, exists: !!existing, imported: false, missing: [], tagIdsCount: tagIdsSimu.length, exercicesCount: Array.isArray(ent.exercices) ? ent.exercices.length : 0 });
+        } catch (e) {
+          report.totals.skipped += 1;
+          report.entrainements.push({ titre: ent.titre || '(sans titre)', action: 'skip', error: e.message });
+        }
+      }
+      return res.json(report);
+    }
+
+    // apply
+    const result = await prisma.$transaction(async (tx) => {
+      for (const ent of payload.entrainements) {
+        try {
+          const titre = String(ent.titre || '').trim();
+          if (!titre) throw new Error('titre manquant');
+
+          // Résoudre tags
+          const tagIds = [];
+          if (Array.isArray(ent.tags)) {
+            for (const t of ent.tags) {
+              const tag = await tx.tag.upsert({
+                where: { label_category: { label: t.label.trim(), category: t.category } },
+                update: { level: t.level ?? null },
+                create: { label: t.label.trim(), category: t.category, level: t.level ?? null }
+              });
+              tagIds.push(tag.id);
+            }
+          } else if (Array.isArray(ent.tagIds)) {
+            tagIds.push(...ent.tagIds);
+          }
+
+          const existing = await tx.entrainement.findFirst({ where: { titre }, select: { id: true } });
+
+          if (!existing) {
+            const created = await tx.entrainement.create({
+              data: {
+                titre,
+                date: ent.date ? new Date(ent.date) : null,
+                imageUrl: ent.imageUrl || null,
+                echauffementId: ent.echauffementId || null,
+                situationMatchId: ent.situationMatchId || null,
+                tags: { connect: tagIds.map(id => ({ id })) },
+                exercices: {
+                  create: (ent.exercices || []).filter(ex => ex && ex.exerciceId).map((ex, i) => ({
+                    exerciceId: ex.exerciceId,
+                    ordre: ex.ordre || i + 1,
+                    duree: ex.duree || null,
+                    notes: ex.notes || null
+                  }))
+                }
+              }
+            });
+            report.totals.created += 1;
+            report.entrainements.push({ titre, action: 'create', id: created.id, exists: false, imported: true, missing: [], tagIdsCount: tagIds.length, exercicesCount: (ent.exercices || []).length });
+          } else {
+            // Remplacer les relations
+            await tx.entrainementExercice.deleteMany({ where: { entrainementId: existing.id } });
+            const updated = await tx.entrainement.update({
+              where: { id: existing.id },
+              data: {
+                titre,
+                date: ent.date ? new Date(ent.date) : undefined,
+                imageUrl: ent.imageUrl !== undefined ? ent.imageUrl : undefined,
+                echauffementId: ent.echauffementId !== undefined ? ent.echauffementId : undefined,
+                situationMatchId: ent.situationMatchId !== undefined ? ent.situationMatchId : undefined,
+                tags: { set: [], connect: tagIds.map(id => ({ id })) },
+                exercices: {
+                  create: (ent.exercices || []).filter(ex => ex && ex.exerciceId).map((ex, i) => ({
+                    exerciceId: ex.exerciceId,
+                    ordre: ex.ordre || i + 1,
+                    duree: ex.duree || null,
+                    notes: ex.notes || null
+                  }))
+                }
+              }
+            });
+            report.totals.updated += 1;
+            report.entrainements.push({ titre, action: 'update', id: updated.id, exists: true, imported: true, missing: [], tagIdsCount: tagIds.length, exercicesCount: (ent.exercices || []).length });
+          }
+        } catch (e) {
+          report.totals.skipped += 1;
+          report.entrainements.push({ titre: ent.titre || '(sans titre)', action: 'skip', error: e.message });
+        }
+      }
+      return report;
+    });
+
+    return res.json(result);
+  } catch (error) {
+    console.error('Erreur import entrainements:', error);
+    return res.status(500).json({ error: 'Erreur serveur durant import entrainements', details: error.message });
+  }
+};
+
+// Body attendu: { echauffements: [ { nom, description?, imageUrl?, blocs?: [{ ordre?, titre, repetitions?, temps?, informations?, fonctionnement?, notes? }] } ] }
+exports.importEchauffements = async (req, res) => {
+  const dryRun = boolFromQuery(req.query.dryRun, true);
+  const payload = req.body;
+
+  if (!payload || !Array.isArray(payload.echauffements)) {
+    return res.status(400).json({ error: 'Payload invalide: attendez { echauffements: [...] }' });
+  }
+
+  const report = {
+    dryRun,
+    totals: { input: payload.echauffements.length, created: 0, updated: 0, skipped: 0 },
+    echauffements: []
+  };
+
+  try {
+    if (dryRun) {
+      for (const e of payload.echauffements) {
+        try {
+          const nom = String(e.nom || '').trim();
+          if (!nom) throw new Error('nom manquant');
+          const existing = await prisma.echauffement.findFirst({ where: { nom }, select: { id: true } });
+          const action = existing ? 'update' : 'create';
+          report.totals[action === 'create' ? 'created' : 'updated'] += 1;
+          report.echauffements.push({ nom, action, exists: !!existing, imported: false, missing: [], blocsCount: Array.isArray(e.blocs) ? e.blocs.length : 0 });
+        } catch (err) {
+          report.totals.skipped += 1;
+          report.echauffements.push({ nom: e.nom || '(sans nom)', action: 'skip', error: err.message });
+        }
+      }
+      return res.json(report);
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      for (const e of payload.echauffements) {
+        try {
+          const nom = String(e.nom || '').trim();
+          if (!nom) throw new Error('nom manquant');
+          const existing = await tx.echauffement.findFirst({ where: { nom }, select: { id: true } });
+          if (!existing) {
+            const created = await tx.echauffement.create({
+              data: {
+                nom,
+                description: e.description || null,
+                imageUrl: e.imageUrl || null,
+                blocs: { create: (e.blocs || []).map((b, i) => ({ ...b, ordre: b.ordre || i + 1 })) }
+              },
+              include: { blocs: true }
+            });
+            report.totals.created += 1;
+            report.echauffements.push({ nom, action: 'create', id: created.id, exists: false, imported: true, missing: [], blocsCount: (e.blocs || []).length });
+          } else {
+            await tx.blocEchauffement.deleteMany({ where: { echauffementId: existing.id } });
+            const updated = await tx.echauffement.update({
+              where: { id: existing.id },
+              data: {
+                nom,
+                description: e.description !== undefined ? e.description : undefined,
+                imageUrl: e.imageUrl !== undefined ? e.imageUrl : undefined,
+                blocs: { create: (e.blocs || []).map((b, i) => ({ ...b, ordre: b.ordre || i + 1 })) }
+              },
+              include: { blocs: true }
+            });
+            report.totals.updated += 1;
+            report.echauffements.push({ nom, action: 'update', id: updated.id, exists: true, imported: true, missing: [], blocsCount: (e.blocs || []).length });
+          }
+        } catch (err) {
+          report.totals.skipped += 1;
+          report.echauffements.push({ nom: e.nom || '(sans nom)', action: 'skip', error: err.message });
+        }
+      }
+      return report;
+    });
+
+    return res.json(result);
+  } catch (error) {
+    console.error('Erreur import echauffements:', error);
+    return res.status(500).json({ error: 'Erreur serveur durant import echauffements', details: error.message });
+  }
+};
+
+// Body attendu: { situations: [ { nom?, type, description?, temps?, imageUrl?, tags?: [{label, category, level?}] } ] }
+exports.importSituationsMatchs = async (req, res) => {
+  const dryRun = boolFromQuery(req.query.dryRun, true);
+  const payload = req.body;
+
+  if (!payload || !Array.isArray(payload.situations)) {
+    return res.status(400).json({ error: 'Payload invalide: attendez { situations: [...] }' });
+  }
+
+  const report = {
+    dryRun,
+    totals: { input: payload.situations.length, created: 0, updated: 0, skipped: 0 },
+    situations: [],
+    tagsCreated: 0
+  };
+
+  try {
+    const tagKeysSeen = new Set();
+
+    if (dryRun) {
+      for (const s of payload.situations) {
+        try {
+          const type = String(s.type || '').trim();
+          if (!type) throw new Error('type manquant');
+          if (Array.isArray(s.tags)) {
+            for (const t of s.tags) {
+              if (!t.label || !isValidCategory(t.category) || !isValidLevel(t.level, t.category)) {
+                throw new Error(`Tag invalide: ${JSON.stringify(t)}`);
+              }
+              const existing = await prisma.tag.findUnique({ where: { label_category: { label: t.label.trim(), category: t.category } }, select: { id: true } });
+              if (!existing) {
+                const key = `${t.label.trim()}|${t.category}`;
+                if (!tagKeysSeen.has(key)) { tagKeysSeen.add(key); report.tagsCreated += 1; }
+              }
+            }
+          }
+          const existingSit = await prisma.situationMatch.findFirst({ where: { type, nom: s.nom || null }, select: { id: true } });
+          const action = existingSit ? 'update' : 'create';
+          report.totals[action === 'create' ? 'created' : 'updated'] += 1;
+          report.situations.push({ type, nom: s.nom || null, action, exists: !!existingSit, imported: false, missing: [], tagsCount: Array.isArray(s.tags) ? s.tags.length : 0 });
+        } catch (err) {
+          report.totals.skipped += 1;
+          report.situations.push({ nom: s.nom || null, type: s.type || '(sans type)', action: 'skip', error: err.message });
+        }
+      }
+      return res.json(report);
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      for (const s of payload.situations) {
+        try {
+          const type = String(s.type || '').trim();
+          if (!type) throw new Error('type manquant');
+          const tagIds = [];
+          if (Array.isArray(s.tags)) {
+            for (const t of s.tags) {
+              const tag = await tx.tag.upsert({
+                where: { label_category: { label: t.label.trim(), category: t.category } },
+                update: { level: t.level ?? null },
+                create: { label: t.label.trim(), category: t.category, level: t.level ?? null }
+              });
+              tagIds.push(tag.id);
+            }
+          }
+          const existingSit = await tx.situationMatch.findFirst({ where: { type, nom: s.nom || null }, select: { id: true } });
+          if (!existingSit) {
+            const created = await tx.situationMatch.create({
+              data: {
+                nom: s.nom || null,
+                type,
+                description: s.description || null,
+                temps: s.temps || null,
+                imageUrl: s.imageUrl || null,
+                tags: { connect: tagIds.map(id => ({ id })) }
+              },
+              include: { tags: true }
+            });
+            report.totals.created += 1;
+            report.situations.push({ type, nom: s.nom || null, action: 'create', id: created.id, exists: false, imported: true, missing: [], tagsCount: tagIds.length });
+          } else {
+            const updated = await tx.situationMatch.update({
+              where: { id: existingSit.id },
+              data: {
+                nom: s.nom !== undefined ? s.nom : undefined,
+                description: s.description !== undefined ? s.description : undefined,
+                temps: s.temps !== undefined ? s.temps : undefined,
+                imageUrl: s.imageUrl !== undefined ? s.imageUrl : undefined,
+                tags: { set: [], connect: tagIds.map(id => ({ id })) }
+              },
+              include: { tags: true }
+            });
+            report.totals.updated += 1;
+            report.situations.push({ type, nom: s.nom || null, action: 'update', id: updated.id, exists: true, imported: true, missing: [], tagsCount: tagIds.length });
+          }
+        } catch (err) {
+          report.totals.skipped += 1;
+          report.situations.push({ nom: s.nom || null, type: s.type || '(sans type)', action: 'skip', error: err.message });
+        }
+      }
+      return report;
+    });
+
+    return res.json(result);
+  } catch (error) {
+    console.error('Erreur import situations:', error);
+    return res.status(500).json({ error: 'Erreur serveur durant import situations', details: error.message });
+  }
+};
+
 
 exports.importExercices = async (req, res) => {
   const dryRun = boolFromQuery(req.query.dryRun, true);
@@ -216,18 +545,20 @@ exports.importExercices = async (req, res) => {
               description: (exo.description || '').trim(),
               imageUrl: exo.imageUrl || null,
               schemaUrl: exo.schemaUrl || null,
-              variablesText: exo.variablesText || '',
               variablesPlus: exo.variablesPlus || '',
               variablesMinus: exo.variablesMinus || ''
             }, tagIds: tagIdsSimu };
           })();
 
-          if (!data.nom || !data.description) throw new Error('nom/description manquant');
+          const missing = [];
+          if (!data.nom) missing.push('nom');
+          if (!data.description) missing.push('description');
+          if (missing.length) throw new Error('champs manquants: ' + missing.join(', '));
 
           const existing = await prisma.exercice.findFirst({ where: { nom: data.nom }, select: { id: true } });
           const action = existing ? 'update' : 'create';
           report.totals[action === 'create' ? 'created' : 'updated'] += 1;
-          report.exercices.push({ nom: data.nom, action, tagIdsCount: tagIds.length });
+          report.exercices.push({ nom: data.nom, action, exists: !!existing, imported: false, missing: [], tagIdsCount: tagIds.length });
         } catch (e) {
           report.totals.skipped += 1;
           report.exercices.push({ nom: exo.nom || '(sans nom)', action: 'skip', error: e.message });
@@ -253,7 +584,10 @@ exports.importExercices = async (req, res) => {
 
           const nom = (exo.nom || '').trim();
           const description = (exo.description || '').trim();
-          if (!nom || !description) throw new Error('nom/description manquant');
+          const missing = [];
+          if (!nom) missing.push('nom');
+          if (!description) missing.push('description');
+          if (missing.length) throw new Error('champs manquants: ' + missing.join(', '));
 
           const existing = await tx.exercice.findFirst({ where: { nom }, select: { id: true } });
 
@@ -264,14 +598,13 @@ exports.importExercices = async (req, res) => {
                 description,
                 imageUrl: exo.imageUrl || null,
                 schemaUrl: exo.schemaUrl || null,
-                variablesText: exo.variablesText || '',
                 variablesPlus: exo.variablesPlus || '',
                 variablesMinus: exo.variablesMinus || '',
                 tags: { connect: tagIds.map(id => ({ id })) }
               }
             });
             report.totals.created += 1;
-            report.exercices.push({ nom, action: 'create', id: created.id, tagIdsCount: tagIds.length });
+            report.exercices.push({ nom, action: 'create', id: created.id, exists: false, imported: true, missing: [], tagIdsCount: tagIds.length });
           } else {
             const updated = await tx.exercice.update({
               where: { id: existing.id },
@@ -280,14 +613,13 @@ exports.importExercices = async (req, res) => {
                 description,
                 imageUrl: exo.imageUrl || null,
                 schemaUrl: exo.schemaUrl || null,
-                variablesText: exo.variablesText || '',
                 variablesPlus: exo.variablesPlus || '',
                 variablesMinus: exo.variablesMinus || '',
                 tags: { set: [], connect: tagIds.map(id => ({ id })) }
               }
             });
             report.totals.updated += 1;
-            report.exercices.push({ nom, action: 'update', id: updated.id, tagIdsCount: tagIds.length });
+            report.exercices.push({ nom, action: 'update', id: updated.id, exists: true, imported: true, missing: [], tagIdsCount: tagIds.length });
           }
         } catch (e) {
           report.totals.skipped += 1;

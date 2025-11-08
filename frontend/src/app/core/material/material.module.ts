@@ -15,6 +15,7 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTabsModule } from '@angular/material/tabs';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatListModule } from '@angular/material/list';
@@ -41,6 +42,7 @@ import { MatListModule } from '@angular/material/list';
     MatCheckboxModule,
     MatMenuModule,
     MatProgressSpinnerModule,
+    MatTabsModule,
     MatButtonToggleModule,
     MatExpansionModule,
     MatListModule
@@ -64,7 +66,8 @@ import { MatListModule } from '@angular/material/list';
     MatProgressSpinnerModule,
     MatButtonToggleModule,
     MatExpansionModule,
-    MatListModule
+    MatListModule,
+    MatTabsModule
   ]
 })
 export class MaterialModule { }

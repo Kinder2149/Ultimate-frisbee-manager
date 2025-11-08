@@ -20,10 +20,8 @@ import { CoreModule } from './core/core.module';
 // Module de tags avancés
 import { TagsAdvancedModule } from './features/tags-advanced/tags-advanced.module';
 
-
 // Import du guard d'authentification
 import { AuthGuard } from './core/guards/auth.guard';
-import { DevGuard } from './core/guards/dev.guard';
 
 // Définition des routes de l'application
 const routes: Routes = [
@@ -84,11 +82,7 @@ const routes: Routes = [
     loadChildren: () => import('./features/situations-matchs/situations-matchs.module').then(m => m.SituationsMatchsModule),
     canActivate: [AuthGuard]
   },
-  {
-    path: 'debug/export-import',
-    loadComponent: () => import('./features/debug/export-import-debug.component').then(c => c.ExportImportDebugComponent),
-    canActivate: [AuthGuard, DevGuard]
-  },
+  // Route de debug export/import supprimée (ancien système)
   
   // Route de fallback
   { path: '**', redirectTo: '/login' }

@@ -29,4 +29,23 @@ export class ImportService {
     const params = new HttpParams().set('dryRun', String(dryRun));
     return this.http.post(url, json, { params });
   }
+
+  importEntrainements(json: any, dryRun = true): Observable<any> {
+    const url = `${this.baseUrl}/entrainements`;
+    const params = new HttpParams().set('dryRun', String(dryRun));
+    return this.http.post(url, json, { params });
+  }
+
+  importEchauffements(json: any, dryRun = true): Observable<any> {
+    const url = `${this.baseUrl}/echauffements`;
+    const params = new HttpParams().set('dryRun', String(dryRun));
+    return this.http.post(url, json, { params });
+  }
+
+  importSituations(json: any, dryRun = true): Observable<any> {
+    const url = `${this.baseUrl}/situations-matchs`;
+    const params = new HttpParams().set('dryRun', String(dryRun));
+    return this.http.post(url, json, { params });
+  }
 }
+

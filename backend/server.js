@@ -4,13 +4,36 @@ const config = require('./config');
 
 const app = require('./app');
 const { prisma } = require('./services/prisma');
+const { testCloudinaryConnection } = require('./services/cloudinary');
 
 const PORT = config.port;
 
 const server = app.listen(PORT, '0.0.0.0', async () => {
   if (process.env.NODE_ENV !== 'test') {
-    console.log(`Serveur démarré sur http://0.0.0.0:${PORT}`);
-    console.log(`Accessible localement sur http://localhost:${PORT}`);
+    console.log(`[Startup] Server listening on http://0.0.0.0:${PORT} (local: http://localhost:${PORT})`);
+    // JWT config
+    if (config.jwt.refreshSecret) {
+      console.log('[Startup] JWT refresh: ENABLED');
+    } else {
+      console.warn('[Startup] JWT refresh: DISABLED (JWT_REFRESH_SECRET absent)');
+    }
+    // Vérification Cloudinary
+    if (!config.cloudinary.url) {
+      // Fallback possible via variables séparées; on avertit pour faciliter la config
+      console.warn('[Startup] CLOUDINARY_URL non définie. Vérifiez que CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET sont bien présents ou définissez CLOUDINARY_URL.');
+    }
+    // Ping Cloudinary (API Admin)
+    try {
+      const ping = await testCloudinaryConnection();
+      if (ping.ok) {
+        console.log('✅ Cloudinary connecté (api.ping).');
+      } else {
+        console.warn('⚠️  Cloudinary ping a échoué. Vérifiez la configuration.', ping.error?.message || ping.error);
+      }
+    } catch (e) {
+      console.warn('⚠️  Cloudinary ping non disponible.', e?.message || e);
+    }
+
     try {
       await prisma.$connect();
       console.log('✅ Connexion à la base de données établie.');

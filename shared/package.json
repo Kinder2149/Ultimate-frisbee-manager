@@ -4,11 +4,11 @@
   "description": "Constantes et utilitaires partagés pour Ultimate Frisbee Manager",
   "license": "ISC",
   "private": false,
-  "main": "dist/constants/tag-categories.js",
-  "types": "dist/constants/tag-categories.d.ts",
+  "main": "dist/tag-categories.js",
+  "types": "dist/tag-categories.d.ts",
   "exports": {
-    ".": "./dist/constants/tag-categories.js",
-    "./constants/*": "./dist/constants/*",
+    ".": "./dist/tag-categories.js",
+    "./constants/*": "./dist/*",
     "./package.json": "./package.json"
   },
   "files": [

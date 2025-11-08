@@ -6,12 +6,14 @@ const { prisma } = require('../services/prisma');
 // Public: indique l'état du serveur et la connectivité DB
 router.get('/', async (req, res) => {
   const startedAt = process.hrtime.bigint();
+  const now = new Date().toISOString();
   try {
     // Test rapide DB (léger et compatible Prisma)
     await prisma.$queryRaw`SELECT 1`;
     const durationMs = Number((process.hrtime.bigint() - startedAt) / 1000000n);
     return res.status(200).json({
       status: 'ok',
+      timestamp: now,
       db: true,
       uptime: process.uptime(),
       responseTimeMs: durationMs
@@ -20,6 +22,7 @@ router.get('/', async (req, res) => {
     const durationMs = Number((process.hrtime.bigint() - startedAt) / 1000000n);
     return res.status(503).json({
       status: 'degraded',
+      timestamp: now,
       db: false,
       uptime: process.uptime(),
       responseTimeMs: durationMs,

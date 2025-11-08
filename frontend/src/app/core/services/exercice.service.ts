@@ -4,8 +4,7 @@ import { Exercice } from '../models/exercice.model';
 import { EntityCrudService, CrudOptions } from '../../shared/services/entity-crud.service';
 import { HttpGenericService } from '../../shared/services/http-generic.service';
 import { CacheService } from './cache.service';
-import { validate } from '../utils/import-validator';
-import { mapLegacyTag } from '@ufm/shared/constants/tag-mapping';
+ 
 
 @Injectable({
   providedIn: 'root'
@@ -66,31 +65,5 @@ export class ExerciceService extends EntityCrudService<Exercice> {
         this.invalidateCache();
       })
     );
-  }
-
-  /**
-   * Wrapper utilisé par le flux d'import pour normaliser et déléguer la création.
-   * Valide le payload et map les tags avant de déléguer à createExercice.
-   * @param data Données de l'exercice à créer.
-   * @returns Observable de l'exercice créé.
-   */
-  createFromImport(data: Partial<Exercice>): Observable<Exercice> {
-    const payload: any = { ...(data || {}) };
-    const result = validate('exercice', payload);
-    const criticalMissing = result.missingFields.filter(m => m.critical).map(m => m.field);
-    if (criticalMissing.length) {
-      throw new Error(`Champs requis manquants: ${criticalMissing.join(', ')}`);
-    }
-    if (Array.isArray(payload.tags)) {
-      payload.tags = (payload.tags as unknown[]).map(t => {
-        if (typeof t !== 'string') return t;
-        const m = mapLegacyTag(t);
-        return m.mapped || t;
-      });
-    }
-    if ('updatedAt' in payload) {
-      payload.updatedAt = new Date().toISOString();
-    }
-    return this.createExercice(payload);
   }
 }

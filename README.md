@@ -29,8 +29,19 @@ npm --prefix frontend start
 ```
 
 ### Variables d'environnement (exemples)
-- Backend (Render/local): `DATABASE_URL`, `CORS_ORIGINS`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `CLOUDINARY_URL` (ou triplet `CLOUDINARY_*`).
-- Frontend: `SUPABASE_URL`, `SUPABASE_ANON_KEY` (sur Vercel en production). En local, voir `frontend/src/environments/environment.ts`.
+
+#### Backend
+- Requis (dev/prod):
+  - `DATABASE_URL` (SQLite dev ou PostgreSQL prod)
+  - `CORS_ORIGINS` (CSV)
+  - `JWT_SECRET`, `JWT_REFRESH_SECRET`, `JWT_EXPIRES_IN` (par défaut 7d), `JWT_REFRESH_EXPIRES_IN` (par défaut 30d)
+  - `CLOUDINARY_URL` recommandé: `cloudinary://<your_api_key>:<your_api_secret>@dmiqnc2o6`
+    - Alternative: `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+- Local: éditez `backend/.env` (voir `backend/.env.example`)
+- Prod (Render): définissez les variables dans `render.yaml` et Secrets Render (`jwt-secret`, `jwt-refresh-secret`, `cloudinary-url`).
+
+#### Frontend
+- `SUPABASE_URL`, `SUPABASE_ANON_KEY` (Vercel en production). En local, voir `frontend/src/environments/environment.ts`.
 
 ### Tests / Qualité
 ```bash
@@ -73,6 +84,7 @@ Détails et choix techniques: `docs/ARCHITECTURE.md`.
 - Audit initial (P0–P11): `documentation/00_ANALYSE_INITIALE/` (phases techniques + recommandations).
 - Détails d'architecture: `docs/ARCHITECTURE.md`.
 - Déploiement détaillé: `docs/DEPLOYMENT-DETAILS.md`.
+- API Import/Export: `docs/API_IMPORT_EXPORT.md`.
 - Système de documentation: `DOCUMENTATION_SYSTEM.md`.
 
 ---
