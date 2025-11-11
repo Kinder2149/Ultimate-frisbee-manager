@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const { getOverview, getUsers, updateUser, createUser, getAllContent, getAllTags, bulkDelete, bulkDuplicate } = require('../controllers/admin.controller');
+const { getOverview, getUsers, updateUser, createUser, getAllContent, getAllTags, bulkDelete, bulkDuplicate, listExercices, listEntrainements, listEchauffements, listSituationsMatchs } = require('../controllers/admin.controller');
 const { exportUfm } = require('../controllers/export.controller');
 const { authenticateToken, requireAdmin } = require('../middleware/auth.middleware');
 
@@ -15,6 +15,12 @@ router.get('/all-tags', getAllTags);
 
 // Export UFM
 router.get('/export-ufm', exportUfm);
+
+// Listes pour export
+router.get('/list-exercices', listExercices);
+router.get('/list-entrainements', listEntrainements);
+router.get('/list-echauffements', listEchauffements);
+router.get('/list-situations-matchs', listSituationsMatchs);
 
 // Gestion des utilisateurs (admin)
 router.get('/users', getUsers);

@@ -69,6 +69,82 @@ exports.getOverview = async (req, res) => {
 };
 
 /**
+ * GET /api/admin/list-exercices
+ * Retourne la liste complète des exercices { id, titre }
+ */
+exports.listExercices = async (req, res) => {
+  try {
+    const exercicesRaw = await prisma.exercice.findMany({
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, nom: true }
+    });
+    const items = exercicesRaw.map(e => ({ id: e.id, titre: e.nom }));
+    console.log('[admin:list-exercices] succès', { count: items.length });
+    res.json(items);
+  } catch (error) {
+    console.error('Erreur Admin listExercices:', error);
+    res.status(500).json({ error: 'Erreur serveur lors de la récupération des exercices' });
+  }
+};
+
+/**
+ * GET /api/admin/list-entrainements
+ * Retourne la liste complète des entraînements { id, titre }
+ */
+exports.listEntrainements = async (req, res) => {
+  try {
+    const entrainements = await prisma.entrainement.findMany({
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, titre: true }
+    });
+    const items = entrainements.map(e => ({ id: e.id, titre: e.titre }));
+    console.log('[admin:list-entrainements] succès', { count: items.length });
+    res.json(items);
+  } catch (error) {
+    console.error('Erreur Admin listEntrainements:', error);
+    res.status(500).json({ error: 'Erreur serveur lors de la récupération des entraînements' });
+  }
+};
+
+/**
+ * GET /api/admin/list-echauffements
+ * Retourne la liste complète des échauffements { id, titre }
+ */
+exports.listEchauffements = async (req, res) => {
+  try {
+    const echauffementsRaw = await prisma.echauffement.findMany({
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, nom: true }
+    });
+    const items = echauffementsRaw.map(e => ({ id: e.id, titre: e.nom }));
+    console.log('[admin:list-echauffements] succès', { count: items.length });
+    res.json(items);
+  } catch (error) {
+    console.error('Erreur Admin listEchauffements:', error);
+    res.status(500).json({ error: 'Erreur serveur lors de la récupération des échauffements' });
+  }
+};
+
+/**
+ * GET /api/admin/list-situations-matchs
+ * Retourne la liste complète des situations de match { id, titre }
+ */
+exports.listSituationsMatchs = async (req, res) => {
+  try {
+    const situationsRaw = await prisma.situationMatch.findMany({
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, nom: true, type: true }
+    });
+    const items = situationsRaw.map(s => ({ id: s.id, titre: s.nom || s.type }));
+    console.log('[admin:list-situations-matchs] succès', { count: items.length });
+    res.json(items);
+  } catch (error) {
+    console.error('Erreur Admin listSituationsMatchs:', error);
+    res.status(500).json({ error: 'Erreur serveur lors de la récupération des situations de match' });
+  }
+};
+
+/**
  * POST /api/admin/users
  * Créer un nouvel utilisateur (admin uniquement)
  */

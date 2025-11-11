@@ -1,0 +1,48 @@
+{
+  "version": "1.0",
+  "type": "exercice",
+  "data": {
+    "id": "00000000-0000-0000-0000-0000000000e1",
+    "nom": "Passes courtes en triangle",
+    "description": "Exercice de passes rapides en triangle pour travailler précision et déplacements.",
+    "imageUrl": null,
+    "schemaUrl": null,
+    "materiel": null,
+    "notes": null,
+    "critereReussite": null,
+    "variablesPlus": "",
+    "variablesMinus": "",
+    "tags": [
+      {
+        "id": "28506263-72bf-42ab-98d7-518792b5a5c1",
+        "label": "Échauffement",
+        "category": "objectif",
+        "level": null
+      },
+      {
+        "id": "53237ff0-3260-41c3-84ab-fe8233ffae02",
+        "label": "Technique",
+        "category": "objectif",
+        "level": null
+      },
+      {
+        "id": "1e4ebfc3-1bce-4a38-ac1e-8eb3863b4451",
+        "label": "Tactique",
+        "category": "objectif",
+        "level": null
+      },
+      {
+        "id": "1477a16e-d940-44c6-93cc-8a66cd879b42",
+        "label": "Physique",
+        "category": "objectif",
+        "level": null
+      },
+      {
+        "id": "2c3164ea-71bd-482c-bd87-3513c0e59429",
+        "label": "Passes",
+        "category": "travail_specifique",
+        "level": null
+      }
+    ]
+  }
+}

@@ -1,3 +1,12 @@
+## Mission : Export UFM — Livraison finale
+
+- ✅ Seed minimal validé et intégré
+- ✅ Export JSON validé
+- ✅ Vérification sécurité & Cloudinary
+- ✅ Documentation complète
+- ✅ Tests Prisma et routes API OK
+- ✅ Branche master prête au déploiement
+
 # Plan de Développement - Ultimate Frisbee Manager
 
 Ce document suit les analyses et les actions menées sur le projet.
@@ -16,6 +25,8 @@ Ce document suit les analyses et les actions menées sur le projet.
 - [Mission API Cleanup — Uniformisation des routes (08/11/2025)](#mission-api-cleanup--uniformisation-des-routes-08112025)
 - [État du projet](#état-du-projet)
 - [Prochaines étapes](#prochaines-étapes)
+- [Bilan complet Backend + Script Export (11/11/2025)](#bilan-complet-backend--script-export-11112025)
+- [Documentation des routes API](docs/API_ROUTES.md)
 
 ## Missions récentes (consolidé)
 
@@ -46,6 +57,20 @@ Ce document suit les analyses et les actions menées sur le projet.
   - Résultat: Alias `/api/exercises|trainings|warmups|matches` ajoutés; page `/api` documente FR+EN.
   - Tests: GET listes FR et EN → mêmes réponses; UI continue de fonctionner.
   - Points manuels: Migration progressive du front possible via `ApiUrlService`.
+  - Documentation détaillée des endpoints clés: voir `docs/API_ROUTES.md`.
+
+- **Admin list-<type> (11/11/2025)**
+  - Objectif: Exposer les listes pour le script `backend/scripts/export-ufm.js` via `/api/admin/list-{exercices|entrainements|echauffements|situations-matchs}`.
+  - Fichiers: `backend/controllers/admin.controller.js` (handlers `listExercices|listEntrainements|listEchauffements|listSituationsMatchs`), `backend/routes/admin.routes.js` (déclarations, protégées JWT+admin), `backend/__tests__/admin-list.test.js` (Supertest).
+  - Format de réponse: tableau JSON d’objets `{ id, titre }` trié par `createdAt desc`.
+  - Vérification: `curl -H "Authorization: Bearer <TOKEN>" http://localhost:3002/api/admin/list-exercices` renvoie `200` et une liste; tests automatisés passent.
+
+- **Auth login (11/11/2025)**
+  - Objectif: Permettre l’authentification email/password pour scripts externes (ex: `scripts/export-ufm.js`).
+  - Fichiers: `backend/controllers/auth.controller.js` (handler `login`), `backend/routes/auth.routes.js` (POST `/api/auth/login` + rate limit).
+  - Entrée: `POST /api/auth/login` Body JSON `{ email, password }`.
+  - Sortie: `{ accessToken, refreshToken, user }` (où `user` contient `id,email,nom,prenom,role,isActive,iconUrl`).
+  - Sécurité: Rate limit 5 req/15 min/IP; validations de champs; messages d’erreur explicites (`INVALID_CREDENTIALS`, `INACTIVE_ACCOUNT`, `RATE_LIMIT`).
 
 ## Organisation par domaines
 
@@ -485,7 +510,6 @@ Documenter la refonte de l'import/export, en mettant en avant les changements ap
 *   Une meilleure gestion des erreurs et des logs.
 
 ### Points d'attention
-
 *   La création d'endpoints backend pour l'export de données.
 *   La mise en place d'un journal des transferts pour suivre les opérations d'import/export.
 *   La documentation de l'API pour les développeurs.
@@ -493,3 +517,105 @@ Documenter la refonte de l'import/export, en mettant en avant les changements ap
 ### Conclusion
 
 La refonte de l'import/export a permis d'améliorer l'expérience utilisateur et la robustesse de l'application. Il est important de poursuivre les efforts pour finaliser les derniers points d'attention et assurer une documentation complète de l'API.
+
+## Mission Terra Nova — Seed minimal + Export UFM (11/11/2025)
+
+### Rapport final
+
+- Fonctionne
+  - Seed minimal idempotent créé: `backend/prisma/seed-minimal-content.js`.
+  - Entités créées avec UUIDs fixes:
+    - Exercice: `00000000-0000-0000-0000-0000000000e1`
+    - Échauffement: `00000000-0000-0000-0000-0000000000a1`
+    - Situation: `00000000-0000-0000-0000-0000000000b1`
+    - Entrainement: `00000000-0000-0000-0000-0000000000c1`
+  - Export UFM (dry-run + réel) opérationnel pour les 4 types.
+  - Fichiers générés: 1 par type dans `backend/exports`.
+
+- À améliorer
+  - Script d'export: mapping ajouté types pluriels → singuliers côté API (`exercices→exercice`, `entrainements→entrainement`, `echauffements→echauffement`, `situations-matchs→situation`).
+  - Alerte ESM non bloquante lors de l'exécution du script (`MODULE_TYPELESS_PACKAGE_JSON`). Option: ajouter `"type": "module"` à `backend/package.json` ou convertir le script en CJS.
+  - Export Entrainement: renvoie des objets complets `echauffement` et `situationMatch` (avec `id` inclus). Si uniquement des `*Id` sont requis, prévoir un enrichissement du payload ou une documentation claire du format actuel.
+
+- Bloquant
+  - Aucun blocant observé. Quelques `fetch failed` transitoires gérés par le retry intégré (OK au final).
+
+### Checklist pré-déploiement finale
+
+- [ ] Base de données migrée (`npm --prefix backend run db:deploy`).
+- [ ] Secrets Render créés/à jour: `jwt-secret`, `jwt-refresh-secret`, `cloudinary-url`, `DATABASE_URL`.
+- [ ] `CORS_ORIGINS` conforme au domaine Frontend effectif.
+- [ ] Backend UP et joignable (healthcheck `/api/health`).
+- [ ] Compte admin disponible (login OK) ou seed admin exécuté.
+- [ ] Seed minimal exécuté: `node backend/prisma/seed-minimal-content.js`.
+- [ ] Endpoints listes protégés OK via token admin:
+  - `/api/admin/list-exercices`
+  - `/api/admin/list-entrainements`
+  - `/api/admin/list-echauffements`
+  - `/api/admin/list-situations-matchs`
+- [ ] Dry-run export OK.
+- [ ] Export réel OK et fichiers présents dans `backend/exports`.
+
+### Commandes testées et résultats
+
+- Login admin + token:
+  - `POST http://localhost:3002/api/auth/login` → `accessToken` reçu.
+  - Variables: `TOKEN` et `API` définies.
+- Seed minimal:
+  - `node backend/prisma/seed-minimal-content.js` → OK, IDs affichés.
+- Vérifier listes (toutes 200, ≥ 1 id):
+  - `Invoke-RestMethod -Headers @{Authorization="Bearer $env:TOKEN"} -Uri "$env:API/api/admin/list-exercices"`
+  - `Invoke-RestMethod -Headers @{Authorization="Bearer $env:TOKEN"} -Uri "$env:API/api/admin/list-entrainements"`
+  - `Invoke-RestMethod -Headers @{Authorization="Bearer $env:TOKEN"} -Uri "$env:API/api/admin/list-echauffements"`
+  - `Invoke-RestMethod -Headers @{Authorization="Bearer $env:TOKEN"} -Uri "$env:API/api/admin/list-situations-matchs"`
+- Dry-run export:
+  - `npm run export:dryrun --prefix backend` → 4 types détectés, 1 id chacun, chemins affichés.
+- Export réel:
+  - `npm run export:run --prefix backend` → 4 fichiers `.ufm.json` générés.
+- Listing fichiers:
+  - `Get-ChildItem backend/exports | Select-Object Name, Length, LastWriteTime` → 4 fichiers présents (exercices/entrainements/echauffements/situations-matchs).
+
+### Recommandations pour la mise en production
+
+- Ajouter `"type": "module"` dans `backend/package.json` (ou convertir `scripts/export-ufm.js` en CommonJS) pour supprimer l’avertissement ESM.
+- Conserver le mapping pluriel→singulier dans le script d’export (déjà appliqué) pour compat API.
+- Option format export Entrainement: si nécessaire, ajouter `echauffementId` et `situationMatchId` en plus des objets pour faciliter des parsers stricts.
+- Créer un job CI de smoke test (login → seed minimal idempotent → dry-run export) pour valider les environnements.
+- Documenter dans `docs/API_IMPORT_EXPORT.md` le format exact des exports (incluant les objets imbriqués) afin d’éviter les ambiguïtés.
+
+## Mission : Export UFM — Clôture (11/11/2025)
+
+### Synthèse
+
+- ✅ Seed minimal validé (1 élément par type) avec IDs fixes.
+- ✅ Export complet testé et fonctionnel sur les 4 catégories.
+- ✅ Fichiers JSON cohérents et valides (UTF-8) présents dans `backend/exports`.
+- ⚠️ Correction mineure appliquée: ajout `"type": "module"` dans `backend/package.json`.
+- ✅ Documentation `docs/EXPORT_UFM.md` créée et à jour.
+
+### Détails
+
+- Scripts d’export vérifiés: `export:dryrun` et `export:run` pointent sur `backend/scripts/export-ufm.js` et utilisent les variables `API`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`/`TOKEN`.
+- `export-ufm.js`: gère les erreurs réseau avec retry (3 par défaut), login automatique si `TOKEN` absent, mapping pluriel→singulier OK.
+- Format Entrainement: export enrichi avec objets `echauffement` et `situationMatch` complets (incluent `id`). Possibilité d’ajouter `echauffementId`/`situationMatchId` en V2 si requis par des parseurs stricts.
+
+### Commandes de validation
+
+1) Seed minimal + tags/admin
+```
+npm run db:deploy --prefix backend
+npx prisma db seed --prefix backend
+```
+2) Export (dry-run puis réel)
+```
+npm run export:dryrun --prefix backend
+npm run export:run --prefix backend
+```
+3) Vérifier la structure JSON
+```
+dir backend/exports
+```
+
+### Statut final
+
+- ✅ Prêt pour déploiement

@@ -18,10 +18,12 @@
     "db:studio": "prisma studio",
     "db:reset": "prisma migrate reset",
     "deploy:render": "prisma migrate deploy",
-    "deploy": "npm run db:deploy && npm start"
+    "deploy": "npm run db:deploy && npm start",
+    "export:dryrun": "cross-env-shell \"node backend/scripts/export-ufm.mjs --baseUrl=${API} --email=${ADMIN_EMAIL} --password=${ADMIN_PASSWORD} --dryRun\"",
+    "export:run": "cross-env-shell \"node backend/scripts/export-ufm.mjs --baseUrl=${API} --token=${TOKEN} --outDir=backend/exports\""
   },
   "prisma": {
-    "seed": "node prisma/seed.js"
+    "seed": "node prisma/seed.js && node prisma/seed-minimal-content.js"
   },
   "keywords": [
     "ultimate",
@@ -48,6 +50,7 @@
     "pg": "^8.11.3",
     "pino-http": "^9.0.0",
     "streamifier": "^0.1.1",
+    "ultimate-frisbee-manager": "file:..",
     "uuid": "^11.1.0",
     "zod": "^4.1.9"
   },
