@@ -1,0 +1,21 @@
+{
+  "version": "1.0",
+  "type": "echauffement",
+  "data": {
+    "id": "00000000-0000-0000-0000-0000000000a1",
+    "nom": "Échauffement express",
+    "description": "Mise en route rapide avant la séance.",
+    "imageUrl": null,
+    "blocs": [
+      {
+        "ordre": 1,
+        "titre": "Activation générale",
+        "repetitions": "2 séries",
+        "temps": "5 min",
+        "informations": "Mobilité + footing léger",
+        "fonctionnement": null,
+        "notes": null
+      }
+    ]
+  }
+}

@@ -3,13 +3,21 @@
  */
 const express = require('express');
 const rateLimit = require('express-rate-limit');
-const { getProfile, logout, updateProfile } = require('../controllers/auth.controller');
+const { getProfile, logout, updateProfile, login } = require('../controllers/auth.controller');
 const { authenticateToken } = require('../middleware/auth.middleware');
 const { createUploader } = require('../middleware/upload.middleware');
 
 const router = express.Router();
 
 // Routes publiques (ou gérées par le client Supabase)
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Trop de tentatives de connexion. Réessayez plus tard.', code: 'RATE_LIMIT' }
+});
+router.post('/login', loginLimiter, express.json({ limit: '1mb' }), login);
 
 // Routes protégées (nécessitent un token JWT valide de Supabase)
 router.get('/profile', authenticateToken, getProfile);

@@ -1,179 +1,135 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-// Modèle pour les exercices d'ultimate frisbee
 model Exercice {
-  id          String   @id @default(uuid())
-  nom         String
-  description String
-  imageUrl    String?  // URL vers une image de l'exercice
-  schemaUrl   String?  // URL facultative vers un schéma tactique
-  materiel    String?  // Matériel nécessaire pour l'exercice (optionnel)
-  notes       String?  // Notes générales de l'exercice (optionnel)
-  critereReussite String? // Critère de réussite (optionnel)
-  variablesPlus String  @default("") // Stocké comme une chaîne JSON: '["var1", "var2"]'
-  variablesMinus String @default("") // Stocké comme une chaîne JSON: '["var1", "var2"]'
-  createdAt   DateTime @default(now())
-  
-  // Relations avec les tags (caractéristiques de l'exercice)
-  tags        Tag[]    @relation("ExerciseTags")
-  
-  // Relation avec les entraînements
-  entrainements EntrainementExercice[]
+  id              String                 @id @default(uuid())
+  nom             String
+  description     String
+  imageUrl        String?
+  schemaUrl       String?
+  materiel        String?
+  notes           String?
+  critereReussite String?
+  variablesPlus   String                 @default("")
+  variablesMinus  String                 @default("")
+  createdAt       DateTime               @default(now())
+  entrainements   EntrainementExercice[]
+  tags            Tag[]                  @relation("ExerciseTags")
 
   @@index([createdAt])
 }
 
-// Modèle pour les tags
 model Tag {
-  id        String    @id @default(uuid())
-  label     String
-  category  String    // "objectif", "element", "variable", "niveau", "temps", "format", "theme_entrainement"
-  color     String?   // Code couleur HEX
-  level     Int?      // Nombre d'étoiles (1-5) pour la catégorie "niveau" 
-  createdAt DateTime  @default(now())
-  
-  // Relation avec les exercices
-  exercices Exercice[] @relation("ExerciseTags")
-  
-  // Relation avec les entraînements
-  entrainements Entrainement[] @relation("EntrainementTags")
-  
-  // Relation avec les situations/matchs
+  id               String           @id @default(uuid())
+  label            String
+  category         String
+  color            String?
+  level            Int?
+  createdAt        DateTime         @default(now())
+  entrainements    Entrainement[]   @relation("EntrainementTags")
+  exercices        Exercice[]       @relation("ExerciseTags")
   situationsMatchs SituationMatch[] @relation("SituationMatchTags")
-  
-  // Contrainte d'unicité pour éviter les doublons par catégorie
+
   @@unique([label, category])
   @@index([createdAt])
 }
 
-
-// Modèle simplifié pour les entraînements
 model Entrainement {
-  id        String    @id @default(uuid())
-  titre     String    // Nom de l'entraînement
-  date      DateTime? // Date optionnelle de l'entraînement
-  imageUrl  String?   // Image de l'entraînement
-  createdAt DateTime  @default(now())
-  
-  // Relations optionnelles avec échauffement et situation
-  echauffementId    String?         // Référence optionnelle vers un échauffement
-  situationMatchId  String?         // Référence optionnelle vers une situation/match
-  
-  // Relation avec les exercices de l'entraînement
-  exercices EntrainementExercice[]
-  
-  // Relation avec les tags (thèmes d'entraînement)
-  tags      Tag[]     @relation("EntrainementTags")
-  
-  // Relations avec échauffement et situation (optionnelles)
-  echauffement    Echauffement?    @relation(fields: [echauffementId], references: [id], onDelete: SetNull)
-  situationMatch  SituationMatch?  @relation(fields: [situationMatchId], references: [id], onDelete: SetNull)
+  id               String                 @id @default(uuid())
+  titre            String
+  date             DateTime?
+  imageUrl         String?
+  createdAt        DateTime               @default(now())
+  echauffementId   String?
+  situationMatchId String?
+  echauffement     Echauffement?          @relation(fields: [echauffementId], references: [id])
+  situationMatch   SituationMatch?        @relation(fields: [situationMatchId], references: [id])
+  exercices        EntrainementExercice[]
+  tags             Tag[]                  @relation("EntrainementTags")
 
   @@index([echauffementId])
   @@index([situationMatchId])
   @@index([createdAt])
 }
 
-// Table de liaison entre entraînements et exercices
 model EntrainementExercice {
-  id             String      @id @default(uuid())
+  id             String       @id @default(uuid())
   entrainementId String
   exerciceId     String
-  ordre          Int         // Ordre de l'exercice dans l'entraînement
-  duree          Int?        // Durée spécifique pour cet exercice dans cet entraînement (minutes)
-  notes          String?     // Notes spécifiques pour cet exercice dans cet entraînement
-  createdAt      DateTime    @default(now())
-  
-  // Relations
+  ordre          Int
+  duree          Int?
+  notes          String?
+  createdAt      DateTime     @default(now())
   entrainement   Entrainement @relation(fields: [entrainementId], references: [id], onDelete: Cascade)
   exercice       Exercice     @relation(fields: [exerciceId], references: [id], onDelete: Cascade)
-  
-  @@unique([entrainementId, exerciceId]) // Un exercice ne peut être ajouté qu'une fois par entraînement
+
+  @@unique([entrainementId, exerciceId])
   @@index([entrainementId])
   @@index([exerciceId])
   @@index([createdAt])
 }
 
-// Modèle pour les échauffements
 model Echauffement {
-  id          String    @id @default(uuid())
-  nom         String    // Nom de l'échauffement
-  description String?   // Description générale de l'échauffement
-  imageUrl    String?   // Image globale de l'échauffement (optionnel)
-  createdAt   DateTime  @default(now())
-  
-  // Relation avec les blocs d'échauffement
-  blocs       BlocEchauffement[]
-  
-  // Relation avec les entraînements (un échauffement peut être utilisé dans plusieurs entraînements)
+  id            String             @id @default(uuid())
+  nom           String
+  description   String?
+  imageUrl      String?
+  createdAt     DateTime           @default(now())
+  blocs         BlocEchauffement[]
   entrainements Entrainement[]
 
   @@index([createdAt])
 }
 
-// Modèle pour les blocs d'échauffement
 model BlocEchauffement {
   id             String       @id @default(uuid())
-  echauffementId String       // Référence vers l'échauffement parent
-  ordre          Int          // Ordre du bloc dans l'échauffement
-  titre          String       // Titre du bloc (obligatoire)
-  repetitions    String?      // Nombre de répétitions (optionnel)
-  temps          String?      // Durée du bloc (optionnel)
-  informations   String?      // Informations supplémentaires (optionnel)
-  fonctionnement String?      // Comment fonctionne l'exercice (optionnel)
-  notes          String?      // Notes particulières (optionnel)
+  echauffementId String
+  ordre          Int
+  titre          String
+  repetitions    String?
+  temps          String?
+  informations   String?
+  fonctionnement String?
+  notes          String?
   createdAt      DateTime     @default(now())
-  
-  // Relation avec l'échauffement parent
   echauffement   Echauffement @relation(fields: [echauffementId], references: [id], onDelete: Cascade)
-  
-  @@unique([echauffementId, ordre]) // Un ordre unique par échauffement
+
+  @@unique([echauffementId, ordre])
   @@index([echauffementId])
   @@index([createdAt])
 }
 
-// Modèle pour les situations et matchs
 model SituationMatch {
-  id          String    @id @default(uuid())
-  nom         String?   // Nom de la situation/match (optionnel)
-  type        String    // "Match" ou "Situation" (obligatoire)
-  description String?   // Description de la situation/match (optionnel)
-  temps       String?   // Durée/temps (optionnel)
-  imageUrl    String?   // Image de la situation/match
-  createdAt   DateTime  @default(now())
-  
-  // Relation avec les tags (réutilisation du système existant)
-  tags        Tag[]     @relation("SituationMatchTags")
-  
-  // Relation avec les entraînements (une situation peut être utilisée dans plusieurs entraînements)
+  id            String         @id @default(uuid())
+  nom           String?
+  type          String
+  description   String?
+  temps         String?
+  imageUrl      String?
+  createdAt     DateTime       @default(now())
   entrainements Entrainement[]
+  tags          Tag[]          @relation("SituationMatchTags")
 
   @@index([createdAt])
 }
 
-// Modèle pour les utilisateurs
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
+  id           String   @id @default(uuid())
+  email        String   @unique
   passwordHash String
-  nom       String
-  prenom    String?
-  role      String   @default("USER")
-  isActive  Boolean  @default(true)
-  iconUrl   String?  // URL vers l'icône de l'utilisateur
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  nom          String
+  prenom       String?
+  role         String   @default("USER")
+  isActive     Boolean  @default(true)
+  iconUrl      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@index([createdAt])
 }

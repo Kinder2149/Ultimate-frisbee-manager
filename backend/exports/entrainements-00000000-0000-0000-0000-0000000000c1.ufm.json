@@ -1,0 +1,119 @@
+{
+  "version": "1.0",
+  "type": "entrainement",
+  "data": {
+    "id": "00000000-0000-0000-0000-0000000000c1",
+    "titre": "Séance démo export",
+    "date": "2025-11-11T19:28:58.164Z",
+    "imageUrl": null,
+    "tags": [],
+    "echauffement": {
+      "id": "00000000-0000-0000-0000-0000000000a1",
+      "nom": "Échauffement express",
+      "description": "Mise en route rapide avant la séance.",
+      "imageUrl": null,
+      "blocs": [
+        {
+          "ordre": 1,
+          "titre": "Activation générale",
+          "repetitions": "2 séries",
+          "temps": "5 min",
+          "informations": "Mobilité + footing léger",
+          "fonctionnement": null,
+          "notes": null
+        }
+      ]
+    },
+    "situationMatch": {
+      "id": "00000000-0000-0000-0000-0000000000b1",
+      "nom": "Sortie de disque",
+      "type": "offensif",
+      "description": "Travail de la sortie de disque sous pression.",
+      "temps": null,
+      "imageUrl": null,
+      "tags": [
+        {
+          "id": "28506263-72bf-42ab-98d7-518792b5a5c1",
+          "label": "Échauffement",
+          "category": "objectif",
+          "level": null
+        },
+        {
+          "id": "53237ff0-3260-41c3-84ab-fe8233ffae02",
+          "label": "Technique",
+          "category": "objectif",
+          "level": null
+        },
+        {
+          "id": "1e4ebfc3-1bce-4a38-ac1e-8eb3863b4451",
+          "label": "Tactique",
+          "category": "objectif",
+          "level": null
+        },
+        {
+          "id": "1477a16e-d940-44c6-93cc-8a66cd879b42",
+          "label": "Physique",
+          "category": "objectif",
+          "level": null
+        },
+        {
+          "id": "2c3164ea-71bd-482c-bd87-3513c0e59429",
+          "label": "Passes",
+          "category": "travail_specifique",
+          "level": null
+        }
+      ]
+    },
+    "exercices": [
+      {
+        "ordre": 1,
+        "duree": 10,
+        "notes": null,
+        "exercice": {
+          "id": "00000000-0000-0000-0000-0000000000e1",
+          "nom": "Passes courtes en triangle",
+          "description": "Exercice de passes rapides en triangle pour travailler précision et déplacements.",
+          "imageUrl": null,
+          "schemaUrl": null,
+          "materiel": null,
+          "notes": null,
+          "critereReussite": null,
+          "variablesPlus": "",
+          "variablesMinus": "",
+          "tags": [
+            {
+              "id": "28506263-72bf-42ab-98d7-518792b5a5c1",
+              "label": "Échauffement",
+              "category": "objectif",
+              "level": null
+            },
+            {
+              "id": "53237ff0-3260-41c3-84ab-fe8233ffae02",
+              "label": "Technique",
+              "category": "objectif",
+              "level": null
+            },
+            {
+              "id": "1e4ebfc3-1bce-4a38-ac1e-8eb3863b4451",
+              "label": "Tactique",
+              "category": "objectif",
+              "level": null
+            },
+            {
+              "id": "1477a16e-d940-44c6-93cc-8a66cd879b42",
+              "label": "Physique",
+              "category": "objectif",
+              "level": null
+            },
+            {
+              "id": "2c3164ea-71bd-482c-bd87-3513c0e59429",
+              "label": "Passes",
+              "category": "travail_specifique",
+              "level": null
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -2,7 +2,8 @@
  * Contrôleur pour l'authentification et la gestion de profil
  */
 const { prisma } = require('../services/prisma');
-const { generateToken } = require('../middleware/auth.middleware');
+const bcrypt = require('bcryptjs');
+const { generateToken, generateRefreshToken } = require('../middleware/auth.middleware');
 
 /**
  * Récupérer le profil utilisateur
@@ -45,6 +46,60 @@ const logout = async (req, res) => {
 module.exports = {
   getProfile,
   logout,
+  /**
+   * POST /api/auth/login
+   * Body: { email, password }
+   */
+  async login(req, res) {
+    try {
+      const { email, password } = req.body || {};
+
+      if (!email || typeof email !== 'string' || !password || typeof password !== 'string') {
+        return res.status(400).json({ error: 'Champs requis: email et password', code: 'BAD_REQUEST' });
+      }
+
+      const normalizedEmail = String(email).trim().toLowerCase();
+      const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+
+      if (!user) {
+        console.warn('[login] utilisateur introuvable', { email: normalizedEmail });
+        return res.status(401).json({ error: 'Identifiants invalides', code: 'INVALID_CREDENTIALS' });
+      }
+
+      if (user.isActive === false) {
+        console.warn('[login] utilisateur inactif', { id: user.id, email: normalizedEmail });
+        return res.status(403).json({ error: 'Compte inactif', code: 'INACTIVE_ACCOUNT' });
+      }
+
+      const ok = await bcrypt.compare(password, user.passwordHash);
+      if (!ok) {
+        console.warn('[login] mot de passe invalide', { id: user.id, email: normalizedEmail });
+        return res.status(401).json({ error: 'Identifiants invalides', code: 'INVALID_CREDENTIALS' });
+      }
+
+      const accessToken = generateToken(user);
+      const refreshToken = generateRefreshToken(user);
+
+      console.log('[login] succès', { id: user.id, role: user.role });
+
+      return res.json({
+        accessToken,
+        refreshToken,
+        user: {
+          id: user.id,
+          email: user.email,
+          nom: user.nom,
+          prenom: user.prenom,
+          role: user.role,
+          isActive: user.isActive,
+          iconUrl: user.iconUrl
+        }
+      });
+    } catch (error) {
+      console.error('Erreur login:', error);
+      return res.status(500).json({ error: 'Erreur serveur lors de la connexion', code: 'LOGIN_ERROR' });
+    }
+  },
   /**
    * Mise à jour du profil utilisateur
    */

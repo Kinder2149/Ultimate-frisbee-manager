@@ -89,6 +89,16 @@ Détails et choix techniques: `docs/ARCHITECTURE.md`.
 
 ---
 
+### Export UFM
+
+Scripts: `npm run export:dryrun` / `npm run export:run`
+
+Fichiers générés: `backend/exports/*.json`
+
+Documentation: `docs/EXPORT_UFM.md`
+
+---
+
 ## Maintenance
 - Migrations Prisma (dev): `npm --prefix backend run db:migrate`.
 - Déploiement Prisma (prod): `npm --prefix backend run db:deploy`.
