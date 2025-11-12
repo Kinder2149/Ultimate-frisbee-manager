@@ -9,6 +9,8 @@
     "shared"
   ],
   "scripts": {
+    "postinstall": "npm -w shared run build",
+    "build": "npm -w shared run build && npm -w frontend run build",
     "start": "cd frontend && ng serve"
   },
   "keywords": [
