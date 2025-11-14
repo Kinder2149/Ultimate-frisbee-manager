@@ -8,11 +8,5 @@
         "distDir": "frontend/dist/ultimate-frisbee-manager"
       }
     }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
   ]
 }
