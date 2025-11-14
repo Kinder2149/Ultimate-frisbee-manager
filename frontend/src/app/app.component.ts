@@ -1,11 +1,11 @@
 import { Component, ChangeDetectorRef, OnInit, Renderer2, ElementRef } from '@angular/core';
-import { Observable, Subscription } from 'rxjs';
+import { Observable, Subscription, combineLatest } from 'rxjs';
 import { AuthService } from './core/services/auth.service';
 import { User } from './core/models/user.model';
 import { BackendStatusService } from './core/services/backend-status.service';
 import { ApiUrlService } from './core/services/api-url.service';
 import { Router, NavigationEnd } from '@angular/router';
-import { filter } from 'rxjs/operators';
+import { filter, map, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
@@ -16,6 +16,7 @@ export class AppComponent implements OnInit {
   title = 'Ultimate Frisbee Manager';
   currentUser$!: Observable<User | null>;
   isAuthenticated$ = this.authService.isAuthenticated$;
+  showStartupLoader$!: Observable<boolean>;
   private routerSubscription!: Subscription;
 
   isDropdownOpen = {
@@ -39,6 +40,14 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.showStartupLoader$ = combineLatest([
+      this.isAuthenticated$,
+      this.backendStatus.getState()
+    ]).pipe(
+      map(([isAuth, state]) => isAuth && (state.status === 'checking' || state.status === 'waking')),
+      distinctUntilChanged()
+    );
+
     // Si l'utilisateur est authentifié, vérifier la santé du backend au démarrage
     this.isAuthenticated$.subscribe((auth) => {
       if (auth) {

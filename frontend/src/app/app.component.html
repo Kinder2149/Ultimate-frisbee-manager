@@ -89,6 +89,8 @@
     </div>
   </header>
 
+  <app-startup-loader *ngIf="showStartupLoader$ | async"></app-startup-loader>
+
   <main class="main-content">
     <div class="container">
       <router-outlet></router-outlet>

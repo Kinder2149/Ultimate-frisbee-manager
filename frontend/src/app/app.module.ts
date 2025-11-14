@@ -13,12 +13,14 @@ import localeFr from '@angular/common/locales/fr';
 
 import { AppComponent } from './app.component';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
+import { StartupLoaderComponent } from './core/components/startup-loader/startup-loader.component';
 
 // Core module qui regroupe les services et composants partagés
 import { CoreModule } from './core/core.module';
 
 // Module de tags avancés
 import { TagsAdvancedModule } from './features/tags-advanced/tags-advanced.module';
+import { MaterialModule } from './core/material/material.module';
 
 // Import du guard d'authentification
 import { AuthGuard } from './core/guards/auth.guard';
@@ -91,7 +93,8 @@ const routes: Routes = [
 @NgModule({
   declarations: [
     AppComponent,
-    DashboardComponent
+    DashboardComponent,
+    StartupLoaderComponent
     // Tous les autres composants sont maintenant déclarés dans leurs modules respectifs
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA], // Ajout pour permettre l'utilisation des composants Angular Material
@@ -101,6 +104,7 @@ const routes: Routes = [
     ReactiveFormsModule,
     FormsModule,  // Ajouté pour les formulaires template-driven
     CommonModule, // Ajout de CommonModule pour *ngIf
+    MaterialModule,
     RouterModule.forRoot(routes),
     CoreModule // Module core qui inclut MaterialModule et HttpClientModule
     // Tous les modules (ExercicesModule, TagsModule, TagsAdvancedModule, TrainingsModule) sont chargés en lazy loading
