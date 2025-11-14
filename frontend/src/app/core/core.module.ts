@@ -18,6 +18,8 @@ import { EchauffementService } from './services/echauffement.service';
 import { SituationMatchService } from './services/situationmatch.service';
 import { DashboardService } from './services/dashboard.service';
 import { AuthService } from './services/auth.service';
+import { OfflineBannerComponent } from './components/offline-banner/offline-banner.component';
+import { DisableOfflineDirective } from './directives/disable-offline.directive';
 
 // Import des guards et intercepteurs
 import { AuthGuard } from './guards/auth.guard';
@@ -29,9 +31,17 @@ import { BackendStatusInterceptor } from './interceptors/backend-status.intercep
  * Ce module doit être importé uniquement dans AppModule
  */
 @NgModule({
+  declarations: [
+    OfflineBannerComponent,
+    DisableOfflineDirective
+  ],
   imports: [
     CommonModule,
     HttpClientModule
+  ],
+  exports: [
+    OfflineBannerComponent,
+    DisableOfflineDirective
   ],
   providers: [
     ExerciceService,

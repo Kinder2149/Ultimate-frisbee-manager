@@ -1,0 +1,49 @@
+{
+  "$schema": "./node_modules/@angular/service-worker/config/schema.json",
+  "index": "/index.html",
+  "assetGroups": [
+    {
+      "name": "app-shell",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": [
+          "/favicon.ico",
+          "/index.html",
+          "/*.css",
+          "/*.js"
+        ]
+      }
+    },
+    {
+      "name": "static-assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": [
+          "/assets/**",
+          "/*.(png|jpg|jpeg|gif|svg|webp)"
+        ]
+      }
+    }
+  ],
+  "dataGroups": [
+    {
+      "name": "api-safe-get",
+      "urls": [
+        "/api/exercices/**",
+        "/api/entrainements/**",
+        "/api/echauffements/**",
+        "/api/situations-matchs/**",
+        "/api/tags/**",
+        "/api/dashboard/**"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 50,
+        "maxAge": "1h",
+        "timeout": "5s"
+      }
+    }
+  ]
+}

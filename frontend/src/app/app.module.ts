@@ -9,6 +9,8 @@ import { HttpErrorInterceptor } from './core/errors/http-error.interceptor'; // 
 import { AuthInterceptor } from './core/interceptors/auth.interceptor'; // Import de l'intercepteur d'authentification
 import { GlobalErrorHandler } from './core/errors/global-error-handler'; // Import du gestionnaire global
 import { EntityCrudService } from './shared/services/entity-crud.service'; // Import du service CRUD générique
+import { ServiceWorkerModule } from '@angular/service-worker';
+import { environment } from '../environments/environment';
 import localeFr from '@angular/common/locales/fr';
 
 import { AppComponent } from './app.component';
@@ -102,7 +104,11 @@ const routes: Routes = [
     FormsModule,  // Ajouté pour les formulaires template-driven
     CommonModule, // Ajout de CommonModule pour *ngIf
     RouterModule.forRoot(routes),
-    CoreModule // Module core qui inclut MaterialModule et HttpClientModule
+    CoreModule, // Module core qui inclut MaterialModule et HttpClientModule
+    ServiceWorkerModule.register('ngsw-worker.js', {
+      enabled: environment.production,
+      registrationStrategy: 'registerWhenStable:30000'
+    })
     // Tous les modules (ExercicesModule, TagsModule, TagsAdvancedModule, TrainingsModule) sont chargés en lazy loading
   ],
   providers: [
