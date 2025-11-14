@@ -3,6 +3,14 @@
  */
 const jwt = require('jsonwebtoken');
 const { prisma } = require('../services/prisma');
+// Support vérification JWT Supabase (RS256 via JWKS)
+let jose;
+try {
+  jose = require('jose');
+} catch (_) {
+  // jose non installé: la vérification Supabase sera ignorée
+  jose = null;
+}
 
 const getJwtSecret = () => {
   const secret = process.env.JWT_SECRET;
@@ -32,7 +40,31 @@ const authenticateToken = async (req, res, next) => {
 
     // Vérifier et décoder le token
     console.log('[AUTH] Token found, attempting to verify...');
-    const decoded = jwt.verify(token, JWT_SECRET);
+    let decoded;
+    try {
+      // Essai 1: token signé en interne (HS256)
+      decoded = jwt.verify(token, JWT_SECRET);
+    } catch (e) {
+      // Essai 2: token Supabase (RS256 via JWKS)
+      if (!jose) throw e; // jose indisponible
+      const projectRef = process.env.SUPABASE_PROJECT_REF;
+      if (!projectRef) {
+        console.warn('[AUTH] SUPABASE_PROJECT_REF non défini — impossible de vérifier le token via JWKS.');
+        throw e;
+      }
+      const jwksUrl = new URL(`https://${projectRef}.supabase.co/auth/v1/keys`);
+      try {
+        const JWKS = jose.createRemoteJWKSet(jwksUrl);
+        const { payload } = await jose.jwtVerify(token, JWKS, {
+          algorithms: ['RS256']
+        });
+        decoded = payload;
+        console.log('[AUTH] Token vérifié via Supabase JWKS.');
+      } catch (e2) {
+        console.log('[AUTH] Verification via Supabase JWKS failed.');
+        throw e; // conserver l'erreur initiale pour la logique existante
+      }
+    }
     
     // Vérifier si l'utilisateur existe dans notre base de données
     let user = await prisma.user.findUnique({
