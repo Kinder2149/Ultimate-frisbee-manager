@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, from, of } from 'rxjs';
+import { BehaviorSubject, Observable, from, of, throwError } from 'rxjs';
 import { map, catchError, switchMap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { User, LoginCredentials } from '../models/user.model';
@@ -33,8 +33,16 @@ export class AuthService {
       (event: AuthChangeEvent, session: Session | null) => {
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
           if (session?.user) {
-            // Le token est maintenant disponible, on peut synchroniser notre profil BDD
-            this.syncUserProfile().subscribe();
+            // Le token Supabase est disponible, on considère l'utilisateur comme authentifié
+            this.isAuthenticatedSubject.next(true);
+
+            // Puis on tente de synchroniser le profil avec le backend
+            this.syncUserProfile().subscribe({
+              error: (error) => {
+                console.error('Erreur de synchronisation du profil après changement d\'état auth:', error);
+                // On ne force plus la déconnexion ici; le loader/backend-status gère le cold start
+              }
+            });
           } else {
             this.clearStateAndRedirect();
           }
@@ -101,9 +109,9 @@ export class AuthService {
       }),
       catchError(error => {
         console.error('Erreur de synchronisation du profil:', error);
-        // Si la synchro échoue, on déconnecte pour éviter un état incohérent
-        this.logout(); 
-        throw error;
+        // En cas d'erreur (backend en cold start par exemple), on ne force plus la déconnexion.
+        // On laisse l'état Supabase actif et on remonte simplement l'erreur.
+        return throwError(() => error);
       })
     );
   }
