@@ -169,10 +169,10 @@ exports.createUser = async (req, res) => {
     const created = await prisma.user.create({
       data: {
         email: normalizedEmail,
-        password: hashed,
-        nom: nom?.trim() || null,
+        passwordHash: hashed,
+        nom: nom?.trim() || '',
         prenom: prenom?.trim() || null,
-        role: role || 'user',
+        role: (role || 'USER').toUpperCase(),
         isActive: !!isActive,
         iconUrl: null
       }
