@@ -68,6 +68,25 @@ export class AuthService {
     );
   }
 
+  /**
+   * Demande à Supabase d'envoyer un e-mail de réinitialisation de mot de passe
+   * vers l'adresse fournie. La redirection après clic sur le lien est
+   * configurée côté Supabase (ou via l'option redirectTo de l'appel).
+   */
+  requestPasswordReset(email: string): Observable<void> {
+    return from(
+      this.supabaseService.supabase.auth.resetPasswordForEmail(email)
+    ).pipe(
+      map(({ error }) => {
+        if (error) {
+          console.error('Erreur lors de la demande de réinitialisation de mot de passe:', error);
+          throw error;
+        }
+        return;
+      })
+    );
+  }
+
   logout(): Observable<void> {
     return from(this.supabaseService.supabase.auth.signOut({ scope: 'local' })).pipe(
       map(({ error }) => {
@@ -77,6 +96,24 @@ export class AuthService {
 
         // Dans tous les cas, on nettoie l'état local et on redirige
         this.clearStateAndRedirect();
+        return;
+      })
+    );
+  }
+
+  /**
+   * Met à jour le mot de passe de l'utilisateur courant dans Supabase.
+   * Utilisé dans le flux de réinitialisation après clic sur le lien de reset.
+   */
+  updatePassword(newPassword: string): Observable<void> {
+    return from(
+      this.supabaseService.supabase.auth.updateUser({ password: newPassword })
+    ).pipe(
+      map(({ error }) => {
+        if (error) {
+          console.error('Erreur lors de la mise à jour du mot de passe Supabase:', error);
+          throw error;
+        }
         return;
       })
     );

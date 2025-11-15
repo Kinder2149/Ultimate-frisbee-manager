@@ -32,6 +32,10 @@ const routes: Routes = [
     path: 'forgot-password',
     loadComponent: () => import('./features/auth/pages/forgot-password/forgot-password-page.component').then(c => c.ForgotPasswordPageComponent)
   },
+  {
+    path: 'reset-password',
+    loadComponent: () => import('./features/auth/pages/reset-password/reset-password-page.component').then(c => c.ResetPasswordPageComponent)
+  },
 
   // Route de connexion (publique)
   { 
