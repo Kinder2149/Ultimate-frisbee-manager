@@ -198,7 +198,7 @@ button {
 .entity-view-dialog .mat-mdc-dialog-container .mdc-dialog__surface,
 .echauffement-view-dialog .mat-mdc-dialog-container .mdc-dialog__surface {
   border-radius: 16px !important;
-  overflow: hidden;
+  max-height: 95vh;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
 }
 
