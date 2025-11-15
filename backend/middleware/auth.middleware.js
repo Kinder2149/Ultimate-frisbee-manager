@@ -2,6 +2,7 @@
  * Middleware d'authentification JWT
  */
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const { prisma } = require('../services/prisma');
 // Support vérification JWT Supabase (RS256 via JWKS)
 let jose;
@@ -82,6 +83,11 @@ const authenticateToken = async (req, res, next) => {
     if (!user) {
       console.log(`[Auth] User with email ${decoded.email} not found. Creating new user.`);
       try {
+        // Générer un mot de passe aléatoire uniquement pour satisfaire la contrainte de schéma
+        // (l'authentification réelle est gérée par Supabase, ce mot de passe n'est jamais utilisé).
+        const randomPassword = `supabase-${Math.random().toString(36).slice(2)}`;
+        const passwordHash = await bcrypt.hash(randomPassword, 10);
+
         user = await prisma.user.create({
           data: {
             id: decoded.sub, // ID de Supabase
@@ -89,6 +95,7 @@ const authenticateToken = async (req, res, next) => {
             nom: decoded.user_metadata?.last_name || '',
             prenom: decoded.user_metadata?.first_name || decoded.email.split('@')[0],
             iconUrl: decoded.user_metadata?.avatar_url || '',
+            passwordHash,
             role: 'USER',
             isActive: true,
           },
