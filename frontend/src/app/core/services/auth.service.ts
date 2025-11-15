@@ -74,8 +74,12 @@ export class AuthService {
    * configurée côté Supabase (ou via l'option redirectTo de l'appel).
    */
   requestPasswordReset(email: string): Observable<void> {
+    const redirectTo = environment.production
+      ? 'https://ultimate-frisbee-manager.vercel.app/reset-password'
+      : 'http://localhost:4200/reset-password';
+
     return from(
-      this.supabaseService.supabase.auth.resetPasswordForEmail(email)
+      this.supabaseService.supabase.auth.resetPasswordForEmail(email, { redirectTo })
     ).pipe(
       map(({ error }) => {
         if (error) {
