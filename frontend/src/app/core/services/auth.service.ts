@@ -69,10 +69,14 @@ export class AuthService {
   }
 
   logout(): Observable<void> {
-    return from(this.supabaseService.supabase.auth.signOut()).pipe(
+    return from(this.supabaseService.supabase.auth.signOut({ scope: 'local' })).pipe(
       map(({ error }) => {
-        if (error) throw error;
-        // onAuthStateChange s'occupera du reste
+        if (error) {
+          console.error('Erreur lors de la déconnexion Supabase:', error);
+        }
+
+        // Dans tous les cas, on nettoie l'état local et on redirige
+        this.clearStateAndRedirect();
         return;
       })
     );

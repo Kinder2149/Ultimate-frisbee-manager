@@ -19,6 +19,7 @@ export interface ExerciceViewData {
     schemaUrl?: string;
     materiel?: string;
     notes?: string;
+    critereReussite?: string;
     tags?: Tag[];
     tagIds?: string[];
     variablesText?: string;

@@ -87,12 +87,11 @@ export class AppComponent implements OnInit {
     return this.apiUrlService.getMediaUrl(path, 'avatars');
   }
 
-  async onLogout(): Promise<void> {
-    try {
-      await this.authService.logout();
-      // La redirection est gérée par onAuthStateChange dans auth.service.ts
-    } catch (error) {
-      console.error('Erreur lors de la déconnexion', error);
-    }
+  onLogout(): void {
+    this.authService.logout().subscribe({
+      error: (error) => {
+        console.error('Erreur lors de la déconnexion', error);
+      }
+    });
   }
 }
