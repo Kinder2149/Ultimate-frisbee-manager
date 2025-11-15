@@ -1,10 +1,12 @@
 /**
  * Composant de connexion
  */
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Subject } from 'rxjs';
+import { filter, takeUntil } from 'rxjs/operators';
 
 import { AuthService } from '../../../core/services/auth.service';
 import { LoginCredentials } from '../../../core/models/user.model';
@@ -14,11 +16,12 @@ import { LoginCredentials } from '../../../core/models/user.model';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, OnDestroy {
   loginForm: FormGroup;
   isLoading = false;
   hidePassword = true;
   returnUrl = '/';
+  private destroy$ = new Subject<void>();
 
   constructor(
     private formBuilder: FormBuilder,
@@ -41,6 +44,22 @@ export class LoginComponent implements OnInit {
     if (this.authService.isAuthenticated()) {
       this.router.navigate([this.returnUrl]);
     }
+
+    // Réagir aux changements d'état d'authentification globaux.
+    // Dès que l'utilisateur est considéré comme authentifié, on quitte la page de login.
+    this.authService.isAuthenticated$
+      .pipe(
+        takeUntil(this.destroy$),
+        filter(isAuth => isAuth === true)
+      )
+      .subscribe(() => {
+        this.router.navigate([this.returnUrl]);
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   /**
@@ -60,8 +79,8 @@ export class LoginComponent implements OnInit {
 
     this.authService.login(credentials).subscribe({
       next: () => {
-        // La redirection est gérée par le service ou un guard, mais on peut forcer ici si besoin.
-        this.router.navigate([this.returnUrl]);
+        // La navigation principale est désormais pilotée par isAuthenticated$.
+        // On se contente ici d'afficher un message de succès.
         this.snackBar.open('Connexion réussie !', 'Fermer', {
           duration: 3000,
           panelClass: ['success-snackbar']
