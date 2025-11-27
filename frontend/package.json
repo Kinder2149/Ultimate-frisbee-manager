@@ -25,7 +25,7 @@
     "@ufm/shared": "file:../shared",
     "dompurify": "^3.3.0",
     "jwt-decode": "^4.0.0",
-    "ngx-quill": "^27.1.2",
+    "ngx-quill": "25.3.2",
     "quill": "^2.0.3",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
