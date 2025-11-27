@@ -21,15 +21,10 @@
             </mat-error>
           </mat-form-field>
 
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Description</mat-label>
-            <textarea matInput formControlName="description" 
-                      placeholder="Description générale de l'échauffement..." 
-                      rows="3"></textarea>
-            <mat-error *ngIf="echauffementForm.get('description')?.invalid && echauffementForm.get('description')?.touched">
-              {{ getErrorMessage('description') }}
-            </mat-error>
-          </mat-form-field>
+          <div class="full-width">
+            <h4 style="margin: 0 0 8px;">Description</h4>
+            <app-rich-text-editor formControlName="description"></app-rich-text-editor>
+          </div>
         </div>
 
         <!-- Image globale -->
@@ -129,28 +124,22 @@
                     </div>
 
                     <!-- Informations supplémentaires -->
-                    <mat-form-field appearance="outline" class="full-width">
-                      <mat-label>Informations supplémentaires</mat-label>
-                      <textarea matInput formControlName="informations" 
-                                placeholder="Informations complémentaires..." 
-                                rows="2"></textarea>
-                    </mat-form-field>
+                    <div class="full-width" style="margin-top: 8px;">
+                      <h4 style="margin: 0 0 8px;">Informations supplémentaires</h4>
+                      <app-rich-text-editor formControlName="informations"></app-rich-text-editor>
+                    </div>
 
                     <!-- Fonctionnement -->
-                    <mat-form-field appearance="outline" class="full-width">
-                      <mat-label>Fonctionnement</mat-label>
-                      <textarea matInput formControlName="fonctionnement" 
-                                placeholder="Description du fonctionnement de l'exercice..." 
-                                rows="2"></textarea>
-                    </mat-form-field>
+                    <div class="full-width" style="margin-top: 8px;">
+                      <h4 style="margin: 0 0 8px;">Fonctionnement</h4>
+                      <app-rich-text-editor formControlName="fonctionnement"></app-rich-text-editor>
+                    </div>
 
                     <!-- Notes particulières -->
-                    <mat-form-field appearance="outline" class="full-width">
-                      <mat-label>Notes particulières</mat-label>
-                      <textarea matInput formControlName="notes" 
-                                placeholder="Notes spécifiques pour ce bloc..." 
-                                rows="2"></textarea>
-                    </mat-form-field>
+                    <div class="full-width" style="margin-top: 8px;">
+                      <h4 style="margin: 0 0 8px;">Notes particulières</h4>
+                      <app-rich-text-editor formControlName="notes"></app-rich-text-editor>
+                    </div>
                   </div>
                 </mat-card-content>
               </mat-card>

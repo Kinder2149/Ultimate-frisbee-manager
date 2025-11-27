@@ -23,7 +23,7 @@ const transformFormData = (req, res, next) => {
   }
 
   // Champs attendus comme des tableaux de chaînes (séparées par des virgules)
-  const arrayStringFields = ['variablesPlus', 'variablesMinus'];
+  const arrayStringFields = ['variablesPlus', 'variablesMinus', 'points', 'schemaUrls'];
   for (const field of arrayStringFields) {
     let value = req.body[field];
     // Si c'est une chaîne: tenter un JSON.parse d'abord (cas d'un tableau encodé JSON)
@@ -106,7 +106,7 @@ const transformFormData = (req, res, next) => {
   });
 
   // Normalisation des URLs (chaîne vide -> undefined)
-  const urlFields = ['imageUrl', 'schemaUrl'];
+  const urlFields = ['imageUrl'];
   urlFields.forEach((f) => {
     if (typeof req.body[f] === 'string') {
       const trimmed = req.body[f].trim();
@@ -116,7 +116,7 @@ const transformFormData = (req, res, next) => {
 
   // --- Étape de Sécurisation Finale ---
   // S'assurer que tous les champs qui doivent être des tableaux le sont.
-  const allArrayFields = ['blocs', 'exercices', 'variablesPlus', 'variablesMinus'];
+  const allArrayFields = ['blocs', 'exercices', 'variablesPlus', 'variablesMinus', 'points', 'schemaUrls'];
   allArrayFields.forEach(field => {
     if (!Array.isArray(req.body[field])) {
       req.body[field] = [];

@@ -14,6 +14,7 @@ import { Echauffement, BlocEchauffement } from '../../../../core/models/echauffe
 import { EchauffementService } from '../../../../core/services/echauffement.service';
 import { ApiUrlService } from '../../../../core/services/api-url.service';
 import { ImageUploadComponent } from '../../image-upload/image-upload.component';
+import { RichTextEditorComponent } from '../../../components/rich-text-editor/rich-text-editor.component';
 
 export interface EchauffementFormData {
   nom: string;
@@ -37,7 +38,8 @@ export interface EchauffementFormData {
     MatDividerModule,
     MatSelectModule,
     MatProgressSpinnerModule,
-    ImageUploadComponent
+    ImageUploadComponent,
+    RichTextEditorComponent
   ],
   templateUrl: './echauffement-form.component.html',
   styleUrls: ['./echauffement-form.component.scss']

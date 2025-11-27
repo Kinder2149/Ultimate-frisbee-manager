@@ -9,6 +9,7 @@ import { Tag, TagCategory } from '../../../core/models/tag.model';
 import { TagService } from '../../../core/services/tag.service';
 import { ApiUrlService } from '../../../core/services/api-url.service';
 import { ImageViewerComponent, ImageViewerData } from '../image-viewer/image-viewer.component';
+import { RichTextViewComponent } from '../rich-text-view/rich-text-view.component';
 
 export interface ExerciceViewData {
   exercice: {
@@ -16,7 +17,10 @@ export interface ExerciceViewData {
     description?: string;
     createdAt?: string | Date;
     imageUrl?: string;
+    // Ancien champ conservé pour compat ascendante si présent encore
     schemaUrl?: string;
+    // Nouveau: multi-schémas
+    schemaUrls?: string[];
     materiel?: string;
     notes?: string;
     critereReussite?: string;
@@ -25,6 +29,8 @@ export interface ExerciceViewData {
     variablesText?: string;
     variablesPlus?: string | string[];
     variablesMinus?: string | string[];
+    // Nouveau: points importants
+    points?: string[];
     [key: string]: unknown; // pour accéder à un éventuel champ 'variables' imbriqué
   };
 }
@@ -32,7 +38,7 @@ export interface ExerciceViewData {
 @Component({
   selector: 'app-exercice-view',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, MatButtonModule, MatIconModule, MatChipsModule, MatDividerModule],
+  imports: [CommonModule, MatDialogModule, MatButtonModule, MatIconModule, MatChipsModule, MatDividerModule, RichTextViewComponent],
   templateUrl: './exercice-view.component.html',
   styleUrls: ['./exercice-view.component.scss']
 })
@@ -121,6 +127,34 @@ export class ExerciceViewComponent implements OnInit {
 
   get consignes(): string | null {
     return this.variables?.consignes || null;
+  }
+
+  get schemaUrlsList(): string[] {
+    const raw = (this.exercice as any).schemaUrls;
+    if (Array.isArray(raw)) return raw.filter(u => !!u);
+    if (typeof raw === 'string') {
+      try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed.filter((u: any) => !!u) : [];
+      } catch {
+        return raw ? [raw] : [];
+      }
+    }
+    return [];
+  }
+
+  get pointsList(): string[] {
+    const raw = (this.exercice as any).points;
+    if (Array.isArray(raw)) return raw.filter(p => !!p);
+    if (typeof raw === 'string') {
+      try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed.filter((p: any) => !!p) : (raw ? [raw] : []);
+      } catch {
+        return raw ? [raw] : [];
+      }
+    }
+    return [];
   }
 
   openImageViewer(imageUrl: string): void {

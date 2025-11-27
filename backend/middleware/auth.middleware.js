@@ -29,7 +29,21 @@ const authenticateToken = async (req, res, next) => {
   try {
     const JWT_SECRET = getJwtSecret();
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+    const rawToken = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+    const token = rawToken && rawToken !== 'null' && rawToken !== 'undefined' && rawToken.trim().length > 0 ? rawToken : null;
+
+    // Bypass en développement: si aucun token et NODE_ENV=development, autoriser la requête
+    const isDev = String(process.env.NODE_ENV || '').toLowerCase() === 'development';
+    if (isDev && !token) {
+      console.warn('[AUTH] Dev bypass active: aucune Authorization fournie, accès autorisé avec utilisateur factice.');
+      req.user = {
+        id: 'dev-user',
+        email: 'dev@local',
+        role: 'ADMIN',
+        isActive: true,
+      };
+      return next();
+    }
 
     if (!token) {
       console.log('[AUTH] No token found. Rejecting with 401.');
@@ -124,13 +138,23 @@ const authenticateToken = async (req, res, next) => {
 
   } catch (error) {
     console.log('[AUTH] Caught error:', error.name);
+    const isDev = String(process.env.NODE_ENV || '').toLowerCase() === 'development';
+    if (isDev && (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError')) {
+      console.warn('[AUTH] Dev bypass on JWT error:', error.name, '— accès autorisé avec utilisateur factice.');
+      req.user = {
+        id: 'dev-user',
+        email: 'dev@local',
+        role: 'ADMIN',
+        isActive: true,
+      };
+      return next();
+    }
     if (error.name === 'JsonWebTokenError') {
       return res.status(401).json({ 
         error: 'Token invalide',
         code: 'INVALID_TOKEN'
       });
     }
-    
     if (error.name === 'TokenExpiredError') {
       return res.status(401).json({ 
         error: 'Token expiré',

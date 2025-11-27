@@ -1,22 +1,21 @@
 // Angular Core
-import { Component, ElementRef, EventEmitter, Inject, Input, OnDestroy, OnInit, Optional, Output, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, EventEmitter, Inject, Input, OnDestroy, OnInit, Optional, Output } from '@angular/core';
+
+// Angular Common
+import { CommonModule, DOCUMENT } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormControl } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { MatDialog } from '@angular/material/dialog';
-
-// Angular Material
+import { MatDialog, MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 // RxJS
 import { Observable, of, Subject } from 'rxjs';
@@ -34,19 +33,20 @@ import { TagService } from '../../../../core/services/tag.service';
 // Composants partagés
 import { ConfirmationDialogComponent, ConfirmationDialogData } from '../../../../shared/shared.module';
 import { ExerciceVariablesComponent } from '../../../../shared/components/exercice-variables/exercice-variables.component';
+import { RichTextEditorComponent } from '../../../../shared/components/rich-text-editor/rich-text-editor.component';
 import { ImageUploadComponent } from '../../../../shared/components/image-upload/image-upload.component';
 
 @Component({
   selector: 'app-exercice-form',
   standalone: true,
   imports: [
-    CommonModule, ReactiveFormsModule, RouterModule, MatButtonModule, MatCardModule,
-    MatChipsModule, MatDialogModule, MatFormFieldModule, MatIconModule, MatInputModule,
-    MatSelectModule, MatTooltipModule, MatProgressSpinnerModule, ExerciceVariablesComponent,
-    ImageUploadComponent
+    CommonModule, ReactiveFormsModule, RouterModule,
+    MatButtonModule, MatCardModule, MatChipsModule, MatDialogModule, MatFormFieldModule,
+    MatIconModule, MatInputModule, MatProgressSpinnerModule, MatSelectModule, MatTooltipModule,
+    ExerciceVariablesComponent, ImageUploadComponent, RichTextEditorComponent
   ],
   templateUrl: './exercice-form.component.html',
-  styleUrls: ['./exercice-form.component.css'],
+  styleUrls: ['./exercice-form.component.scss'],
   host: { class: 'block h-full overflow-auto p-4' }
 })
 export class ExerciceFormComponent implements OnInit, OnDestroy {
@@ -96,8 +96,6 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
   successMessage = '';
   errorMessage: string | null = null;
 
-  // --- Gestion des dropdowns de tags (obsolète, géré par mat-select) ---
-  
   // --- Filtres pour les dropdowns de tags ---
   filteredTravailSpecifiqueTags: Tag[] = [];
   filteredObjectifTags: Tag[] = [];
@@ -117,7 +115,8 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private dialog: MatDialog,
     @Optional() public dialogRef?: MatDialogRef<ExerciceFormComponent>,
-    @Optional() @Inject(MAT_DIALOG_DATA) public data?: any
+    @Optional() @Inject(MAT_DIALOG_DATA) public data?: any,
+    @Optional() @Inject(DOCUMENT) private doc?: Document,
   ) {
     console.log('[ExerciceForm] TRACE: Constructor - Component instantiated.');
     this.initForm();
@@ -135,7 +134,6 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     console.log('[ExerciceForm] TRACE: ngOnInit - Lifecycle hook started.');
     this.readonlyMode = this.mode === 'view';
-    // L'appel à initForm() a été supprimé d'ici car il est déjà dans le constructeur. Le double appel est une source de bugs.
     
     this.loading = true;
     // Flux de données contrôlé :
@@ -210,6 +208,8 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
       notes: [''],
       critereReussite: [''],
       variables: new FormControl({ variablesPlus: [], variablesMinus: [] }),
+      // UI only: points importants (non persisté côté backend pour l'instant)
+      points: this.fb.array<string>([]),
       // Ajout des FormControls pour les tags
       objectifTag: [null],
       travailSpecifiqueTags: [[]],
@@ -219,29 +219,62 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
     });
   }
 
+  // --- Helpers UI ---
+  get pointsArray() {
+    return this.exerciceForm.get('points') as any;
+  }
+
+  get pointsControls() {
+    return (this.exerciceForm.get('points') as any)?.controls || [];
+  }
+
+  addPoint() {
+    const fa = this.exerciceForm.get('points') as any;
+    fa.push(new FormControl(''));
+  }
+
+  removePoint(index: number) {
+    const fa = this.exerciceForm.get('points') as any;
+    fa.removeAt(index);
+  }
+
+  onDescriptionInput(html: string) {
+    this.exerciceForm.get('description')?.setValue(html);
+  }
+
+  get imagePreviewString(): string | null {
+    return typeof this.imagePreview === 'string' ? this.imagePreview : null;
+  }
+
   private updateFormWithExercice(exercice: Exercice): void {
     console.log('[ExerciceForm] TRACE: 4. Updating form with exercice data.');
 
-    // Pré-sélectionner les tags à partir des IDs ou des objets tags
+    // Préparer la sélection de tags
     let tagsToSelect: Tag[] = [];
-    if (exercice.tags?.length) {
-        tagsToSelect = [...exercice.tags];
-    } else if (exercice.tagIds?.length && this.allTags.length) {
-        tagsToSelect = this.allTags.filter(t => exercice.tagIds!.includes(t.id!));
-    }
+    if (exercice.tags?.length) tagsToSelect = [...exercice.tags];
+    else if (exercice.tagIds?.length && this.allTags.length) tagsToSelect = this.allTags.filter(t => exercice.tagIds!.includes(t.id!));
 
-    // Distribuer les tags par catégorie pour le patchValue
     const objectifTag = tagsToSelect.find(t => t.category === 'objectif') || null;
     const travailSpecifiqueTags = tagsToSelect.filter(t => t.category === 'travail_specifique');
     const niveauTags = tagsToSelect.filter(t => t.category === 'niveau');
     const tempsTags = tagsToSelect.filter(t => t.category === 'temps');
     const formatTags = tagsToSelect.filter(t => t.category === 'format');
 
+    // Déterminer un éventuel premier schéma pour le champ UI unique
+    const firstSchemaUrl = (() => {
+      const raw: any = (exercice as any).schemaUrls;
+      if (Array.isArray(raw) && raw.length) return raw[0];
+      if (typeof raw === 'string') {
+        try { const parsed = JSON.parse(raw); if (Array.isArray(parsed) && parsed.length) return parsed[0]; } catch {}
+      }
+      return (exercice as any).schemaUrl || '';
+    })();
+
     this.exerciceForm.patchValue({
       nom: exercice.nom || '',
       description: exercice.description || '',
       imageUrl: exercice.imageUrl || '',
-      schemaUrl: (exercice as any).schemaUrl || '',
+      schemaUrl: firstSchemaUrl || '',
       materiel: (exercice as any).materiel || '',
       notes: (exercice as any).notes || '',
       critereReussite: (exercice as any).critereReussite || '',
@@ -249,21 +282,40 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
         variablesPlus: (exercice as any).variablesPlus || [],
         variablesMinus: (exercice as any).variablesMinus || []
       },
-      // Mise à jour des tags via le formulaire
-      objectifTag: objectifTag,
-      travailSpecifiqueTags: travailSpecifiqueTags,
-      niveauTags: niveauTags,
-      tempsTags: tempsTags,
-      formatTags: formatTags
+      objectifTag,
+      travailSpecifiqueTags,
+      niveauTags,
+      tempsTags,
+      formatTags
     });
     console.log('[ExerciceForm] TRACE: 5. Form patched with data.');
+
+    // Éditeur Quill: plus de synchronisation DOM manuelle
+
+    // Pré-remplir le FormArray 'points' si présent sur l'exercice
+    try {
+      const raw: any = (exercice as any).points;
+      let pts: string[] = [];
+      if (Array.isArray(raw)) pts = raw;
+      else if (typeof raw === 'string' && raw.trim().length) {
+        try {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) pts = parsed;
+          else pts = [raw];
+        } catch { pts = [raw]; }
+      }
+      const clean = pts.map(p => (p || '').trim()).filter(p => p.length > 0);
+      const fa = this.exerciceForm.get('points') as any;
+      if (fa && typeof fa.clear === 'function') {
+        fa.clear();
+        clean.forEach(p => fa.push(new FormControl(p)));
+      }
+    } catch {}
 
     if (exercice.imageUrl) {
       this.imagePreview = this.apiUrlService.getMediaUrl(exercice.imageUrl);
     }
   }
-
-
 
   onSubmit(): void {
     this.submitted = true;
@@ -273,18 +325,18 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
     }
     this.submitting = true;
 
-    const formValue = this.exerciceForm.value;
+    const formValue: any = this.exerciceForm.value;
 
-    // Agréger tous les tags sélectionnés depuis les différents FormControls
+    // Agréger tous les tags sélectionnés
     const allSelectedTags: Tag[] = [
       formValue.objectifTag,
       ...formValue.travailSpecifiqueTags,
       ...formValue.niveauTags,
       ...formValue.tempsTags,
       ...formValue.formatTags
-    ].filter(t => t !== null && t !== undefined) as Tag[];
+    ].filter((t: Tag | null | undefined) => t != null) as Tag[];
 
-    const uniqueTagIds = [...new Set(allSelectedTags.map(t => t.id))];
+    const uniqueTagIds = [...new Set(allSelectedTags.map(t => t.id))].filter(Boolean) as string[];
 
     const formData: any = {
       nom: formValue.nom,
@@ -293,12 +345,19 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
       notes: formValue.notes,
       critereReussite: formValue.critereReussite,
       imageUrl: formValue.imageUrl,
-      schemaUrl: formValue.schemaUrl,
-      tagIds: uniqueTagIds.filter(id => id) as string[],
-      variablesPlus: formValue.variables.variablesPlus,
-      variablesMinus: formValue.variables.variablesMinus,
+      tagIds: uniqueTagIds,
+      variablesPlus: formValue.variables?.variablesPlus || [],
+      variablesMinus: formValue.variables?.variablesMinus || [],
     };
 
+    // Mapper UI unique vers backend multi
+    formData.schemaUrls = formValue.schemaUrl ? [formValue.schemaUrl] : [];
+
+    // Inclure points si présents
+    const pts = (formValue.points || []).map((p: string) => (p || '').trim()).filter((p: string) => p.length > 0);
+    if (pts.length) formData.points = pts;
+
+    // Image file si sélectionnée
     if (this.selectedImageFile) {
       formData.image = this.selectedImageFile;
     } else if (this.mode === 'edit' && !this.imagePreview) {
@@ -332,7 +391,7 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
       const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
         data: { title: 'Annuler les modifications', message: 'Voulez-vous vraiment annuler ?' } as ConfirmationDialogData
       });
-      dialogRef.afterClosed().subscribe(result => {
+      dialogRef.afterClosed().subscribe((result: boolean) => {
         if (result) this.doCancel();
       });
     } else {

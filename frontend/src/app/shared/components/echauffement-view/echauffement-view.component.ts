@@ -7,6 +7,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
 import { ApiUrlService } from '../../../core/services/api-url.service';
 import { ImageViewerComponent, ImageViewerData } from '../image-viewer/image-viewer.component';
+import { RichTextViewComponent } from '../rich-text-view/rich-text-view.component';
 
 export interface EchauffementViewData {
   echauffement: {
@@ -22,7 +23,7 @@ export interface EchauffementViewData {
 @Component({
   selector: 'app-echauffement-view',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, MatButtonModule, MatIconModule, MatChipsModule, MatDividerModule],
+  imports: [CommonModule, MatDialogModule, MatButtonModule, MatIconModule, MatChipsModule, MatDividerModule, RichTextViewComponent],
   templateUrl: './echauffement-view.component.html',
   styleUrls: ['./echauffement-view.component.scss']
 })

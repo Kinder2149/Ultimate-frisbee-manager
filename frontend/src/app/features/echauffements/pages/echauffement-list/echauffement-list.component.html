@@ -60,9 +60,9 @@
             </span>
           </div>
 
-          <p class="description" *ngIf="echauffement.description">
-            {{ getDescriptionTruncated(echauffement.description) }}
-          </p>
+          <div class="description" *ngIf="echauffement.description">
+            <app-rich-text-view [html]="echauffement.description"></app-rich-text-view>
+          </div>
 
           <div *ngIf="echauffement.blocs?.length" class="blocs-preview">
             <h4>Blocs :</h4>

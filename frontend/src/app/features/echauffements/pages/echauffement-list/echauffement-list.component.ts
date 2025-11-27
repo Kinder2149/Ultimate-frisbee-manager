@@ -15,6 +15,7 @@ import { ConfirmDialogComponent } from '../../../../shared/components/dialog/con
 import { ExerciceFiltersComponent, ExerciceFiltersValue } from '../../../exercices/components/exercice-filters.component';
 import { EchauffementViewComponent } from '../../../../shared/components/echauffement-view/echauffement-view.component';
 import { ApiUrlService } from '../../../../core/services/api-url.service';
+import { RichTextViewComponent } from '../../../../shared/components/rich-text-view/rich-text-view.component';
 
 @Component({
   selector: 'app-echauffement-list',
@@ -28,7 +29,8 @@ import { ApiUrlService } from '../../../../core/services/api-url.service';
     MatDialogModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
-    ExerciceFiltersComponent
+    ExerciceFiltersComponent,
+    RichTextViewComponent
   ],
   templateUrl: './echauffement-list.component.html',
   styleUrls: ['./echauffement-list.component.scss']

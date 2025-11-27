@@ -2,7 +2,9 @@
 
   <!-- AFFICAHGE EN MODE RÉSUMÉ -->
   <div *ngIf="isSummary; else detailedView" class="summary-content">
-    <p *ngIf="echauffement.description" class="summary-description">{{ echauffement.description }}</p>
+    <div *ngIf="echauffement.description" class="summary-description">
+      <app-rich-text-view [html]="echauffement.description"></app-rich-text-view>
+    </div>
     <div class="summary-tags" *ngIf="echauffement.tags?.length">
       <mat-chip-listbox>
         <mat-chip *ngFor="let tag of echauffement.tags" [style.background-color]="tag.color || '#e0e0e0'" [style.color]="tag.color ? '#fff' : '#333'">
@@ -34,7 +36,7 @@
         </div>
         <div class="section" *ngIf="echauffement.description as description">
           <h3>Description</h3>
-          <p class="description">{{ description }}</p>
+          <app-rich-text-view [html]="description"></app-rich-text-view>
         </div>
         <div class="section" *ngIf="echauffement.blocs?.length">
           <h3>Blocs</h3>

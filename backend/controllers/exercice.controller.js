@@ -11,11 +11,13 @@ exports.getAllExercices = async (req, res, next) => {
         tags: true // Inclure les tags associés
       }
     });
-    
+
     exercices = exercices.map(ex => ({
       ...ex,
       variablesPlus: JSON.parse(ex.variablesPlus || '[]'),
       variablesMinus: JSON.parse(ex.variablesMinus || '[]'),
+      points: JSON.parse(ex.points || '[]'),
+      schemaUrls: JSON.parse(ex.schemaUrls || '[]'),
     }));
 
     res.json(exercices);
@@ -36,13 +38,15 @@ exports.getExerciceById = async (req, res, next) => {
       where: { id },
       include: { tags: true } // Inclure les tags associés
     });
-    
+
     if (!exercice) {
       return res.status(404).json({ error: 'Exercice non trouvé' });
     }
-    
+
     exercice.variablesPlus = JSON.parse(exercice.variablesPlus || '[]');
     exercice.variablesMinus = JSON.parse(exercice.variablesMinus || '[]');
+    exercice.points = JSON.parse(exercice.points || '[]');
+    exercice.schemaUrls = JSON.parse(exercice.schemaUrls || '[]');
 
     res.json(exercice);
   } catch (error) {
@@ -57,7 +61,7 @@ exports.getExerciceById = async (req, res, next) => {
 exports.createExercice = async (req, res, next) => {
   try {
     // On ne récupère plus variablesText qui est obsolète
-    const { nom, description, schemaUrl, variablesPlus, variablesMinus, tags, tagIds, materiel, notes, critereReussite } = req.body;
+    const { nom, description, variablesPlus, variablesMinus, points, schemaUrls, tags, tagIds, materiel, notes, critereReussite } = req.body;
 
     // LOG: Ajout d'un log pour vérifier les données entrantes
     console.log('--- Contenu de req.body pour la création ---', {
@@ -65,6 +69,8 @@ exports.createExercice = async (req, res, next) => {
       description: description ? `${description.length} chars` : 'absent',
       variablesPlus: Array.isArray(variablesPlus) ? `[${variablesPlus.length} items]` : 'non-array',
       variablesMinus: Array.isArray(variablesMinus) ? `[${variablesMinus.length} items]` : 'non-array',
+      points: Array.isArray(points) ? `[${points.length} items]` : 'non-array',
+      schemaUrls: Array.isArray(schemaUrls) ? `[${schemaUrls.length} items]` : 'non-array',
       tagIds: Array.isArray(tagIds) ? `[${tagIds.length} IDs]` : 'absent',
       materiel: materiel ? 'présent' : 'absent',
       notes: notes ? 'présent' : 'absent',
@@ -114,18 +120,37 @@ exports.createExercice = async (req, res, next) => {
       nom,
       description: description || '',
       imageUrl: req.file ? req.file.cloudinaryUrl : (req.body.imageUrl || null),
-      schemaUrl: schemaUrl || null,
       materiel: materiel || null,
       notes: notes || null,
       critereReussite: critereReussite || null,
       // Assurer que les variables sont des tableaux de chaînes (String[])
       variablesPlus: JSON.stringify(normalizeStringArray(Array.isArray(variablesPlus) ? variablesPlus : [])),
       variablesMinus: JSON.stringify(normalizeStringArray(Array.isArray(variablesMinus) ? variablesMinus : [])),
+      points: JSON.stringify(normalizeStringArray(Array.isArray(points) ? points : [])),
+      schemaUrls: JSON.stringify(normalizeStringArray(Array.isArray(schemaUrls) ? schemaUrls : [])),
       tags: {}
     };
 
     // Gérer la connexion des tags
     const finalTagIds = tagIds || (tags && Array.isArray(tags) ? tags.map(t => t.id) : []);
+    if (!Array.isArray(finalTagIds) || finalTagIds.length === 0) {
+      return res.status(400).json({ error: 'Au moins un tag est requis.' });
+    }
+
+    const tagsFromDb = await prisma.tag.findMany({ where: { id: { in: finalTagIds } } });
+    const objectifTags = tagsFromDb.filter(t => t.category === 'objectif');
+    const travailSpecifiqueTags = tagsFromDb.filter(t => t.category === 'travail_specifique');
+
+    if (objectifTags.length === 0) {
+      return res.status(400).json({ error: 'Un tag de catégorie "objectif" est obligatoire.' });
+    }
+    if (objectifTags.length > 1) {
+      return res.status(400).json({ error: 'Un seul tag de catégorie "objectif" est autorisé.' });
+    }
+    if (travailSpecifiqueTags.length === 0) {
+      return res.status(400).json({ error: 'Au moins un tag de catégorie "travail_specifique" est obligatoire.' });
+    }
+
     if (Array.isArray(finalTagIds) && finalTagIds.length > 0) {
       createData.tags = {
         connect: finalTagIds.map(id => ({ id }))
@@ -144,6 +169,11 @@ exports.createExercice = async (req, res, next) => {
         tags: true // Inclure les tags dans le résultat
       }
     });
+
+    newExercice.variablesPlus = JSON.parse(newExercice.variablesPlus || '[]');
+    newExercice.variablesMinus = JSON.parse(newExercice.variablesMinus || '[]');
+    newExercice.points = JSON.parse(newExercice.points || '[]');
+    newExercice.schemaUrls = JSON.parse(newExercice.schemaUrls || '[]');
 
     // LOG: Confirmation de la création
     console.log(`--- Exercice créé avec succès (ID: ${newExercice.id}) ---`);
@@ -166,7 +196,7 @@ exports.updateExercice = async (req, res, next) => {
   // Envelopper toute la fonction dans un try/catch pour une meilleure gestion d'erreur
   try {
     const { id } = req.params;
-    const { nom, description, schemaUrl, variablesPlus, variablesMinus, tagIds, materiel, notes, critereReussite } = req.body;
+    const { nom, description, variablesPlus, variablesMinus, points, schemaUrls, tagIds, materiel, notes, critereReussite } = req.body;
 
     // 1. Vérifier que l'exercice existe
     const existingExercice = await prisma.exercice.findUnique({ where: { id } });
@@ -218,12 +248,13 @@ exports.updateExercice = async (req, res, next) => {
     // Assignation conditionnelle pour chaque champ
     if (nom !== undefined) updateData.nom = nom;
     if (description !== undefined) updateData.description = description;
-    if (schemaUrl !== undefined) updateData.schemaUrl = schemaUrl;
     if (materiel !== undefined) updateData.materiel = materiel;
     if (notes !== undefined) updateData.notes = notes;
     if (critereReussite !== undefined) updateData.critereReussite = critereReussite;
     if (variablesPlus !== undefined) updateData.variablesPlus = JSON.stringify(normalizeStringArray(variablesPlus));
     if (variablesMinus !== undefined) updateData.variablesMinus = JSON.stringify(normalizeStringArray(variablesMinus));
+    if (points !== undefined) updateData.points = JSON.stringify(normalizeStringArray(points));
+    if (schemaUrls !== undefined) updateData.schemaUrls = JSON.stringify(normalizeStringArray(schemaUrls));
 
     // Gestion de l'image
     if (req.file) {
@@ -234,6 +265,20 @@ exports.updateExercice = async (req, res, next) => {
 
     // Gestion spécifique et sécurisée pour les tags
     if (Array.isArray(tagIds)) {
+      const tagsFromDb = await prisma.tag.findMany({ where: { id: { in: tagIds } } });
+      const objectifTags = tagsFromDb.filter(t => t.category === 'objectif');
+      const travailSpecifiqueTags = tagsFromDb.filter(t => t.category === 'travail_specifique');
+
+      if (objectifTags.length === 0) {
+        return res.status(400).json({ error: 'Un tag de catégorie "objectif" est obligatoire.' });
+      }
+      if (objectifTags.length > 1) {
+        return res.status(400).json({ error: 'Un seul tag de catégorie "objectif" est autorisé.' });
+      }
+      if (travailSpecifiqueTags.length === 0) {
+        return res.status(400).json({ error: 'Au moins un tag de catégorie "travail_specifique" est obligatoire.' });
+      }
+
       updateData.tags = {
         set: [], // Réinitialise les tags existants
         connect: tagIds.map(id => ({ id })) // Connecte les nouveaux tags
@@ -249,6 +294,11 @@ exports.updateExercice = async (req, res, next) => {
       data: updateData,
       include: { tags: true } // Toujours inclure les tags dans la réponse
     });
+
+    exerciceUpdated.variablesPlus = JSON.parse(exerciceUpdated.variablesPlus || '[]');
+    exerciceUpdated.variablesMinus = JSON.parse(exerciceUpdated.variablesMinus || '[]');
+    exerciceUpdated.points = JSON.parse(exerciceUpdated.points || '[]');
+    exerciceUpdated.schemaUrls = JSON.parse(exerciceUpdated.schemaUrls || '[]');
 
     console.log(`--- Exercice mis à jour avec succès (ID: ${exerciceUpdated.id}) ---`);
 
@@ -285,12 +335,13 @@ exports.duplicateExercice = async (req, res, next) => {
         nom: `${originalExercice.nom} (Copie)`,
         description: originalExercice.description,
         imageUrl: originalExercice.imageUrl,
-        schemaUrl: originalExercice.schemaUrl,
         materiel: originalExercice.materiel,
         notes: originalExercice.notes,
         // Les variables sont des chaînes JSON, on les passe directement
         variablesPlus: originalExercice.variablesPlus,
         variablesMinus: originalExercice.variablesMinus,
+        points: originalExercice.points,
+        schemaUrls: originalExercice.schemaUrls,
         tags: {
           connect: originalExercice.tags.map(tag => ({ id: tag.id }))
         }

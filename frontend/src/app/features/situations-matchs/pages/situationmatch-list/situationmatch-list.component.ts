@@ -18,6 +18,7 @@ import { DuplicateButtonComponent } from '../../../../shared/components/duplicat
 import { SituationMatchViewComponent } from '../../../../shared/components/situationmatch-view/situationmatch-view.component';
 import { ApiUrlService } from '../../../../core/services/api-url.service';
 import { ImageViewerComponent, ImageViewerData } from '../../../../shared/components/image-viewer/image-viewer.component';
+import { RichTextViewComponent } from '../../../../shared/components/rich-text-view/rich-text-view.component';
 
 /**
  * Composant de liste des situations et matchs
@@ -33,7 +34,8 @@ import { ImageViewerComponent, ImageViewerData } from '../../../../shared/compon
     MatIconModule,
     MatChipsModule,
     DuplicateButtonComponent,
-    ExerciceFiltersComponent
+    ExerciceFiltersComponent,
+    RichTextViewComponent
   ],
   templateUrl: './situationmatch-list.component.html',
   styleUrls: ['./situationmatch-list.component.scss']
@@ -43,6 +45,8 @@ export class SituationMatchListComponent implements OnInit {
   filteredSituationsMatchs: SituationMatch[] = [];
   loading = false;
   duplicatingIds = new Set<string>();
+  // Cartes dépliées par id
+  expandedIds = new Set<string>();
 
   // Filtres
   searchTerm = '';
@@ -65,6 +69,31 @@ export class SituationMatchListComponent implements OnInit {
   ngOnInit(): void {
     this.loadTags();
     this.loadSituationsMatchs();
+  }
+
+  // ===== Expansion cartes =====
+  isExpanded(id?: string | null): boolean {
+    if (!id) return false;
+    return this.expandedIds.has(id);
+  }
+
+  toggleExpanded(event: Event | undefined, id?: string | null): void {
+    if (event) event.stopPropagation();
+    if (!id) return;
+    if (this.expandedIds.has(id)) {
+      this.expandedIds.delete(id);
+    } else {
+      this.expandedIds.add(id);
+    }
+  }
+
+  onHeaderKeydown(event: Event, id?: string | null): void {
+    const kev = event as KeyboardEvent;
+    const key = (kev.key || '').toLowerCase();
+    if (key === 'enter' || key === ' ') {
+      kev.preventDefault();
+      this.toggleExpanded(event as Event, id);
+    }
   }
 
   private loadTags(): void {

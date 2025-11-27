@@ -11,6 +11,7 @@ import { ExerciceService } from '../../../core/services/exercice.service';
 import { TagService } from '../../../core/services/tag.service';
 import { Tag, TagCategory } from '../../../core/models/tag.model';
 import { DuplicateButtonComponent } from '../../../shared/components/duplicate-button/duplicate-button.component';
+import { RichTextViewComponent } from '../../../shared/components/rich-text-view/rich-text-view.component';
 import { ExerciceDialogService } from '../services/exercice-dialog.service';
 import { ApiUrlService } from '../../../core/services/api-url.service';
 
@@ -37,7 +38,7 @@ export interface ExerciceInput {
   templateUrl: './exercice-card.component.html',
   styleUrls: ['./exercice-card.component.scss'],
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, MatTooltipModule, DuplicateButtonComponent, MatChipsModule]
+  imports: [CommonModule, MatButtonModule, MatIconModule, MatTooltipModule, DuplicateButtonComponent, MatChipsModule, RichTextViewComponent]
 })
 export class ExerciceCardComponent implements OnInit {
   @Input() exercice!: ExerciceInput;
@@ -60,6 +61,8 @@ export class ExerciceCardComponent implements OnInit {
   
   // État de duplication
   duplicating: boolean = false;
+  // État d'expansion de la carte (replié par défaut)
+  expanded: boolean = false;
   
   // Tags associés à l'exercice par catégorie
   objectifTag: Tag | null = null;
@@ -95,6 +98,14 @@ export class ExerciceCardComponent implements OnInit {
     if (this.mode === 'entrainement') {
       // rien d'obligatoire ici, mais on garde expanded à false par défaut
     }
+  }
+
+  /**
+   * Ouvre/ferme le contenu de la carte (clic sur l'en-tête)
+   */
+  toggleExpanded(event?: Event): void {
+    if (event) event.stopPropagation();
+    this.expanded = !this.expanded;
   }
 
   // Durée formatée

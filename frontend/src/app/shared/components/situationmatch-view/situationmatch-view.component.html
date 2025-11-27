@@ -2,7 +2,9 @@
 
   <!-- AFFICHAGE EN MODE RÉSUMÉ -->
   <div *ngIf="isSummary; else detailedView" class="summary-content">
-    <p *ngIf="situationMatch.description" class="summary-description">{{ situationMatch.description }}</p>
+    <div *ngIf="situationMatch.description" class="summary-description">
+      <app-rich-text-view [html]="situationMatch.description"></app-rich-text-view>
+    </div>
     <div class="summary-tags" *ngIf="situationMatch.tags?.length">
       <mat-chip-listbox>
         <mat-chip *ngFor="let tag of situationMatch.tags" [style.background-color]="tag.color || '#e0e0e0'" [style.color]="tag.color ? '#fff' : '#333'">
@@ -35,7 +37,10 @@
         </div>
         <mat-divider></mat-divider>
         <!-- Contenu détaillé ici -->
-        <div class="section" *ngIf="situationMatch.description as description"><h3 class="hl">Description</h3><p>{{ description }}</p></div>
+        <div class="section" *ngIf="situationMatch.description as description">
+          <h3 class="hl">Description</h3>
+          <app-rich-text-view [html]="description"></app-rich-text-view>
+        </div>
         <div class="section" *ngIf="situationMatch.imageUrl as url"><img [src]="mediaUrl(url)" [alt]="'Illustration de ' + situationMatch.nom" class="preview-image clickable" (click)="openImageViewer(url)"></div>
         <div class="section" *ngIf="situationMatch.tags?.length">
           <h3 class="hl">Tags</h3>

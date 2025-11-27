@@ -8,6 +8,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { SituationMatch } from '../../../core/models/situationmatch.model';
 import { ApiUrlService } from '../../../core/services/api-url.service';
 import { ImageViewerComponent, ImageViewerData } from '../image-viewer/image-viewer.component';
+import { RichTextViewComponent } from '../rich-text-view/rich-text-view.component';
 
 export interface SituationMatchViewData {
   situationMatch: SituationMatch;
@@ -16,7 +17,7 @@ export interface SituationMatchViewData {
 @Component({
   selector: 'app-situationmatch-view',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, MatButtonModule, MatIconModule, MatChipsModule, MatDividerModule],
+  imports: [CommonModule, MatDialogModule, MatButtonModule, MatIconModule, MatChipsModule, MatDividerModule, RichTextViewComponent],
   templateUrl: './situationmatch-view.component.html',
   styleUrls: ['./situationmatch-view.component.scss']
 })

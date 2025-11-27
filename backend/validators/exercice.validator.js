@@ -10,20 +10,28 @@ const createExerciceSchema = z.object({
   description: z.string({
     required_error: 'La description est requise.',
     invalid_type_error: 'La description doit être une chaîne de caractères.',
-  }).optional(), // On retire .min(10) qui est trop strict
+  }),
 
   imageUrl: z.string().url({ message: "L'URL de l'image est invalide." }).optional().nullable(),
-  schemaUrl: z.string().url({ message: "L'URL du schéma est invalide." }).optional().nullable(),
   materiel: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
   critereReussite: z.string().optional().nullable(),
+
+  // Multi-schémas: tableau de chaînes (URLs ou identifiants), stocké en JSON
+  schemaUrls: z.array(z.string()).optional().default([]),
+
+  // Points: tableau de chaînes, stocké en JSON
+  points: z.array(z.string()).optional().default([]),
 
   // Les variables sont attendues comme des tableaux de chaînes
   variablesPlus: z.array(z.string()).optional().default([]),
   variablesMinus: z.array(z.string()).optional().default([]),
 
   // Les tags sont attendus comme un tableau d'IDs (UUIDs)
-  tagIds: z.array(z.string().uuid({ message: "L'ID d'un tag est invalide." })).optional().default([]),
+  // La contrainte métier (1 tag objectif max, >=1 travail_specifique)
+  // est vérifiée au niveau du contrôleur avec accès à la base.
+  tagIds: z.array(z.string().uuid({ message: "L'ID d'un tag est invalide." }))
+    .min(1, { message: 'Au moins un tag est requis.' }),
 });
 
 // Schéma pour la mise à jour (tous les champs sont optionnels)
@@ -32,10 +40,13 @@ const updateExerciceSchema = z.object({
   nom: z.string().min(3).optional(),
   description: z.string().optional(),
   imageUrl: z.string().url().optional().nullable(),
-  schemaUrl: z.string().url().optional().nullable(),
   materiel: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
   critereReussite: z.string().optional().nullable(),
+
+  schemaUrls: z.array(z.string()).optional().default([]),
+  points: z.array(z.string()).optional().default([]),
+
   variablesPlus: z.array(z.string()).optional().default([]),
   variablesMinus: z.array(z.string()).optional().default([]),
   tagIds: z.array(z.string().uuid()).optional().default([]),

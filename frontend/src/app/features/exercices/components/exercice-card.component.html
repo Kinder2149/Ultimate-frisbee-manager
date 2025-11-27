@@ -8,8 +8,8 @@
   <!-- MODE DEFAULT / ENTRAINEMENT: Affiche la carte complète -->
   <ng-container *ngSwitchDefault>
     <div class="exercice-card entity-card">
-      <!-- EN-TÊTE -->
-      <div class="card-header">
+      <!-- EN-TÊTE (clic pour déplier/replier) -->
+      <div class="card-header" (click)="toggleExpanded($event)" (keydown.enter)="toggleExpanded($event)" (keydown.space)="toggleExpanded($event)" tabindex="0">
         <div class="title-section">
           <div class="title-left">
             <span *ngIf="index as idx" class="index-bubble">{{ idx }}</span>
@@ -42,11 +42,16 @@
               (duplicate)="duplicateExercice($event)">
             </app-duplicate-button>
             <button mat-icon-button (click)="deleteExercice($event)" matTooltip="Supprimer" class="delete-btn"><mat-icon>delete</mat-icon></button>
+            <button mat-icon-button class="chevron" (click)="toggleExpanded($event)" [attr.aria-expanded]="expanded" [matTooltip]="expanded ? 'Replier' : 'Déplier'">
+              <mat-icon [ngClass]="{ 'rotated': expanded }">expand_more</mat-icon>
+            </button>
         </div>
       </div>
 
       <!-- Contenu de la carte -->
-      <ng-container *ngTemplateOutlet="cardContent"></ng-container>
+      <ng-container *ngIf="expanded">
+        <ng-container *ngTemplateOutlet="cardContent"></ng-container>
+      </ng-container>
 
     </div>
   </ng-container>
@@ -63,10 +68,10 @@
 
   <!-- CONTENU -->
   <div class="card-content">
-    <!-- Description simple -->
+    <!-- Description (rich text) -->
     <div class="description-section" *ngIf="exercice.description">
       <h4 class="section-title">Description</h4>
-      <p class="description">{{ exercice.description }}</p>
+      <app-rich-text-view [html]="exercice.description"></app-rich-text-view>
     </div>
 
     <!-- Critère de réussite -->
@@ -101,8 +106,8 @@
     </div>
   </div>
 
-  <!-- PIED DE CARTE (uniquement en mode non-summary) -->
-  <div class="meta-info" *ngIf="mode !== 'entrainement-summary'">
+  <!-- PIED DE CARTE (uniquement quand déployé et en mode non-summary) -->
+  <div class="meta-info" *ngIf="expanded && mode !== 'entrainement-summary'">
     <span class="created-at" *ngIf="exercice.createdAt">Créé le {{ exercice.createdAt | date:'dd/MM/yyyy' }}</span>
   </div>
 </ng-template>

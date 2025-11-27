@@ -29,6 +29,12 @@ $ultimate-theme: mat.define-light-theme((
 /* Import des optimisations mobiles */
 @import './app/shared/styles/mobile-optimizations.scss';
 
+/* Styles Quill (éditeur ngx-quill) */
+@import 'quill/dist/quill.snow.css';
+
+/* Styles communs Rich Text (Form + View) */
+@import './app/shared/styles/rich-text.scss';
+
 /* Reset CSS de base */
 * {
   margin: 0;

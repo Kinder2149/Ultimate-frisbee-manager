@@ -1,4 +1,27 @@
 @import '../../../shared/styles/entity-card';
+/* Expansion/repli des cartes */
+.exercice-card {
+  .card-header {
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .card-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    .chevron mat-icon {
+      transition: transform 160ms ease;
+    }
+    .chevron mat-icon.rotated {
+      transform: rotate(180deg);
+    }
+  }
+}
+
 
 // Styles spécifiques lorsque la carte est en mode résumé dans un entraînement
 :host-context(.mode-summary) {

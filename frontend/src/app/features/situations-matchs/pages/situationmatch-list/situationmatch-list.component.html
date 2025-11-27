@@ -26,8 +26,8 @@
   <!-- Liste des situations/matchs -->
   <div *ngIf="!loading" class="situationsMatchs-grid">
     <div *ngFor="let situationMatch of filteredSituationsMatchs" class="entity-card">
-      <!-- En-tête de la carte -->
-      <div class="card-header">
+      <!-- En-tête de la carte (clic pour déplier/replier) -->
+      <div class="card-header" (click)="toggleExpanded($event, situationMatch.id)" (keydown.enter)="onHeaderKeydown($event, situationMatch.id)" (keydown.space)="onHeaderKeydown($event, situationMatch.id)" tabindex="0">
         <div class="title-section">
           <h3 class="card-title">{{ situationMatch.nom || situationMatch.type }}</h3>
           <span class="type-badge" [class]="'type-' + situationMatch.type.toLowerCase()">
@@ -52,18 +52,23 @@
           <button class="btn-icon danger" (click)="onDeleteSituationMatch(situationMatch)" title="Supprimer">
             <i class="material-icons">delete</i>
           </button>
+          <button class="btn-icon chevron" (click)="toggleExpanded($event, situationMatch.id)" [attr.aria-expanded]="isExpanded(situationMatch.id)" title="Afficher/Masquer">
+            <i class="material-icons" [ngClass]="{ 'rotated': isExpanded(situationMatch.id) }">expand_more</i>
+          </button>
         </div>
       </div>
 
-      <div class="card-content">
+      <div class="card-content" *ngIf="isExpanded(situationMatch.id)">
         <!-- Image -->
         <div *ngIf="situationMatch.imageUrl" class="image-container clickable" (click)="openImageViewer(situationMatch)">
           <img [src]="mediaUrl(situationMatch.imageUrl)" [alt]="'Image pour ' + (situationMatch.nom || situationMatch.type)" class="exercice-image">
         </div>
-        <!-- Description -->
+        <!-- Description (rich text) -->
         <div class="info-row" *ngIf="situationMatch.description">
           <span class="label">Description :</span>
-          <span class="value">{{ getDescriptionTruncated(situationMatch.description) }}</span>
+          <div class="value" style="flex:1 1 auto;">
+            <app-rich-text-view [html]="situationMatch.description"></app-rich-text-view>
+          </div>
         </div>
 
         <!-- Temps -->

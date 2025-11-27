@@ -1,0 +1,47 @@
+/* Styles communs pour le rendu Rich Text (Form + View) */
+.rich-text, .dialog-content .rich-text, .mat-mdc-dialog-content .rich-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #111827;
+}
+
+/* Paragraphes */
+.rich-text p, .dialog-content .rich-text p, .mat-mdc-dialog-content .rich-text p { margin: 0 0 8px; }
+.rich-text p:last-child, .dialog-content .rich-text p:last-child, .mat-mdc-dialog-content .rich-text p:last-child { margin-bottom: 0; }
+
+/* Titres (limités à H2/H3) */
+.rich-text h2, .dialog-content .rich-text h2, .mat-mdc-dialog-content .rich-text h2,
+.rich-text .ql-header-2, .dialog-content .rich-text .ql-header-2, .mat-mdc-dialog-content .rich-text .ql-header-2 { font-size: 1.5rem; font-weight: 700; margin: 12px 0 8px; color: #0f172a; }
+.rich-text h3, .dialog-content .rich-text h3, .mat-mdc-dialog-content .rich-text h3,
+.rich-text .ql-header-3, .dialog-content .rich-text .ql-header-3, .mat-mdc-dialog-content .rich-text .ql-header-3 { font-size: 1.25rem; font-weight: 600; margin: 10px 0 6px; color: #111827; }
+
+/* Listes */
+.rich-text ul, .rich-text ol, .dialog-content .rich-text ul, .dialog-content .rich-text ol, .mat-mdc-dialog-content .rich-text ul, .mat-mdc-dialog-content .rich-text ol { margin: 0 0 8px 20px; padding-left: 20px; }
+.rich-text ul, .dialog-content .rich-text ul, .mat-mdc-dialog-content .rich-text ul { list-style-type: disc; }
+.rich-text ol, .dialog-content .rich-text ol, .mat-mdc-dialog-content .rich-text ol { list-style-type: decimal; }
+.rich-text li, .dialog-content .rich-text li, .mat-mdc-dialog-content .rich-text li { display: list-item; margin: 4px 0; }
+
+/* Liens */
+.rich-text a, .dialog-content .rich-text a, .mat-mdc-dialog-content .rich-text a { color: #2563eb; text-decoration: underline; }
+.rich-text a:hover, .dialog-content .rich-text a:hover, .mat-mdc-dialog-content .rich-text a:hover { color: #1d4ed8; }
+
+/* Intégration Quill: appliquer la même base au contenu de l'éditeur */
+.ql-container.ql-snow { border-radius: 8px; }
+.ql-toolbar.ql-snow { border-radius: 8px 8px 0 0; }
+.ql-container .ql-editor {
+  min-height: 180px;
+}
+
+/* Harmonisation de l’intérieur de l’éditeur avec rich-text */
+.ql-editor {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #111827;
+}
+.ql-editor p { margin: 0 0 8px; }
+.ql-editor h2, .ql-editor .ql-header-2 { font-size: 1.5rem; font-weight: 700; margin: 12px 0 8px; color: #0f172a; }
+.ql-editor h3, .ql-editor .ql-header-3 { font-size: 1.25rem; font-weight: 600; margin: 10px 0 6px; color: #111827; }
+.ql-editor ul, .ql-editor ol { margin: 0 0 8px 20px; padding-left: 20px; }
+.ql-editor ul { list-style-type: disc; }
+.ql-editor ol { list-style-type: decimal; }
+.ql-editor li { display: list-item; margin: 4px 0; }
