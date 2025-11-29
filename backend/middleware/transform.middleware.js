@@ -79,10 +79,25 @@ const transformFormData = (req, res, next) => {
   if (Object.prototype.hasOwnProperty.call(req.body, 'tagIds')) {
     let tagIds = req.body.tagIds;
     if (typeof tagIds === 'string') {
-      tagIds = tagIds.split(',');
+      const trimmed = tagIds.trim();
+      // Essayer d'abord de parser un tableau JSON (cas FormData avec JSON.stringify)
+      if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          tagIds = Array.isArray(parsed) ? parsed : [];
+        } catch (_) {
+          // Fallback si JSON invalide: split par virgule
+          tagIds = trimmed.split(',');
+        }
+      } else {
+        // Cas chaîne simple: CSV
+        tagIds = trimmed.split(',');
+      }
     }
     if (Array.isArray(tagIds)) {
-      const normalized = tagIds.map(id => String(id).trim()).filter(isUuid);
+      const normalized = tagIds
+        .map(id => (id == null ? '' : String(id).trim().replace(/^"|"$/g, ''))) // retirer guillemets éventuels
+        .filter(isUuid);
       if (normalized.length === 0) {
         // Si vide après normalisation, supprimer la clé pour ne pas réinitialiser les tags
         delete req.body.tagIds;
@@ -90,7 +105,7 @@ const transformFormData = (req, res, next) => {
         req.body.tagIds = normalized;
       }
     } else {
-      // Si fourni mais invalide, normaliser en []
+      // Si fourni mais invalide, supprimer la clé
       delete req.body.tagIds;
     }
   }

@@ -49,7 +49,9 @@ const updateExerciceSchema = z.object({
 
   variablesPlus: z.array(z.string()).optional().default([]),
   variablesMinus: z.array(z.string()).optional().default([]),
-  tagIds: z.array(z.string().uuid()).optional().default([]),
+  // IMPORTANT: ne pas fournir de default([]) ici, pour que l'absence de tagIds
+  // n'efface pas les tags existants et ne déclenche pas la validation métier côté contrôleur.
+  tagIds: z.array(z.string().uuid()).optional(),
 });
 
 module.exports = {
