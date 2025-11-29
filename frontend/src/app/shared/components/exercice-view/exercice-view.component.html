@@ -27,7 +27,17 @@
       </div>
     </header>
 
-    <!-- 🖼️ Section 1 : Galerie multi-schémas -->
+    <!-- 🖼️ Section 1 : Image principale (si présente) -->
+    <section class="section" *ngIf="exercice.imageUrl">
+      <h3 class="section-title hl-sand">Image de l'exercice</h3>
+      <div class="schema-gallery">
+        <div class="schema-item" (click)="openImageViewer(exercice.imageUrl!)">
+          <img [src]="mediaUrl(exercice.imageUrl)" alt="Image de l'exercice">
+        </div>
+      </div>
+    </section>
+
+    <!-- 🖼️ Section 2 : Galerie multi-schémas -->
     <section class="section">
       <h3 class="section-title hl-sand">Schémas de l'exercice</h3>
       <div class="schema-gallery" *ngIf="schemaUrlsList.length > 0; else noSchema">
