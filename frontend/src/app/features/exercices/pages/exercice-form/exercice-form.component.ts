@@ -333,42 +333,36 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
       ...formValue.travailSpecifiqueTags,
       ...formValue.niveauTags,
       ...formValue.tempsTags,
-      ...formValue.formatTags
-    ].filter((t: Tag | null | undefined) => t != null) as Tag[];
 
-    const uniqueTagIds = [...new Set(allSelectedTags.map(t => t.id))].filter(Boolean) as string[];
+// --- Helpers UI ---
+get pointsArray() {
+  return this.exerciceForm.get('points') as any;
+}
 
-    const formData: any = {
-      nom: formValue.nom,
-      description: formValue.description,
-      materiel: formValue.materiel,
-      notes: formValue.notes,
-      critereReussite: formValue.critereReussite,
-      imageUrl: formValue.imageUrl,
-      tagIds: uniqueTagIds,
-      variablesPlus: formValue.variables?.variablesPlus || [],
-      variablesMinus: formValue.variables?.variablesMinus || [],
-    };
+get pointsControls() {
+  return (this.exerciceForm.get('points') as any)?.controls || [];
+}
 
-    // Mapper UI unique vers backend multi
-    formData.schemaUrls = formValue.schemaUrl ? [formValue.schemaUrl] : [];
+addPoint() {
+  const fa = this.exerciceForm.get('points') as any;
+  fa.push(new FormControl(''));
+}
 
-    // Inclure points si présents
-    const pts = (formValue.points || []).map((p: string) => (p || '').trim()).filter((p: string) => p.length > 0);
-    if (pts.length) formData.points = pts;
+removePoint(index: number) {
+  const fa = this.exerciceForm.get('points') as any;
+  fa.removeAt(index);
+}
 
-    // Image file si sélectionnée
-    if (this.selectedImageFile) {
-      formData.image = this.selectedImageFile;
-    } else if (this.mode === 'edit' && !this.imagePreview) {
-      formData.imageUrl = '';
-    }
+onDescriptionInput(html: string) {
+  this.exerciceForm.get('description')?.setValue(html);
+}
 
-    const saveObservable = this.exerciceId
-      ? this.exerciceService.updateExercice(this.exerciceId, formData)
-      : this.exerciceService.createExercice(formData);
+get imagePreviewString(): string | null {
+  return typeof this.imagePreview === 'string' ? this.imagePreview : null;
+}
 
-    saveObservable.pipe(takeUntil(this.destroy$)).subscribe({
+private updateFormWithExercice(exercice: Exercice): void {
+  console.log('[ExerciceForm] TRACE: 4. Updating form with exercice data.');
       next: (savedExercice) => {
         this.submitting = false;
         this.snackBar.open(`Exercice ${this.exerciceId ? 'mis à jour' : 'créé'}`, 'Fermer', { duration: 3000 });
