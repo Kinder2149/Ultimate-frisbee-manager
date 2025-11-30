@@ -181,33 +181,47 @@ export class EntrainementFormComponent implements OnInit {
       this.error = null;
 
       const formValue = this.entrainementForm.value;
-      const entrainementData: any = {
-        id: this.isEditMode ? this.entrainementId! : undefined,
-        titre: formValue.titre,
-        date: formValue.date ? new Date(formValue.date) : undefined,
-                // Nettoyage des données d'exercices pour ne garder que les champs pertinents
-        exercices: (formValue.exercices || []).map((exo: any) => ({
-          id: exo.id,
-          exerciceId: exo.exerciceId,
-          ordre: exo.ordre,
-          duree: exo.duree,
-          notes: exo.notes
-        })),
-        echauffementId: this.selectedEchauffement?.id || null,
-        situationMatchId: this.selectedSituationMatch?.id || null,
-        tagIds: this.selectedThemeTags.map(tag => tag.id).filter(id => id),
-        imageUrl: formValue.imageUrl || null
-      };
 
+      // Construction explicite du FormData (aligné avec Échauffement)
+      const fd = new FormData();
+      fd.append('titre', formValue.titre);
+      if (formValue.date) {
+        fd.append('date', new Date(formValue.date).toISOString());
+      }
+
+      // Exercices: sérialiser uniquement les champs pertinents
+      const exercicesPayload = (formValue.exercices || []).map((exo: any) => ({
+        id: exo.id,
+        exerciceId: exo.exerciceId,
+        ordre: exo.ordre,
+        duree: exo.duree,
+        notes: exo.notes
+      }));
+      fd.append('exercices', JSON.stringify(exercicesPayload));
+
+      // Relations
+      fd.append('echauffementId', this.selectedEchauffement?.id || '');
+      fd.append('situationMatchId', this.selectedSituationMatch?.id || '');
+
+      // Tags (ids)
+      const tagIds = this.selectedThemeTags.map(tag => tag.id).filter((id): id is string => !!id);
+      fd.append('tagIds', JSON.stringify(tagIds));
+
+      // Gestion suppression image: forcer imageUrl vide si supprimée
+      if (!this.selectedImageFile && this.isEditMode && !this.imagePreview) {
+        fd.append('imageUrl', '');
+      } else if (formValue.imageUrl) {
+        fd.append('imageUrl', formValue.imageUrl);
+      }
+
+      // Fichier image si présent
       if (this.selectedImageFile) {
-        entrainementData.image = this.selectedImageFile;
-      } else if (this.isEditMode && !this.imagePreview) {
-        entrainementData.imageUrl = '';
+        fd.append('image', this.selectedImageFile, this.selectedImageFile.name);
       }
 
       const saveOperation$ = this.isEditMode && this.entrainementId
-        ? this.entrainementService.updateEntrainement(this.entrainementId, entrainementData)
-        : this.entrainementService.createEntrainement(entrainementData);
+        ? this.entrainementService.updateEntrainement(this.entrainementId, fd)
+        : this.entrainementService.createEntrainement(fd);
 
       saveOperation$.subscribe({
         next: () => {
@@ -558,6 +572,8 @@ export class EntrainementFormComponent implements OnInit {
       reader.readAsDataURL(file);
     } else {
       this.imagePreview = null;
+      // Si l'utilisateur supprime l'image, refléter explicitement la suppression côté formulaire
+      this.entrainementForm.patchValue({ imageUrl: '' });
     }
   }
 

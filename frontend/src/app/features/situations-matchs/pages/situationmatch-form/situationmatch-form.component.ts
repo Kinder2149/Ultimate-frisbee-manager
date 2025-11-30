@@ -85,21 +85,24 @@ export class SituationMatchFormComponent implements OnInit {
   onFormSubmit(formData: SituationMatchFormData): void {
     this.loading = true;
     
-    if (this.isEditMode && this.situationMatchId) {
-      // Mode édition
-      const updateData: Partial<SituationMatch> = {
-        type: formData.type as 'Match' | 'Situation',
-        description: formData.description,
-        temps: formData.temps,
-        // N'envoyer imageUrl que si non vide
-        ...(formData.imageUrl ? { imageUrl: formData.imageUrl } : {}),
-        // Inclure le fichier pour déclencher le FormData
-        ...(formData.image ? { image: formData.image } : {}),
-        // Aligner avec le backend: utiliser tagIds
-        tagIds: formData.tagIds
-      } as any;
+    // Construire un FormData identique à Échauffement
+    const fd = new FormData();
+    fd.append('type', formData.type);
+    if (formData.description !== undefined && formData.description !== null) fd.append('description', formData.description);
+    if (formData.temps !== undefined && formData.temps !== null) fd.append('temps', formData.temps);
+    if (formData.tagIds && formData.tagIds.length) fd.append('tagIds', JSON.stringify(formData.tagIds));
+    // Gestion suppression image: imageUrl vide pour forcer le remplacement
+    if (formData.imageUrl === '') {
+      fd.append('imageUrl', '');
+    }
+    // Fichier image si présent
+    if (formData.image) {
+      fd.append('image', formData.image, formData.image.name);
+    }
 
-      this.situationMatchService.updateSituationMatch(this.situationMatchId, updateData).subscribe({
+    if (this.isEditMode && this.situationMatchId) {
+      // Mode édition avec FormData
+      this.situationMatchService.updateSituationMatch(this.situationMatchId, fd).subscribe({
         next: () => {
           this.snackBar.open('Situation/Match modifiée avec succès', 'Fermer', { duration: 3000 });
           this.router.navigate(['/situations-matchs']);
@@ -111,20 +114,8 @@ export class SituationMatchFormComponent implements OnInit {
         }
       });
     } else {
-      // Mode création
-      const createData: Partial<SituationMatch> = {
-        type: formData.type as 'Match' | 'Situation',
-        description: formData.description,
-        temps: formData.temps,
-        // N'envoyer imageUrl que si non vide
-        ...(formData.imageUrl ? { imageUrl: formData.imageUrl } : {}),
-        // Inclure le fichier pour déclencher le FormData
-        ...(formData.image ? { image: formData.image } : {}),
-        // Aligner avec le backend: utiliser tagIds
-        tagIds: formData.tagIds
-      } as any;
-
-      this.situationMatchService.createSituationMatch(createData).subscribe({
+      // Mode création avec FormData
+      this.situationMatchService.createSituationMatch(fd).subscribe({
         next: () => {
           this.snackBar.open('Situation/Match créée avec succès', 'Fermer', { duration: 3000 });
           this.router.navigate(['/situations-matchs']);

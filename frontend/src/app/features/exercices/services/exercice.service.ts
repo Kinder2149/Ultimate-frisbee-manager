@@ -29,16 +29,19 @@ export class ExerciceService {
   
   /**
    * Crée un nouvel exercice
+   * @param formData Les données du formulaire, y compris le fichier image si présent
    */
-  createExercice(exercice: Exercice): Observable<Exercice> {
-    return this.exerciceOptimizedService.ajouterExercice(exercice);
+  createExercice(formData: FormData): Observable<Exercice> {
+    return this.exerciceOptimizedService.ajouterExercice(formData);
   }
   
   /**
    * Met à jour un exercice existant
+   * @param id L'identifiant de l'exercice à mettre à jour
+   * @param formData Les données du formulaire, y compris le fichier image si présent
    */
-  updateExercice(id: string, exercice: Exercice): Observable<Exercice> {
-    return this.exerciceOptimizedService.updateExercice(id, exercice);
+  updateExercice(id: string, formData: FormData): Observable<Exercice> {
+    return this.exerciceOptimizedService.updateExercice(id, formData);
   }
   
   /**

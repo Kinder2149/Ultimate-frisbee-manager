@@ -97,17 +97,19 @@ export class EntityCrudService<T extends Entity> {
     );
   }
 
-  public create(endpoint: string, entity: T, options?: Partial<CrudOptions<T>>): Observable<T> {
+  public create(endpoint: string, entity: T | FormData, options?: Partial<CrudOptions<T>>): Observable<T> {
     const mergedOptions = this.mergeOptions({}, options);
     const httpOptions: HttpOptions = {
       ...mergedOptions.httpOptions,
       useCache: mergedOptions.useCache
     };
 
-    let dataToSend = mergedOptions.transformBeforeSend ? mergedOptions.transformBeforeSend(entity) : entity;
+    let dataToSend: any = entity instanceof FormData
+      ? entity
+      : (mergedOptions.transformBeforeSend ? mergedOptions.transformBeforeSend(entity as T) : entity);
 
-    if (mergedOptions.fileUploadField && isUploadFile((entity as any)[mergedOptions.fileUploadField])) {
-      dataToSend = this.createFormData(entity, mergedOptions.fileUploadField);
+    if (!(entity instanceof FormData) && mergedOptions.fileUploadField && isUploadFile((entity as any)[mergedOptions.fileUploadField])) {
+      dataToSend = this.createFormData(entity as Partial<T>, mergedOptions.fileUploadField);
     }
 
     return this.httpService.post<T>(endpoint, dataToSend, httpOptions).pipe(
@@ -125,17 +127,19 @@ export class EntityCrudService<T extends Entity> {
     );
   }
 
-  public update(endpoint: string, id: string | number, entity: Partial<T>, options?: Partial<CrudOptions<T>>): Observable<T> {
+  public update(endpoint: string, id: string | number, entity: Partial<T> | FormData, options?: Partial<CrudOptions<T>>): Observable<T> {
     const mergedOptions = this.mergeOptions({}, options);
     const httpOptions: HttpOptions = {
       ...mergedOptions.httpOptions,
       useCache: mergedOptions.useCache
     };
 
-    let dataToSend = mergedOptions.transformBeforeSend ? mergedOptions.transformBeforeSend(entity as T) : entity;
+    let dataToSend: any = entity instanceof FormData
+      ? entity
+      : (mergedOptions.transformBeforeSend ? mergedOptions.transformBeforeSend(entity as T) : entity);
 
-    if (mergedOptions.fileUploadField && isUploadFile((entity as any)[mergedOptions.fileUploadField])) {
-      dataToSend = this.createFormData(entity, mergedOptions.fileUploadField);
+    if (!(entity instanceof FormData) && mergedOptions.fileUploadField && isUploadFile((entity as any)[mergedOptions.fileUploadField])) {
+      dataToSend = this.createFormData(entity as Partial<T>, mergedOptions.fileUploadField);
     }
     
     const url = `${endpoint}/${id}`;

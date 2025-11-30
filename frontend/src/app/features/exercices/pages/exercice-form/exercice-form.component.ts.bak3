@@ -325,51 +325,44 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
     }
     this.submitting = true;
 
-    const formValue: any = { ...this.exerciceForm.value };
+    const formValue: any = this.exerciceForm.value;
 
-    // Gestion de suppression: si l'utilisateur a retiré l'image, forcer imageUrl à vide
-    if (!this.selectedImageFile && this.imagePreview === null) {
-      // Si l'utilisateur a supprimé l'image, on s'assure que imageUrl est vide
-      formValue.imageUrl = '';
-    }
-
-    // Créer un FormData pour l'upload de fichier
-    const formData = new FormData();
-
-    // Ajouter les champs du formulaire au FormData
-    Object.keys(formValue).forEach(key => {
-      const value = formValue[key];
-
-      // Gérer les tableaux et objets (sauf File)
-      if (Array.isArray(value) || (typeof value === 'object' && value !== null && !(value instanceof File))) {
-        formData.append(key, JSON.stringify(value));
-      } else if (value !== null && value !== undefined) {
-        formData.append(key, value);
-      }
-    });
-
-    // Ajouter les IDs des tags
+    // Agréger tous les tags sélectionnés
     const allSelectedTags: Tag[] = [
       formValue.objectifTag,
-      ...(formValue.travailSpecifiqueTags || []),
-      ...(formValue.niveauTags || []),
-      ...(formValue.tempsTags || []),
-      ...(formValue.formatTags || [])
-    ].filter((tag): tag is Tag => tag !== null && tag !== undefined);
+      ...formValue.travailSpecifiqueTags,
+      ...formValue.niveauTags,
+      ...formValue.tempsTags,
 
-    formData.append('tagIds', JSON.stringify(allSelectedTags.map(tag => tag.id).filter(id => id !== undefined)));
+// --- Helpers UI ---
+get pointsArray() {
+  return this.exerciceForm.get('points') as any;
+}
 
-    // Si une image est sélectionnée, l'ajouter AU FINAL au FormData (sans dupliquer dans le loop ci-dessus)
-    if (this.selectedImageFile) {
-      formData.append('image', this.selectedImageFile, this.selectedImageFile.name);
-    }
+get pointsControls() {
+  return (this.exerciceForm.get('points') as any)?.controls || [];
+}
 
-    // Gérer la création ou la mise à jour
-    const saveObservable = this.exerciceId
-      ? this.exerciceService.updateExercice(this.exerciceId, formData as any)
-      : this.exerciceService.createExercice(formData as any);
+addPoint() {
+  const fa = this.exerciceForm.get('points') as any;
+  fa.push(new FormControl(''));
+}
 
-    saveObservable.subscribe({
+removePoint(index: number) {
+  const fa = this.exerciceForm.get('points') as any;
+  fa.removeAt(index);
+}
+
+onDescriptionInput(html: string) {
+  this.exerciceForm.get('description')?.setValue(html);
+}
+
+get imagePreviewString(): string | null {
+  return typeof this.imagePreview === 'string' ? this.imagePreview : null;
+}
+
+private updateFormWithExercice(exercice: Exercice): void {
+  console.log('[ExerciceForm] TRACE: 4. Updating form with exercice data.');
       next: (savedExercice) => {
         this.submitting = false;
         this.snackBar.open(`Exercice ${this.exerciceId ? 'mis à jour' : 'créé'}`, 'Fermer', { duration: 3000 });
@@ -385,6 +378,19 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
         this.errorMessage = err.error?.message || "Une erreur est survenue lors de l'enregistrement.";
       }
     });
+  }
+
+  onCancel(): void {
+    if (this.exerciceForm.dirty) {
+      const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+        data: { title: 'Annuler les modifications', message: 'Voulez-vous vraiment annuler ?' } as ConfirmationDialogData
+      });
+      dialogRef.afterClosed().subscribe((result: boolean) => {
+        if (result) this.doCancel();
+      });
+    } else {
+      this.doCancel();
+    }
   }
 
   private doCancel(): void {
@@ -409,18 +415,14 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
     this.selectedImageFile = file;
     if (file) {
       const reader = new FileReader();
-      reader.onload = () => {
-        this.imagePreview = reader.result as string;
-      };
+      reader.onload = () => this.imagePreview = reader.result;
       reader.readAsDataURL(file);
     } else {
       this.imagePreview = null;
-      // Si l'utilisateur supprime l'image, on réinitialise l'URL
-      this.exerciceForm.patchValue({
-        imageUrl: ''
-      });
     }
   }
+  
+
 
   // Fonction de comparaison pour les mat-select avec des objets
   compareTags(t1: Tag, t2: Tag): boolean {

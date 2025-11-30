@@ -59,21 +59,51 @@ export class ExerciceOptimizedService {
   
   /**
    * Ajoute un nouvel exercice
-   * @param exercice L'exercice à ajouter
+   * @param formData Les données du formulaire, y compris le fichier image si présent
    * @returns L'exercice créé avec son ID
    */
-  ajouterExercice(exercice: Exercice): Observable<Exercice> {
-    return this.exerciceCrud.create(exercice);
+  ajouterExercice(formData: FormData): Observable<Exercice> {
+    // Si ce n'est pas un FormData, on le convertit
+    if (!(formData instanceof FormData)) {
+      const data = formData as unknown as Partial<Exercice>;
+      // Si une image est présente, on l'ajoute au FormData
+      if (data.image) {
+        const newFormData = new FormData();
+        Object.keys(data).forEach(key => {
+          const value = (data as any)[key];
+          if (value !== null && value !== undefined) {
+            newFormData.append(key, value instanceof File ? value : String(value));
+          }
+        });
+        formData = newFormData;
+      }
+    }
+    return this.exerciceCrud.create(formData);
   }
   
   /**
    * Met à jour un exercice existant
    * @param id Identifiant de l'exercice à modifier
-   * @param exercice Données mises à jour de l'exercice
+   * @param formData Les données du formulaire, y compris le fichier image si présent
    * @returns L'exercice modifié avec ses relations
    */
-  updateExercice(id: string, exercice: Exercice): Observable<Exercice> {
-    return this.exerciceCrud.update(id, exercice);
+  updateExercice(id: string, formData: FormData | Partial<Exercice>): Observable<Exercice> {
+    // Si ce n'est pas un FormData, on le convertit
+    if (!(formData instanceof FormData)) {
+      const data = formData as Partial<Exercice>;
+      // Si une image est présente, on crée un FormData
+      if (data.image) {
+        const newFormData = new FormData();
+        Object.keys(data).forEach(key => {
+          const value = (data as any)[key];
+          if (value !== null && value !== undefined) {
+            newFormData.append(key, value instanceof File ? value : String(value));
+          }
+        });
+        formData = newFormData;
+      }
+    }
+    return this.exerciceCrud.update(id, formData);
   }
   
   /**

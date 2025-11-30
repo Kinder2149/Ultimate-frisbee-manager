@@ -24,14 +24,14 @@ export class EntrainementService {
     return this.entityCrudService.getById(this.endpoint, id);
   }
 
-  createEntrainement(data: Partial<Entrainement>): Observable<Entrainement> {
-    return this.entityCrudService.create(this.endpoint, data as Entrainement, this.crudOptions).pipe(
+  createEntrainement(data: Partial<Entrainement> | FormData): Observable<Entrainement> {
+    return this.entityCrudService.create(this.endpoint, data as any, this.crudOptions).pipe(
       tap(() => this.entityCrudService.invalidateCache())
     );
   }
 
-  updateEntrainement(id: string, data: Partial<Entrainement>): Observable<Entrainement> {
-    return this.entityCrudService.update(this.endpoint, id, data, this.crudOptions).pipe(
+  updateEntrainement(id: string, data: Partial<Entrainement> | FormData): Observable<Entrainement> {
+    return this.entityCrudService.update(this.endpoint, id, data as any, this.crudOptions).pipe(
       tap(() => this.entityCrudService.invalidateCache())
     );
   }

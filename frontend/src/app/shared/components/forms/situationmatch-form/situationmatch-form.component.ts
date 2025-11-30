@@ -178,6 +178,8 @@ export class SituationMatchFormComponent implements OnInit, OnChanges {
       reader.readAsDataURL(file);
     } else {
       this.imagePreview = null;
+      // Si l'utilisateur supprime l'image, refléter explicitement la suppression côté formulaire
+      this.form.patchValue({ imageUrl: '' });
     }
   }
 

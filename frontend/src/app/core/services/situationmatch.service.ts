@@ -24,14 +24,14 @@ export class SituationMatchService {
     return this.entityCrudService.getById(this.endpoint, id);
   }
 
-  createSituationMatch(data: Partial<SituationMatch>): Observable<SituationMatch> {
-    return this.entityCrudService.create(this.endpoint, data as SituationMatch, this.crudOptions).pipe(
+  createSituationMatch(data: Partial<SituationMatch> | FormData): Observable<SituationMatch> {
+    return this.entityCrudService.create(this.endpoint, data as any, this.crudOptions).pipe(
       tap(() => this.entityCrudService.invalidateCache())
     );
   }
 
-  updateSituationMatch(id: string, data: Partial<SituationMatch>): Observable<SituationMatch> {
-    return this.entityCrudService.update(this.endpoint, id, data, this.crudOptions).pipe(
+  updateSituationMatch(id: string, data: Partial<SituationMatch> | FormData): Observable<SituationMatch> {
+    return this.entityCrudService.update(this.endpoint, id, data as any, this.crudOptions).pipe(
       tap(() => this.entityCrudService.invalidateCache())
     );
   }
