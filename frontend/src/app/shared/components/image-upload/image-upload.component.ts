@@ -15,6 +15,7 @@ import { ApiUrlService } from '../../../core/services/api-url.service';
 })
 export class ImageUploadComponent {
   @Input() currentImageUrl: string | null | undefined = null;
+  @Input() context: string | undefined;
   @Output() imageSelected = new EventEmitter<File | null>();
 
   previewUrl: string | ArrayBuffer | null = null;
@@ -23,7 +24,7 @@ export class ImageUploadComponent {
 
   ngOnChanges(): void {
     if (this.currentImageUrl && !this.previewUrl) {
-      this.previewUrl = this.apiUrlService.getMediaUrl(this.currentImageUrl);
+      this.previewUrl = this.apiUrlService.getMediaUrl(this.currentImageUrl, this.context);
     } else if (!this.currentImageUrl) {
       this.previewUrl = null;
     }

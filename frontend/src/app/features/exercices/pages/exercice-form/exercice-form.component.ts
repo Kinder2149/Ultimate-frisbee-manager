@@ -313,7 +313,7 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
     } catch {}
 
     if (exercice.imageUrl) {
-      this.imagePreview = this.apiUrlService.getMediaUrl(exercice.imageUrl);
+      this.imagePreview = this.apiUrlService.getMediaUrl(exercice.imageUrl, 'exercices');
     }
   }
 
@@ -402,7 +402,7 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
   }
 
   mediaUrl(path?: string | null): string | null {
-    return this.apiUrlService.getMediaUrl(path ?? undefined);
+    return this.apiUrlService.getMediaUrl(path ?? undefined, 'exercices');
   }
 
   onImageSelected(file: File | null): void {
