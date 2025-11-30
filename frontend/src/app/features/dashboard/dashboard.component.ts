@@ -1,5 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { DashboardService, DashboardStats } from '../../core/services/dashboard.service';
+import { AuthService } from '../../core/services/auth.service';
+import { filter, switchMap, take, retry, catchError, tap } from 'rxjs/operators';
+import { of, timer } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
@@ -335,7 +338,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return `${this.tagsCount} tags (${categories.length} catégories)`;
   }
 
-  constructor(private dashboardService: DashboardService) {
+  constructor(private dashboardService: DashboardService, private authService: AuthService) {
     console.log('🎯 Dashboard créé avec succès');
     
     // Fermer le menu d'ajout si on clique ailleurs
@@ -348,29 +351,36 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.loadDashboardStats();
+    // Attendre que le profil utilisateur soit synchronisé pour éviter de solliciter le pool DB au réveil
+    this.authService.currentUser$.pipe(
+      filter((u): u is any => !!u),
+      take(1),
+      switchMap(() => this.loadDashboardStats$())
+    ).subscribe();
   }
 
-  private loadDashboardStats() {
+  private loadDashboardStats$() {
     this.isLoading = true;
-    this.dashboardService.getStats().subscribe({
-      next: (stats: DashboardStats) => {
+    return this.dashboardService.getStats().pipe(
+      // Backoff léger en cas d'erreur 500 (pool en réveil)
+      retry({ count: 1, delay: () => timer(700) }),
+      tap((stats: DashboardStats) => {
         this.exercicesCount = stats.exercicesCount;
         this.entrainementsCount = stats.entrainementsCount;
-                this.echauffementsCount = stats.echauffementsCount;
+        this.echauffementsCount = stats.echauffementsCount;
         this.situationsCount = stats.situationsCount;
         this.tagsCount = stats.tagsCount;
         this.tagsDetails = stats.tagsDetails;
         this.recentActivity = stats.recentActivity;
         this.isLoading = false;
         console.log('📊 Statistiques dashboard chargées:', stats);
-      },
-      error: (error) => {
+      }),
+      catchError((error) => {
         console.error('❌ Erreur lors du chargement des statistiques:', error);
         this.isLoading = false;
-        // Garder les valeurs par défaut (0) en cas d'erreur
-      }
-    });
+        return of(null);
+      })
+    );
   }
 
   ngOnDestroy() {

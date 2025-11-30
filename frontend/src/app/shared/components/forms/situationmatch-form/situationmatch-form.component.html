@@ -55,6 +55,7 @@
         <h3>Image</h3>
         <app-image-upload 
           [currentImageUrl]="form.get('imageUrl')?.value || imagePreview"
+          [context]="'situations-matchs'"
           (imageSelected)="onImageSelected($event)">
         </app-image-upload>
       </div>
