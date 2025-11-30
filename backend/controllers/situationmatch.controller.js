@@ -84,7 +84,11 @@ exports.updateSituationMatch = async (req, res, next) => {
       type,
       description,
       temps,
-      imageUrl: req.file ? req.file.cloudinaryUrl : (req.body.imageUrl !== undefined ? req.body.imageUrl : undefined),
+      imageUrl: req.file
+        ? req.file.cloudinaryUrl
+        : (req.body.imageUrl !== undefined
+            ? (req.body.imageUrl === '' ? null : req.body.imageUrl)
+            : undefined),
       tags: { set: (tagIds || []).map(id => ({ id })) }
     };
 

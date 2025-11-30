@@ -25,13 +25,19 @@ export class ApiUrlService {
    * @returns URL relative ou absolue en fonction de l'environnement.
    */
   getMediaUrl(fileName?: string | null, context?: string): string | null {
-    if (!fileName || !context) {
+    if (!fileName) {
       return null;
     }
 
-    // Si le chemin est déjà une URL complète (http, https), on le retourne directement.
+    // Si le chemin est déjà une URL complète (http, https), on le retourne directement,
+    // même si aucun contexte n'est fourni.
     if (/^https?:\/\//i.test(fileName)) {
       return fileName;
+    }
+
+    // Pour les chemins relatifs, un contexte est requis pour construire le chemin final.
+    if (!context) {
+      return null;
     }
 
     // Pour les chemins relatifs, on continue le traitement

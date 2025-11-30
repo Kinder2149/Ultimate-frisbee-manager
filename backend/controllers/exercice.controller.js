@@ -260,7 +260,7 @@ exports.updateExercice = async (req, res, next) => {
     if (req.file) {
       updateData.imageUrl = req.file.cloudinaryUrl;
     } else if (req.body.imageUrl !== undefined) {
-      updateData.imageUrl = req.body.imageUrl;
+      updateData.imageUrl = req.body.imageUrl === '' ? null : req.body.imageUrl;
     }
 
     // Gestion spécifique et sécurisée pour les tags

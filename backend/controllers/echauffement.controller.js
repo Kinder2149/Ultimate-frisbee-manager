@@ -99,7 +99,11 @@ exports.updateEchauffement = async (req, res, next) => {
         data: {
           nom,
           description,
-          imageUrl: req.file ? req.file.cloudinaryUrl : (req.body.imageUrl !== undefined ? req.body.imageUrl : undefined),
+          imageUrl: req.file
+            ? req.file.cloudinaryUrl
+            : (req.body.imageUrl !== undefined
+                ? (req.body.imageUrl === '' ? null : req.body.imageUrl)
+                : undefined),
           blocs: {
             create: (blocs || []).map((bloc, index) => ({ ...bloc, ordre: bloc.ordre || index + 1 }))
           }

@@ -123,7 +123,12 @@ exports.updateEntrainement = async (req, res, next) => {
         data: {
           titre,
           date: date ? new Date(date) : undefined,
-          imageUrl: req.file ? req.file.cloudinaryUrl : (req.body.imageUrl !== undefined ? req.body.imageUrl : undefined),
+          imageUrl: req.file
+            ? req.file.cloudinaryUrl
+            : (req.body.imageUrl !== undefined
+                ? (req.body.imageUrl === '' ? null : req.body.imageUrl)
+                : undefined),
+
           echauffementId: echauffementId,
           situationMatchId: situationMatchId,
           tags: { set: (tagIds || []).map(tagId => ({ id: tagId })) },
