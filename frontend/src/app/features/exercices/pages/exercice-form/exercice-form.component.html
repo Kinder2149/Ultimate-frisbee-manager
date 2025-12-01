@@ -113,7 +113,7 @@
         </div>
       </div>
       <div class="upload-row">
-        <app-image-upload [currentImageUrl]="f['imageUrl'].value" [context]="'exercices'" (imageSelected)="onImageSelected($event)"></app-image-upload>
+        <app-image-upload [currentImageUrl]="imagePreviewString" [context]="'exercices'" (imageSelected)="onImageSelected($event)"></app-image-upload>
         <div class="form-group">
           <label for="schemaUrl" class="label">URL du schéma</label>
           <input id="schemaUrl" type="text" class="input" formControlName="schemaUrl" placeholder="https://…">
