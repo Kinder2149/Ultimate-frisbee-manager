@@ -270,10 +270,13 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
       return (exercice as any).schemaUrl || '';
     })();
 
+    // Déterminer l'URL d'image à utiliser pour le formulaire et l'aperçu
+    const effectiveImageUrl = exercice.imageUrl || (exercice as any).schemaUrl || firstSchemaUrl || '';
+
     this.exerciceForm.patchValue({
       nom: exercice.nom || '',
       description: exercice.description || '',
-      imageUrl: exercice.imageUrl || '',
+      imageUrl: effectiveImageUrl,
       schemaUrl: firstSchemaUrl || '',
       materiel: (exercice as any).materiel || '',
       notes: (exercice as any).notes || '',
@@ -312,8 +315,8 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
       }
     } catch {}
 
-    if (exercice.imageUrl) {
-      this.imagePreview = this.apiUrlService.getMediaUrl(exercice.imageUrl, 'exercices');
+    if (effectiveImageUrl) {
+      this.imagePreview = this.apiUrlService.getMediaUrl(effectiveImageUrl, 'exercices');
     }
   }
 
