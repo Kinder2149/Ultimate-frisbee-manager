@@ -121,13 +121,20 @@ const transformFormData = (req, res, next) => {
   });
 
   // Normalisation des URLs (chaîne vide -> undefined)
-  const urlFields = ['imageUrl'];
+  // IMPORTANT: imageUrl doit conserver '' pour signifier une suppression côté contrôleur.
+  // On n'applique donc pas la normalisation générique ('' -> undefined) pour ce champ.
+  const urlFields = [];
   urlFields.forEach((f) => {
     if (typeof req.body[f] === 'string') {
       const trimmed = req.body[f].trim();
       req.body[f] = trimmed === '' ? undefined : trimmed;
     }
   });
+
+  // Traitement spécifique pour imageUrl: on trim uniquement, sans convertir '' en undefined
+  if (typeof req.body.imageUrl === 'string') {
+    req.body.imageUrl = req.body.imageUrl.trim();
+  }
 
   // --- Étape de Sécurisation Finale ---
   // S'assurer que tous les champs qui doivent être des tableaux le sont.

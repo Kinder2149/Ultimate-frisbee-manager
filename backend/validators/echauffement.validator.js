@@ -20,12 +20,14 @@ const createEchauffementSchema = z.object({
   }).min(3, 'Le nom doit contenir au moins 3 caractères.'),
 
   description: z.string().optional().nullable(),
-  imageUrl: z.string().url({ message: "L'URL de l'image est invalide." }).optional().nullable(),
+  // Autoriser '' pour signifier la suppression d'image en édition
+  imageUrl: z.union([z.string().url({ message: "L'URL de l'image est invalide." }), z.string().length(0)]).optional().nullable(),
 
   blocs: z.array(blocEchauffementSchema).optional().default([]),
 });
 
 // Schéma pour la mise à jour (tous les champs sont optionnels, mais si `blocs` est fourni, il doit être valide)
+// Même règle en mise à jour: accepter ''
 const updateEchauffementSchema = createEchauffementSchema.partial();
 
 module.exports = {

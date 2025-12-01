@@ -9,12 +9,14 @@ const createSituationMatchSchema = z.object({
 
   description: z.string().optional().nullable(),
   temps: z.string().optional().nullable(),
-  imageUrl: z.string().url({ message: "L'URL de l'image est invalide." }).optional().nullable(),
+  // Autoriser explicitement '' pour signifier suppression/absence d'image
+  imageUrl: z.union([z.string().url({ message: "L'URL de l'image est invalide." }), z.string().length(0)]).optional().nullable(),
 
   tagIds: z.array(z.string().uuid({ message: "L'un des IDs de tag est invalide." })).optional().default([]),
 });
 
 // Schéma pour la mise à jour (tous les champs sont optionnels)
+// Même règle en mise à jour
 const updateSituationMatchSchema = createSituationMatchSchema.partial();
 
 module.exports = {

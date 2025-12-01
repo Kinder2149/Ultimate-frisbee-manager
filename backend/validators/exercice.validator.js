@@ -12,7 +12,8 @@ const createExerciceSchema = z.object({
     invalid_type_error: 'La description doit être une chaîne de caractères.',
   }),
 
-  imageUrl: z.string().url({ message: "L'URL de l'image est invalide." }).optional().nullable(),
+  // Autoriser explicitement la chaîne vide pour signifier l'absence/suppression d'image
+  imageUrl: z.union([z.string().url({ message: "L'URL de l'image est invalide." }), z.string().length(0)]).optional().nullable(),
   materiel: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
   critereReussite: z.string().optional().nullable(),
@@ -35,7 +36,8 @@ const createExerciceSchema = z.object({
 const updateExerciceSchema = z.object({
   nom: z.string().min(3).optional(),
   description: z.string().optional(),
-  imageUrl: z.string().url().optional().nullable(),
+  // Même règle en mise à jour: accepter '' pour déclencher la suppression
+  imageUrl: z.union([z.string().url(), z.string().length(0)]).optional().nullable(),
   materiel: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
   critereReussite: z.string().optional().nullable(),
