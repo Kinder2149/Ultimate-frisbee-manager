@@ -11,10 +11,9 @@ export interface Exercice {
   nom: string;
   /** Description détaillée de l'exercice */
   description: string;
-  /** URL vers une image de l'exercice */
+  /** URL vers l'image illustrant l'exercice */
   imageUrl?: string;
-  /** URL vers le schéma ou l'image illustrant l'exercice */
-  schemaUrl?: string;
+
   /** Matériel requis pour l'exercice */
   materiel?: string;
   /** Notes générales associées à l'exercice */

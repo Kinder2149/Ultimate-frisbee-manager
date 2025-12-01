@@ -23,32 +23,9 @@ export class ExerciceService extends EntityCrudService<Exercice> {
   }
 
   private normalizeExercice(ex: Exercice): Exercice {
-    const anyEx: any = ex;
-    let imageUrl = ex.imageUrl;
-
-    if (!imageUrl) {
-      const raw = anyEx.schemaUrls;
-      if (Array.isArray(raw) && raw.length) {
-        imageUrl = raw[0];
-      } else if (typeof raw === 'string') {
-        try {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed) && parsed.length) {
-            imageUrl = parsed[0];
-          } else if (raw) {
-            imageUrl = raw;
-          }
-        } catch {
-          if (raw) {
-            imageUrl = raw;
-          }
-        }
-      } else if (anyEx.schemaUrl) {
-        imageUrl = anyEx.schemaUrl;
-      }
-    }
-
-    return { ...ex, imageUrl };
+    // À ce stade, le backend ne fournit plus que imageUrl comme champ d'image.
+    // On se contente donc de le relayer tel quel.
+    return { ...ex, imageUrl: ex.imageUrl };
   }
 
   getExercices(): Observable<Exercice[]> {

@@ -37,19 +37,6 @@
       </div>
     </section>
 
-    <!-- 🖼️ Section 2 : Galerie multi-schémas -->
-    <section class="section">
-      <h3 class="section-title hl-sand">Schémas de l'exercice</h3>
-      <div class="schema-gallery" *ngIf="schemaUrlsList.length > 0; else noSchema">
-        <div class="schema-item" *ngFor="let url of schemaUrlsList" (click)="openImageViewer(url)">
-          <img [src]="mediaUrl(url)" alt="Schéma de l'exercice">
-        </div>
-      </div>
-      <ng-template #noSchema>
-        <p class="view-text muted">Aucun schéma n'a encore été ajouté.</p>
-      </ng-template>
-    </section>
-
     <!-- 📖 Section 2 : Description -->
     <section class="section">
       <h3 class="section-title hl-purple">Description</h3>

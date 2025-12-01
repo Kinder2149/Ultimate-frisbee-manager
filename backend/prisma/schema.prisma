@@ -12,9 +12,7 @@ model Exercice {
   nom             String
   description     String
   imageUrl        String?
-  schemaUrl       String?
   points          String?
-  schemaUrls      String?
   materiel        String?
   notes           String?
   critereReussite String?

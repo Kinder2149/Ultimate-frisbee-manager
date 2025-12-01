@@ -16,10 +16,6 @@ const createExerciceSchema = z.object({
   materiel: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
   critereReussite: z.string().optional().nullable(),
-
-  // Multi-schémas: tableau de chaînes (URLs ou identifiants), stocké en JSON
-  schemaUrls: z.array(z.string()).optional().default([]),
-
   // Points: tableau de chaînes, stocké en JSON
   points: z.array(z.string()).optional().default([]),
 
@@ -43,8 +39,6 @@ const updateExerciceSchema = z.object({
   materiel: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
   critereReussite: z.string().optional().nullable(),
-
-  schemaUrls: z.array(z.string()).optional().default([]),
   points: z.array(z.string()).optional().default([]),
 
   variablesPlus: z.array(z.string()).optional().default([]),

@@ -17,7 +17,6 @@ exports.getAllExercices = async (req, res, next) => {
       variablesPlus: JSON.parse(ex.variablesPlus || '[]'),
       variablesMinus: JSON.parse(ex.variablesMinus || '[]'),
       points: JSON.parse(ex.points || '[]'),
-      schemaUrls: JSON.parse(ex.schemaUrls || '[]'),
     }));
 
     res.json(exercices);
@@ -46,7 +45,6 @@ exports.getExerciceById = async (req, res, next) => {
     exercice.variablesPlus = JSON.parse(exercice.variablesPlus || '[]');
     exercice.variablesMinus = JSON.parse(exercice.variablesMinus || '[]');
     exercice.points = JSON.parse(exercice.points || '[]');
-    exercice.schemaUrls = JSON.parse(exercice.schemaUrls || '[]');
 
     res.json(exercice);
   } catch (error) {
@@ -61,7 +59,7 @@ exports.getExerciceById = async (req, res, next) => {
 exports.createExercice = async (req, res, next) => {
   try {
     // On ne récupère plus variablesText qui est obsolète
-    const { nom, description, variablesPlus, variablesMinus, points, schemaUrls, tags, tagIds, materiel, notes, critereReussite } = req.body;
+    const { nom, description, variablesPlus, variablesMinus, points, tags, tagIds, materiel, notes, critereReussite } = req.body;
 
     // LOG: Ajout d'un log pour vérifier les données entrantes
     console.log('--- Contenu de req.body pour la création ---', {
@@ -70,7 +68,7 @@ exports.createExercice = async (req, res, next) => {
       variablesPlus: Array.isArray(variablesPlus) ? `[${variablesPlus.length} items]` : 'non-array',
       variablesMinus: Array.isArray(variablesMinus) ? `[${variablesMinus.length} items]` : 'non-array',
       points: Array.isArray(points) ? `[${points.length} items]` : 'non-array',
-      schemaUrls: Array.isArray(schemaUrls) ? `[${schemaUrls.length} items]` : 'non-array',
+
       tagIds: Array.isArray(tagIds) ? `[${tagIds.length} IDs]` : 'absent',
       materiel: materiel ? 'présent' : 'absent',
       notes: notes ? 'présent' : 'absent',
@@ -127,7 +125,6 @@ exports.createExercice = async (req, res, next) => {
       variablesPlus: JSON.stringify(normalizeStringArray(Array.isArray(variablesPlus) ? variablesPlus : [])),
       variablesMinus: JSON.stringify(normalizeStringArray(Array.isArray(variablesMinus) ? variablesMinus : [])),
       points: JSON.stringify(normalizeStringArray(Array.isArray(points) ? points : [])),
-      schemaUrls: JSON.stringify(normalizeStringArray(Array.isArray(schemaUrls) ? schemaUrls : [])),
       tags: {}
     };
 
@@ -173,7 +170,6 @@ exports.createExercice = async (req, res, next) => {
     newExercice.variablesPlus = JSON.parse(newExercice.variablesPlus || '[]');
     newExercice.variablesMinus = JSON.parse(newExercice.variablesMinus || '[]');
     newExercice.points = JSON.parse(newExercice.points || '[]');
-    newExercice.schemaUrls = JSON.parse(newExercice.schemaUrls || '[]');
 
     // LOG: Confirmation de la création
     console.log(`--- Exercice créé avec succès (ID: ${newExercice.id}) ---`);
@@ -196,7 +192,7 @@ exports.updateExercice = async (req, res, next) => {
   // Envelopper toute la fonction dans un try/catch pour une meilleure gestion d'erreur
   try {
     const { id } = req.params;
-    const { nom, description, variablesPlus, variablesMinus, points, schemaUrls, tagIds, materiel, notes, critereReussite } = req.body;
+    const { nom, description, variablesPlus, variablesMinus, points, tagIds, materiel, notes, critereReussite } = req.body;
 
     // 1. Vérifier que l'exercice existe
     const existingExercice = await prisma.exercice.findUnique({ where: { id } });
@@ -254,7 +250,6 @@ exports.updateExercice = async (req, res, next) => {
     if (variablesPlus !== undefined) updateData.variablesPlus = JSON.stringify(normalizeStringArray(variablesPlus));
     if (variablesMinus !== undefined) updateData.variablesMinus = JSON.stringify(normalizeStringArray(variablesMinus));
     if (points !== undefined) updateData.points = JSON.stringify(normalizeStringArray(points));
-    if (schemaUrls !== undefined) updateData.schemaUrls = JSON.stringify(normalizeStringArray(schemaUrls));
 
     // Gestion de l'image
     if (req.file) {
@@ -298,7 +293,6 @@ exports.updateExercice = async (req, res, next) => {
     exerciceUpdated.variablesPlus = JSON.parse(exerciceUpdated.variablesPlus || '[]');
     exerciceUpdated.variablesMinus = JSON.parse(exerciceUpdated.variablesMinus || '[]');
     exerciceUpdated.points = JSON.parse(exerciceUpdated.points || '[]');
-    exerciceUpdated.schemaUrls = JSON.parse(exerciceUpdated.schemaUrls || '[]');
 
     console.log(`--- Exercice mis à jour avec succès (ID: ${exerciceUpdated.id}) ---`);
 
@@ -341,7 +335,7 @@ exports.duplicateExercice = async (req, res, next) => {
         variablesPlus: originalExercice.variablesPlus,
         variablesMinus: originalExercice.variablesMinus,
         points: originalExercice.points,
-        schemaUrls: originalExercice.schemaUrls,
+
         tags: {
           connect: originalExercice.tags.map(tag => ({ id: tag.id }))
         }

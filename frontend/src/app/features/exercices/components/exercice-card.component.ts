@@ -25,7 +25,6 @@ export interface ExerciceInput {
   critereReussite?: string;
   variablesText?: string;
   imageUrl?: string;
-  schemaUrl?: string;
   tagIds?: string[];
   tags?: any[];
 }
