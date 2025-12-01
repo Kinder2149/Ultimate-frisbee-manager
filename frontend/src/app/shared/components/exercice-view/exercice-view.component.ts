@@ -67,6 +67,13 @@ export class ExerciceViewComponent implements OnInit {
       this.exercice = (this.data?.customData?.exercice || this.data?.exercice || {}) as ExerciceViewData['exercice'];
     }
 
+    // Log de débogage pour comprendre les données reçues
+    console.log('[ExerciceView] exercice reçu:', {
+      imageUrl: (this.exercice as any).imageUrl,
+      schemaUrl: (this.exercice as any).schemaUrl,
+      schemaUrls: (this.exercice as any).schemaUrls,
+    });
+
     if (this.exercice.tags && this.exercice.tags.length) {
       this.splitTagsByCategory(this.exercice.tags);
     } else if (this.exercice.tagIds && this.exercice.tagIds.length) {
@@ -78,6 +85,8 @@ export class ExerciceViewComponent implements OnInit {
         error: () => {}
       });
     }
+
+    console.log('[ExerciceView] mainImageUrl:', this.mainImageUrl);
   }
 
   mediaUrl(path?: string | null): string | null {
@@ -85,11 +94,11 @@ export class ExerciceViewComponent implements OnInit {
   }
 
   private splitTagsByCategory(tags: Tag[]) {
-        this.objectifTag = tags.find(t => t.category === 'objectif') || null;
-        this.travailSpecifiqueTags = tags.filter(t => t.category === 'travail_specifique');
-        this.niveauTags = tags.filter(t => t.category === 'niveau');
-        this.tempsTags = tags.filter(t => t.category === 'temps');
-        this.formatTags = tags.filter(t => t.category === 'format');
+    this.objectifTag = tags.find(t => t.category === 'objectif') || null;
+    this.travailSpecifiqueTags = tags.filter(t => t.category === 'travail_specifique');
+    this.niveauTags = tags.filter(t => t.category === 'niveau');
+    this.tempsTags = tags.filter(t => t.category === 'temps');
+    this.formatTags = tags.filter(t => t.category === 'format');
   }
 
   get variables(): any | null {
