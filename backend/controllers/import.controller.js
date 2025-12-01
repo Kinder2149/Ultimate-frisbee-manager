@@ -76,12 +76,36 @@ function parseMarkdownToExercises(mdItems) {
     const description = concatSections(content, [
       'Description', 'Phase 1', 'Phase 2', 'Phase 3', 'Critères de réussite', 'Matériel', 'Durée', 'Notes'
     ]);
+    // On prépare déjà une imageUrl effective à partir des anciens champs éventuels
+    const mdSchemaUrls = fm.schemaUrls;
+    let effectiveImageUrl = fm.imageUrl || null;
+    if (!effectiveImageUrl && Array.isArray(mdSchemaUrls) && mdSchemaUrls.length) {
+      effectiveImageUrl = mdSchemaUrls[0] || null;
+    } else if (!effectiveImageUrl && typeof mdSchemaUrls === 'string') {
+      const trimmed = mdSchemaUrls.trim();
+      if (trimmed) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          if (Array.isArray(parsed) && parsed.length) {
+            effectiveImageUrl = String(parsed[0] || '').trim() || null;
+          } else {
+            effectiveImageUrl = trimmed || null;
+          }
+        } catch (_) {
+          effectiveImageUrl = trimmed || null;
+        }
+      }
+    }
+    if (!effectiveImageUrl && fm.schemaUrl) {
+      const trimmed = String(fm.schemaUrl).trim();
+      effectiveImageUrl = trimmed || null;
+    }
+
     exercices.push({
       externalId: fm.externalId || null,
       nom: fm.title || item.name || 'Sans titre',
       description: normalizeWhitespace(description),
-      imageUrl: fm.imageUrl || null,
-      schemaUrl: fm.schemaUrl || null,
+      imageUrl: effectiveImageUrl,
       variablesText: '',
       variablesPlus: variablesPlusList.join('; '),
       variablesMinus: variablesMinusList.join('; '),
@@ -131,18 +155,56 @@ async function prepareExerciceData(exo) {
     tagIds.push(tag.id);
   }
 
+  // Image principale effective calculée à partir des anciens champs éventuels
+  const effectiveImageUrl = computeEffectiveImageUrl(exo);
+
   return {
     data: {
       nom,
       description,
-      imageUrl: exo.imageUrl || null,
-      schemaUrl: exo.schemaUrl || null,
+      imageUrl: effectiveImageUrl,
       variablesText: exo.variablesText || '',
       variablesPlus: exo.variablesPlus || '',
       variablesMinus: exo.variablesMinus || ''
     },
     tagIds
   };
+}
+
+// Helper pour unifier la logique de détermination de l image principale
+function computeEffectiveImageUrl(exo) {
+  if (exo && exo.imageUrl) {
+    const trimmed = String(exo.imageUrl).trim();
+    if (trimmed) return trimmed;
+  }
+
+  const rawSchemaUrls = exo && exo.schemaUrls;
+  if (Array.isArray(rawSchemaUrls) && rawSchemaUrls.length) {
+    const first = String(rawSchemaUrls[0] || '').trim();
+    if (first) return first;
+  } else if (typeof rawSchemaUrls === 'string') {
+    const trimmed = rawSchemaUrls.trim();
+    if (trimmed) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed) && parsed.length) {
+          const first = String(parsed[0] || '').trim();
+          if (first) return first;
+        } else {
+          return trimmed;
+        }
+      } catch (_) {
+        return trimmed;
+      }
+    }
+  }
+
+  if (exo && exo.schemaUrl) {
+    const trimmed = String(exo.schemaUrl).trim();
+    if (trimmed) return trimmed;
+  }
+
+  return null;
 }
 
 // Nouveau: import direct depuis des fichiers Markdown envoyés par le frontend
@@ -540,11 +602,11 @@ exports.importExercices = async (req, res) => {
                 tagIdsSimu.push(existingTag.id);
               }
             }
+            const effectiveImageUrl = computeEffectiveImageUrl(exo);
             return { data: {
               nom: (exo.nom || '').trim(),
               description: (exo.description || '').trim(),
-              imageUrl: exo.imageUrl || null,
-              schemaUrl: exo.schemaUrl || null,
+              imageUrl: effectiveImageUrl,
               variablesPlus: exo.variablesPlus || '',
               variablesMinus: exo.variablesMinus || ''
             }, tagIds: tagIdsSimu };
@@ -591,13 +653,14 @@ exports.importExercices = async (req, res) => {
 
           const existing = await tx.exercice.findFirst({ where: { nom }, select: { id: true } });
 
+          const effectiveImageUrl = computeEffectiveImageUrl(exo);
+
           if (!existing) {
             const created = await tx.exercice.create({
               data: {
                 nom,
                 description,
-                imageUrl: exo.imageUrl || null,
-                schemaUrl: exo.schemaUrl || null,
+                imageUrl: effectiveImageUrl,
                 variablesPlus: exo.variablesPlus || '',
                 variablesMinus: exo.variablesMinus || '',
                 tags: { connect: tagIds.map(id => ({ id })) }
@@ -611,8 +674,7 @@ exports.importExercices = async (req, res) => {
               data: {
                 nom,
                 description,
-                imageUrl: exo.imageUrl || null,
-                schemaUrl: exo.schemaUrl || null,
+                imageUrl: effectiveImageUrl,
                 variablesPlus: exo.variablesPlus || '',
                 variablesMinus: exo.variablesMinus || '',
                 tags: { set: [], connect: tagIds.map(id => ({ id })) }
