@@ -35,6 +35,7 @@ import { ConfirmationDialogComponent, ConfirmationDialogData } from '../../../..
 import { ExerciceVariablesComponent } from '../../../../shared/components/exercice-variables/exercice-variables.component';
 import { RichTextEditorComponent } from '../../../../shared/components/rich-text-editor/rich-text-editor.component';
 import { ImageUploadComponent } from '../../../../shared/components/image-upload/image-upload.component';
+import { ExerciceViewComponent } from '../../../../shared/components/exercice-view/exercice-view.component';
 
 @Component({
   selector: 'app-exercice-form',
@@ -43,7 +44,7 @@ import { ImageUploadComponent } from '../../../../shared/components/image-upload
     CommonModule, ReactiveFormsModule, RouterModule,
     MatButtonModule, MatCardModule, MatChipsModule, MatDialogModule, MatFormFieldModule,
     MatIconModule, MatInputModule, MatProgressSpinnerModule, MatSelectModule, MatTooltipModule,
-    ExerciceVariablesComponent, ImageUploadComponent, RichTextEditorComponent
+    ExerciceVariablesComponent, ImageUploadComponent, RichTextEditorComponent, ExerciceViewComponent
   ],
   templateUrl: './exercice-form.component.html',
   styleUrls: ['./exercice-form.component.scss'],
@@ -157,8 +158,12 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
       next: (exercice) => {
         console.log('[ExerciceForm] TRACE: 3. Exercice data received.', exercice);
         if (exercice) {
+          // Cas classique: exercice chargé depuis l'API par ID
           this.exercice = exercice;
           this.updateFormWithExercice(exercice);
+        } else if (this.exercice && this.mode !== 'create') {
+          // Cas dialog: on a déjà un exercice passé en customData, mais aucun chargement API
+          this.updateFormWithExercice(this.exercice as Exercice);
         }
         this.loading = false;
       },

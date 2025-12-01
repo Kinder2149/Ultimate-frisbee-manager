@@ -185,7 +185,9 @@
     </div>
   </form>
 
-  <div *ngIf="readonlyMode" class="info muted">Le mode lecture seule n'est pas concerné par la refonte UI.</div>
+  <div *ngIf="readonlyMode" class="section card">
+    <app-exercice-view [exercice]="exercice as any"></app-exercice-view>
+  </div>
 
   <!-- Messages -->
   <div *ngIf="successMessage" class="alert success">{{ successMessage }}</div>
