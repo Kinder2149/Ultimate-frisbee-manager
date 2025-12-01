@@ -208,7 +208,6 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
       nom: ['', Validators.required],
       description: ['', Validators.required],
       imageUrl: [''],
-      schemaUrl: [''],
       materiel: [''],
       notes: [''],
       critereReussite: [''],
@@ -265,24 +264,14 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
     const tempsTags = tagsToSelect.filter(t => t.category === 'temps');
     const formatTags = tagsToSelect.filter(t => t.category === 'format');
 
-    // Déterminer un éventuel premier schéma pour le champ UI unique
-    const firstSchemaUrl = (() => {
-      const raw: any = (exercice as any).schemaUrls;
-      if (Array.isArray(raw) && raw.length) return raw[0];
-      if (typeof raw === 'string') {
-        try { const parsed = JSON.parse(raw); if (Array.isArray(parsed) && parsed.length) return parsed[0]; } catch {}
-      }
-      return (exercice as any).schemaUrl || '';
-    })();
-
-    // Déterminer l'URL d'image à utiliser pour le formulaire et l'aperçu
-    const effectiveImageUrl = exercice.imageUrl || (exercice as any).schemaUrl || firstSchemaUrl || '';
+    // Déterminer l'URL d'image principale à utiliser pour le formulaire et l'aperçu
+    // À ce stade, imageUrl est déjà normalisé côté service (fallback éventuel sur anciens champs schéma).
+    const effectiveImageUrl = exercice.imageUrl || '';
 
     this.exerciceForm.patchValue({
       nom: exercice.nom || '',
       description: exercice.description || '',
       imageUrl: effectiveImageUrl,
-      schemaUrl: firstSchemaUrl || '',
       materiel: (exercice as any).materiel || '',
       notes: (exercice as any).notes || '',
       critereReussite: (exercice as any).critereReussite || '',

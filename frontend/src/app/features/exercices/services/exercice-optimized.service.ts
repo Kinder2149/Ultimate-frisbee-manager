@@ -39,6 +39,40 @@ export class ExerciceOptimizedService {
       transformAfterReceive: this.processExerciceFromApi
     });
   }
+
+  /**
+   * Normalise l'exercice pour garantir que imageUrl est toujours renseigné
+   * en se basant en priorité sur imageUrl, puis schemaUrls, puis schemaUrl.
+   */
+  private normalizeExercice(data: any): Exercice {
+    const ex = data as Exercice;
+    const anyEx: any = data;
+    let imageUrl = ex.imageUrl;
+
+    if (!imageUrl) {
+      const raw = anyEx.schemaUrls;
+      if (Array.isArray(raw) && raw.length) {
+        imageUrl = raw[0];
+      } else if (typeof raw === 'string') {
+        try {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length) {
+            imageUrl = parsed[0];
+          } else if (raw) {
+            imageUrl = raw;
+          }
+        } catch {
+          if (raw) {
+            imageUrl = raw;
+          }
+        }
+      } else if (anyEx.schemaUrl) {
+        imageUrl = anyEx.schemaUrl as string;
+      }
+    }
+
+    return { ...(ex as any), imageUrl } as Exercice;
+  }
   
   /**
    * Récupère tous les exercices disponibles
@@ -134,8 +168,7 @@ export class ExerciceOptimizedService {
    * @returns Exercice traité
    */
   private processExerciceFromApi(data: any): Exercice {
-    // Effectuer des transformations spécifiques si nécessaire
-    // Par exemple, conversion de formats de date, calculs dérivés, etc.
-    return data as Exercice;
+    // Normaliser systématiquement l'exercice pour garantir imageUrl
+    return this.normalizeExercice(data);
   }
 }

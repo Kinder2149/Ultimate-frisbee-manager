@@ -96,28 +96,20 @@
       <app-exercice-variables formControlName="variables"></app-exercice-variables>
     </section>
 
-    <!-- F — Schémas (multi-upload UI) -->
+    <!-- F — Image principale -->
     <section class="card section">
       <div class="section-header">
-        <h2 class="section-title">Schémas</h2>
-        <span class="muted">Aucun schéma ajouté pour le moment si la grille est vide.</span>
+        <h2 class="section-title">Image de l'exercice</h2>
+        <span class="muted">Aucune image ajoutée pour le moment si la grille est vide.</span>
       </div>
       <div class="schema-grid">
         <div class="schema-card" *ngIf="imagePreviewString">
           <img [src]="imagePreviewString" alt="Illustration">
           <span class="caption">Illustration</span>
         </div>
-        <div class="schema-card" *ngIf="f['schemaUrl'].value">
-          <img [src]="mediaUrl(f['schemaUrl'].value) || f['schemaUrl'].value" alt="Schéma">
-          <span class="caption">Schéma</span>
-        </div>
       </div>
       <div class="upload-row">
         <app-image-upload [currentImageUrl]="imagePreviewString" [context]="'exercices'" (imageSelected)="onImageSelected($event)"></app-image-upload>
-        <div class="form-group">
-          <label for="schemaUrl" class="label">URL du schéma</label>
-          <input id="schemaUrl" type="text" class="input" formControlName="schemaUrl" placeholder="https://…">
-        </div>
       </div>
     </section>
 
