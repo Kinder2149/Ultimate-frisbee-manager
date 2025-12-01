@@ -36,6 +36,7 @@ export class ExerciceService extends EntityCrudService<Exercice> {
 
   getExerciceById(id: string): Observable<Exercice> {
     return this.getById(this.endpoint, id).pipe(
+      tap(ex => console.log('Exercice reçu du backend:', ex)),
       map(ex => this.normalizeExercice(ex))
     );
   }
