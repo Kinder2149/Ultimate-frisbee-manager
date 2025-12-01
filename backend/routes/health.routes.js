@@ -3,10 +3,24 @@ const router = express.Router();
 const { prisma } = require('../services/prisma');
 
 // GET /api/health
-// Public: indique l'état du serveur et la connectivité DB
+// Public: indique l'état du serveur et, optionnellement, la connectivité DB
 router.get('/', async (req, res) => {
   const startedAt = process.hrtime.bigint();
   const now = new Date().toISOString();
+
+  const shouldCheckDb = String(process.env.HEALTH_CHECK_DB || 'true').toLowerCase() !== 'false';
+
+  if (!shouldCheckDb) {
+    const durationMs = Number((process.hrtime.bigint() - startedAt) / 1000000n);
+    return res.status(200).json({
+      status: 'ok',
+      timestamp: now,
+      db: null,
+      uptime: process.uptime(),
+      responseTimeMs: durationMs
+    });
+  }
+
   try {
     // Test rapide DB (léger et compatible Prisma)
     await prisma.$queryRaw`SELECT 1`;

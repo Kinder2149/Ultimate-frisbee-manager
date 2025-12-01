@@ -4,6 +4,11 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { prisma } = require('../services/prisma');
+
+// Cache simple en mémoire pour les profils utilisateurs déjà résolus
+// Clé principale: id (sub), fallback: email
+const userCacheById = new Map();
+const userCacheByEmail = new Map();
 // Support vérification JWT Supabase (RS256 via JWKS)
 let jose;
 try {
@@ -82,15 +87,38 @@ const authenticateToken = async (req, res, next) => {
     }
     
     // Vérifier si l'utilisateur existe dans notre base de données
-    let user = await prisma.user.findUnique({
-      where: { id: decoded.sub },
-    });
+    let user = null;
 
-    // Si l'utilisateur n'existe pas via son ID Supabase, tenter de le trouver par email.
+    // 1) Tenter depuis le cache mémoire
+    if (decoded.sub && userCacheById.has(decoded.sub)) {
+      user = userCacheById.get(decoded.sub);
+    } else if (decoded.email && userCacheByEmail.has(decoded.email)) {
+      user = userCacheByEmail.get(decoded.email);
+    }
+
+    // 2) Si pas trouvé en cache, interroger Prisma
     if (!user) {
-      user = await prisma.user.findUnique({
-        where: { email: decoded.email },
-      });
+      try {
+        if (decoded.sub) {
+          user = await prisma.user.findUnique({
+            where: { id: decoded.sub },
+          });
+        }
+
+        // Si l'utilisateur n'existe pas via son ID Supabase, tenter de le trouver par email.
+        if (!user && decoded.email) {
+          user = await prisma.user.findUnique({
+            where: { email: decoded.email },
+          });
+        }
+      } catch (dbError) {
+        console.error('[Auth] Error while fetching user from database:', dbError);
+        // En cas d’erreur Prisma (ex: P2024), retourner un 503 explicite
+        return res.status(503).json({
+          error: 'Service d\'authentification temporairement indisponible',
+          code: 'AUTH_DB_UNAVAILABLE'
+        });
+      }
     }
 
     // Si l'utilisateur n'existe toujours pas, le créer (provisioning).
@@ -122,6 +150,14 @@ const authenticateToken = async (req, res, next) => {
           code: 'USER_PROVISIONING_ERROR'
         });
       }
+    }
+
+    // Mettre en cache l'utilisateur pour les prochaines requêtes
+    if (user.id) {
+      userCacheById.set(user.id, user);
+    }
+    if (user.email) {
+      userCacheByEmail.set(user.email, user);
     }
 
     // Vérifier si l'utilisateur est actif

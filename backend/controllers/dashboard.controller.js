@@ -9,60 +9,57 @@ const { prisma } = require('../services/prisma');
  */
 exports.getDashboardStats = async (req, res, next) => {
   try {
-    // Compter tous les éléments en parallèle
-    const [
-      exercicesCount,
-      entrainementsCount,
-      echauffementsCount,
-      situationsCount,
-      tagsCount,
-      tagsByCategory
-    ] = await Promise.all([
-      prisma.exercice.count(),
-      prisma.entrainement.count(),
-      prisma.echauffement.count(),
-      prisma.situationMatch.count(),
-      prisma.tag.count(),
-      prisma.tag.groupBy({
+    // 1. Compteurs principaux (série ou petits blocs pour limiter le parallélisme)
+    const exercicesCount = await prisma.exercice.count();
+    const entrainementsCount = await prisma.entrainement.count();
+    const echauffementsCount = await prisma.echauffement.count();
+    const situationsCount = await prisma.situationMatch.count();
+
+    let tagsCount = 0;
+    let tagsDetails = {};
+    try {
+      tagsCount = await prisma.tag.count();
+      const tagsByCategory = await prisma.tag.groupBy({
         by: ['category'],
         _count: {
           id: true
         }
-      })
-    ]);
+      });
+      tagsDetails = tagsByCategory.reduce((acc, item) => {
+        acc[item.category] = item._count.id;
+        return acc;
+      }, {});
+    } catch (tagsError) {
+      // En cas d'erreur sur les tags, on renvoie quand même les stats principales
+      console.error('[Dashboard] Error while loading tag stats:', tagsError);
+    }
 
-    // Calculer les ajouts récents (derniers 7 jours)
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    // 2. Activité récente (derniers 7 jours) – bloc séparé, best-effort
+    let recentActivity = null;
+    try {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-    const [
-      recentExercices,
-      recentEntrainements,
-      recentEchauffements,
-      recentSituations
-    ] = await Promise.all([
-      prisma.exercice.count({
+      const recentExercices = await prisma.exercice.count({
         where: { createdAt: { gte: sevenDaysAgo } }
-      }),
-      prisma.entrainement.count({
+      });
+      const recentEntrainements = await prisma.entrainement.count({
         where: { createdAt: { gte: sevenDaysAgo } }
-      }),
-      prisma.echauffement.count({
+      });
+      const recentEchauffements = await prisma.echauffement.count({
         where: { createdAt: { gte: sevenDaysAgo } }
-      }),
-      prisma.situationMatch.count({
+      });
+      const recentSituations = await prisma.situationMatch.count({
         where: { createdAt: { gte: sevenDaysAgo } }
-      })
-    ]);
+      });
 
-    const recentActivity = recentExercices + recentEntrainements + recentEchauffements + recentSituations;
+      recentActivity = recentExercices + recentEntrainements + recentEchauffements + recentSituations;
+    } catch (recentError) {
+      console.error('[Dashboard] Error while loading recent activity stats:', recentError);
+      recentActivity = null;
+    }
+
     const totalElements = exercicesCount + entrainementsCount + echauffementsCount + situationsCount;
-
-    // Organiser les tags par catégorie
-    const tagsDetails = tagsByCategory.reduce((acc, item) => {
-      acc[item.category] = item._count.id;
-      return acc;
-    }, {});
 
     res.json({
       exercicesCount,
