@@ -102,40 +102,13 @@ export class ExerciceCardComponent implements OnInit {
 
   /**
    * URL principale de l'image/schéma de l'exercice.
-   * Uniformise la logique avec ExerciceViewComponent :
-   * 1) imageUrl
-   * 2) premier élément de schemaUrls (array ou JSON stringifié)
-   * 3) schemaUrl
+   * Ici on s'appuie uniquement sur imageUrl,
+   * qui est normalisé côté ExerciceService
+   * (éventuellement dérivé d'anciens champs de schéma).
    */
   get mainImageUrl(): string | null {
     const ex: any = this.exercice;
-    if (ex?.imageUrl) {
-      return ex.imageUrl;
-    }
-
-    const raw = ex?.schemaUrls;
-    if (Array.isArray(raw) && raw.length) {
-      return raw[0];
-    }
-    if (typeof raw === 'string') {
-      try {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length) {
-          return parsed[0];
-        }
-      } catch {
-        // si ce n'est pas un JSON valide, on considère la chaîne brute comme une URL unique
-        if (raw) {
-          return raw;
-        }
-      }
-    }
-
-    if (ex?.schemaUrl) {
-      return ex.schemaUrl;
-    }
-
-    return null;
+    return ex?.imageUrl || null;
   }
 
   /**

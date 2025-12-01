@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
-import { Observable, Subject, tap } from 'rxjs';
+import { Observable, Subject, tap, map } from 'rxjs';
+
 import { Exercice } from '../models/exercice.model';
 import { EntityCrudService, CrudOptions } from '../../shared/services/entity-crud.service';
 import { HttpGenericService } from '../../shared/services/http-generic.service';
 import { CacheService } from './cache.service';
- 
 
 @Injectable({
   providedIn: 'root'
@@ -22,12 +22,45 @@ export class ExerciceService extends EntityCrudService<Exercice> {
     super(httpService, cacheService);
   }
 
+  private normalizeExercice(ex: Exercice): Exercice {
+    const anyEx: any = ex;
+    let imageUrl = ex.imageUrl;
+
+    if (!imageUrl) {
+      const raw = anyEx.schemaUrls;
+      if (Array.isArray(raw) && raw.length) {
+        imageUrl = raw[0];
+      } else if (typeof raw === 'string') {
+        try {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length) {
+            imageUrl = parsed[0];
+          } else if (raw) {
+            imageUrl = raw;
+          }
+        } catch {
+          if (raw) {
+            imageUrl = raw;
+          }
+        }
+      } else if (anyEx.schemaUrl) {
+        imageUrl = anyEx.schemaUrl;
+      }
+    }
+
+    return { ...ex, imageUrl };
+  }
+
   getExercices(): Observable<Exercice[]> {
-    return this.getAll(this.endpoint);
+    return this.getAll(this.endpoint).pipe(
+      map(list => list.map(ex => this.normalizeExercice(ex)))
+    );
   }
 
   getExerciceById(id: string): Observable<Exercice> {
-    return this.getById(this.endpoint, id);
+    return this.getById(this.endpoint, id).pipe(
+      map(ex => this.normalizeExercice(ex))
+    );
   }
 
   createExercice(data: Partial<Exercice>): Observable<Exercice> {

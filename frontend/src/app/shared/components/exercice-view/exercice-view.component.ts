@@ -150,23 +150,12 @@ export class ExerciceViewComponent implements OnInit {
         return raw ? [raw] : [];
       }
     }
-    const legacy = ex.schemaUrl || ex.imageUrl;
-    return legacy ? [legacy] : [];
+    return [];
   }
 
   get mainImageUrl(): string | null {
     const ex: any = this.exercice;
-    if (ex.imageUrl) {
-      return ex.imageUrl;
-    }
-    const list = this.schemaUrlsList;
-    if (list.length > 0) {
-      return list[0];
-    }
-    if (ex.schemaUrl) {
-      return ex.schemaUrl;
-    }
-    return null;
+    return ex?.imageUrl || null;
   }
 
   get pointsList(): string[] {
