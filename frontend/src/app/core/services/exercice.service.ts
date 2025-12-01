@@ -23,13 +23,17 @@ export class ExerciceService extends EntityCrudService<Exercice> {
   }
 
   private normalizeExercice(ex: Exercice): Exercice {
-    // À ce stade, le backend ne fournit plus que imageUrl comme champ d'image.
-    // On se contente donc de le relayer tel quel.
-    return { ...ex, imageUrl: ex.imageUrl };
+    // Normalisation défensive: si imageUrl est absent/vidé dans certaines réponses (liste),
+    // mapper uniquement d'éventuels champs legacy d'images vers imageUrl (sans schemaUrl).
+    const anyEx: any = ex as any;
+    const legacy = anyEx.image || anyEx.picture;
+    const imageUrl = (anyEx.imageUrl && anyEx.imageUrl !== '') ? anyEx.imageUrl : (legacy || null);
+    return { ...ex, imageUrl };
   }
 
   getExercices(): Observable<Exercice[]> {
     return this.getAll(this.endpoint).pipe(
+      tap(list => console.log('Exercices reçus (liste):', list.map(e => ({ id: (e as any).id, nom: (e as any).nom, imageUrl: (e as any).imageUrl, legacy: { image: (e as any).image, picture: (e as any).picture } })))),
       map(list => list.map(ex => this.normalizeExercice(ex)))
     );
   }

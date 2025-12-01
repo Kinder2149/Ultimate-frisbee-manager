@@ -30,8 +30,8 @@
     <!-- 🖼️ Section 1 : Image principale (si présente) -->
     <section class="section" *ngIf="mainImageUrl as img">
       <h3 class="section-title hl-sand">Image de l'exercice</h3>
-      <div class="schema-gallery">
-        <div class="schema-item" (click)="openImageViewer(img)">
+      <div class="image-gallery">
+        <div class="image-item" (click)="openImageViewer(img)">
           <img [src]="mediaUrl(img)" alt="Image de l'exercice">
         </div>
       </div>

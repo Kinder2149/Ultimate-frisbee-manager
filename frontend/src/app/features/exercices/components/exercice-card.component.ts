@@ -97,6 +97,16 @@ export class ExerciceCardComponent implements OnInit {
     if (this.mode === 'entrainement') {
       // rien d'obligatoire ici, mais on garde expanded à false par défaut
     }
+
+    // Logs de diagnostic image
+    const currentMain = this.mainImageUrl;
+    const resolved = this.mediaUrl(currentMain);
+    console.log('[ExerciceCard] init', {
+      id: (this.exercice as any)?.id,
+      nom: (this.exercice as any)?.nom,
+      mainImageUrl: currentMain,
+      mediaUrl: resolved
+    });
   }
 
   /**

@@ -209,14 +209,14 @@
   }
 }
 
-/* Galerie multi-schémas alignée avec le formulaire */
-.schema-gallery {
+/* Galerie d'images alignée avec le formulaire (anciennement schema-gallery) */
+.image-gallery {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 12px;
 }
 
-.schema-item {
+.image-item {
   position: relative;
   border: 1px solid #eee;
   border-radius: 8px;

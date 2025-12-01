@@ -136,6 +136,8 @@ export class ExerciceListComponent implements OnInit, OnDestroy {
         
         // Traiter les exercices
         this.exercices = result.exercices;
+        // Log de contrôle: vérifier imageUrl sur la liste
+        console.log('[ExerciceList] Exercices (échantillon) après fetch:', this.exercices.slice(0, 5).map((e: any) => ({ id: e?.id, nom: e?.nom, imageUrl: e?.imageUrl })));
         
         // Enrichir les exercices avec leurs tags
         this.enrichExercicesWithTags();
