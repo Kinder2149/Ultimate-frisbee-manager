@@ -61,9 +61,9 @@
 
 <!-- TEMPLATE REUTILISABLE POUR LE CONTENU DE LA CARTE -->
 <ng-template #cardContent>
-  <!-- Image ou espace réservé -->
-  <div class="image-container" [class.has-image]="exercice.imageUrl" [class.no-image]="!exercice.imageUrl">
-    <img *ngIf="exercice.imageUrl" [src]="mediaUrl(exercice.imageUrl)" alt="Illustration de l'exercice" class="clickable" (click)="onImageClicked(exercice.imageUrl)">
+  <!-- Image principale (image ou schéma) -->
+  <div class="image-container" [class.has-image]="mainImageUrl" [class.no-image]="!mainImageUrl">
+    <img *ngIf="mainImageUrl" [src]="mediaUrl(mainImageUrl)" alt="Illustration de l'exercice" class="clickable" (click)="onImageClicked(mainImageUrl)">
   </div>
 
   <!-- CONTENU -->
@@ -85,7 +85,8 @@
       <p>{{ exercice.variablesText }}</p>
     </div>
 
-    <div class="schema" *ngIf="exercice.schemaUrl">
+    <!-- Schéma secondaire conservé si schemaUrl explicitement renseigné -->
+    <div class="schema" *ngIf="exercice.schemaUrl && exercice.schemaUrl !== mainImageUrl">
       <img [src]="mediaUrl(exercice.schemaUrl)" alt="Schéma de l'exercice" class="clickable" (click)="onImageClicked(exercice.schemaUrl)">
     </div>
     
