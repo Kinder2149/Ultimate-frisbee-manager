@@ -384,6 +384,10 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
     });
   }
 
+  onCancel(): void {
+    this.doCancel();
+  }
+
   private doCancel(): void {
     if (this.dialogRef) {
       this.dialogRef.close();
