@@ -85,11 +85,6 @@
       <p>{{ exercice.variablesText }}</p>
     </div>
 
-    <!-- Schéma secondaire conservé si schemaUrl explicitement renseigné -->
-    <div class="schema" *ngIf="exercice.schemaUrl && exercice.schemaUrl !== mainImageUrl">
-      <img [src]="mediaUrl(exercice.schemaUrl)" alt="Schéma de l'exercice" class="clickable" (click)="onImageClicked(exercice.schemaUrl)">
-    </div>
-    
     <div class="tags-section">
       <div class="tag-group" *ngIf="niveauTags.length > 0">
         <h4>Niveau:</h4>

@@ -40,7 +40,6 @@ function serializeExercice(entity) {
     nom: entity.nom,
     description: entity.description,
     imageUrl: entity.imageUrl || null,
-    schemaUrl: entity.schemaUrl || null,
     materiel: entity.materiel || null,
     notes: entity.notes || null,
     critereReussite: entity.critereReussite || null,

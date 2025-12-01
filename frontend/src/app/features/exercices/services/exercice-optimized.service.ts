@@ -41,37 +41,13 @@ export class ExerciceOptimizedService {
   }
 
   /**
-   * Normalise l'exercice pour garantir que imageUrl est toujours renseigné
-   * en se basant en priorité sur imageUrl, puis schemaUrls, puis schemaUrl.
+   * Normalise l'exercice côté frontend.
+   * À ce stade, le backend ne fournit plus que imageUrl comme champ d'image,
+   * on se contente donc de relayer ce champ tel quel.
    */
   private normalizeExercice(data: any): Exercice {
     const ex = data as Exercice;
-    const anyEx: any = data;
-    let imageUrl = ex.imageUrl;
-
-    if (!imageUrl) {
-      const raw = anyEx.schemaUrls;
-      if (Array.isArray(raw) && raw.length) {
-        imageUrl = raw[0];
-      } else if (typeof raw === 'string') {
-        try {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed) && parsed.length) {
-            imageUrl = parsed[0];
-          } else if (raw) {
-            imageUrl = raw;
-          }
-        } catch {
-          if (raw) {
-            imageUrl = raw;
-          }
-        }
-      } else if (anyEx.schemaUrl) {
-        imageUrl = anyEx.schemaUrl as string;
-      }
-    }
-
-    return { ...(ex as any), imageUrl } as Exercice;
+    return { ...(ex as any), imageUrl: ex.imageUrl } as Exercice;
   }
   
   /**

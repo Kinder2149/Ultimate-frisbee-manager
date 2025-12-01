@@ -11,7 +11,6 @@ export interface Entrainement {
   titre: string;
   date?: Date;
   imageUrl?: string;
-  schemaUrl?: string;
   createdAt?: Date | string;
   exercices?: EntrainementExercice[];
   dureeTotal?: number; // Durée totale calculée en minutes
