@@ -274,7 +274,7 @@ export class EntrainementFormComponent implements OnInit {
 
           this.error = reason;
           // Notification visible
-          this.snackBar.open(this.error, 'Fermer', { duration: 5000 });
+          this.snackBar.open(this.error || "Une erreur est survenue.", 'Fermer', { duration: 5000 });
           this.loading = false;
         }
       });

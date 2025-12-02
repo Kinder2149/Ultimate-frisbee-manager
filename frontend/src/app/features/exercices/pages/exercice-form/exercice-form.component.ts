@@ -410,7 +410,7 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
           if (readable) reason = readable;
         }
         this.errorMessage = reason;
-        this.snackBar.open(this.errorMessage, 'Fermer', { duration: 5000 });
+        this.snackBar.open(this.errorMessage || "Une erreur est survenue.", 'Fermer', { duration: 5000 });
       }
     });
   }
