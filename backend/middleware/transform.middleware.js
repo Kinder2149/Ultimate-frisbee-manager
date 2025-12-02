@@ -19,6 +19,8 @@ const transformFormData = (req, res, next) => {
         console.error(`Erreur de parsing JSON pour le champ '${field}':`, e);
         req.body[field] = []; // Sécurité pour éviter un crash
       }
+    }
+  }
 
   // Normaliser les champs UUID optionnels envoyés comme '' via FormData
   const optionalUuidFields = ['echauffementId', 'situationMatchId'];
@@ -31,7 +33,38 @@ const transformFormData = (req, res, next) => {
       }
     }
   });
-    }
+
+  // Coercition forte des éléments "exercices" si présents
+  if (Array.isArray(req.body.exercices)) {
+    req.body.exercices = req.body.exercices
+      .filter((it) => it != null && typeof it === 'object')
+      .map((it) => {
+        const out = {};
+        // exerciceId: string trim
+        if (it.exerciceId != null) {
+          out.exerciceId = String(it.exerciceId).trim();
+        }
+        // ordre: number entier positif si convertible
+        if (it.ordre !== undefined && it.ordre !== null && String(it.ordre).trim() !== '') {
+          const n = Number(it.ordre);
+          if (Number.isFinite(n) && n > 0) out.ordre = Math.floor(n);
+        }
+        // duree: number entier >=0 ou null
+        if (it.duree === null) {
+          out.duree = null;
+        } else if (it.duree !== undefined && String(it.duree).trim() !== '') {
+          const d = Number(it.duree);
+          if (Number.isFinite(d) && d >= 0) out.duree = Math.floor(d);
+        }
+        // notes: string trim ou null
+        if (it.notes === null) {
+          out.notes = null;
+        } else if (it.notes !== undefined) {
+          const s = String(it.notes).trim();
+          if (s.length > 0) out.notes = s; else out.notes = undefined;
+        }
+        return out;
+      });
   }
 
   // Champs attendus comme des tableaux de chaînes (séparées par des virgules)
