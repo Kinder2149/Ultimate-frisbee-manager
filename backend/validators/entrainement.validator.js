@@ -1,13 +1,13 @@
 const { z } = require('zod');
 
-// Schéma pour un exercice au sein d'un entraînement
+// Schéma pour un exercice au sein d'un entraînement (création)
 const exerciceInEntrainementSchema = z.object({
-  // Au create, accepter une chaîne libre (l'UI peut envoyer un id temporaire)
   exerciceId: z.string({ required_error: "L'ID de l'exercice est requis." }).min(1, "L'ID de l'exercice est requis."),
-  ordre: z.number().int().positive().optional(),
-  duree: z.number().int().positive('La durée doit être un nombre positif.').optional().nullable(),
+  ordre: z.coerce.number().int().positive().optional(),
+  // Autoriser 0 comme valeur valide (min(0)) et accepter les chaînes numériques via coerce
+  duree: z.coerce.number().int().min(0, 'La durée doit être un entier supérieur ou égal à 0.').optional().nullable(),
   notes: z.string().optional().nullable(),
-}).passthrough(); // Ajout de .passthrough() pour ignorer les champs inconnus comme 'id'
+}).passthrough();
 
 // Schéma pour la création d'un entraînement
 const createEntrainementSchema = z.object({
@@ -27,18 +27,16 @@ const createEntrainementSchema = z.object({
 });
 
 // Schéma pour la mise à jour (tous les champs sont optionnels)
-// Schéma pour la mise à jour (tous les champs sont optionnels)
 // car la logique de suppression/recréation gère les détails.
 const updateEntrainementSchema = createEntrainementSchema.partial().extend({
   exercices: z.array(
     z.object({
-      // On accepte n'importe quelle chaîne pour l'exerciceId, car pour un nouvel exercice,
-      // il peut être vide ou temporaire. La logique du contrôleur gère la création.
+      // Accepter une chaîne libre (le contrôleur filtrera ceux sans exerciceId valide)
       exerciceId: z.string(),
-      ordre: z.number().optional(),
-      duree: z.number().optional().nullable(),
+      ordre: z.coerce.number().int().positive().optional(),
+      duree: z.coerce.number().int().min(0).optional().nullable(),
       notes: z.string().optional().nullable(),
-    }).passthrough() // Important pour ignorer les champs supplémentaires comme 'id'
+    }).passthrough()
   ).optional(),
 });
 
