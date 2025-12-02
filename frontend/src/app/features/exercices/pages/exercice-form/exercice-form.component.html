@@ -44,27 +44,7 @@
             </mat-form-field>
           </div>
         </div>
-        <!-- Ligne 3: Durée + Nombre de joueurs (non présents -> utiliser tags/variables comme proxy) -->
-        <div class="row">
-          <div class="col col-6">
-            <label class="label">Temps</label>
-            <mat-form-field appearance="fill" class="w-100">
-              <mat-label>Temps moyen</mat-label>
-              <mat-select formControlName="tempsTags" multiple [compareWith]="compareTags">
-                <mat-option *ngFor="let tag of tempsTags" [value]="tag">{{ tag.label }}</mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
-          <div class="col col-6">
-            <label class="label">Format</label>
-            <mat-form-field appearance="fill" class="w-100">
-              <mat-label>Formats</mat-label>
-              <mat-select formControlName="formatTags" multiple [compareWith]="compareTags">
-                <mat-option *ngFor="let tag of formatTags" [value]="tag">{{ tag.label }}</mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
-        </div>
+        <!-- Ligne 3: Durée + Nombre de joueurs (déplacés dans la section Tags) -->
       </div>
     </section>
 

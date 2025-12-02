@@ -324,6 +324,11 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
 
     const formValue: any = { ...this.exerciceForm.value };
 
+    // Extraire les variables du formulaire
+    const variables = formValue.variables || {};
+    const variablesPlus = Array.isArray(variables.variablesPlus) ? variables.variablesPlus : [];
+    const variablesMinus = Array.isArray(variables.variablesMinus) ? variables.variablesMinus : [];
+
     // Gestion de suppression: si l'utilisateur a retiré l'image, forcer imageUrl à vide
     if (!this.selectedImageFile && this.imagePreview === null) {
       // Si l'utilisateur a supprimé l'image, on s'assure que imageUrl est vide
@@ -333,8 +338,15 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
     // Créer un FormData pour l'upload de fichier
     const formData = new FormData();
 
+    // Ajouter les variables directement à l'objet formValue
+    formValue.variablesPlus = variablesPlus;
+    formValue.variablesMinus = variablesMinus;
+
     // Ajouter les champs du formulaire au FormData
     Object.keys(formValue).forEach(key => {
+      // Ne pas ajouter l'objet variables complet, car nous avons déjà extrait les tableaux
+      if (key === 'variables') return;
+      
       const value = formValue[key];
 
       // Gérer les tableaux et objets (sauf File)
