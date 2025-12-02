@@ -1,6 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription, interval } from 'rxjs';
 import { BackendStatusService, BackendState } from '../../services/backend-status.service';
+import { NotificationService } from '../../services/notification.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-startup-loader',
@@ -10,11 +12,12 @@ import { BackendStatusService, BackendState } from '../../services/backend-statu
 export class StartupLoaderComponent implements OnInit, OnDestroy {
   state: BackendState = { status: 'idle', message: '' };
   progress = 0;
+  private didNavigate = false;
 
   private stateSub?: Subscription;
   private progressSub?: Subscription;
 
-  constructor(private backendStatus: BackendStatusService) {}
+  constructor(private backendStatus: BackendStatusService, private notify: NotificationService, private router: Router) {}
 
   ngOnInit(): void {
     this.stateSub = this.backendStatus.getState().subscribe((s) => {
@@ -24,6 +27,14 @@ export class StartupLoaderComponent implements OnInit, OnDestroy {
         this.startFakeProgress();
       } else if (s.status === 'up' || s.status === 'error' || s.status === 'idle') {
         this.completeAndStopProgress();
+      }
+
+      // Dès que le backend est UP, notifier et rediriger une seule fois
+      if (s.status === 'up' && !this.didNavigate) {
+        this.didNavigate = true;
+        this.notify.showSuccess('Connexion au serveur rétablie');
+        // Naviguer vers le tableau de bord si l'utilisateur n'y est pas déjà
+        this.router.navigate(['/dashboard']).catch(() => {});
       }
     });
   }

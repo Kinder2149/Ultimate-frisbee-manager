@@ -389,9 +389,28 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
         }
         this.exerciceId ? this.exerciceUpdated.emit(savedExercice) : this.exerciceCreated.emit(savedExercice);
       },
-      error: (err) => {
+      error: (err: any) => {
         this.submitting = false;
-        this.errorMessage = err.error?.message || "Une erreur est survenue lors de l'enregistrement.";
+        // Logs structurés pour investiguer
+        console.error('[ExerciceForm] Échec de sauvegarde:', {
+          status: err?.status,
+          message: err?.error?.message || err?.message,
+          details: err?.error?.details,
+          body: err?.error
+        });
+
+        // Construire un message utilisateur détaillé
+        const details = Array.isArray(err?.error?.details) ? err.error.details : [];
+        let reason = err?.error?.message || "Une erreur est survenue lors de l'enregistrement.";
+        if (details.length > 0) {
+          const readable = details
+            .map((d: any) => (d?.field ? `${d.field}: ${d.message}` : d?.message))
+            .filter((x: any) => !!x)
+            .join(' \u2013 ');
+          if (readable) reason = readable;
+        }
+        this.errorMessage = reason;
+        this.snackBar.open(this.errorMessage, 'Fermer', { duration: 5000 });
       }
     });
   }

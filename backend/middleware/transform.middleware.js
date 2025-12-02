@@ -19,6 +19,18 @@ const transformFormData = (req, res, next) => {
         console.error(`Erreur de parsing JSON pour le champ '${field}':`, e);
         req.body[field] = []; // Sécurité pour éviter un crash
       }
+
+  // Normaliser les champs UUID optionnels envoyés comme '' via FormData
+  const optionalUuidFields = ['echauffementId', 'situationMatchId'];
+  optionalUuidFields.forEach((f) => {
+    if (Object.prototype.hasOwnProperty.call(req.body, f)) {
+      const v = req.body[f];
+      if (v === '' || v === '""') {
+        // Supprimer pour laisser le schéma .optional().nullable() passer sans erreur
+        delete req.body[f];
+      }
+    }
+  });
     }
   }
 

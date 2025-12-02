@@ -64,8 +64,7 @@ export class BackendStatusService {
   startPolling() {
     if (this.pollingSub) return; // déjà en cours
 
-    const baseAttempts = this.snapshot().attempts || 0;
-    let attempts = baseAttempts;
+    let attempts = this.snapshot().attempts || 0;
 
     this.state$.next({
       status: 'waking',
@@ -73,19 +72,27 @@ export class BackendStatusService {
       attempts
     });
 
-    this.pollingSub = timer(0, 1000).subscribe(async (tick) => {
-      const delay = Math.min(this.maxDelayMs, 1000 * Math.pow(2, Math.min(attempts, 4))); // 1s,2s,4s,8s,10s
+    const pollOnce = async () => {
       const ok = await this.tryHealth();
       if (ok) {
         this.state$.next({ status: 'up', message: 'Connecté', attempts });
         this.stopPolling();
         this.fadeOutSoon();
-      } else {
-        attempts += 1;
-        this.state$.next({ status: 'waking', message: 'Réveil du serveur…', attempts });
-        setTimeout(() => {}, delay);
+        return;
       }
-    });
+      attempts += 1;
+      this.state$.next({ status: 'waking', message: 'Réveil du serveur…', attempts });
+      const base = Math.min(this.maxDelayMs, 1000 * Math.pow(2, Math.min(attempts, 4))); // 1s..10s
+      const jitter = Math.floor(Math.random() * 400); // +0..400ms
+      const delay = base + jitter;
+      this.pollingSub = timer(delay).subscribe(() => {
+        // Récurse jusqu'à succès ou arrêt
+        pollOnce();
+      });
+    };
+
+    // Démarrer immédiatement une tentative
+    this.pollingSub = timer(0).subscribe(() => pollOnce());
   }
 
   stopPolling() {

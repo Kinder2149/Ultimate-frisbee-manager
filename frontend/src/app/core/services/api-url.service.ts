@@ -9,7 +9,9 @@ export class ApiUrlService {
   private apiBaseUrl = environment.apiUrl;
 
   constructor() {
-    console.log('ApiUrlService initialisé avec baseUrl:', this.apiBaseUrl);
+    if (!environment.production) {
+      console.log('ApiUrlService initialisé avec baseUrl:', this.apiBaseUrl);
+    }
   }
 
   getUrl(endpoint: string): string {
@@ -25,23 +27,31 @@ export class ApiUrlService {
    * @returns URL relative ou absolue en fonction de l'environnement.
    */
   getMediaUrl(fileName?: string | null, context?: string): string | null {
-    console.log(`getMediaUrl appelé avec fileName: '${fileName}', context: '${context}'`);
+    if (!environment.production) {
+      console.log(`getMediaUrl appelé avec fileName: '${fileName}', context: '${context}'`);
+    }
     
     if (!fileName) {
-      console.log('fileName est vide ou null, retourne null');
+      if (!environment.production) {
+        console.log('fileName est vide ou null, retourne null');
+      }
       return null;
     }
 
     // Si le chemin est déjà une URL complète (http, https), on le retourne directement,
     // même si aucun contexte n'est fourni.
     if (/^https?:\/\//i.test(fileName)) {
-      console.log('URL complète détectée, retourne:', fileName);
+      if (!environment.production) {
+        console.log('URL complète détectée, retourne:', fileName);
+      }
       return fileName;
     }
 
     // Pour les chemins relatifs, un contexte est requis pour construire le chemin final.
     if (!context) {
-      console.log('Aucun contexte fourni pour le chemin relatif, retourne null');
+      if (!environment.production) {
+        console.log('Aucun contexte fourni pour le chemin relatif, retourne null');
+      }
       return null;
     }
 
@@ -49,7 +59,9 @@ export class ApiUrlService {
     const baseFileName = fileName.split('/').pop();
 
     if (!baseFileName) {
-      console.log('Impossible d\'extraire le nom de fichier, retourne null');
+      if (!environment.production) {
+        console.log('Impossible d\'extraire le nom de fichier, retourne null');
+      }
       return null;
     }
 
@@ -65,7 +77,9 @@ export class ApiUrlService {
       result = `/api/${relativePath}`;
     }
     
-    console.log('URL construite:', result);
+    if (!environment.production) {
+      console.log('URL construite:', result);
+    }
     return result;
   }
 

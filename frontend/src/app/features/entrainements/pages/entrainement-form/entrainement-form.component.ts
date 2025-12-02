@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { EntrainementService } from '../../../../core/services/entrainement.service';
 import { ExerciceService } from '../../../../core/services/exercice.service';
 import { TagService } from '../../../../core/services/tag.service';
@@ -59,7 +60,8 @@ export class EntrainementFormComponent implements OnInit {
     private tagService: TagService,
     private router: Router,
     private route: ActivatedRoute,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar
   ) {
     this.initForm();
   }
@@ -189,25 +191,44 @@ export class EntrainementFormComponent implements OnInit {
         fd.append('date', new Date(formValue.date).toISOString());
       }
 
-      // Exercices: sérialiser uniquement les champs pertinents
-      const exercicesPayload = (formValue.exercices || []).map((exo: any) => ({
-        id: exo.id,
-        exerciceId: exo.exerciceId,
-        ordre: exo.ordre,
-        duree: exo.duree,
-        notes: exo.notes
-      }));
+      // Exercices: sérialiser uniquement les champs pertinents, en normalisant les types attendus par le backend
+      const exercicesPayload = (formValue.exercices || [])
+        .map((exo: any) => {
+          const exerciceId = (exo.exerciceId || '').toString().trim();
+          const ordreNum = Number(exo.ordre);
+          const dureeNum = exo.duree === null || exo.duree === undefined || exo.duree === ''
+            ? null
+            : Number(exo.duree);
+
+          const payload: any = {
+            exerciceId,
+            // garder ordre s'il est un entier positif
+            ...(Number.isFinite(ordreNum) && ordreNum > 0 ? { ordre: Math.floor(ordreNum) } : {}),
+            // Zod attend un nombre ou null pour duree
+            ...(dureeNum === null ? { duree: null } : (Number.isFinite(dureeNum) && dureeNum >= 0 ? { duree: Math.floor(dureeNum) } : {})),
+          };
+          if (exo.notes != null && `${exo.notes}`.trim() !== '') {
+            payload.notes = `${exo.notes}`.trim();
+          }
+          return payload;
+        })
+        // filtrer les éléments sans exerciceId
+        .filter((e: any) => !!e.exerciceId);
       fd.append('exercices', JSON.stringify(exercicesPayload));
 
-      // Relations
-      fd.append('echauffementId', this.selectedEchauffement?.id || '');
-      fd.append('situationMatchId', this.selectedSituationMatch?.id || '');
+      // Relations: n'envoyer que si présentes
+      if (this.selectedEchauffement?.id) {
+        fd.append('echauffementId', this.selectedEchauffement.id);
+      }
+      if (this.selectedSituationMatch?.id) {
+        fd.append('situationMatchId', this.selectedSituationMatch.id);
+      }
 
       // Tags (ids)
       const tagIds = this.selectedThemeTags.map(tag => tag.id).filter((id): id is string => !!id);
       fd.append('tagIds', JSON.stringify(tagIds));
 
-      // Gestion suppression image: forcer imageUrl vide si supprimée
+      // Gestion suppression image (édition uniquement): forcer imageUrl vide si supprimée
       if (!this.selectedImageFile && this.isEditMode && !this.imagePreview) {
         fd.append('imageUrl', '');
       } else if (formValue.imageUrl) {
@@ -230,9 +251,30 @@ export class EntrainementFormComponent implements OnInit {
           // Navigation simple, sans rechargement
           this.router.navigate(['/entrainements']);
         },
-        error: (err: unknown) => {
-          console.error(`Erreur lors de la ${this.isEditMode ? 'modification' : 'création'} de l'entraînement:`, err);
-          this.error = `Erreur lors de la ${this.isEditMode ? 'modification' : 'création'} de l'entraînement`;
+        error: (err: any) => {
+          const title = this.isEditMode ? 'modification' : 'création';
+          // Logs structurés pour le debug
+          console.error(`[EntrainementForm] Échec ${title}:`, {
+            status: err?.status,
+            message: err?.error?.message || err?.message,
+            details: err?.error?.details,
+            body: err?.error
+          });
+
+          // Construire un message utilisateur exploitable
+          const details = Array.isArray(err?.error?.details) ? err.error.details : [];
+          let reason = err?.error?.message || `Erreur lors de la ${title} de l'entraînement.`;
+          if (details.length > 0) {
+            const readable = details
+              .map((d: any) => (d?.field ? `${d.field}: ${d.message}` : d?.message))
+              .filter((x: any) => !!x)
+              .join(' \u2013 ');
+            if (readable) reason = readable;
+          }
+
+          this.error = reason;
+          // Notification visible
+          this.snackBar.open(this.error, 'Fermer', { duration: 5000 });
           this.loading = false;
         }
       });
