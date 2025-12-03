@@ -127,7 +127,22 @@ const authenticateToken = async (req, res, next) => {
         }
       } catch (dbError) {
         console.error('[Auth] Error while fetching user from database:', dbError);
-        // En cas d’erreur Prisma (ex: P2024), retourner un 503 explicite
+        // Fallback toléré: si la DB est momentanément injoignable (P1001),
+        // autoriser les requêtes GET non admin avec un utilisateur minimal issu du token.
+        if (dbError && dbError.code === 'P1001') {
+          const isSafeRead = req.method === 'GET' && !String(req.path || '').startsWith('/api/admin');
+          if (isSafeRead) {
+            console.warn('[Auth] DB unreachable (P1001). Proceeding with token-only user for safe GET.');
+            req.user = {
+              id: decoded.sub || decoded.user_id || decoded.email || 'anon',
+              email: decoded.email || 'unknown@token',
+              role: (decoded.role && String(decoded.role).toUpperCase()) || 'USER',
+              isActive: true,
+            };
+            return next();
+          }
+        }
+        // Sinon, 503 explicite
         return res.status(503).json({
           error: 'Service d\'authentification temporairement indisponible',
           code: 'AUTH_DB_UNAVAILABLE'
