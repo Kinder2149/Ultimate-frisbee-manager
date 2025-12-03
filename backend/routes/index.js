@@ -24,9 +24,12 @@ const adminRoutes = require('./admin.routes');
 
 // Routes d'import
 const importRoutes = require('./import.routes');
- 
- // Route de santé (publique)
- const healthRoutes = require('./health.routes');
+
+// Route de santé (publique)
+const healthRoutes = require('./health.routes');
+
+// Routes de debug (publiques et non sensibles – ne retournent pas de secrets)
+const debugRoutes = require('./debug.routes');
 
 // Middleware d'authentification
 const { authenticateToken } = require('../middleware/auth.middleware');
@@ -36,7 +39,9 @@ module.exports = (app) => {
   app.use('/api/auth', authRoutes);
   // Route publique de santé
   app.use('/api/health', healthRoutes);
-  
+  // Debug réseau/DB (sans Prisma)
+  app.use('/api/debug', debugRoutes);
+
   // Routes protégées (nécessitent authentification)
   // Routes FR historiques
   app.use('/api/exercices', authenticateToken, exerciceRoutes);
