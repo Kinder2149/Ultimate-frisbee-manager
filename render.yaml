@@ -12,8 +12,6 @@ services:
         value: 20
       - key: NODE_ENV
         value: production
-      - key: DATABASE_URL
-        fromSecret: supabase-database-url
       - key: CORS_ORIGINS
         value: https://ultimate-frisbee-manager-kinder.vercel.app,http://localhost:4200
       - key: JWT_SECRET

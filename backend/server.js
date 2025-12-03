@@ -8,6 +8,20 @@ const { testCloudinaryConnection } = require('./services/cloudinary');
 
 const PORT = config.port;
 
+// Log de diagnostic: afficher l'URL DB effective (sans mot de passe)
+try {
+  const raw = process.env.DATABASE_URL || '';
+  const redacted = raw.replace(/:(.*?)@/, ':***@');
+  // Parser grossier pour extraire host/port/base/flags
+  const m = raw.match(/^\w+:\/\/[^:]+:(.+?)@([^:\/]+)(?::(\d+))?\/([^?]+)(?:\?(.*))?$/);
+  const host = m?.[2] || 'unknown';
+  const port = m?.[3] || 'default';
+  const db = m?.[4] || 'unknown';
+  const flags = m?.[5] || '';
+  console.log('[Startup] DATABASE_URL (redacted):', redacted);
+  console.log('[Startup] DB target => host:', host, 'port:', port, 'db:', db, 'flags:', flags);
+} catch {}
+
 const server = app.listen(PORT, '0.0.0.0', async () => {
   if (process.env.NODE_ENV !== 'test') {
     console.log(`[Startup] Server listening on http://0.0.0.0:${PORT} (local: http://localhost:${PORT})`);

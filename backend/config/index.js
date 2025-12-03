@@ -5,9 +5,11 @@ const path = require('path');
 const envPath = path.resolve(__dirname, '..', '.env');
 
 // Charge les variables d'environnement depuis le fichier .env à la racine du backend
-const result = dotenv.config({ 
+// En production, ne pas override les variables fournies par la plateforme (Render)
+const isProdRuntime = String(process.env.NODE_ENV || '').toLowerCase() === 'production';
+const result = dotenv.config({
   path: envPath,
-  override: true // Force l'utilisation des variables du .env par-dessus celles du système
+  override: !isProdRuntime
 });
 
 if (result.error) {
