@@ -15,14 +15,14 @@ router.get('/', entrainementController.getAllEntrainements);
 router.get('/:id', entrainementController.getEntrainementById);
 
 router.post('/', 
-  createUploader('image', 'entrainements'), 
+  ...createUploader('image', 'entrainements'), 
   transformFormData, 
   validate(createEntrainementSchema), 
   entrainementController.createEntrainement
 );
 
 router.put('/:id', 
-  createUploader('image', 'entrainements'), 
+  ...createUploader('image', 'entrainements'), 
   transformFormData, 
   validate(updateEntrainementSchema), 
   entrainementController.updateEntrainement
