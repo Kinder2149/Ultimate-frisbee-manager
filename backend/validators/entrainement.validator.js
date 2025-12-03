@@ -33,7 +33,7 @@ const createEntrainementSchema = z.object({
 
 // Schéma pour la mise à jour (tous les champs sont optionnels)
 // car la logique de suppression/recréation gère les détails.
-const updateEntrainementSchema = createEntrainementSchema.partial().extend({
+const updateEntrainementSchema = createEntrainementSchema.partial().passthrough().extend({
   exercices: z.array(
     z.object({
       // Accepter une chaîne libre (le contrôleur filtrera ceux sans exerciceId valide)
