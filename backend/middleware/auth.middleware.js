@@ -4,6 +4,24 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { prisma } = require('../services/prisma');
+const sleep = (ms) => new Promise(res => setTimeout(res, ms));
+
+async function fetchUserWithRetry(where) {
+  const attempts = [0, 200, 600]; // total ~800ms
+  let lastErr;
+  for (const delay of attempts) {
+    if (delay) await sleep(delay);
+    try {
+      return await prisma.user.findUnique({ where });
+    } catch (e) {
+      lastErr = e;
+      // Prisma P1001 (cannot reach DB) -> retry quickly
+      if (e && e.code === 'P1001') continue;
+      throw e;
+    }
+  }
+  throw lastErr;
+}
 
 // Cache simple en mémoire pour les profils utilisateurs déjà résolus
 // Clé principale: id (sub), fallback: email
@@ -100,16 +118,12 @@ const authenticateToken = async (req, res, next) => {
     if (!user) {
       try {
         if (decoded.sub) {
-          user = await prisma.user.findUnique({
-            where: { id: decoded.sub },
-          });
+          user = await fetchUserWithRetry({ id: decoded.sub });
         }
 
         // Si l'utilisateur n'existe pas via son ID Supabase, tenter de le trouver par email.
         if (!user && decoded.email) {
-          user = await prisma.user.findUnique({
-            where: { email: decoded.email },
-          });
+          user = await fetchUserWithRetry({ email: decoded.email });
         }
       } catch (dbError) {
         console.error('[Auth] Error while fetching user from database:', dbError);
