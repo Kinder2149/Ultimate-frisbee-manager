@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, from, of, throwError } from 'rxjs';
-import { map, catchError, switchMap } from 'rxjs/operators';
+import { map, catchError, switchMap, finalize } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { User, LoginCredentials } from '../models/user.model';
 import { environment } from '../../../environments/environment';
@@ -20,6 +20,10 @@ export class AuthService {
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
+  // Empêche les appels concurrents et limite la fréquence de sync du profil
+  private syncingProfile = false;
+  private lastProfileSyncAt = 0;
+
   constructor(
     private http: HttpClient,
     private router: Router,
@@ -35,14 +39,7 @@ export class AuthService {
           if (session?.user) {
             // Le token Supabase est disponible, on considère l'utilisateur comme authentifié
             this.isAuthenticatedSubject.next(true);
-
-            // Puis on tente de synchroniser le profil avec le backend
-            this.syncUserProfile().subscribe({
-              error: (error) => {
-                console.error('Erreur de synchronisation du profil après changement d\'état auth:', error);
-                // On ne force plus la déconnexion ici; le loader/backend-status gère le cold start
-              }
-            });
+            this.syncUserProfileThrottled();
           } else {
             this.clearStateAndRedirect();
           }
@@ -51,6 +48,26 @@ export class AuthService {
         }
       }
     );
+  }
+
+  private syncUserProfileThrottled(): void {
+    const now = Date.now();
+    // Cooldown de 3s pour éviter des rafales (INITIAL_SESSION -> TOKEN_REFRESHED)
+    if (this.syncingProfile || (now - this.lastProfileSyncAt) < 3000) {
+      return;
+    }
+    this.syncingProfile = true;
+    this.syncUserProfile().pipe(
+      finalize(() => {
+        this.lastProfileSyncAt = Date.now();
+        this.syncingProfile = false;
+      })
+    ).subscribe({
+      error: (error) => {
+        console.error('Erreur de synchronisation du profil après changement d\'état auth:', error);
+        // Ne pas déconnecter; le backend cold start sera géré par BackendStatus
+      }
+    });
   }
 
   login(credentials: LoginCredentials): Observable<void> {
