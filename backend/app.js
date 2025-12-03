@@ -6,6 +6,10 @@ const errorHandler = require('./middleware/errorHandler.middleware');
 const { writeMethodsRateLimit } = require('./middleware/rateLimit.middleware');
 const app = express();
 
+// Behind Render/Cloudflare: trust proxy to let Express use X-Forwarded-* correctly
+// This prevents express-rate-limit from warning about unexpected X-Forwarded-For
+app.set('trust proxy', 1);
+
 // Middlewares de sécurité
 app.use(helmet());
 // Logging HTTP (non intrusif) avec redaction des en-têtes sensibles

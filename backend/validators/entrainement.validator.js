@@ -17,7 +17,12 @@ const createEntrainementSchema = z.object({
 
   // Tolérant: on accepte une simple chaîne; le contrôleur parsera en Date si valide
   date: z.string().optional().nullable(),
-  imageUrl: z.union([z.string().url({ message: "L'URL de l'image est invalide." }), z.string().length(0)]).optional().nullable(),
+  // Autoriser URL absolue (Cloudinary), chaîne vide (suppression) ou chemin relatif uploads/
+  imageUrl: z.union([
+    z.string().url({ message: "L'URL de l'image est invalide." }),
+    z.string().length(0),
+    z.string().regex(/^uploads\//, { message: "Le chemin de l'image doit commencer par 'uploads/'." })
+  ]).optional().nullable(),
   
   echauffementId: z.string().uuid({ message: "L'ID de l'échauffement est invalide." }).optional().nullable(),
   situationMatchId: z.string().uuid({ message: "L'ID de la situation de match est invalide." }).optional().nullable(),
