@@ -8,7 +8,11 @@ router.get('/', async (req, res) => {
   const startedAt = process.hrtime.bigint();
   const now = new Date().toISOString();
 
-  const shouldCheckDb = String(process.env.HEALTH_CHECK_DB || 'true').toLowerCase() !== 'false';
+  // ENV par défaut puis override par query param
+  const envWantsDb = String(process.env.HEALTH_CHECK_DB || 'true').toLowerCase() !== 'false';
+  const q = String(req.query.db || '').toLowerCase();
+  const queryOverride = q === 'true' ? true : q === 'false' ? false : undefined;
+  const shouldCheckDb = queryOverride !== undefined ? queryOverride : envWantsDb;
 
   if (!shouldCheckDb) {
     const durationMs = Number((process.hrtime.bigint() - startedAt) / 1000000n);

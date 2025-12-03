@@ -6,6 +6,21 @@ const bcrypt = require('bcryptjs');
 const { prisma } = require('../services/prisma');
 const sleep = (ms) => new Promise(res => setTimeout(res, ms));
 
+// Détection d'erreurs DB transitoires (connexion/timeout)
+function isTransientDbError(e) {
+  if (!e) return false;
+  const codes = new Set(['P1000', 'P1001', 'P1002', 'P1003']);
+  const sysNet = new Set(['ECONNRESET', 'ETIMEDOUT', 'ENOTFOUND', 'EHOSTUNREACH', 'ECONNREFUSED']);
+  if (e.code && (codes.has(e.code) || sysNet.has(e.code))) return true;
+  const name = String(e.name || '').toLowerCase();
+  if (name.includes('initialization') || name.includes('knownrequesterror') || name.includes('unknownrequesterror')) return true;
+  const msg = String(e.message || '').toLowerCase();
+  if (msg.includes('timeout') || msg.includes('timed out') || msg.includes('could not connect') || msg.includes('connection')) return true;
+  const metaCause = String(e.meta?.cause || '').toLowerCase();
+  if (metaCause.includes('timeout') || metaCause.includes('connection')) return true;
+  return false;
+}
+
 async function fetchUserWithRetry(where) {
   const attempts = [0, 200, 600]; // total ~800ms
   let lastErr;
@@ -127,20 +142,18 @@ const authenticateToken = async (req, res, next) => {
         }
       } catch (dbError) {
         console.error('[Auth] Error while fetching user from database:', dbError);
-        // Fallback toléré: si la DB est momentanément injoignable (P1001),
+        // Fallback toléré: si la DB est momentanément injoignable (erreur transitoire),
         // autoriser les requêtes GET non admin avec un utilisateur minimal issu du token.
-        if (dbError && dbError.code === 'P1001') {
-          const isSafeRead = req.method === 'GET' && !String(req.path || '').startsWith('/api/admin');
-          if (isSafeRead) {
-            console.warn('[Auth] DB unreachable (P1001). Proceeding with token-only user for safe GET.');
-            req.user = {
-              id: decoded.sub || decoded.user_id || decoded.email || 'anon',
-              email: decoded.email || 'unknown@token',
-              role: (decoded.role && String(decoded.role).toUpperCase()) || 'USER',
-              isActive: true,
-            };
-            return next();
-          }
+        const isSafeRead = req.method === 'GET' && !String(req.path || '').startsWith('/api/admin');
+        if (isSafeRead && isTransientDbError(dbError)) {
+          console.warn('[Auth] DB transient error. Proceeding with token-only user for safe GET.');
+          req.user = {
+            id: decoded.sub || decoded.user_id || decoded.email || 'anon',
+            email: decoded.email || 'unknown@token',
+            role: (decoded.role && String(decoded.role).toUpperCase()) || 'USER',
+            isActive: true,
+          };
+          return next();
         }
         // Sinon, 503 explicite
         return res.status(503).json({
