@@ -23,6 +23,7 @@ import { MaterialModule } from './core/material/material.module';
 
 // Import du guard d'authentification
 import { AuthGuard } from './core/guards/auth.guard';
+import { WorkspaceSelectedGuard } from './core/guards/workspace-selected.guard';
 
 // Définition des routes de l'application
 const routes: Routes = [
@@ -42,12 +43,20 @@ const routes: Routes = [
     loadChildren: () => import('./features/auth/auth.module').then(m => m.AuthModule)
   },
   
+  // Sélection de la base de travail (protégée par auth mais sans exigence de workspace déjà choisi)
+  {
+    path: 'select-workspace',
+    loadComponent: () => import('./features/workspaces/select-workspace/select-workspace.component')
+      .then(c => c.SelectWorkspaceComponent),
+    canActivate: [AuthGuard]
+  },
+  
   // Route directe vers le dashboard (protégée)
   { 
     path: '', 
     component: DashboardComponent,
     pathMatch: 'full',
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard, WorkspaceSelectedGuard]
   },
   
   // Routes des features avec lazy loading (toutes protégées)
@@ -59,33 +68,33 @@ const routes: Routes = [
   { 
     path: 'tags-advanced', 
     loadChildren: () => import('./features/tags-advanced/tags-advanced.module').then(m => m.TagsAdvancedModule),
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard, WorkspaceSelectedGuard]
   },
   { 
     path: 'parametres', 
     loadChildren: () => import('./features/settings/settings.module').then(m => m.SettingsModule),
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard, WorkspaceSelectedGuard]
   },
   { 
     path: 'exercices', 
     loadChildren: () => import('./features/exercices/exercices.module').then(m => m.ExercicesModule),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, WorkspaceSelectedGuard],
     data: { preload: true } // Précharger le module
   },
   { 
     path: 'entrainements', 
     loadChildren: () => import('./features/entrainements/entrainements.module').then(m => m.EntrainementsModule),
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard, WorkspaceSelectedGuard]
   },
   { 
     path: 'echauffements', 
     loadChildren: () => import('./features/echauffements/echauffements.module').then(m => m.EchauffenementsModule),
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard, WorkspaceSelectedGuard]
   },
   { 
     path: 'situations-matchs', 
     loadChildren: () => import('./features/situations-matchs/situations-matchs.module').then(m => m.SituationsMatchsModule),
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard, WorkspaceSelectedGuard]
   },
   // Route de debug export/import supprimée (ancien système)
   

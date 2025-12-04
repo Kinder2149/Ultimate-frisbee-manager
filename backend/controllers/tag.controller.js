@@ -9,9 +9,10 @@ const { prisma } = require('../services/prisma');
  */
 exports.getAllTags = async (req, res, next) => {
   try {
+    const workspaceId = req.workspaceId;
     const { category, query } = req.query;
 
-    const where = {};
+    const where = { workspaceId };
     if (category) {
       where.category = String(category);
     }
@@ -40,9 +41,10 @@ exports.getAllTags = async (req, res, next) => {
 exports.getTagById = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const workspaceId = req.workspaceId;
     
-    const tag = await prisma.tag.findUnique({
-      where: { id }
+    const tag = await prisma.tag.findFirst({
+      where: { id, workspaceId }
     });
     
     if (!tag) {
@@ -63,6 +65,7 @@ exports.getTagById = async (req, res, next) => {
  */
 exports.createTag = async (req, res, next) => {
   try {
+    const workspaceId = req.workspaceId;
     const { label, category, color, level } = req.body;
 
     const nouveauTag = await prisma.tag.create({
@@ -70,7 +73,8 @@ exports.createTag = async (req, res, next) => {
         label,
         category,
         color: color || null,
-        level: level !== undefined ? level : null
+        level: level !== undefined ? level : null,
+        workspaceId
       }
     });
     
@@ -92,9 +96,10 @@ exports.createTag = async (req, res, next) => {
 exports.updateTag = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const workspaceId = req.workspaceId;
     const { label, color, level } = req.body;
 
-    const tag = await prisma.tag.findUnique({ where: { id } });
+    const tag = await prisma.tag.findFirst({ where: { id, workspaceId } });
     if (!tag) {
       const error = new Error('Tag non trouvé');
       error.statusCode = 404;
@@ -108,7 +113,7 @@ exports.updateTag = async (req, res, next) => {
     }
 
     const tagUpdated = await prisma.tag.update({
-      where: { id },
+      where: { id, workspaceId },
       data: updateData
     });
     
@@ -124,16 +129,14 @@ exports.updateTag = async (req, res, next) => {
 };
 
 /**
- * Supprimer un tag
- * @route DELETE /api/tags/:id
- */
-/**
  * Récupérer tous les tags groupés par catégorie
  * @route GET /api/tags/grouped
  */
 exports.getGroupedTags = async (req, res, next) => {
   try {
+    const workspaceId = req.workspaceId;
     const tags = await prisma.tag.findMany({
+      where: { workspaceId },
       orderBy: [
         { category: 'asc' },
         { label: 'asc' }
@@ -177,9 +180,10 @@ exports.deleteTag = async (req, res, next) => {
   try {
     const { id } = req.params;
     const force = String(req.query.force || '').toLowerCase() === 'true';
+    const workspaceId = req.workspaceId;
 
     const tag = await prisma.tag.findUnique({
-      where: { id },
+      where: { id, workspaceId },
       select: {
         _count: {
           select: { exercices: true, entrainements: true, situationsMatchs: true }

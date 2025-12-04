@@ -23,6 +23,7 @@ import { AuthService } from './services/auth.service';
 import { AuthGuard } from './guards/auth.guard';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { BackendStatusInterceptor } from './interceptors/backend-status.interceptor';
+import { WorkspaceInterceptor } from './interceptors/workspace.interceptor';
 
 /**
  * Module Core regroupant tous les services et modules partagés
@@ -55,6 +56,11 @@ import { BackendStatusInterceptor } from './interceptors/backend-status.intercep
     {
       provide: HTTP_INTERCEPTORS,
       useClass: BackendStatusInterceptor,
+      multi: true
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: WorkspaceInterceptor,
       multi: true
     }
   ]

@@ -7,7 +7,10 @@ const calculerDureeTotal = (exercices) => {
 
 exports.getAllEntrainements = async (req, res, next) => {
   try {
+    const workspaceId = req.workspaceId;
+
     const entrainements = await prisma.entrainement.findMany({
+      where: { workspaceId },
       include: {
         exercices: { orderBy: { ordre: 'asc' }, include: { exercice: { include: { tags: true } } } },
         tags: true,
@@ -17,7 +20,7 @@ exports.getAllEntrainements = async (req, res, next) => {
       orderBy: { createdAt: 'desc' }
     });
 
-        const resultats = entrainements.map(e => ({ ...e, dureeTotal: calculerDureeTotal(e.exercices) }));
+    const resultats = entrainements.map(e => ({ ...e, dureeTotal: calculerDureeTotal(e.exercices) }));
     res.json(resultats);
   } catch (error) {
     next(error);
@@ -27,8 +30,10 @@ exports.getAllEntrainements = async (req, res, next) => {
 exports.getEntrainementById = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const entrainement = await prisma.entrainement.findUnique({
-      where: { id },
+    const workspaceId = req.workspaceId;
+
+    const entrainement = await prisma.entrainement.findFirst({
+      where: { id, workspaceId },
       include: {
         exercices: { orderBy: { ordre: 'asc' }, include: { exercice: { include: { tags: true } } } },
         tags: true,
@@ -43,7 +48,7 @@ exports.getEntrainementById = async (req, res, next) => {
       return next(error);
     }
 
-        const resultat = { ...entrainement, dureeTotal: calculerDureeTotal(entrainement.exercices) };
+    const resultat = { ...entrainement, dureeTotal: calculerDureeTotal(entrainement.exercices) };
     res.json(resultat);
   } catch (error) {
     next(error);
@@ -52,7 +57,9 @@ exports.getEntrainementById = async (req, res, next) => {
 
 exports.createEntrainement = async (req, res, next) => {
   try {
+    const workspaceId = req.workspaceId;
     const { titre, date, exercices, echauffementId, situationMatchId, tagIds } = req.body;
+
     // Log minimal pour diagnostiquer les erreurs 500 côté création
     console.log('[createEntrainement] payload reçu', {
       titre,
@@ -82,6 +89,7 @@ exports.createEntrainement = async (req, res, next) => {
         imageUrl: req.file ? req.file.cloudinaryUrl : (req.body.imageUrl || null),
         echauffementId: echauffementId || null,
         situationMatchId: situationMatchId || null,
+        workspaceId,
         tags: { connect: (tagIds || []).map(id => ({ id })) },
         exercices: {
           // Filtrer les entrées invalides et construire proprement
@@ -108,6 +116,8 @@ exports.createEntrainement = async (req, res, next) => {
 exports.updateEntrainement = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const workspaceId = req.workspaceId;
+
     const { titre, date, exercices, echauffementId, situationMatchId, tagIds } = req.body;
 
     // La logique de mise à jour des relations many-to-many avec Prisma
@@ -119,7 +129,7 @@ exports.updateEntrainement = async (req, res, next) => {
 
       // 2. Mettre à jour l'entraînement et recréer les nouvelles liaisons
       await tx.entrainement.update({
-        where: { id },
+        where: { id, workspaceId },
         data: {
           titre,
           date: date ? new Date(date) : undefined,
@@ -144,9 +154,9 @@ exports.updateEntrainement = async (req, res, next) => {
       });
     });
 
-    const entrainementMisAJour = await prisma.entrainement.findUnique({
-        where: { id },
-        include: { exercices: { include: { exercice: true } }, tags: true, echauffement: true, situationMatch: true }
+    const entrainementMisAJour = await prisma.entrainement.findFirst({
+      where: { id, workspaceId },
+      include: { exercices: { include: { exercice: true } }, tags: true, echauffement: true, situationMatch: true }
     });
 
     res.json(entrainementMisAJour);
@@ -158,8 +168,19 @@ exports.updateEntrainement = async (req, res, next) => {
 exports.deleteEntrainement = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const workspaceId = req.workspaceId;
+
+    // Vérifier que l'entraînement existe dans le workspace courant
+    const entrainement = await prisma.entrainement.findFirst({ where: { id, workspaceId } });
+    if (!entrainement) {
+      const error = new Error('Entraînement non trouvé');
+      error.statusCode = 404;
+      return next(error);
+    }
+
     // La suppression en cascade est gérée par Prisma via le schéma
-    await prisma.entrainement.delete({ where: { id } });
+    await prisma.entrainement.delete({ where: { id, workspaceId } });
+
     res.status(204).send();
   } catch (error) {
     next(error);
@@ -169,8 +190,10 @@ exports.deleteEntrainement = async (req, res, next) => {
 exports.duplicateEntrainement = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const original = await prisma.entrainement.findUnique({
-      where: { id },
+    const workspaceId = req.workspaceId;
+
+    const original = await prisma.entrainement.findFirst({
+      where: { id, workspaceId },
       include: { exercices: true, tags: true }
     });
 
@@ -187,13 +210,14 @@ exports.duplicateEntrainement = async (req, res, next) => {
         imageUrl: original.imageUrl,
         echauffementId: original.echauffementId,
         situationMatchId: original.situationMatchId,
+        workspaceId,
         tags: { connect: original.tags.map(t => ({ id: t.id })) },
         exercices: {
-          create: original.exercices.map(ex => ({ 
-            exerciceId: ex.exerciceId, 
-            ordre: ex.ordre, 
-            duree: ex.duree, 
-            notes: ex.notes 
+          create: original.exercices.map(ex => ({
+            exerciceId: ex.exerciceId,
+            ordre: ex.ordre,
+            duree: ex.duree,
+            notes: ex.notes
           }))
         }
       },

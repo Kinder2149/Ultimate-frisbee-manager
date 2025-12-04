@@ -6,7 +6,10 @@ const { prisma } = require('../services/prisma');
  */
 exports.getAllExercices = async (req, res, next) => {
   try {
+    const workspaceId = req.workspaceId;
+
     let exercices = await prisma.exercice.findMany({
+      where: { workspaceId },
       include: {
         tags: true // Inclure les tags associés
       }
@@ -32,9 +35,10 @@ exports.getAllExercices = async (req, res, next) => {
 exports.getExerciceById = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const workspaceId = req.workspaceId;
     
-    const exercice = await prisma.exercice.findUnique({
-      where: { id },
+    const exercice = await prisma.exercice.findFirst({
+      where: { id, workspaceId },
       include: { tags: true } // Inclure les tags associés
     });
 
@@ -58,6 +62,8 @@ exports.getExerciceById = async (req, res, next) => {
  */
 exports.createExercice = async (req, res, next) => {
   try {
+    const workspaceId = req.workspaceId;
+
     // On ne récupère plus variablesText qui est obsolète
     const { nom, description, variablesPlus, variablesMinus, points, tags, tagIds, materiel, notes, critereReussite } = req.body;
 
@@ -74,7 +80,6 @@ exports.createExercice = async (req, res, next) => {
       notes: notes ? 'présent' : 'absent',
     });
 
-    // Préparer les données pour la création en conformité avec schema.prisma
     // Helper local pour normaliser un tableau de chaînes
     const normalizeStringArray = (value) => {
       const flattenOnce = (val) => {
@@ -92,7 +97,6 @@ exports.createExercice = async (req, res, next) => {
         }
         return val;
       };
-      // Boucle de dé-nestage jusqu'à obtenir un tableau plat de primitives
       let arr = Array.isArray(value) ? value : [value].filter((v) => v !== undefined && v !== null);
       let changed = true;
       while (changed) {
@@ -121,6 +125,7 @@ exports.createExercice = async (req, res, next) => {
       materiel: materiel || null,
       notes: notes || null,
       critereReussite: critereReussite || null,
+      workspaceId,
       // Assurer que les variables sont des tableaux de chaînes (String[])
       variablesPlus: JSON.stringify(normalizeStringArray(Array.isArray(variablesPlus) ? variablesPlus : [])),
       variablesMinus: JSON.stringify(normalizeStringArray(Array.isArray(variablesMinus) ? variablesMinus : [])),
@@ -192,10 +197,13 @@ exports.updateExercice = async (req, res, next) => {
   // Envelopper toute la fonction dans un try/catch pour une meilleure gestion d'erreur
   try {
     const { id } = req.params;
+    const workspaceId = req.workspaceId;
+
     const { nom, description, variablesPlus, variablesMinus, points, tagIds, materiel, notes, critereReussite } = req.body;
 
     // 1. Vérifier que l'exercice existe
-    const existingExercice = await prisma.exercice.findUnique({ where: { id } });
+    const existingExercice = await prisma.exercice.findFirst({ where: { id, workspaceId } });
+
     if (!existingExercice) {
       return res.status(404).json({ error: 'Exercice non trouvé' });
     }
@@ -285,7 +293,7 @@ exports.updateExercice = async (req, res, next) => {
 
     // 4. Exécuter la mise à jour
     const exerciceUpdated = await prisma.exercice.update({
-      where: { id },
+      where: { id, workspaceId },
       data: updateData,
       include: { tags: true } // Toujours inclure les tags dans la réponse
     });
@@ -313,9 +321,10 @@ exports.updateExercice = async (req, res, next) => {
 exports.duplicateExercice = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const workspaceId = req.workspaceId;
 
-    const originalExercice = await prisma.exercice.findUnique({
-      where: { id },
+    const originalExercice = await prisma.exercice.findFirst({
+      where: { id, workspaceId },
       include: { tags: true }
     });
 
@@ -331,6 +340,7 @@ exports.duplicateExercice = async (req, res, next) => {
         imageUrl: originalExercice.imageUrl,
         materiel: originalExercice.materiel,
         notes: originalExercice.notes,
+        workspaceId: originalExercice.workspaceId,
         // Les variables sont des chaînes JSON, on les passe directement
         variablesPlus: originalExercice.variablesPlus,
         variablesMinus: originalExercice.variablesMinus,
@@ -361,15 +371,17 @@ exports.duplicateExercice = async (req, res, next) => {
 exports.deleteExercice = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const workspaceId = req.workspaceId;
     
-    // Vérifier si l'exercice existe
-    const exercice = await prisma.exercice.findUnique({ where: { id } });
+    // Vérifier si l'exercice existe dans le workspace courant
+    const exercice = await prisma.exercice.findFirst({ where: { id, workspaceId } });
+
     if (!exercice) {
       return res.status(404).json({ error: 'Exercice non trouvé' });
     }
     
     // Supprimer l'exercice (les relations avec les tags seront automatiquement supprimées)
-    await prisma.exercice.delete({ where: { id } });
+    await prisma.exercice.delete({ where: { id, workspaceId } });
     
     res.status(204).send(); // No Content
   } catch (error) {

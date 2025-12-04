@@ -1,0 +1,35 @@
+<div class="select-workspace-container">
+  <h1>Sélectionnez une base de travail</h1>
+
+  <p class="description">
+    Choisissez la base (club / projet) sur laquelle vous souhaitez travailler.
+  </p>
+
+  <ng-container *ngIf="workspaces$ | async as workspaces">
+    <div *ngIf="workspaces.length === 0" class="empty-state">
+      <p>Aucune base ne vous est encore attribuée.</p>
+      <p>Contactez un administrateur pour qu'il vous donne accès à une base.</p>
+    </div>
+
+    <div *ngIf="workspaces.length > 0" class="cards-grid">
+      <mat-card
+        class="workspace-card"
+        *ngFor="let ws of workspaces"
+        (click)="selectWorkspace(ws)"
+      >
+        <mat-card-title>{{ ws.name }}</mat-card-title>
+        <mat-card-subtitle *ngIf="ws.role">
+          Rôle : {{ ws.role | titlecase }}
+        </mat-card-subtitle>
+        <mat-card-content>
+          <p *ngIf="ws.createdAt">Créée le {{ ws.createdAt | date: 'mediumDate' }}</p>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-raised-button color="primary" (click)="$event.stopPropagation(); selectWorkspace(ws)">
+            Utiliser cette base
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </ng-container>
+</div>

@@ -40,6 +40,23 @@ export interface AllContentResponse {
   situations: BaseContentItem[];
 }
 
+export interface AdminWorkspaceSummary {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt?: string;
+  membersCount: number;
+}
+
+export interface AdminWorkspaceUser {
+  userId: string;
+  email: string;
+  nom?: string;
+  prenom?: string;
+  role: string;
+  linkId: string;
+}
+
 export interface AdminOverviewResponse {
   counts: AdminOverviewCounts;
   recent: {
@@ -95,5 +112,36 @@ export class AdminService {
   bulkDuplicate(items: { id: string, type: string }[]): Observable<any> {
     const url = this.api.getUrl('admin/bulk-duplicate');
     return this.http.post(url, { items });
+  }
+
+  // --- Workspaces admin ---
+  getWorkspaces(): Observable<AdminWorkspaceSummary[]> {
+    const url = this.api.getUrl('workspaces');
+    return this.http.get<AdminWorkspaceSummary[]>(url);
+  }
+
+  createWorkspace(payload: { name: string; ownerUserId?: string }): Observable<{ id: string; name: string; createdAt: string }> {
+    const url = this.api.getUrl('workspaces');
+    return this.http.post<{ id: string; name: string; createdAt: string }>(url, payload);
+  }
+
+  updateWorkspace(id: string, payload: { name?: string }): Observable<{ id: string; name: string; createdAt: string; updatedAt: string }> {
+    const url = this.api.getUrl(`workspaces/${id}`);
+    return this.http.put<{ id: string; name: string; createdAt: string; updatedAt: string }>(url, payload);
+  }
+
+  deleteWorkspace(id: string): Observable<void> {
+    const url = this.api.getUrl(`workspaces/${id}`);
+    return this.http.delete<void>(url);
+  }
+
+  getWorkspaceUsers(id: string): Observable<{ workspaceId: string; name: string; users: AdminWorkspaceUser[] }> {
+    const url = this.api.getUrl(`workspaces/${id}/users`);
+    return this.http.get<{ workspaceId: string; name: string; users: AdminWorkspaceUser[] }>(url);
+  }
+
+  setWorkspaceUsers(id: string, users: { userId: string; role: string }[]): Observable<void> {
+    const url = this.api.getUrl(`workspaces/${id}/users`);
+    return this.http.put<void>(url, { users });
   }
 }

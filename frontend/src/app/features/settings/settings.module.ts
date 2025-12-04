@@ -11,6 +11,7 @@ import { ImportExercicesComponent } from './pages/import-exercices/import-exerci
 import { AdminDashboardComponent } from './pages/admin-dashboard/admin-dashboard.component';
 import { DataExplorerPageComponent } from './pages/data-explorer/data-explorer-page.component';
 import { ImportExportComponent } from './pages/import-export/import-export.component';
+import { AdminWorkspacesPageComponent } from './pages/admin-workspaces/admin-workspaces-page.component';
 
 const routes: Routes = [
   {
@@ -26,6 +27,12 @@ const routes: Routes = [
         component: AdminDashboardComponent, 
         canActivate: [RoleGuard], 
         data: { role: 'admin' } 
+      },
+      {
+        path: 'admin/workspaces',
+        component: AdminWorkspacesPageComponent,
+        canActivate: [RoleGuard],
+        data: { role: 'admin' }
       },
       { 
         path: 'admin/explorer', 
@@ -50,7 +57,8 @@ const routes: Routes = [
     ImportExportComponent,
     ImportExercicesComponent,
     AdminDashboardComponent,
-    DataExplorerPageComponent
+    DataExplorerPageComponent,
+    AdminWorkspacesPageComponent
   ]
 })
 export class SettingsModule {}

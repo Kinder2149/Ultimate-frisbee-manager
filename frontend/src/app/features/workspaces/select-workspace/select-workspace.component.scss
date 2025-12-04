@@ -1,0 +1,47 @@
+.select-workspace-container {
+  max-width: 960px;
+  margin: 40px auto;
+  padding: 0 16px;
+
+  h1 {
+    margin-bottom: 8px;
+  }
+
+  .description {
+    margin-bottom: 24px;
+    color: rgba(0, 0, 0, 0.7);
+  }
+
+  .empty-state {
+    margin-top: 32px;
+    padding: 24px;
+    border-radius: 8px;
+    background: #fff3e0;
+    border: 1px solid #ffe0b2;
+
+    p {
+      margin: 0 0 4px 0;
+    }
+  }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+  }
+
+  .workspace-card {
+    cursor: pointer;
+    transition: box-shadow 0.2s ease, transform 0.1s ease;
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transform: translateY(-2px);
+    }
+
+    mat-card-actions {
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
+}

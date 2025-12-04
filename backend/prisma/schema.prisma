@@ -22,7 +22,11 @@ model Exercice {
   entrainements   EntrainementExercice[]
   tags            Tag[]                  @relation("ExerciseTags")
 
+  workspaceId String?
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
   @@index([createdAt])
+  @@index([workspaceId])
 }
 
 model Tag {
@@ -36,8 +40,12 @@ model Tag {
   exercices        Exercice[]       @relation("ExerciseTags")
   situationsMatchs SituationMatch[] @relation("SituationMatchTags")
 
+  workspaceId String?
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
   @@unique([label, category])
   @@index([createdAt])
+  @@index([workspaceId])
 }
 
 model Entrainement {
@@ -53,9 +61,13 @@ model Entrainement {
   exercices        EntrainementExercice[]
   tags             Tag[]                  @relation("EntrainementTags")
 
+  workspaceId String?
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
   @@index([echauffementId])
   @@index([situationMatchId])
   @@index([createdAt])
+  @@index([workspaceId])
 }
 
 model EntrainementExercice {
@@ -69,10 +81,14 @@ model EntrainementExercice {
   entrainement   Entrainement @relation(fields: [entrainementId], references: [id], onDelete: Cascade)
   exercice       Exercice     @relation(fields: [exerciceId], references: [id], onDelete: Cascade)
 
+  workspaceId String?
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
   @@unique([entrainementId, exerciceId])
   @@index([entrainementId])
   @@index([exerciceId])
   @@index([createdAt])
+  @@index([workspaceId])
 }
 
 model Echauffement {
@@ -84,7 +100,11 @@ model Echauffement {
   blocs         BlocEchauffement[]
   entrainements Entrainement[]
 
+  workspaceId String?
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
   @@index([createdAt])
+  @@index([workspaceId])
 }
 
 model BlocEchauffement {
@@ -100,9 +120,13 @@ model BlocEchauffement {
   createdAt      DateTime     @default(now())
   echauffement   Echauffement @relation(fields: [echauffementId], references: [id], onDelete: Cascade)
 
+  workspaceId String?
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
   @@unique([echauffementId, ordre])
   @@index([echauffementId])
   @@index([createdAt])
+  @@index([workspaceId])
 }
 
 model SituationMatch {
@@ -116,7 +140,11 @@ model SituationMatch {
   entrainements Entrainement[]
   tags          Tag[]          @relation("SituationMatchTags")
 
+  workspaceId String?
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
   @@index([createdAt])
+  @@index([workspaceId])
 }
 
 model User {
@@ -131,5 +159,38 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  workspaces WorkspaceUser[]
+
   @@index([createdAt])
+}
+
+model Workspace {
+  id        String           @id @default(uuid())
+  name      String
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  members   WorkspaceUser[]
+  exercices Exercice[]
+  tags      Tag[]
+  entrainements Entrainement[]
+  entrainementExercices EntrainementExercice[]
+  echauffements Echauffement[]
+  blocsEchauffement BlocEchauffement[]
+  situationsMatch SituationMatch[]
+}
+
+model WorkspaceUser {
+  id          String    @id @default(uuid())
+  workspaceId String
+  userId      String
+  role        String    @default("OWNER")
+  createdAt   DateTime  @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@index([workspaceId])
+  @@index([userId])
 }

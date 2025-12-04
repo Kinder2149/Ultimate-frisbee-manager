@@ -7,7 +7,10 @@ const { prisma } = require('../services/prisma');
  */
 exports.getAllEchauffements = async (req, res, next) => {
   try {
+    const workspaceId = req.workspaceId;
+
     const echauffements = await prisma.echauffement.findMany({
+      where: { workspaceId },
       include: {
         blocs: {
           orderBy: { ordre: 'asc' }
@@ -30,9 +33,10 @@ exports.getAllEchauffements = async (req, res, next) => {
 exports.getEchauffementById = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const workspaceId = req.workspaceId;
     
-    const echauffement = await prisma.echauffement.findUnique({
-      where: { id },
+    const echauffement = await prisma.echauffement.findFirst({
+      where: { id, workspaceId },
       include: {
         blocs: {
           orderBy: { ordre: 'asc' }
@@ -59,6 +63,7 @@ exports.getEchauffementById = async (req, res, next) => {
  */
 exports.createEchauffement = async (req, res, next) => {
   try {
+    const workspaceId = req.workspaceId;
     const { nom, description, blocs } = req.body;
     
     const nouvelEchauffement = await prisma.echauffement.create({
@@ -66,6 +71,7 @@ exports.createEchauffement = async (req, res, next) => {
         nom,
         description,
         imageUrl: req.file ? req.file.cloudinaryUrl : (req.body.imageUrl || null),
+        workspaceId,
         blocs: {
           create: (blocs || []).map((bloc, index) => ({ ...bloc, ordre: bloc.ordre || index + 1 }))
         }
@@ -87,6 +93,7 @@ exports.createEchauffement = async (req, res, next) => {
 exports.updateEchauffement = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const workspaceId = req.workspaceId;
     const { nom, description, blocs } = req.body;
 
     const echauffementMisAJour = await prisma.$transaction(async (tx) => {
@@ -95,7 +102,7 @@ exports.updateEchauffement = async (req, res, next) => {
 
       // 2. Mettre à jour l'échauffement et recréer les blocs
       const updated = await tx.echauffement.update({
-        where: { id },
+        where: { id, workspaceId },
         data: {
           nom,
           description,
@@ -128,8 +135,17 @@ exports.updateEchauffement = async (req, res, next) => {
 exports.deleteEchauffement = async (req, res, next) => {
   try {
     const { id } = req.params;
-    
-    await prisma.echauffement.delete({ where: { id } });
+    const workspaceId = req.workspaceId;
+
+    const echauffement = await prisma.echauffement.findFirst({ where: { id, workspaceId } });
+
+    if (!echauffement) {
+      const error = new Error('Échauffement non trouvé');
+      error.statusCode = 404;
+      return next(error);
+    }
+
+    await prisma.echauffement.delete({ where: { id, workspaceId } });
     
     res.status(204).send();
   } catch (error) {
@@ -145,9 +161,10 @@ exports.deleteEchauffement = async (req, res, next) => {
 exports.duplicateEchauffement = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const workspaceId = req.workspaceId;
     
-    const echauffementOriginal = await prisma.echauffement.findUnique({
-      where: { id },
+    const echauffementOriginal = await prisma.echauffement.findFirst({
+      where: { id, workspaceId },
       include: { blocs: { orderBy: { ordre: 'asc' } } }
     });
     
@@ -162,6 +179,7 @@ exports.duplicateEchauffement = async (req, res, next) => {
         nom: `${echauffementOriginal.nom} (Copie)`,
         description: echauffementOriginal.description,
         imageUrl: echauffementOriginal.imageUrl,
+        workspaceId: echauffementOriginal.workspaceId,
         blocs: {
           create: echauffementOriginal.blocs.map(bloc => ({
             ordre: bloc.ordre,

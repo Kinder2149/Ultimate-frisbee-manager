@@ -30,9 +30,11 @@ const healthRoutes = require('./health.routes');
 
 // Routes de debug (publiques et non sensibles – ne retournent pas de secrets)
 const debugRoutes = require('./debug.routes');
+const workspaceRoutes = require('./workspace.routes');
 
 // Middleware d'authentification
 const { authenticateToken } = require('../middleware/auth.middleware');
+const { workspaceGuard } = require('../middleware/workspace.middleware');
 
 module.exports = (app) => {
   // Routes publiques (authentification)
@@ -42,23 +44,27 @@ module.exports = (app) => {
   // Debug réseau/DB (sans Prisma)
   app.use('/api/debug', debugRoutes);
 
-  // Routes protégées (nécessitent authentification)
+  // Routes workspaces (utilisateur et admin)
+  app.use('/api/workspaces', authenticateToken, workspaceRoutes);
+
+  // Routes protégées (nécessitent authentification et workspace actif)
   // Routes FR historiques
-  app.use('/api/exercices', authenticateToken, exerciceRoutes);
-  app.use('/api/tags', authenticateToken, tagRoutes);
-  app.use('/api/entrainements', authenticateToken, entrainementRoutes);
-  app.use('/api/echauffements', authenticateToken, echauffementRoutes);
-  app.use('/api/situations-matchs', authenticateToken, situationMatchRoutes);
-  app.use('/api/dashboard', authenticateToken, dashboardRoutes);
-  app.use('/api/import', authenticateToken, importRoutes);
+  app.use('/api/exercices', authenticateToken, workspaceGuard, exerciceRoutes);
+  app.use('/api/tags', authenticateToken, workspaceGuard, tagRoutes);
+  app.use('/api/entrainements', authenticateToken, workspaceGuard, entrainementRoutes);
+  app.use('/api/echauffements', authenticateToken, workspaceGuard, echauffementRoutes);
+  app.use('/api/situations-matchs', authenticateToken, workspaceGuard, situationMatchRoutes);
+  app.use('/api/dashboard', authenticateToken, workspaceGuard, dashboardRoutes);
+  app.use('/api/import', authenticateToken, workspaceGuard, importRoutes);
+
   app.use('/api/admin', adminRoutes);
 
   // Alias REST en EN (compatibilité avec conventions)
-  app.use('/api/exercises', authenticateToken, exerciceRoutes);
-  app.use('/api/trainings', authenticateToken, entrainementRoutes);
-  app.use('/api/warmups', authenticateToken, echauffementRoutes);
-  app.use('/api/matches', authenticateToken, situationMatchRoutes);
-  
+  app.use('/api/exercises', authenticateToken, workspaceGuard, exerciceRoutes);
+  app.use('/api/trainings', authenticateToken, workspaceGuard, entrainementRoutes);
+  app.use('/api/warmups', authenticateToken, workspaceGuard, echauffementRoutes);
+  app.use('/api/matches', authenticateToken, workspaceGuard, situationMatchRoutes);
+
   // Route d'accueil de l'API
   app.get('/api', (req, res) => {
     res.json({ 

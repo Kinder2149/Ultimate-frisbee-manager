@@ -10,7 +10,10 @@ const { prisma } = require('../services/prisma');
  */
 exports.getAllSituationsMatchs = async (req, res, next) => {
   try {
+    const workspaceId = req.workspaceId;
+
     const situationsMatchs = await prisma.situationMatch.findMany({
+      where: { workspaceId },
       include: { tags: true },
       orderBy: { createdAt: 'desc' }
     });
@@ -27,8 +30,10 @@ exports.getAllSituationsMatchs = async (req, res, next) => {
 exports.getSituationMatchById = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const situationMatch = await prisma.situationMatch.findUnique({
-      where: { id },
+    const workspaceId = req.workspaceId;
+
+    const situationMatch = await prisma.situationMatch.findFirst({
+      where: { id, workspaceId },
       include: { tags: true }
     });
     
@@ -50,6 +55,7 @@ exports.getSituationMatchById = async (req, res, next) => {
  */
 exports.createSituationMatch = async (req, res, next) => {
   try {
+    const workspaceId = req.workspaceId;
     const { nom, type, description, temps, tagIds } = req.body;
     
     const nouvelleSituationMatch = await prisma.situationMatch.create({
@@ -59,6 +65,7 @@ exports.createSituationMatch = async (req, res, next) => {
         description,
         temps,
         imageUrl: req.file ? req.file.cloudinaryUrl : (req.body.imageUrl || null),
+        workspaceId,
         tags: { connect: (tagIds || []).map(id => ({ id })) }
       },
       include: { tags: true }
@@ -77,6 +84,7 @@ exports.createSituationMatch = async (req, res, next) => {
 exports.updateSituationMatch = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const workspaceId = req.workspaceId;
     const { nom, type, description, temps, tagIds } = req.body;
 
     const updateData = {
@@ -93,7 +101,7 @@ exports.updateSituationMatch = async (req, res, next) => {
     };
 
     const situationMatchMiseAJour = await prisma.situationMatch.update({
-      where: { id },
+      where: { id, workspaceId },
       data: updateData,
       include: { tags: true }
     });
@@ -111,7 +119,17 @@ exports.updateSituationMatch = async (req, res, next) => {
 exports.deleteSituationMatch = async (req, res, next) => {
   try {
     const { id } = req.params;
-    await prisma.situationMatch.delete({ where: { id } });
+    const workspaceId = req.workspaceId;
+
+    const situationMatch = await prisma.situationMatch.findFirst({ where: { id, workspaceId } });
+
+    if (!situationMatch) {
+      const error = new Error('Situation/match non trouvée');
+      error.statusCode = 404;
+      return next(error);
+    }
+
+    await prisma.situationMatch.delete({ where: { id, workspaceId } });
     res.status(204).send();
   } catch (error) {
     next(error);
@@ -125,9 +143,10 @@ exports.deleteSituationMatch = async (req, res, next) => {
 exports.duplicateSituationMatch = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const workspaceId = req.workspaceId;
     
-    const situationMatchOriginale = await prisma.situationMatch.findUnique({
-      where: { id },
+    const situationMatchOriginale = await prisma.situationMatch.findFirst({
+      where: { id, workspaceId },
       include: { tags: true }
     });
     
@@ -144,6 +163,7 @@ exports.duplicateSituationMatch = async (req, res, next) => {
         description: situationMatchOriginale.description,
         temps: situationMatchOriginale.temps,
         imageUrl: situationMatchOriginale.imageUrl,
+        workspaceId: situationMatchOriginale.workspaceId,
         tags: { connect: situationMatchOriginale.tags.map(tag => ({ id: tag.id })) }
       },
       include: { tags: true }
