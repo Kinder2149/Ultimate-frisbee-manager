@@ -13,6 +13,18 @@ export interface BackendState {
   attempts?: number;
 }
 
+interface HealthResponse {
+  status?: string;
+  timestamp?: string;
+  db?: boolean | null;
+  uptime?: number;
+  uptimeSeconds?: number;
+  env?: string;
+  version?: string | null;
+  coldStart?: boolean;
+  responseTimeMs?: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class BackendStatusService {
   private state$ = new BehaviorSubject<BackendState>({ status: 'idle', message: '' });
@@ -36,13 +48,29 @@ export class BackendStatusService {
   checkHealthOnce() {
     this.state$.next({ status: 'checking', message: 'Connexion au serveur…' });
     const url = this.apiUrl.getUrl('health');
-    this.http.get<any>(url).subscribe({
-      next: (res) => {
+    this.http.get<HealthResponse>(url).subscribe({
+      next: (res: HealthResponse) => {
+        const responseTimeMs = res?.responseTimeMs ?? null;
+        const version = res?.version ?? null;
+        const env = res?.env ?? undefined;
+        const coldStart = res?.coldStart ?? false;
+
+        let baseMessage = 'Connecté';
+        if (responseTimeMs != null) {
+          baseMessage = `Connecté (réponse en ${responseTimeMs} ms)`;
+        }
+        if (version) {
+          baseMessage += ` – v${version}`;
+        }
+        if (coldStart) {
+          baseMessage += ' (démarrage initial terminé)';
+        }
+
         this.state$.next({
           status: 'up',
-          message: 'Connecté',
+          message: baseMessage,
           lastCheck: new Date(),
-          responseTimeMs: res?.responseTimeMs ?? null,
+          responseTimeMs,
           attempts: 0
         });
         this.stopPolling();
@@ -57,18 +85,22 @@ export class BackendStatusService {
   notifyNetworkError() {
     const s = this.snapshot();
     if (s.status === 'idle' || s.status === 'up') {
-      this.state$.next({ status: 'waking', message: 'Réveil du serveur… cela peut prendre 30–60s', attempts: 0 });
+      this.state$.next({
+        status: 'waking',
+        message: 'Le serveur démarre… cela peut prendre quelques secondes (tentative n°1)',
+        attempts: 1
+      });
     }
   }
 
   startPolling() {
     if (this.pollingSub) return; // déjà en cours
 
-    let attempts = this.snapshot().attempts || 0;
+    let attempts = this.snapshot().attempts || 1;
 
     this.state$.next({
       status: 'waking',
-      message: 'Réveil du serveur… cela peut prendre 30–60s',
+      message: this.buildWakingMessage(attempts),
       attempts
     });
 
@@ -81,7 +113,11 @@ export class BackendStatusService {
         return;
       }
       attempts += 1;
-      this.state$.next({ status: 'waking', message: 'Réveil du serveur…', attempts });
+      this.state$.next({
+        status: 'waking',
+        message: this.buildWakingMessage(attempts),
+        attempts
+      });
       const base = Math.min(this.maxDelayMs, 1000 * Math.pow(2, Math.min(attempts, 4))); // 1s..10s
       const jitter = Math.floor(Math.random() * 400); // +0..400ms
       const delay = base + jitter;
@@ -105,8 +141,8 @@ export class BackendStatusService {
   private async tryHealth(): Promise<boolean> {
     try {
       const url = this.apiUrl.getUrl('health');
-      const res: any = await this.http.get(url).toPromise();
-      return !!res;
+      const res: HealthResponse | null = await this.http.get<HealthResponse>(url).toPromise();
+      return !!res && res.status === 'ok';
     } catch (e) {
       return false;
     }
@@ -115,5 +151,17 @@ export class BackendStatusService {
   private fadeOutSoon() {
     // Laisser visible brièvement l’état "Connecté"
     setTimeout(() => this.setIdle(), 1500);
+  }
+
+  private buildWakingMessage(attempts: number): string {
+    if (attempts <= 1) {
+      return 'Connexion au serveur…';
+    }
+
+    if (attempts === 2 || attempts === 3) {
+      return `Le serveur de l’application se réveille, cela peut prendre jusqu’à 30–60s (tentative n°${attempts})`;
+    }
+
+    return `Toujours en attente du serveur… le démarrage peut être un peu long (tentative n°${attempts})`;
   }
 }

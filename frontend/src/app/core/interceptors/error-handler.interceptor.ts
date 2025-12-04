@@ -117,8 +117,12 @@ export class ErrorHandlerInterceptor implements HttpInterceptor {
       timestamp: new Date().toISOString()
     });
 
-    // Utilisation du service de notification pour afficher les erreurs
-    this.notificationService.showError(errorMessage);
+    // Utilisation du service de notification pour afficher les erreurs.
+    // Pour les erreurs réseau/cold start (0/502/503/504), on laisse BackendStatusService
+    // gérer l'affichage via la bulle/loader afin d'éviter les doublons de messages.
+    if (!(error.status === 0 || error.status === 502 || error.status === 503 || error.status === 504)) {
+      this.notificationService.showError(errorMessage);
+    }
 
     // Renvoie l'erreur pour que les composants puissent la traiter si nécessaire
     return throwError(() => new Error(errorMessage));

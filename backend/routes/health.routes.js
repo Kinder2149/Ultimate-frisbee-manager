@@ -7,6 +7,10 @@ const { prisma } = require('../services/prisma');
 router.get('/', async (req, res) => {
   const startedAt = process.hrtime.bigint();
   const now = new Date().toISOString();
+  const uptimeSeconds = Math.round(process.uptime());
+  const env = process.env.NODE_ENV || 'development';
+  const version = process.env.APP_VERSION || null;
+  const coldStart = uptimeSeconds < 60; // heuristique simple: moins d'une minute de vie
 
   const shouldCheckDb = String(process.env.HEALTH_CHECK_DB || 'true').toLowerCase() !== 'false';
 
@@ -17,6 +21,10 @@ router.get('/', async (req, res) => {
       timestamp: now,
       db: null,
       uptime: process.uptime(),
+      uptimeSeconds,
+      env,
+      version,
+      coldStart,
       responseTimeMs: durationMs
     });
   }
@@ -30,6 +38,10 @@ router.get('/', async (req, res) => {
       timestamp: now,
       db: true,
       uptime: process.uptime(),
+      uptimeSeconds,
+      env,
+      version,
+      coldStart,
       responseTimeMs: durationMs
     });
   } catch (err) {
@@ -39,6 +51,10 @@ router.get('/', async (req, res) => {
       timestamp: now,
       db: false,
       uptime: process.uptime(),
+      uptimeSeconds,
+      env,
+      version,
+      coldStart,
       responseTimeMs: durationMs,
       error: 'database_unreachable'
     });
