@@ -10,6 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatListModule } from '@angular/material/list';
+import { MatCheckboxModule, MatCheckboxChange } from '@angular/material/checkbox';
 import { AdminService, AdminWorkspaceSummary, AdminWorkspaceUser } from '../../../../core/services/admin.service';
 
 @Component({
@@ -26,7 +27,8 @@ import { AdminService, AdminWorkspaceSummary, AdminWorkspaceUser } from '../../.
     MatSelectModule,
     MatCardModule,
     MatSnackBarModule,
-    MatListModule
+    MatListModule,
+    MatCheckboxModule
   ],
   templateUrl: './admin-workspaces-page.component.html',
   styleUrls: ['./admin-workspaces-page.component.scss']
@@ -64,11 +66,11 @@ export class AdminWorkspacesPageComponent implements OnInit {
     this.loading = true;
     this.error = null;
     this.adminService.getWorkspaces().subscribe({
-      next: (ws) => {
+      next: (ws: AdminWorkspaceSummary[]) => {
         this.workspaces = ws;
         this.loading = false;
       },
-      error: (err) => {
+      error: (err: unknown) => {
         console.error('Erreur chargement workspaces', err);
         this.error = 'Erreur lors du chargement des bases';
         this.loading = false;
@@ -78,8 +80,8 @@ export class AdminWorkspacesPageComponent implements OnInit {
 
   loadAllUsers(): void {
     this.adminService.getUsers().subscribe({
-      next: (res) => {
-        this.allUsers = res.users.map((u) => ({
+      next: (res: { users: Array<{ id: string; email: string; nom?: string; prenom?: string }> }) => {
+        this.allUsers = res.users.map((u: { id: string; email: string; nom?: string; prenom?: string }) => ({
           id: u.id,
           email: u.email,
           nom: u.nom,
@@ -169,7 +171,7 @@ export class AdminWorkspacesPageComponent implements OnInit {
 
   loadWorkspaceUsers(id: string): void {
     this.adminService.getWorkspaceUsers(id).subscribe({
-      next: (res) => {
+      next: (res: { workspaceId: string; name: string; users: AdminWorkspaceUser[] }) => {
         this.workspaceUsers = res.users;
       },
       error: (err) => {
@@ -200,7 +202,13 @@ export class AdminWorkspacesPageComponent implements OnInit {
     return this.workspaceUsers.some((u) => u.userId === userId);
   }
 
-  toggleUserInWorkspace(userId: string, checked: boolean): void {
+  getWorkspaceUserRole(userId: string): string {
+    const u = this.workspaceUsers.find((w) => w.userId === userId);
+    return u?.role || 'USER';
+  }
+
+  toggleUserInWorkspace(userId: string, event: MatCheckboxChange): void {
+    const checked = event.checked;
     if (!checked) {
       this.workspaceUsers = this.workspaceUsers.filter((u) => u.userId !== userId);
     } else {
