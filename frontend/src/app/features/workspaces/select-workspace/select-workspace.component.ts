@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { MaterialModule } from '../../../core/material/material.module';
 import { WorkspaceService, WorkspaceSummary } from '../../../core/services/workspace.service';
 import { environment } from '../../../../environments/environment';
@@ -45,12 +45,18 @@ export class SelectWorkspaceComponent implements OnInit {
     this.workspaces$ = this.http.get<WorkspaceApiDto[]>(url).pipe(
       map((items: WorkspaceApiDto[]) => {
         this.loading = false;
-        return (items || []).map((w: WorkspaceApiDto) => ({
+        const workspaces = (items || []).map((w: WorkspaceApiDto) => ({
           id: w.id,
           name: w.name,
           createdAt: w.createdAt,
           role: w.role,
         }));
+        return workspaces;
+      }),
+      tap((workspaces) => {
+        if (workspaces.length === 1) {
+          this.selectWorkspace(workspaces[0]);
+        }
       })
     );
   }

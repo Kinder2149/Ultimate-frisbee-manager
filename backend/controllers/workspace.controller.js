@@ -1,5 +1,56 @@
 const { prisma } = require('../services/prisma');
 
+// Workspace par défaut pour les nouveaux utilisateurs sans base de travail explicite
+const DEFAULT_WORKSPACE_NAME = 'BASE';
+
+async function ensureDefaultWorkspaceAndLink(userId) {
+  if (!userId) {
+    return null;
+  }
+
+  const existingLinks = await prisma.workspaceUser.findMany({
+    where: { userId },
+    include: { workspace: true },
+    orderBy: { createdAt: 'asc' },
+  });
+
+  if (existingLinks.length > 0) {
+    return existingLinks.map((l) => ({
+      id: l.workspace.id,
+      name: l.workspace.name,
+      createdAt: l.workspace.createdAt,
+      role: l.role,
+    }));
+  }
+
+  let workspace = await prisma.workspace.findFirst({
+    where: { name: DEFAULT_WORKSPACE_NAME },
+  });
+
+  if (!workspace) {
+    workspace = await prisma.workspace.create({
+      data: {
+        name: DEFAULT_WORKSPACE_NAME,
+      },
+    });
+  }
+
+  const link = await prisma.workspaceUser.create({
+    data: {
+      workspaceId: workspace.id,
+      userId,
+      role: 'OWNER',
+    },
+  });
+
+  return [{
+    id: workspace.id,
+    name: workspace.name,
+    createdAt: workspace.createdAt,
+    role: link.role,
+  }];
+}
+
 /**
  * Retourne les workspaces accessibles à l'utilisateur courant
  * GET /api/workspaces/me
@@ -11,20 +62,9 @@ exports.getMyWorkspaces = async (req, res, next) => {
       return res.status(401).json({ error: 'Utilisateur non authentifié', code: 'NO_USER' });
     }
 
-    const links = await prisma.workspaceUser.findMany({
-      where: { userId },
-      include: { workspace: true },
-      orderBy: { createdAt: 'asc' },
-    });
+    const workspaces = await ensureDefaultWorkspaceAndLink(userId);
 
-    const workspaces = links.map((l) => ({
-      id: l.workspace.id,
-      name: l.workspace.name,
-      createdAt: l.workspace.createdAt,
-      role: l.role,
-    }));
-
-    res.json(workspaces);
+    res.json(workspaces || []);
   } catch (error) {
     next(error);
   }
