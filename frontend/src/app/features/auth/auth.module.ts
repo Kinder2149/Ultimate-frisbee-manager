@@ -16,17 +16,23 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 // Composants
 import { LoginComponent } from './login/login.component';
+import { SignupComponent } from './signup/signup.component';
 
 const routes: Routes = [
   {
     path: '',
     component: LoginComponent
+  },
+  {
+    path: 'signup',
+    component: SignupComponent
   }
 ];
 
 @NgModule({
   declarations: [
-    LoginComponent
+    LoginComponent,
+    SignupComponent
   ],
   imports: [
     CommonModule,

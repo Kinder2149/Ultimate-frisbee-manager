@@ -32,6 +32,28 @@ export class AuthService {
     this.listenToAuthStateChanges();
   }
 
+  signUp(email: string, password: string): Observable<void> {
+    return from(
+      this.supabaseService.supabase.auth.signUp({
+        email,
+        password
+      })
+    ).pipe(
+      map(({ error }) => {
+        if (error) {
+          console.error('Erreur lors de la création du compte Supabase:', error);
+          throw error;
+        }
+        // L'email de confirmation et la suite du flux sont gérés côté Supabase.
+        return;
+      }),
+      catchError(error => {
+        console.error('Erreur inattendue lors de l\'inscription:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
   private listenToAuthStateChanges(): void {
     this.supabaseService.supabase.auth.onAuthStateChange(
       (event: AuthChangeEvent, session: Session | null) => {

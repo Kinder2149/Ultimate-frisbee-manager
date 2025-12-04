@@ -5,28 +5,26 @@
         <div mat-card-avatar class="login-avatar">
           <mat-icon>sports</mat-icon>
         </div>
-        <mat-card-title>Ultimate Frisbee Manager</mat-card-title>
-        <mat-card-subtitle>Connexion à votre espace</mat-card-subtitle>
+        <mat-card-title>Créer un compte</mat-card-title>
+        <mat-card-subtitle>Accédez à Ultimate Frisbee Manager</mat-card-subtitle>
       </mat-card-header>
 
       <mat-card-content>
-        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
-          <!-- Champ Email -->
+        <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="login-form">
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Email</mat-label>
             <input
               matInput
               type="email"
               formControlName="email"
-              placeholder="admin@ultimate.com"
+              placeholder="vous@exemple.com"
               autocomplete="email">
             <mat-icon matSuffix>email</mat-icon>
-            <mat-error *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+            <mat-error *ngIf="signupForm.get('email')?.invalid && signupForm.get('email')?.touched">
               {{ getFieldError('email') }}
             </mat-error>
           </mat-form-field>
 
-          <!-- Champ Mot de passe -->
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Mot de passe</mat-label>
             <input
@@ -34,7 +32,7 @@
               [type]="hidePassword ? 'password' : 'text'"
               formControlName="password"
               placeholder="Votre mot de passe"
-              autocomplete="current-password">
+              autocomplete="new-password">
             <button
               mat-icon-button
               matSuffix
@@ -44,48 +42,40 @@
               [attr.aria-pressed]="hidePassword">
               <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
             </button>
-            <mat-error *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+            <mat-error *ngIf="signupForm.get('password')?.invalid && signupForm.get('password')?.touched">
               {{ getFieldError('password') }}
             </mat-error>
           </mat-form-field>
 
-          <div class="forgot-password-link">
-            <a routerLink="/forgot-password">Mot de passe oublié ?</a>
-          </div>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Confirmer le mot de passe</mat-label>
+            <input
+              matInput
+              type="password"
+              formControlName="confirmPassword"
+              placeholder="Confirmez votre mot de passe"
+              autocomplete="new-password">
+            <mat-error *ngIf="(signupForm.get('confirmPassword')?.touched || signupForm.get('confirmPassword')?.dirty) && signupForm.hasError('passwordsMismatch')">
+              {{ getFieldError('confirmPassword') }}
+            </mat-error>
+          </mat-form-field>
 
-          <!-- Bouton de connexion -->
           <button
             mat-raised-button
             color="primary"
             type="submit"
             class="login-button full-width"
-            [disabled]="loginForm.invalid || isLoading">
+            [disabled]="signupForm.invalid || isLoading">
             <mat-icon *ngIf="isLoading" class="spinning">refresh</mat-icon>
-            <mat-icon *ngIf="!isLoading">login</mat-icon>
-            {{ isLoading ? 'Connexion...' : 'Se connecter' }}
+            <mat-icon *ngIf="!isLoading">person_add</mat-icon>
+            {{ isLoading ? 'Création du compte...' : 'Créer mon compte' }}
           </button>
 
-          <!-- Indication cold start -->
-          <p class="cold-start-hint">
-            Lors de la première connexion de la journée, le serveur peut mettre entre 20 et 60&nbsp;secondes
-            à se réveiller. Si la connexion semble longue, laissez cette page ouverte&nbsp;:
-            l'application vous affichera automatiquement l'état de réveil du backend.
-          </p>
           <div class="forgot-password-link">
-            <span>Pas encore de compte ? <a routerLink="/auth/signup">Créer un compte</a></span>
+            <span>Déjà un compte ? <a routerLink="/login">Se connecter</a></span>
           </div>
         </form>
       </mat-card-content>
-
-      <!-- Footer d'information masqué en production -->
-      <!--
-      <mat-card-footer class="login-footer">
-        <div class="default-credentials">
-          <mat-icon>info</mat-icon>
-          <span>Utilisateur par défaut : <strong>admin&#64;ultimate.com</strong> / <strong>Ultim&#64;t+</strong></span>
-        </div>
-      </mat-card-footer>
-      -->
     </mat-card>
   </div>
 </div>
