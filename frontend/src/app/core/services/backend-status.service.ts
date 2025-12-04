@@ -141,7 +141,7 @@ export class BackendStatusService {
   private async tryHealth(): Promise<boolean> {
     try {
       const url = this.apiUrl.getUrl('health');
-      const res: HealthResponse | null = await this.http.get<HealthResponse>(url).toPromise();
+      const res = await this.http.get<HealthResponse>(url).toPromise();
       return !!res && res.status === 'ok';
     } catch (e) {
       return false;
