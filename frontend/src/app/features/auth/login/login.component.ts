@@ -79,12 +79,15 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     this.authService.login(credentials).subscribe({
       next: () => {
-        // La navigation principale est désormais pilotée par isAuthenticated$.
-        // On se contente ici d'afficher un message de succès.
         this.snackBar.open('Connexion réussie !', 'Fermer', {
           duration: 3000,
           panelClass: ['success-snackbar']
         });
+
+        // En production, pour éviter tout effet de timing entre Supabase
+        // et le flux isAuthenticated$, on force également une navigation
+        // immédiate vers l'URL de retour.
+        this.router.navigate([this.returnUrl]);
       },
       error: (error) => {
         // Les erreurs de Supabase ont une structure différente. On affiche un message générique.

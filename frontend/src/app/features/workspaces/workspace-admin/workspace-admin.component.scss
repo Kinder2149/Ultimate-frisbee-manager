@@ -1,0 +1,58 @@
+.workspace-admin-container {
+  max-width: 960px;
+  margin: 40px auto;
+  padding: 0 16px;
+
+  .workspace-info-card,
+  .workspace-members-card {
+    margin-bottom: 24px;
+  }
+
+  .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+
+    .full-width {
+      flex: 1 1 100%;
+    }
+  }
+
+  .actions {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .new-member-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 16px;
+
+    .email-field {
+      flex: 2 1 240px;
+    }
+
+    .role-field {
+      flex: 1 1 160px;
+    }
+  }
+
+  .members-table {
+    width: 100%;
+  }
+
+  .empty-members {
+    margin-top: 8px;
+    color: rgba(0, 0, 0, 0.6);
+  }
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60vh;
+}

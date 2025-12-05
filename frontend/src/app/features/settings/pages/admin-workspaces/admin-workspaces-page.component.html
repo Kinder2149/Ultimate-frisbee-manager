@@ -93,8 +93,7 @@
                   [value]="getWorkspaceUserRole(user.id)"
                   (selectionChange)="setUserRole(user.id, $event.value)"
                 >
-                  <mat-option value="OWNER">Propriétaire</mat-option>
-                  <mat-option value="COACH">Coach</mat-option>
+                  <mat-option value="OWNER">Propriétaire (admin du workspace)</mat-option>
                   <mat-option value="USER">Utilisateur</mat-option>
                 </mat-select>
               </mat-form-field>

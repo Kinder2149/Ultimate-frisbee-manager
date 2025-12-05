@@ -268,3 +268,122 @@ exports.adminSetWorkspaceUsers = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * OWNER – lister les utilisateurs de SON workspace courant
+ * GET /api/workspaces/members
+ * Nécessite: authenticateToken, workspaceGuard, requireWorkspaceOwner
+ */
+exports.ownerGetWorkspaceMembers = async (req, res, next) => {
+  try {
+    const workspaceId = req.workspaceId;
+
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      include: {
+        members: {
+          include: { user: true },
+          orderBy: { createdAt: 'asc' },
+        },
+      },
+    });
+
+    if (!workspace) {
+      return res.status(404).json({ error: 'Workspace non trouvé', code: 'WORKSPACE_NOT_FOUND' });
+    }
+
+    const users = workspace.members.map((m) => ({
+      userId: m.userId,
+      email: m.user.email,
+      nom: m.user.nom,
+      prenom: m.user.prenom,
+      role: m.role,
+      linkId: m.id,
+    }));
+
+    res.json({ workspaceId: workspace.id, name: workspace.name, users });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * OWNER – mettre à jour la liste des utilisateurs de SON workspace courant
+ * PUT /api/workspaces/members
+ * body: { users: [{ userId, role }] }
+ * Nécessite: authenticateToken, workspaceGuard, requireWorkspaceOwner
+ */
+exports.ownerSetWorkspaceMembers = async (req, res, next) => {
+  try {
+    const workspaceId = req.workspaceId;
+    const { users } = req.body;
+
+    if (!Array.isArray(users)) {
+      return res.status(400).json({ error: 'Format invalide: users doit être un tableau', code: 'USERS_ARRAY_REQUIRED' });
+    }
+
+    // Vérifier que le workspace existe
+    const workspace = await prisma.workspace.findUnique({ where: { id: workspaceId } });
+    if (!workspace) {
+      return res.status(404).json({ error: 'Workspace non trouvé', code: 'WORKSPACE_NOT_FOUND' });
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.workspaceUser.deleteMany({ where: { workspaceId } });
+
+      const cleaned = users
+        .map((u) => ({
+          userId: String(u.userId),
+          role: u.role ? String(u.role).toUpperCase() : 'USER',
+        }))
+        .filter((u) => !!u.userId);
+
+      if (cleaned.length > 0) {
+        await tx.workspaceUser.createMany({
+          data: cleaned.map((u) => ({
+            workspaceId,
+            userId: u.userId,
+            role: u.role,
+          })),
+        });
+      }
+    });
+
+    res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * OWNER – mettre à jour les réglages de SON workspace courant
+ * PUT /api/workspaces/settings
+ * body: { name? }
+ * Nécessite: authenticateToken, workspaceGuard, requireWorkspaceOwner
+ */
+exports.ownerUpdateWorkspaceSettings = async (req, res, next) => {
+  try {
+    const workspaceId = req.workspaceId;
+    const { name } = req.body;
+
+    const data = {};
+    if (name !== undefined) {
+      if (!String(name).trim()) {
+        return res.status(400).json({ error: 'Le nom du workspace ne peut pas être vide', code: 'WORKSPACE_NAME_EMPTY' });
+      }
+      data.name = String(name).trim();
+    }
+
+    const updated = await prisma.workspace.update({
+      where: { id: workspaceId },
+      data,
+    });
+
+    res.json(updated);
+  } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'Workspace non trouvé', code: 'WORKSPACE_NOT_FOUND' });
+    }
+    next(error);
+  }
+};

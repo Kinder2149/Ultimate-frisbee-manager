@@ -50,6 +50,14 @@ const routes: Routes = [
       .then(c => c.SelectWorkspaceComponent),
     canActivate: [AuthGuard]
   },
+
+  // Administration du workspace courant (OWNER)
+  {
+    path: 'workspace/admin',
+    loadComponent: () => import('./features/workspaces/workspace-admin/workspace-admin.component')
+      .then(c => c.WorkspaceAdminComponent),
+    canActivate: [AuthGuard, WorkspaceSelectedGuard]
+  },
   
   // Route directe vers le dashboard (protégée)
   { 
