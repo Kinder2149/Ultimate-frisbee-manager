@@ -2,7 +2,7 @@ services:
   - type: web
     name: ultimate-frisbee-manager-api
     env: node
-    buildCommand: cd backend && npm install && npm run deploy:render
+    buildCommand: cd backend && npm install --include=dev && npm run deploy:render
     startCommand: cd backend && npm start
     plan: free
     region: frankfurt
