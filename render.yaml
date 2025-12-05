@@ -2,7 +2,7 @@ services:
   - type: web
     name: ultimate-frisbee-manager-api
     env: node
-    buildCommand: cd backend && npm install --include=dev && npm run deploy:render
+    buildCommand: cd backend && npm install --include=dev
     startCommand: cd backend && npm start
     plan: free
     region: frankfurt
@@ -20,8 +20,3 @@ services:
         fromSecret: jwt-refresh-secret
       - key: CLOUDINARY_URL
         fromSecret: cloudinary-url
-
-databases:
-  - name: ultimate-frisbee-manager-db
-    plan: free
-    region: frankfurt
