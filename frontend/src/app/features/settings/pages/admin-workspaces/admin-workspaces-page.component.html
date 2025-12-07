@@ -1,111 +1,244 @@
 <div class="admin-workspaces-page">
-  <h1>Bases de données (workspaces)</h1>
+  <!-- Bandeau ADMIN global : gestion de toutes les bases -->
+  <header class="page-header admin-theme">
+    <div class="page-header__icon">
+      <mat-icon>admin_panel_settings</mat-icon>
+    </div>
+    <div class="page-header__content">
+      <h1 class="page-title">Administration globale des workspaces</h1>
+      <p class="page-subtitle">
+        Gérez toutes les bases (workspaces) et leurs membres. Cette vue est réservée aux administrateurs
+        globaux et ne concerne pas l'administration locale d'un seul workspace (OWNER).
+      </p>
+    </div>
+  </header>
 
+  <!-- Section création d'une nouvelle base -->
   <section class="create-section">
-    <mat-card>
-      <mat-card-title>Créer une nouvelle base</mat-card-title>
+    <mat-card class="create-card">
+      <mat-card-header>
+        <div mat-card-avatar class="create-card__avatar">
+          <mat-icon>add_business</mat-icon>
+        </div>
+        <mat-card-title>Créer une nouvelle base</mat-card-title>
+        <mat-card-subtitle>
+          Créez un nouveau workspace (club / projet). Vous pourrez ensuite y ajouter des utilisateurs et définir
+          leurs rôles locaux.
+        </mat-card-subtitle>
+      </mat-card-header>
       <mat-card-content>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Nom de la base</mat-label>
-          <input matInput [(ngModel)]="newWorkspaceName" />
-        </mat-form-field>
+        <div class="create-form">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nom de la base</mat-label>
+            <input matInput [(ngModel)]="newWorkspaceName" placeholder="Ex. Club U17, Section mixte, Projet test" />
+          </mat-form-field>
+        </div>
       </mat-card-content>
-      <mat-card-actions>
+      <mat-card-actions align="end">
         <button mat-raised-button color="primary" (click)="createWorkspace()">
           <mat-icon>add</mat-icon>
-          Créer
+          Créer la base
         </button>
       </mat-card-actions>
     </mat-card>
   </section>
 
+  <!-- Contenu principal : liste des bases + panneau latéral membres -->
   <section class="content">
-    <div class="workspaces-list">
-      <h2>Liste des bases</h2>
-      <table mat-table [dataSource]="workspaces" class="mat-elevation-z2">
-        <ng-container matColumnDef="name">
-          <th mat-header-cell *matHeaderCellDef> Nom </th>
-          <td mat-cell *matCellDef="let ws">
-            <span *ngIf="editingWorkspace?.id !== ws.id">{{ ws.name }}</span>
-            <mat-form-field *ngIf="editingWorkspace?.id === ws.id" appearance="outline">
-              <input matInput [(ngModel)]="editName" />
-            </mat-form-field>
-          </td>
-        </ng-container>
+    <!-- Colonne gauche : liste des workspaces -->
+    <div class="workspaces-panel">
+      <div class="panel-header">
+        <h2 class="panel-title">Workspaces existants</h2>
+        <span class="panel-counter" *ngIf="workspaces?.length">{{ workspaces.length }} base(s)</span>
+      </div>
 
-        <ng-container matColumnDef="membersCount">
-          <th mat-header-cell *matHeaderCellDef> Utilisateurs </th>
-          <td mat-cell *matCellDef="let ws">{{ ws.membersCount }}</td>
-        </ng-container>
+      <div class="table-wrapper mat-elevation-z2" *ngIf="workspaces?.length; else emptyWorkspaces">
+        <table mat-table [dataSource]="workspaces" class="workspaces-table">
+          <!-- Nom de la base -->
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>Nom du workspace</th>
+            <td mat-cell *matCellDef="let ws" [class.is-selected]="selectedWorkspace?.id === ws.id">
+              <div class="ws-name-cell">
+                <mat-icon class="ws-icon">storage</mat-icon>
+                <div class="ws-name-cell__content">
+                  <span *ngIf="editingWorkspace?.id !== ws.id" class="ws-name">{{ ws.name }}</span>
+                  <mat-form-field *ngIf="editingWorkspace?.id === ws.id" appearance="outline" class="ws-name-edit">
+                    <mat-label>Nom du workspace</mat-label>
+                    <input matInput [(ngModel)]="editName" />
+                  </mat-form-field>
+                  <span class="ws-id" *ngIf="editingWorkspace?.id !== ws.id">ID : {{ ws.id }}</span>
+                </div>
+              </div>
+            </td>
+          </ng-container>
 
-        <ng-container matColumnDef="createdAt">
-          <th mat-header-cell *matHeaderCellDef> Créée le </th>
-          <td mat-cell *matCellDef="let ws">{{ ws.createdAt | date: 'mediumDate' }}</td>
-        </ng-container>
+          <!-- Nombre de membres -->
+          <ng-container matColumnDef="membersCount">
+            <th mat-header-cell *matHeaderCellDef>Membres</th>
+            <td mat-cell *matCellDef="let ws">
+              <button
+                mat-stroked-button
+                color="primary"
+                class="members-button"
+                (click)="selectWorkspace(ws)"
+              >
+                <mat-icon>group</mat-icon>
+                {{ ws.membersCount || 0 }} membre(s)
+              </button>
+            </td>
+          </ng-container>
 
-        <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef> Actions </th>
-          <td mat-cell *matCellDef="let ws">
-            <button mat-icon-button color="primary" (click)="selectWorkspace(ws)" [disabled]="selectedWorkspace?.id === ws.id">
-              <mat-icon>group</mat-icon>
-            </button>
-            <button mat-icon-button color="accent" *ngIf="editingWorkspace?.id !== ws.id" (click)="startEdit(ws)">
-              <mat-icon>edit</mat-icon>
-            </button>
-            <button mat-icon-button color="primary" *ngIf="editingWorkspace?.id === ws.id" (click)="saveEdit()">
-              <mat-icon>check</mat-icon>
-            </button>
-            <button mat-icon-button *ngIf="editingWorkspace?.id === ws.id" (click)="cancelEdit()">
-              <mat-icon>close</mat-icon>
-            </button>
-            <button mat-icon-button color="warn" (click)="deleteWorkspace(ws)">
-              <mat-icon>delete</mat-icon>
-            </button>
-          </td>
-        </ng-container>
+          <!-- Date de création -->
+          <ng-container matColumnDef="createdAt">
+            <th mat-header-cell *matHeaderCellDef>Créée le</th>
+            <td mat-cell *matCellDef="let ws">{{ ws.createdAt | date: 'mediumDate' }}</td>
+          </ng-container>
 
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-      </table>
+          <!-- Actions -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef class="actions-header">Actions</th>
+            <td mat-cell *matCellDef="let ws" class="actions-cell">
+              <div class="actions-group">
+                <!-- Edition du nom -->
+                <ng-container *ngIf="editingWorkspace?.id !== ws.id; else editActions">
+                  <button
+                    mat-stroked-button
+                    color="primary"
+                    class="action-button"
+                    (click)="startEdit(ws)"
+                  >
+                    <mat-icon>edit</mat-icon>
+                    Renommer
+                  </button>
+                </ng-container>
+                <ng-template #editActions>
+                  <button
+                    mat-raised-button
+                    color="primary"
+                    class="action-button"
+                    (click)="saveEdit()"
+                  >
+                    <mat-icon>check</mat-icon>
+                    Enregistrer
+                  </button>
+                  <button mat-button class="action-button" (click)="cancelEdit()">
+                    <mat-icon>close</mat-icon>
+                    Annuler
+                  </button>
+                </ng-template>
+
+                <!-- Suppression -->
+                <button
+                  mat-stroked-button
+                  color="warn"
+                  class="action-button action-button--danger"
+                  (click)="deleteWorkspace(ws)"
+                >
+                  <mat-icon>delete</mat-icon>
+                  Supprimer
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr
+            mat-row
+            *matRowDef="let row; columns: displayedColumns;"
+            [class.is-selected]="selectedWorkspace?.id === row.id"
+            (click)="selectWorkspace(row)"
+          ></tr>
+        </table>
+      </div>
+
+      <ng-template #emptyWorkspaces>
+        <div class="empty-state">
+          <mat-icon>dashboard_customize</mat-icon>
+          <div class="empty-state__text">
+            <h3>Aucune base configurée pour le moment</h3>
+            <p>
+              Utilisez le formulaire ci-dessus pour créer votre première base de travail.
+            </p>
+          </div>
+        </div>
+      </ng-template>
     </div>
 
-    <div class="workspace-users" *ngIf="selectedWorkspace as ws">
-      <h2>Utilisateurs de "{{ ws.name }}"</h2>
-      <p>Sélectionnez les utilisateurs autorisés à utiliser cette base et définissez leur rôle.</p>
+    <!-- Colonne droite : panneau membres du workspace sélectionné -->
+    <aside class="workspace-users" *ngIf="selectedWorkspace as ws; else noWorkspaceSelected">
+      <mat-card class="workspace-users-card">
+        <mat-card-header>
+          <div mat-card-avatar class="workspace-users-card__avatar">
+            <mat-icon>group</mat-icon>
+          </div>
+          <mat-card-title>Membres de "{{ ws.name }}"</mat-card-title>
+          <mat-card-subtitle>
+            Affectez des utilisateurs à cette base et définissez leur rôle local (OWNER / USER).
+          </mat-card-subtitle>
+        </mat-card-header>
 
-      <mat-card>
         <mat-card-content>
-          <mat-list>
-            <mat-list-item *ngFor="let user of allUsers">
-              <mat-checkbox
-                [checked]="isUserInWorkspace(user.id)"
-                (change)="toggleUserInWorkspace(user.id, $event)"
-              >
-                {{ user.email }}
-                <span class="user-name" *ngIf="user.prenom || user.nom">
-                  ({{ user.prenom }} {{ user.nom }})
-                </span>
-              </mat-checkbox>
+          <p class="workspace-users__hint">
+            <strong>OWNER</strong> : admin local de ce workspace uniquement.
+            <strong>USER</strong> : utilisateur simple de cette base.
+            Les permissions globales (ADMIN) restent gérées au niveau des utilisateurs.
+          </p>
 
-              <mat-form-field appearance="outline" class="role-select" *ngIf="isUserInWorkspace(user.id)">
-                <mat-label>Rôle</mat-label>
-                <mat-select
-                  [value]="getWorkspaceUserRole(user.id)"
-                  (selectionChange)="setUserRole(user.id, $event.value)"
+          <mat-list class="workspace-users__list">
+            <mat-list-item *ngFor="let user of allUsers" class="workspace-users__item">
+              <div class="workspace-users__user">
+                <mat-checkbox
+                  [checked]="isUserInWorkspace(user.id)"
+                  (change)="toggleUserInWorkspace(user.id, $event)"
                 >
-                  <mat-option value="OWNER">Propriétaire (admin du workspace)</mat-option>
-                  <mat-option value="USER">Utilisateur</mat-option>
-                </mat-select>
-              </mat-form-field>
+                  <span class="user-email">{{ user.email }}</span>
+                  <span class="user-name" *ngIf="user.prenom || user.nom">
+                    ({{ user.prenom }} {{ user.nom }})
+                  </span>
+                </mat-checkbox>
+              </div>
+
+              <div class="workspace-users__role" *ngIf="isUserInWorkspace(user.id)">
+                <mat-form-field appearance="outline" class="role-select">
+                  <mat-label>Rôle dans cette base</mat-label>
+                  <mat-select
+                    [value]="getWorkspaceUserRole(user.id)"
+                    (selectionChange)="setUserRole(user.id, $event.value)"
+                  >
+                    <mat-option value="OWNER">Owner (admin local du workspace)</mat-option>
+                    <mat-option value="USER">Utilisateur du workspace</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
             </mat-list-item>
           </mat-list>
         </mat-card-content>
-        <mat-card-actions>
+
+        <mat-card-actions align="end" class="workspace-users__actions">
           <button mat-raised-button color="primary" (click)="saveWorkspaceUsers()">
-            Enregistrer les utilisateurs de la base
+            <mat-icon>save</mat-icon>
+            Enregistrer les membres de la base
           </button>
         </mat-card-actions>
       </mat-card>
-    </div>
+    </aside>
+
+    <ng-template #noWorkspaceSelected>
+      <aside class="workspace-users workspace-users--placeholder">
+        <mat-card class="workspace-users-card placeholder-card">
+          <mat-card-content>
+            <div class="placeholder-card__content">
+              <mat-icon>info</mat-icon>
+              <div>
+                <h3>Sélectionnez un workspace</h3>
+                <p>
+                  Choisissez une base dans la liste de gauche pour afficher et modifier la liste des membres associés.
+                </p>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </aside>
+    </ng-template>
   </section>
 </div>

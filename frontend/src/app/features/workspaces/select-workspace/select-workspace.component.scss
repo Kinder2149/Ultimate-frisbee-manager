@@ -1,26 +1,72 @@
 .select-workspace-container {
   max-width: 960px;
   margin: 40px auto;
-  padding: 0 16px;
+  padding: 0 16px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 
-  h1 {
-    margin-bottom: 8px;
-  }
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px 20px;
+    border-radius: 8px;
+    background: #e3f2fd;
+    color: #0d47a1;
 
-  .description {
-    margin-bottom: 24px;
-    color: rgba(0, 0, 0, 0.7);
+    &__icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(25, 118, 210, 0.12);
+
+      mat-icon {
+        font-size: 26px;
+      }
+    }
+
+    &__content {
+      .page-title {
+        margin: 0 0 4px;
+        font-size: 20px;
+        font-weight: 600;
+      }
+
+      .page-subtitle {
+        margin: 0;
+        font-size: 14px;
+      }
+    }
   }
 
   .empty-state {
-    margin-top: 32px;
-    padding: 24px;
+    margin-top: 16px;
+    padding: 20px 24px;
     border-radius: 8px;
     background: #fff3e0;
     border: 1px solid #ffe0b2;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
 
-    p {
-      margin: 0 0 4px 0;
+    mat-icon {
+      color: #fb8c00;
+    }
+
+    &__text {
+      h2 {
+        margin: 0 0 4px;
+        font-size: 16px;
+        font-weight: 600;
+      }
+
+      p {
+        margin: 0 0 2px;
+      }
     }
   }
 
@@ -37,6 +83,39 @@
     &:hover {
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       transform: translateY(-2px);
+    }
+
+    &__avatar {
+      background: rgba(25, 118, 210, 0.08);
+
+      mat-icon {
+        color: #1976d2;
+      }
+    }
+
+    mat-card-title {
+      font-weight: 600;
+    }
+
+    .role-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      background: rgba(0, 0, 0, 0.04);
+      color: rgba(0, 0, 0, 0.7);
+    }
+
+    .meta {
+      font-size: 12px;
+      color: rgba(0, 0, 0, 0.6);
+      margin-bottom: 8px;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: rgba(0, 0, 0, 0.7);
     }
 
     mat-card-actions {

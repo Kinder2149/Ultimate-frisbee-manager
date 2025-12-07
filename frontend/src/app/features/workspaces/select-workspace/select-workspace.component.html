@@ -1,14 +1,25 @@
 <div class="select-workspace-container">
-  <h1>Sélectionnez une base de travail</h1>
-
-  <p class="description">
-    Choisissez la base (club / projet) sur laquelle vous souhaitez travailler.
-  </p>
+  <header class="page-header">
+    <div class="page-header__icon">
+      <mat-icon>group_work</mat-icon>
+    </div>
+    <div class="page-header__content">
+      <h1 class="page-title">Choisissez votre workspace</h1>
+      <p class="page-subtitle">
+        Sélectionnez la base (club / projet) sur laquelle vous souhaitez travailler. Votre rôle peut varier d'une base à
+        l'autre (OWNER ou simple membre).
+      </p>
+    </div>
+  </header>
 
   <ng-container *ngIf="workspaces$ | async as workspaces">
     <div *ngIf="workspaces.length === 0" class="empty-state">
-      <p>Aucune base ne vous est encore attribuée.</p>
-      <p>Contactez un administrateur pour qu'il vous donne accès à une base.</p>
+      <mat-icon>info</mat-icon>
+      <div class="empty-state__text">
+        <h2>Aucune base disponible</h2>
+        <p>Aucune base ne vous est encore attribuée.</p>
+        <p>Contactez un administrateur pour qu'il vous donne accès à une ou plusieurs bases.</p>
+      </div>
     </div>
 
     <div *ngIf="workspaces.length > 0" class="cards-grid">
@@ -17,16 +28,26 @@
         *ngFor="let ws of workspaces"
         (click)="selectWorkspace(ws)"
       >
-        <mat-card-title>{{ ws.name }}</mat-card-title>
-        <mat-card-subtitle *ngIf="ws.role">
-          Rôle : {{ ws.role | titlecase }}
-        </mat-card-subtitle>
+        <mat-card-header>
+          <div mat-card-avatar class="workspace-card__avatar">
+            <mat-icon>storage</mat-icon>
+          </div>
+          <mat-card-title>{{ ws.name }}</mat-card-title>
+          <mat-card-subtitle>
+            <span class="role-badge" *ngIf="ws.role as role">
+              {{ role | uppercase }}
+            </span>
+          </mat-card-subtitle>
+        </mat-card-header>
+
         <mat-card-content>
-          <p *ngIf="ws.createdAt">Créée le {{ ws.createdAt | date: 'mediumDate' }}</p>
+          <p *ngIf="ws.createdAt" class="meta">Créée le {{ ws.createdAt | date: 'mediumDate' }}</p>
+          <p class="hint">Cliquez sur la carte ou utilisez le bouton ci-dessous pour entrer dans ce workspace.</p>
         </mat-card-content>
+
         <mat-card-actions>
           <button mat-raised-button color="primary" (click)="$event.stopPropagation(); selectWorkspace(ws)">
-            Utiliser cette base
+            Entrer dans ce workspace
           </button>
         </mat-card-actions>
       </mat-card>

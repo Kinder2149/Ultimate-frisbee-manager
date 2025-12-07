@@ -1,52 +1,206 @@
-.workspace-admin-container {
-  max-width: 960px;
-  margin: 40px auto;
-  padding: 0 16px;
+.workspace-admin-page {
+  max-width: 1040px;
+  margin: 32px auto;
+  padding: 0 16px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 
-  .workspace-info-card,
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px 20px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #1565c0, #42a5f5);
+    color: #fff;
+
+    &__icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.15);
+
+      mat-icon {
+        font-size: 26px;
+      }
+    }
+
+    &__content {
+      .page-title {
+        margin: 0 0 4px;
+        font-size: 20px;
+        font-weight: 600;
+      }
+
+      .page-subtitle {
+        margin: 0;
+        font-size: 14px;
+        opacity: 0.9;
+      }
+
+      .page-badges {
+        margin-top: 8px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+
+        .badge {
+          padding: 2px 8px;
+          border-radius: 999px;
+          font-size: 11px;
+          font-weight: 600;
+          background: rgba(255, 255, 255, 0.15);
+
+          &--workspace {
+            background: rgba(255, 255, 255, 0.25);
+          }
+        }
+      }
+    }
+  }
+
+  .workspace-admin-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr);
+    gap: 24px;
+
+    @media (max-width: 960px) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .workspace-column,
+    .members-column {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+  }
+
+  .workspace-info-card {
+    mat-card-title {
+      font-weight: 600;
+    }
+
+    mat-card-subtitle {
+      font-size: 13px;
+    }
+
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+
+      .full-width {
+        flex: 1 1 100%;
+      }
+    }
+
+    .actions {
+      margin-top: 16px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+  }
+
+  .owner-info-card {
+    .owner-info-card__avatar {
+      background-color: rgba(76, 175, 80, 0.16);
+
+      mat-icon {
+        color: #2e7d32;
+      }
+    }
+
+    mat-card-title {
+      font-weight: 600;
+    }
+
+    mat-card-subtitle {
+      font-size: 13px;
+    }
+  }
+
   .workspace-members-card {
-    margin-bottom: 24px;
-  }
-
-  .form-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-
-    .full-width {
-      flex: 1 1 100%;
-    }
-  }
-
-  .actions {
-    margin-top: 16px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-  }
-
-  .new-member-form {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    margin-bottom: 16px;
-
-    .email-field {
-      flex: 2 1 240px;
+    mat-card-title {
+      font-weight: 600;
     }
 
-    .role-field {
-      flex: 1 1 160px;
+    mat-card-subtitle {
+      font-size: 13px;
     }
-  }
 
-  .members-table {
-    width: 100%;
-  }
+    .new-member-form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 16px;
 
-  .empty-members {
-    margin-top: 8px;
-    color: rgba(0, 0, 0, 0.6);
+      .email-field {
+        flex: 2 1 240px;
+      }
+
+      .role-field {
+        flex: 1 1 160px;
+      }
+    }
+
+    .members-table {
+      width: 100%;
+
+      th.mat-header-cell {
+        font-weight: 600;
+      }
+
+      td.mat-cell,
+      th.mat-header-cell {
+        padding: 8px 12px;
+      }
+
+      .member-identity {
+        .member-email {
+          font-weight: 500;
+        }
+
+        .member-name {
+          font-size: 12px;
+          color: rgba(0, 0, 0, 0.6);
+        }
+      }
+
+      .role-cell {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .role-badge {
+          padding: 2px 8px;
+          border-radius: 999px;
+          font-size: 11px;
+          font-weight: 600;
+          background: rgba(0, 0, 0, 0.04);
+          color: rgba(0, 0, 0, 0.7);
+
+          &--owner {
+            background: rgba(56, 142, 60, 0.18);
+            color: #2e7d32;
+          }
+        }
+
+        .role-select {
+          min-width: 160px;
+        }
+      }
+    }
+
+    .empty-members {
+      margin-top: 8px;
+      color: rgba(0, 0, 0, 0.6);
+    }
   }
 }
 
