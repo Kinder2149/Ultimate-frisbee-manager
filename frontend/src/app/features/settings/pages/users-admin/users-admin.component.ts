@@ -11,6 +11,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { FormsModule } from '@angular/forms';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AdminService } from '../../../../core/services/admin.service';
 
 interface UserRow {
@@ -41,7 +42,8 @@ interface UserRow {
     MatInputModule,
     MatSlideToggleModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatDialogModule
   ],
   templateUrl: './users-admin.component.html',
   styleUrls: ['./users-admin.component.scss']
@@ -49,7 +51,7 @@ interface UserRow {
 export class UsersAdminComponent implements OnInit {
   loading = true;
   users: UserRow[] = [];
-  displayedColumns = ['avatar', 'name', 'email', 'role', 'active', 'actions'];
+  displayedColumns = ['avatar', 'name', 'email', 'role', 'active', 'workspaces', 'actions'];
   // New user form model
   creating = false;
   newUser = {
@@ -61,7 +63,7 @@ export class UsersAdminComponent implements OnInit {
     isActive: true
   };
 
-  constructor(private admin: AdminService, private snack: MatSnackBar) {}
+  constructor(private admin: AdminService, private snack: MatSnackBar, private dialog: MatDialog) {}
 
   ngOnInit(): void {
     this.refresh();
@@ -122,6 +124,143 @@ export class UsersAdminComponent implements OnInit {
         this.creating = false;
         this.snack.open(err || 'Échec de la création', 'Fermer', { duration: 4000, panelClass: ['error-snackbar'] });
       }
+    });
+  }
+
+  openUserWorkspaces(user: UserRow): void {
+    this.dialog.open(UserWorkspacesDialogComponent, {
+      width: '600px',
+      data: { userId: user.id, email: user.email, nom: user.nom, prenom: user.prenom }
+    });
+  }
+}
+
+import { Component as DialogComponent, Inject } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { AdminWorkspaceSummary, AdminWorkspaceUser } from '../../../../core/services/admin.service';
+
+interface UserWorkspacesDialogData {
+  userId: string;
+  email: string;
+  nom?: string;
+  prenom?: string;
+}
+
+@DialogComponent({
+  selector: 'app-user-workspaces-dialog',
+  standalone: true,
+  imports: [CommonModule, MatDialogModule, MatButtonModule, MatCheckboxModule, MatSelectModule, MatFormFieldModule, MatProgressSpinnerModule, MatSnackBarModule],
+  templateUrl: './user-workspaces-dialog.component.html',
+  styleUrls: ['./user-workspaces-dialog.component.scss']
+})
+export class UserWorkspacesDialogComponent {
+  workspaces: AdminWorkspaceSummary[] = [];
+  memberships: { [workspaceId: string]: AdminWorkspaceUser | null } = {};
+  loading = true;
+  saving = false;
+
+  constructor(
+    private admin: AdminService,
+    private snack: MatSnackBar,
+    private dialogRef: MatDialogRef<UserWorkspacesDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: UserWorkspacesDialogData
+  ) {
+    this.load();
+  }
+
+  private load(): void {
+    this.loading = true;
+    this.admin.getWorkspaces().subscribe({
+      next: (ws) => {
+        this.workspaces = ws;
+        // Charger les membres pour chaque workspace afin de savoir si l'utilisateur y est
+        let remaining = ws.length;
+        if (remaining === 0) {
+          this.loading = false;
+          return;
+        }
+        ws.forEach(w => {
+          this.admin.getWorkspaceUsers(w.id).subscribe({
+            next: (res) => {
+              const found = res.users.find(u => u.userId === this.data.userId) || null;
+              this.memberships[w.id] = found;
+              remaining--;
+              if (remaining === 0) this.loading = false;
+            },
+            error: () => {
+              this.memberships[w.id] = null;
+              remaining--;
+              if (remaining === 0) this.loading = false;
+            }
+          });
+        });
+      },
+      error: () => {
+        this.loading = false;
+        this.snack.open('Erreur lors du chargement des workspaces', 'Fermer', { duration: 4000, panelClass: ['error-snackbar'] });
+      }
+    });
+  }
+
+  isInWorkspace(wsId: string): boolean {
+    return !!this.memberships[wsId];
+  }
+
+  toggleWorkspace(wsId: string, event: any): void {
+    if (!event.checked) {
+      this.memberships[wsId] = null;
+    } else {
+      this.memberships[wsId] = {
+        userId: this.data.userId,
+        email: this.data.email,
+        nom: this.data.nom,
+        prenom: this.data.prenom,
+        role: 'USER',
+        linkId: ''
+      } as AdminWorkspaceUser;
+    }
+  }
+
+  changeRole(wsId: string, role: string): void {
+    const m = this.memberships[wsId];
+    if (m) {
+      m.role = role;
+    }
+  }
+
+  save(): void {
+    this.saving = true;
+    let remaining = this.workspaces.length;
+    if (remaining === 0) {
+      this.saving = false;
+      this.dialogRef.close(true);
+      return;
+    }
+    this.workspaces.forEach(ws => {
+      const membersArray: AdminWorkspaceUser[] = [];
+      const m = this.memberships[ws.id];
+      if (m) {
+        membersArray.push(m);
+      }
+      const payload = membersArray.map(u => ({ userId: u.userId, role: u.role || 'USER' }));
+      this.admin.setWorkspaceUsers(ws.id, payload).subscribe({
+        next: () => {
+          remaining--;
+          if (remaining === 0) {
+            this.saving = false;
+            this.snack.open('Workspaces de l\'utilisateur mis à jour', 'Fermer', { duration: 2500, panelClass: ['success-snackbar'] });
+            this.dialogRef.close(true);
+          }
+        },
+        error: () => {
+          remaining--;
+          if (remaining === 0) {
+            this.saving = false;
+            this.snack.open('Erreur lors de la mise à jour des workspaces', 'Fermer', { duration: 4000, panelClass: ['error-snackbar'] });
+            this.dialogRef.close(false);
+          }
+        }
+      });
     });
   }
 }

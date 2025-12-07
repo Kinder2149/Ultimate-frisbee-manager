@@ -1,7 +1,14 @@
 <div class="app-container" (click)="closeAllDropdowns()">
   <header class="main-header">
     <div class="container">
-      <h1>{{ title }}</h1>
+      <div class="header-left">
+        <h1>{{ title }}</h1>
+        <div class="current-workspace" *ngIf="currentWorkspace$ | async as ws">
+          <span class="ws-label">Workspace :</span>
+          <span class="ws-name">{{ ws.name }}</span>
+          <span class="ws-role" *ngIf="ws.role">({{ ws.role | titlecase }})</span>
+        </div>
+      </div>
       <nav class="main-nav" (click)="$event.stopPropagation()">
         <ul>
           <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" matTooltip="Tableau de bord">

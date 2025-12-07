@@ -6,6 +6,7 @@ import { BackendStatusService } from './core/services/backend-status.service';
 import { ApiUrlService } from './core/services/api-url.service';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter, map, distinctUntilChanged } from 'rxjs/operators';
+import { WorkspaceService, WorkspaceSummary } from './core/services/workspace.service';
 
 @Component({
   selector: 'app-root',
@@ -17,6 +18,7 @@ export class AppComponent implements OnInit {
   currentUser$!: Observable<User | null>;
   isAuthenticated$ = this.authService.isAuthenticated$;
   showStartupLoader$!: Observable<boolean>;
+   currentWorkspace$!: Observable<WorkspaceSummary | null>;
   private routerSubscription!: Subscription;
 
   isDropdownOpen = {
@@ -34,9 +36,11 @@ export class AppComponent implements OnInit {
     private apiUrlService: ApiUrlService,
     private renderer: Renderer2,
     private el: ElementRef,
-    private router: Router
+    private router: Router,
+    private workspaceService: WorkspaceService
   ) {
     this.currentUser$ = this.authService.currentUser$;
+    this.currentWorkspace$ = this.workspaceService.currentWorkspace$;
   }
 
   ngOnInit(): void {

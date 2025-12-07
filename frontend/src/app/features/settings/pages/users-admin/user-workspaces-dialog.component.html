@@ -1,0 +1,35 @@
+<h2 mat-dialog-title>Workspaces de {{ data.email }}</h2>
+<mat-dialog-content>
+  <div *ngIf="loading" class="dialog-loading">
+    <mat-progress-spinner mode="indeterminate" diameter="32"></mat-progress-spinner>
+    <span>Chargement des workspaces...</span>
+  </div>
+
+  <div *ngIf="!loading">
+    <p>Sélectionnez les workspaces auxquels cet utilisateur a accès et définissez son rôle dans chacun.</p>
+
+    <div *ngFor="let ws of workspaces" class="workspace-row">
+      <mat-checkbox
+        [checked]="isInWorkspace(ws.id)"
+        (change)="toggleWorkspace(ws.id, $event)"
+      >
+        {{ ws.name }}
+      </mat-checkbox>
+
+      <mat-form-field appearance="outline" class="role-select" *ngIf="isInWorkspace(ws.id)">
+        <mat-label>Rôle</mat-label>
+        <mat-select [value]="memberships[ws.id]?.role || 'USER'" (selectionChange)="changeRole(ws.id, $event.value)">
+          <mat-option value="OWNER">Propriétaire (admin du workspace)</mat-option>
+          <mat-option value="USER">Utilisateur</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Annuler</button>
+  <button mat-raised-button color="primary" (click)="save()" [disabled]="saving || loading">
+    Enregistrer
+  </button>
+</mat-dialog-actions>

@@ -91,6 +91,17 @@
           </td>
         </ng-container>
 
+        <!-- Workspaces -->
+        <ng-container matColumnDef="workspaces">
+          <th mat-header-cell *matHeaderCellDef> Workspaces </th>
+          <td mat-cell *matCellDef="let u">
+            <button mat-stroked-button color="primary" (click)="openUserWorkspaces(u)">
+              <mat-icon style="margin-right:6px;">group_work</mat-icon>
+              Gérer
+            </button>
+          </td>
+        </ng-container>
+
         <!-- Actions -->
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef> Actions </th>
