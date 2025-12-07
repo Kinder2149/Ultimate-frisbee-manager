@@ -20,6 +20,20 @@ Pour chaque problème :
 
 ---
 
+## Refonte UI workspaces / utilisateurs (07/12/2025)
+- **Contexte** : Besoin d’une interface plus claire pour la gestion des workspaces, utilisateurs et membres, sans modifier le backend.
+- **Décision** :
+  - Limiter les changements au frontend Angular (HTML/SCSS/TS de présentation).
+  - Conserver toutes les routes, payloads, guards et l’usage du header `X-Workspace-Id`.
+- **Approches écartées** :
+  - Revoir les modèles Prisma ou les endpoints pour adapter l’UI → ❌ rejeté (trop risqué et hors périmètre).
+  - Fusionner les écrans ADMIN global et OWNER local → ❌ rejeté (génère de la confusion sur les responsabilités).
+- **Implémentation retenue** :
+  - Refonte des pages `/parametres/admin/workspaces` et `/parametres/admin/users` en console d’admin globale avec bandeau bleu nuit, tableaux lisibles, panneaux latéraux et dialogues dédiés aux workspaces.
+  - Refonte de `/workspace/admin` en écran d’administration du workspace courant, avec carte OWNER explicite et tableau des membres amélioré.
+  - Amélioration de `/select-workspace` pour afficher chaque base sous forme de carte avec badge de rôle et CTA « Entrer dans ce workspace ».
+- **Leçon** : Rendre visibles les frontières entre ADMIN global et OWNER local (couleurs, textes, sections) évite les erreurs d’administration et rend le système plus compréhensible pour les utilisateurs.
+
 ## Photo de profil non sauvegardée
 
 - **Hypothèses testées :**

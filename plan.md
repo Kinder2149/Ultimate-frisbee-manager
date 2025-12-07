@@ -23,6 +23,7 @@ Ce document suit les analyses et les actions menées sur le projet.
 - [Mission ENV — Cloudinary et variables globales (08/11/2025)](#mission-env--cloudinary-et-variables-globales-08112025)
 - [Mission Import/Export — Généralisation (08/11/2025)](#mission-importexport--généralisation-08112025)
 - [Mission API Cleanup — Uniformisation des routes (08/11/2025)](#mission-api-cleanup--uniformisation-des-routes-08112025)
+- [Refonte UI Workspaces & Utilisateurs (07/12/2025)](#refonte-ui-workspaces--utilisateurs-07122025)
 - [État du projet](#état-du-projet)
 - [Prochaines étapes](#prochaines-étapes)
 - [Bilan complet Backend + Script Export (11/11/2025)](#bilan-complet-backend--script-export-11112025)
@@ -71,6 +72,37 @@ Ce document suit les analyses et les actions menées sur le projet.
   - Entrée: `POST /api/auth/login` Body JSON `{ email, password }`.
   - Sortie: `{ accessToken, refreshToken, user }` (où `user` contient `id,email,nom,prenom,role,isActive,iconUrl`).
   - Sécurité: Rate limit 5 req/15 min/IP; validations de champs; messages d’erreur explicites (`INVALID_CREDENTIALS`, `INACTIVE_ACCOUNT`, `RATE_LIMIT`).
+
+## Refonte UI Workspaces & Utilisateurs (07/12/2025)
+
+- Objectif : Clarifier et moderniser l’interface Angular autour des workspaces et des rôles sans toucher au backend.
+- Périmètre : pages `/parametres/admin/workspaces`, `/parametres/admin/users`, `/workspace/admin`, `/select-workspace`.
+- Contraintes fortes :
+  - Aucun changement de routes backend, payloads ou modèles Prisma.
+  - Aucune modification des services Angular (seulement HTML/SCSS + léger TS d’UI).
+  - Respect strict des guards existants et du header `X-Workspace-Id`.
+- Décisions UX clés :
+  - Séparation visuelle nette entre **ADMIN global** (console d’admin, couleur bleu nuit) et **OWNER local** (admin du workspace courant, bleu plus clair).
+  - Présentation claire des rôles :
+    - ADMIN (global, géré dans `/parametres/admin/users`).
+    - OWNER / USER (rôles locaux dans un workspace, gérés dans `/parametres/admin/workspaces` et `/workspace/admin`).
+  - Utilisation de tableaux Material, cartes, badges de rôle et panneaux latéraux pour éviter les confusions.
+- Implémentation :
+  - **Admin workspaces** (`AdminWorkspacesPageComponent`) :
+    - Header « Administration globale des workspaces ».
+    - Colonne gauche : tableau des bases, bouton explicite pour ouvrir le panneau membres.
+    - Colonne droite : panneau latéral listant les utilisateurs globaux avec case à cocher + rôle local (OWNER/USER) par workspace.
+  - **Admin users** (`UsersAdminComponent` + `UserWorkspacesDialogComponent`) :
+    - Carte dédiée à la création d’utilisateur (identité, rôle global, statut actif).
+    - Tableau des utilisateurs avec badge de rôle global et bouton « Gérer les bases » ouvrant un dialog pour affecter les workspaces (OWNER/USER).
+  - **Workspace admin local** (`WorkspaceAdminComponent`) :
+    - Header rappelant qu’il s’agit du workspace courant.
+    - Colonne gauche : infos du workspace + carte d’explication OWNER (si `workspace.role === 'OWNER'`).
+    - Colonne droite : gestion des membres du workspace (ajout par email, rôle local via select OWNER/USER, tableau lisible).
+  - **Sélection de workspace** (`SelectWorkspaceComponent`) :
+    - Page de sélection avec cartes par workspace, badge de rôle, CTA clair « Entrer dans ce workspace ».
+- Impact backend :
+  - Aucun changement côté API, Prisma ou mécanismes de sécurité ; la refonte est strictement front (HTML/SCSS/TS structurel).
 
 ## Organisation par domaines
 
