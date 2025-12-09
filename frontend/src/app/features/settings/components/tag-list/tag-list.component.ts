@@ -12,13 +12,12 @@ import { SearchFilterComponent, FilterOption, SearchEvent } from '../../../../sh
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatDialog } from '@angular/material/dialog';
-import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { Router } from '@angular/router';
 import { Tag, TagCategory } from '../../../../core/models/tag.model';
 import { DEFAULT_TAG_COLORS } from '../../../tags/constants/tag.constants';
 import { TAG_CATEGORIES } from '@ufm/shared/constants/tag-categories';
+import { DialogService } from '../../../../shared/components/dialog/dialog.service';
 
 export interface TagItem {
   id: string;
@@ -53,15 +52,16 @@ export class TagListComponent implements OnInit, AfterViewInit {
   dataSource = new MatTableDataSource<TagItem>();
   loading = true;
   error: string | null = null;
+  bulkLoading = false;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
   constructor(
     private adminService: AdminService,
-    public dialog: MatDialog,
     private notificationService: NotificationService,
-    private router: Router
+    private router: Router,
+    private dialogService: DialogService
   ) {}
 
   ngOnInit(): void {
@@ -146,56 +146,78 @@ export class TagListComponent implements OnInit, AfterViewInit {
 
   deleteSelected(): void {
     const numSelected = this.selection.selected.length;
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: '400px',
-      data: {
-        title: 'Confirmation de suppression',
-        message: `Êtes-vous sûr de vouloir supprimer les ${numSelected} tag(s) sélectionné(s) ? Cette action est irréversible.`
-      }
-    });
+    if (!numSelected) {
+      return;
+    }
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
+    const message = `Vous allez supprimer définitivement <strong>${numSelected}</strong> tag(s) sélectionné(s).<br>` +
+      'Cette action est <strong>irréversible</strong> et supprimera définitivement les tags.';
+
+    this.dialogService
+      .confirm(
+        'Confirmer la suppression des tags',
+        message,
+        'Supprimer les tags',
+        'Annuler',
+        true
+      )
+      .subscribe(confirmed => {
+        if (!confirmed) {
+          return;
+        }
+
         const itemsToDelete = this.selection.selected.map(item => ({ id: item.id, type: 'tag' }));
+        this.bulkLoading = true;
         this.adminService.bulkDelete(itemsToDelete).subscribe({
           next: () => {
+            this.bulkLoading = false;
             this.notificationService.showSuccess('Tags supprimés avec succès.');
             this.loadTags();
             this.selection.clear();
           },
           error: () => {
+            this.bulkLoading = false;
             this.notificationService.showError('Une erreur est survenue lors de la suppression des tags.');
           }
         });
-      }
-    });
+      });
   }
 
   duplicateSelected(): void {
     const numSelected = this.selection.selected.length;
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: '400px',
-      data: {
-        title: 'Confirmation de duplication',
-        message: `Êtes-vous sûr de vouloir dupliquer les ${numSelected} tag(s) sélectionné(s) ?`
-      }
-    });
+    if (!numSelected) {
+      return;
+    }
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
+    const message = `Vous allez dupliquer <strong>${numSelected}</strong> tag(s) sélectionné(s).`;
+
+    this.dialogService
+      .confirm(
+        'Confirmer la duplication des tags',
+        message,
+        'Dupliquer les tags',
+        'Annuler'
+      )
+      .subscribe(confirmed => {
+        if (!confirmed) {
+          return;
+        }
+
         const itemsToDuplicate = this.selection.selected.map(item => ({ id: item.id, type: 'tag' }));
+        this.bulkLoading = true;
         this.adminService.bulkDuplicate(itemsToDuplicate).subscribe({
           next: () => {
+            this.bulkLoading = false;
             this.notificationService.showSuccess('Tags dupliqués avec succès.');
             this.loadTags();
             this.selection.clear();
           },
           error: () => {
+            this.bulkLoading = false;
             this.notificationService.showError('Une erreur est survenue lors de la duplication des tags.');
           }
         });
-      }
-    });
+      });
   }
 
   getCategoryColor(category: string): string {

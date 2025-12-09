@@ -11,6 +11,8 @@
     <app-search-filter
       [searchPlaceholder]="'Filtrer par titre...'"
       [filterOptions]="filterOptions"
+      [initialFilters]="initialFilters"
+      [initialSearchTerm]="initialSearchTerm"
       (search)="onSearch($event)">
     </app-search-filter>
 

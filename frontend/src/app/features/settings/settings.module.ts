@@ -12,6 +12,7 @@ import { AdminDashboardComponent } from './pages/admin-dashboard/admin-dashboard
 import { DataExplorerPageComponent } from './pages/data-explorer/data-explorer-page.component';
 import { ImportExportComponent } from './pages/import-export/import-export.component';
 import { AdminWorkspacesPageComponent } from './pages/admin-workspaces/admin-workspaces-page.component';
+import { AdminShellComponent } from './components/admin-shell/admin-shell.component';
 
 const routes: Routes = [
   {
@@ -22,23 +23,20 @@ const routes: Routes = [
       { path: 'import-export', component: ImportExportComponent },
       { path: 'import-exercices', component: ImportExercicesComponent },
       { path: 'profil', component: ProfilePageComponent },
-      { 
-        path: 'admin', 
-        component: AdminDashboardComponent, 
-        canActivate: [RoleGuard], 
-        data: { role: 'admin' } 
-      },
       {
-        path: 'admin/workspaces',
-        component: AdminWorkspacesPageComponent,
+        path: 'admin',
+        component: AdminShellComponent,
         canActivate: [RoleGuard],
-        data: { role: 'admin' }
-      },
-      { 
-        path: 'admin/explorer', 
-        component: DataExplorerPageComponent, 
-        canActivate: [RoleGuard], 
-        data: { role: 'admin' } 
+        data: { role: 'admin' },
+        children: [
+          { path: '', component: AdminDashboardComponent },
+          { path: 'workspaces', component: AdminWorkspacesPageComponent },
+          { path: 'explorer', component: DataExplorerPageComponent },
+          {
+            path: 'users',
+            loadComponent: () => import('./pages/users-admin/users-admin.component').then(c => c.UsersAdminComponent)
+          }
+        ]
       },
       // Redirection pour maintenir la compatibilité avec les anciennes URL
       { path: 'admin/overview', redirectTo: 'admin', pathMatch: 'full' },
@@ -58,7 +56,8 @@ const routes: Routes = [
     ImportExercicesComponent,
     AdminDashboardComponent,
     DataExplorerPageComponent,
-    AdminWorkspacesPageComponent
+    AdminWorkspacesPageComponent,
+    AdminShellComponent
   ]
 })
 export class SettingsModule {}

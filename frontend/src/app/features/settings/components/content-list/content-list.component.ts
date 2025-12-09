@@ -16,10 +16,9 @@ import { DEFAULT_TAG_COLORS } from '../../../tags/constants/tag.constants';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { Router } from '@angular/router';
-import { MatDialog } from '@angular/material/dialog';
-import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { DialogService } from '../../../../shared/components/dialog/dialog.service';
 
 export interface ContentItem {
   id: string;
@@ -56,6 +55,9 @@ export class ContentListComponent implements OnInit, AfterViewInit {
   loading = true;
   filterOptions: FilterOption[] = [];
   error: string | null = null;
+  bulkLoading = false;
+  initialFilters: { [key: string]: unknown } = {};
+  initialSearchTerm = '';
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -64,11 +66,13 @@ export class ContentListComponent implements OnInit, AfterViewInit {
     private adminService: AdminService, 
     private tagService: TagService, 
     private router: Router,
-    public dialog: MatDialog,
-    private notificationService: NotificationService
+    private route: ActivatedRoute,
+    private notificationService: NotificationService,
+    private dialogService: DialogService
   ) {}
 
   ngOnInit(): void {
+    this.setupInitialFiltersFromRoute();
     this.loadAllContent();
     this.setupFilters();
   }
@@ -114,56 +118,106 @@ export class ContentListComponent implements OnInit, AfterViewInit {
 
   deleteSelected(): void {
     const numSelected = this.selection.selected.length;
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: '400px',
-      data: {
-        title: 'Confirmation de suppression',
-        message: `Êtes-vous sûr de vouloir supprimer les ${numSelected} élément(s) sélectionné(s) ? Cette action est irréversible.`
-      }
-    });
+    if (!numSelected) {
+      return;
+    }
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
+    const message = `Vous allez supprimer définitivement <strong>${numSelected}</strong> élément(s) sélectionné(s).<br>` +
+      'Cette action est <strong>irréversible</strong> et supprimera les contenus correspondants.';
+
+    this.dialogService
+      .confirm(
+        'Confirmer la suppression des contenus',
+        message,
+        'Supprimer les contenus',
+        'Annuler',
+        true
+      )
+      .subscribe(confirmed => {
+        if (!confirmed) {
+          return;
+        }
+
         const itemsToDelete = this.selection.selected.map(item => ({ id: item.id, type: item.type }));
+        this.bulkLoading = true;
         this.adminService.bulkDelete(itemsToDelete).subscribe({
           next: () => {
+            this.bulkLoading = false;
             this.notificationService.showSuccess('Éléments supprimés avec succès.');
-            this.loadAllContent(); // Recharger les données
-            this.selection.clear(); // Vider la sélection
+            this.loadAllContent();
+            this.selection.clear();
           },
           error: () => {
+            this.bulkLoading = false;
             this.notificationService.showError('Une erreur est survenue lors de la suppression.');
           }
         });
+      });
+  }
+
+  private setupInitialFiltersFromRoute(): void {
+    const qp = this.route.snapshot.queryParamMap;
+    const typeParam = qp.get('type');
+    const qParam = qp.get('q');
+
+    if (qParam) {
+      this.initialSearchTerm = qParam;
+    }
+
+    if (typeParam) {
+      // Mapper les types d'URL vers les labels utilisés dans ContentItem.type
+      const map: { [key: string]: ContentItem['type'] } = {
+        exercices: 'Exercice',
+        entrainements: 'Entraînement',
+        echauffements: 'Échauffement',
+        situations: 'Situation'
+      };
+      const mapped = map[typeParam];
+      if (mapped) {
+        this.initialFilters = {
+          ...this.initialFilters,
+          type: mapped
+        };
       }
-    });
+    }
   }
 
   duplicateSelected(): void {
     const numSelected = this.selection.selected.length;
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: '400px',
-      data: {
-        title: 'Confirmation de duplication',
-        message: `Êtes-vous sûr de vouloir dupliquer les ${numSelected} élément(s) sélectionné(s) ?`
-      }
-    });
+    if (!numSelected) {
+      return;
+    }
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
+    const message = `Vous allez dupliquer <strong>${numSelected}</strong> élément(s) sélectionné(s).<br>` +
+      'Les copies seront créées dans la même base de travail.';
+
+    this.dialogService
+      .confirm(
+        'Confirmer la duplication des contenus',
+        message,
+        'Dupliquer les contenus',
+        'Annuler'
+      )
+      .subscribe(confirmed => {
+        if (!confirmed) {
+          return;
+        }
+
         const itemsToDuplicate = this.selection.selected.map(item => ({ id: item.id, type: item.type }));
+        this.bulkLoading = true;
         this.adminService.bulkDuplicate(itemsToDuplicate).subscribe({
           next: () => {
+            this.bulkLoading = false;
             this.notificationService.showSuccess('Éléments dupliqués avec succès.');
-            this.loadAllContent(); // Recharger les données
-            this.selection.clear(); // Vider la sélection
+            this.loadAllContent();
+            this.selection.clear();
           },
           error: () => {
+            this.bulkLoading = false;
             this.notificationService.showError('Une erreur est survenue lors de la duplication.');
           }
         });
-      }
-    });
+      });
   }
 
   checkboxLabel(row?: ContentItem): string {
@@ -190,6 +244,14 @@ export class ContentListComponent implements OnInit, AfterViewInit {
         
         this.dataSource.data = allContent;
         this.loading = false;
+
+        // Appliquer un filtrage initial si des filtres ou un terme de recherche sont définis
+        if (this.initialSearchTerm || Object.keys(this.initialFilters).length) {
+          this.onSearch({
+            searchTerm: this.initialSearchTerm,
+            filters: this.initialFilters
+          });
+        }
       },
       error: (err) => {
         this.error = 'Erreur lors du chargement des contenus.';

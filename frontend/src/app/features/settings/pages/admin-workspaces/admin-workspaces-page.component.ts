@@ -12,6 +12,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatListModule } from '@angular/material/list';
 import { MatCheckboxModule, MatCheckboxChange } from '@angular/material/checkbox';
 import { AdminService, AdminWorkspaceSummary, AdminWorkspaceUser } from '../../../../core/services/admin.service';
+import { DialogService } from '../../../../shared/components/dialog/dialog.service';
 
 @Component({
   selector: 'app-admin-workspaces-page',
@@ -52,9 +53,16 @@ export class AdminWorkspacesPageComponent implements OnInit {
   // Liste des utilisateurs globaux (pour sélection)
   allUsers: { id: string; email: string; nom?: string; prenom?: string }[] = [];
 
+  // États de chargement ponctuels pour améliorer l'UX
+  creating = false;
+  savingWorkspace = false;
+  deletingWorkspaceId: string | null = null;
+  savingUsers = false;
+
   constructor(
     private adminService: AdminService,
-    private snack: MatSnackBar
+    private snack: MatSnackBar,
+    private dialogService: DialogService
   ) {}
 
   ngOnInit(): void {
@@ -100,17 +108,36 @@ export class AdminWorkspacesPageComponent implements OnInit {
       this.snack.open('Le nom de la base est requis', 'Fermer', { duration: 3000 });
       return;
     }
-    this.adminService.createWorkspace({ name }).subscribe({
-      next: () => {
-        this.newWorkspaceName = '';
-        this.loadWorkspaces();
-        this.snack.open('Base créée', 'Fermer', { duration: 2000 });
-      },
-      error: (err) => {
-        console.error('Erreur création workspace', err);
-        this.snack.open('Erreur lors de la création de la base', 'Fermer', { duration: 4000 });
-      }
-    });
+    const message = `Vous allez créer une nouvelle base nommée : <strong>${name}</strong>.<br>` +
+      'Vous pourrez ensuite y ajouter des utilisateurs et gérer leurs droits locaux.';
+
+    this.dialogService
+      .confirm(
+        'Confirmer la création de la base',
+        message,
+        'Créer la base',
+        'Annuler'
+      )
+      .subscribe((confirmed) => {
+        if (!confirmed) {
+          return;
+        }
+
+        this.creating = true;
+        this.adminService.createWorkspace({ name }).subscribe({
+          next: () => {
+            this.creating = false;
+            this.newWorkspaceName = '';
+            this.loadWorkspaces();
+            this.snack.open('Base créée', 'Fermer', { duration: 2000 });
+          },
+          error: (err) => {
+            this.creating = false;
+            console.error('Erreur création workspace', err);
+            this.snack.open('Erreur lors de la création de la base', 'Fermer', { duration: 4000 });
+          }
+        });
+      });
   }
 
   startEdit(ws: AdminWorkspaceSummary): void {
@@ -125,18 +152,45 @@ export class AdminWorkspacesPageComponent implements OnInit {
       this.snack.open('Le nom de la base ne peut pas être vide', 'Fermer', { duration: 3000 });
       return;
     }
-    this.adminService.updateWorkspace(this.editingWorkspace.id, { name }).subscribe({
-      next: () => {
-        this.editingWorkspace = null;
-        this.editName = '';
-        this.loadWorkspaces();
-        this.snack.open('Base mise à jour', 'Fermer', { duration: 2000 });
-      },
-      error: (err) => {
-        console.error('Erreur mise à jour workspace', err);
-        this.snack.open('Erreur lors de la mise à jour de la base', 'Fermer', { duration: 4000 });
-      }
-    });
+    // Si le nom n'a pas changé, on annule simplement l'édition
+    if (name === this.editingWorkspace.name) {
+      this.editingWorkspace = null;
+      this.editName = '';
+      return;
+    }
+
+    const message =
+      `Vous allez renommer la base <strong>${this.editingWorkspace.name}</strong> en ` +
+      `<strong>${name}</strong>.`;
+
+    this.dialogService
+      .confirm(
+        'Confirmer le renommage de la base',
+        message,
+        'Enregistrer',
+        'Annuler'
+      )
+      .subscribe((confirmed) => {
+        if (!confirmed || !this.editingWorkspace) {
+          return;
+        }
+
+        this.savingWorkspace = true;
+        this.adminService.updateWorkspace(this.editingWorkspace.id, { name }).subscribe({
+          next: () => {
+            this.savingWorkspace = false;
+            this.editingWorkspace = null;
+            this.editName = '';
+            this.loadWorkspaces();
+            this.snack.open('Base mise à jour', 'Fermer', { duration: 2000 });
+          },
+          error: (err) => {
+            this.savingWorkspace = false;
+            console.error('Erreur mise à jour workspace', err);
+            this.snack.open('Erreur lors de la mise à jour de la base', 'Fermer', { duration: 4000 });
+          }
+        });
+      });
   }
 
   cancelEdit(): void {
@@ -145,23 +199,41 @@ export class AdminWorkspacesPageComponent implements OnInit {
   }
 
   deleteWorkspace(ws: AdminWorkspaceSummary): void {
-    if (!confirm(`Supprimer la base "${ws.name}" et toutes ses données ?`)) {
-      return;
-    }
-    this.adminService.deleteWorkspace(ws.id).subscribe({
-      next: () => {
-        if (this.selectedWorkspace?.id === ws.id) {
-          this.selectedWorkspace = null;
-          this.workspaceUsers = [];
+    const message =
+      `Vous allez supprimer définitivement la base <strong>${ws.name}</strong> et toutes les données associées (contenus, membres, etc.).<br>` +
+      '<strong>Cette action est irréversible.</strong>';
+
+    this.dialogService
+      .confirm(
+        'Confirmer la suppression de la base',
+        message,
+        'Supprimer la base',
+        'Annuler',
+        true
+      )
+      .subscribe((confirmed) => {
+        if (!confirmed) {
+          return;
         }
-        this.loadWorkspaces();
-        this.snack.open('Base supprimée', 'Fermer', { duration: 2000 });
-      },
-      error: (err) => {
-        console.error('Erreur suppression workspace', err);
-        this.snack.open('Erreur lors de la suppression de la base', 'Fermer', { duration: 4000 });
-      }
-    });
+
+        this.deletingWorkspaceId = ws.id;
+        this.adminService.deleteWorkspace(ws.id).subscribe({
+          next: () => {
+            if (this.selectedWorkspace?.id === ws.id) {
+              this.selectedWorkspace = null;
+              this.workspaceUsers = [];
+            }
+            this.deletingWorkspaceId = null;
+            this.loadWorkspaces();
+            this.snack.open('Base supprimée', 'Fermer', { duration: 2000 });
+          },
+          error: (err) => {
+            this.deletingWorkspaceId = null;
+            console.error('Erreur suppression workspace', err);
+            this.snack.open('Erreur lors de la suppression de la base', 'Fermer', { duration: 4000 });
+          }
+        });
+      });
   }
 
   selectWorkspace(ws: AdminWorkspaceSummary): void {
@@ -220,15 +292,35 @@ export class AdminWorkspacesPageComponent implements OnInit {
   saveWorkspaceUsers(): void {
     if (!this.selectedWorkspace) return;
     const payload = this.workspaceUsers.map((u) => ({ userId: u.userId, role: u.role || 'USER' }));
-    this.adminService.setWorkspaceUsers(this.selectedWorkspace.id, payload).subscribe({
-      next: () => {
-        this.snack.open('Utilisateurs de la base mis à jour', 'Fermer', { duration: 2000 });
-        this.loadWorkspaceUsers(this.selectedWorkspace!.id);
-      },
-      error: (err) => {
-        console.error('Erreur mise à jour utilisateurs workspace', err);
-        this.snack.open('Erreur lors de la mise à jour des utilisateurs de la base', 'Fermer', { duration: 4000 });
-      }
-    });
+    const message =
+      `Vous allez enregistrer les membres de la base <strong>${this.selectedWorkspace.name}</strong>.<br>` +
+      'Les ajouts / retraits d’utilisateurs et les rôles locaux seront appliqués.';
+
+    this.dialogService
+      .confirm(
+        'Confirmer la mise à jour des membres',
+        message,
+        'Enregistrer les membres',
+        'Annuler'
+      )
+      .subscribe((confirmed) => {
+        if (!confirmed || !this.selectedWorkspace) {
+          return;
+        }
+
+        this.savingUsers = true;
+        this.adminService.setWorkspaceUsers(this.selectedWorkspace.id, payload).subscribe({
+          next: () => {
+            this.savingUsers = false;
+            this.snack.open('Utilisateurs de la base mis à jour', 'Fermer', { duration: 2000 });
+            this.loadWorkspaceUsers(this.selectedWorkspace!.id);
+          },
+          error: (err) => {
+            this.savingUsers = false;
+            console.error('Erreur mise à jour utilisateurs workspace', err);
+            this.snack.open('Erreur lors de la mise à jour des utilisateurs de la base', 'Fermer', { duration: 4000 });
+          }
+        });
+      });
   }
 }

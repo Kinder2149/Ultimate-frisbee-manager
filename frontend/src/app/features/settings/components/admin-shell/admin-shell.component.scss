@@ -1,0 +1,55 @@
+.admin-layout {
+  height: 100vh;
+}
+
+.admin-sidenav {
+  width: 260px;
+  background: #0b1b3b;
+  color: #fff;
+}
+
+.admin-brand {
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-title {
+  display: block;
+  font-weight: 600;
+}
+
+.admin-subtitle {
+  display: block;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+mat-nav-list a.mat-list-item {
+  color: #e0e5ff;
+}
+
+mat-nav-list a.mat-list-item mat-icon {
+  margin-right: 12px;
+}
+
+mat-nav-list a.mat-list-item.active {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.admin-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.admin-content {
+  background: #f4f6fb;
+}
+
+.admin-content-inner {
+  padding: 16px 24px 24px;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
@@ -26,14 +26,26 @@ export class SelectWorkspaceComponent implements OnInit {
   workspaces$!: Observable<WorkspaceSummary[]>;
   loading = false;
   error: string | null = null;
+  private returnUrl: string | null = null;
 
   constructor(
     private http: HttpClient,
     private router: Router,
+    private route: ActivatedRoute,
     private workspaceService: WorkspaceService
   ) {}
 
   ngOnInit(): void {
+    // Récupérer l'URL de retour éventuelle (quand on vient d'un guard ou d'un intercepteur)
+    this.returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+
+    // Afficher un message si on a été redirigé parce que le workspace courant n'est plus disponible
+    const reason = this.route.snapshot.queryParamMap.get('reason');
+    if (reason === 'workspace-unavailable') {
+      this.error = 'Votre workspace courant n\'est plus accessible (supprimé ou droits retirés). ' +
+        'Veuillez sélectionner une autre base de travail.';
+    }
+
     this.loadWorkspaces();
   }
 
@@ -63,6 +75,7 @@ export class SelectWorkspaceComponent implements OnInit {
 
   selectWorkspace(ws: WorkspaceSummary): void {
     this.workspaceService.setCurrentWorkspace(ws);
-    this.router.navigate(['/']);
+    const target = this.returnUrl || '/';
+    this.router.navigateByUrl(target);
   }
 }

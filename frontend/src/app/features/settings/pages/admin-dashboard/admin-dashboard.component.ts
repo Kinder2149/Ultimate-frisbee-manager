@@ -19,7 +19,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AdminService } from '../../../../core/services/admin.service';
 
 type AdminOverviewResponse = any;
@@ -137,7 +137,8 @@ export class AdminDashboardComponent implements OnInit {
 
   constructor(
     private adminService: AdminService, 
-    private snack: MatSnackBar
+    private snack: MatSnackBar,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -283,6 +284,13 @@ export class AdminDashboardComponent implements OnInit {
           panelClass: ['error-snackbar'] 
         });
       }
+    });
+  }
+
+  // Navigation vers l'explorateur de données avec un type préfiltré
+  goToExplorer(type: 'exercices' | 'entrainements' | 'echauffements' | 'situations' | 'tags'): void {
+    this.router.navigate(['/parametres/admin/explorer'], {
+      queryParams: { type }
     });
   }
 }

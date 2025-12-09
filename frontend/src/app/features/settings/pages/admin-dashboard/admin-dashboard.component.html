@@ -29,6 +29,9 @@
               <mat-card-title>{{ counts.exercices || 0 }}</mat-card-title>
               <mat-card-subtitle>Exercices</mat-card-subtitle>
             </mat-card-header>
+            <mat-card-actions align="end">
+              <button mat-button color="primary" (click)="goToExplorer('exercices')">Voir tout</button>
+            </mat-card-actions>
           </mat-card>
           
           <mat-card class="stat-card">
@@ -40,7 +43,7 @@
               <mat-card-subtitle>Entraînements</mat-card-subtitle>
             </mat-card-header>
             <mat-card-actions align="end">
-              <button mat-button color="primary">Voir tout</button>
+              <button mat-button color="primary" (click)="goToExplorer('entrainements')">Voir tout</button>
             </mat-card-actions>
           </mat-card>
           
@@ -53,7 +56,7 @@
               <mat-card-subtitle>Échauffements</mat-card-subtitle>
             </mat-card-header>
             <mat-card-actions align="end">
-              <button mat-button color="primary">Voir tout</button>
+              <button mat-button color="primary" (click)="goToExplorer('echauffements')">Voir tout</button>
             </mat-card-actions>
           </mat-card>
           
@@ -66,7 +69,7 @@
               <mat-card-subtitle>Situations</mat-card-subtitle>
             </mat-card-header>
             <mat-card-actions align="end">
-              <button mat-button color="primary">Voir tout</button>
+              <button mat-button color="primary" (click)="goToExplorer('situations')">Voir tout</button>
             </mat-card-actions>
           </mat-card>
           
@@ -79,7 +82,7 @@
               <mat-card-subtitle>Tags</mat-card-subtitle>
             </mat-card-header>
             <mat-card-actions align="end">
-              <button mat-button color="primary">Voir tout</button>
+              <button mat-button color="primary" (click)="goToExplorer('tags')">Voir tout</button>
             </mat-card-actions>
           </mat-card>
           

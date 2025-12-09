@@ -35,7 +35,12 @@
         </div>
       </mat-card-content>
       <mat-card-actions align="end">
-        <button mat-raised-button color="primary" (click)="createWorkspace()">
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="createWorkspace()"
+          [disabled]="creating || loading || !newWorkspaceName?.trim()"
+        >
           <mat-icon>add</mat-icon>
           Créer la base
         </button>
@@ -106,6 +111,7 @@
                     color="primary"
                     class="action-button"
                     (click)="startEdit(ws)"
+                    [disabled]="savingWorkspace || deletingWorkspaceId === ws.id || loading"
                   >
                     <mat-icon>edit</mat-icon>
                     Renommer
@@ -117,11 +123,17 @@
                     color="primary"
                     class="action-button"
                     (click)="saveEdit()"
+                    [disabled]="savingWorkspace || deletingWorkspaceId === ws.id || loading"
                   >
                     <mat-icon>check</mat-icon>
                     Enregistrer
                   </button>
-                  <button mat-button class="action-button" (click)="cancelEdit()">
+                  <button
+                    mat-button
+                    class="action-button"
+                    (click)="cancelEdit()"
+                    [disabled]="savingWorkspace || deletingWorkspaceId === ws.id || loading"
+                  >
                     <mat-icon>close</mat-icon>
                     Annuler
                   </button>
@@ -133,6 +145,7 @@
                   color="warn"
                   class="action-button action-button--danger"
                   (click)="deleteWorkspace(ws)"
+                  [disabled]="deletingWorkspaceId === ws.id || savingWorkspace || loading"
                 >
                   <mat-icon>delete</mat-icon>
                   Supprimer
@@ -178,6 +191,17 @@
         </mat-card-header>
 
         <mat-card-content>
+          <div class="workspace-users__meta">
+            <span>
+              <mat-icon>event</mat-icon>
+              Créée le {{ ws.createdAt | date: 'mediumDate' }}
+            </span>
+            <span>
+              <mat-icon>group</mat-icon>
+              {{ ws.membersCount || 0 }} membre(s)
+            </span>
+          </div>
+
           <p class="workspace-users__hint">
             <strong>OWNER</strong> : admin local de ce workspace uniquement.
             <strong>USER</strong> : utilisateur simple de cette base.
@@ -215,7 +239,12 @@
         </mat-card-content>
 
         <mat-card-actions align="end" class="workspace-users__actions">
-          <button mat-raised-button color="primary" (click)="saveWorkspaceUsers()">
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="saveWorkspaceUsers()"
+            [disabled]="savingUsers || !workspaceUsers?.length"
+          >
             <mat-icon>save</mat-icon>
             Enregistrer les membres de la base
           </button>

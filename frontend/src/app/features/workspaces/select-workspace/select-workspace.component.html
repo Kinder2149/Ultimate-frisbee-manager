@@ -12,6 +12,11 @@
     </div>
   </header>
 
+  <div *ngIf="error" class="alert-banner">
+    <mat-icon>warning</mat-icon>
+    <span>{{ error }}</span>
+  </div>
+
   <ng-container *ngIf="workspaces$ | async as workspaces">
     <div *ngIf="workspaces.length === 0" class="empty-state">
       <mat-icon>info</mat-icon>

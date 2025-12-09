@@ -9,10 +9,12 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { FormsModule } from '@angular/forms';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AdminService } from '../../../../core/services/admin.service';
+import { DialogService } from '../../../../shared/components/dialog/dialog.service';
 
 interface UserRow {
   id: string;
@@ -63,7 +65,12 @@ export class UsersAdminComponent implements OnInit {
     isActive: true
   };
 
-  constructor(private admin: AdminService, private snack: MatSnackBar, private dialog: MatDialog) {}
+  constructor(
+    private admin: AdminService,
+    private snack: MatSnackBar,
+    private dialog: MatDialog,
+    private dialogService: DialogService
+  ) {}
 
   ngOnInit(): void {
     this.refresh();
@@ -84,20 +91,37 @@ export class UsersAdminComponent implements OnInit {
   }
 
   saveUser(user: UserRow): void {
-    user._saving = true;
-    this.admin.updateUser(user.id, { role: user.role, isActive: user.isActive }).subscribe({
-      next: (res) => {
-        user._saving = false;
-        // sync with server response
-        user.role = res.user.role;
-        user.isActive = res.user.isActive;
-        this.snack.open('Utilisateur mis à jour', 'Fermer', { duration: 2500, panelClass: ['success-snackbar'] });
-      },
-      error: (err) => {
-        user._saving = false;
-        this.snack.open(err || "Échec de la mise à jour de l'utilisateur", 'Fermer', { duration: 4000, panelClass: ['error-snackbar'] });
-      }
-    });
+    const message = `Vous allez enregistrer les modifications pour <strong>${user.prenom || ''} ${user.nom || ''}</strong><br>` +
+      `Rôle global : <strong>${user.role === 'admin' ? 'ADMIN' : 'USER'}</strong><br>` +
+      `Statut : <strong>${user.isActive ? 'Actif' : 'Inactif'}</strong>`;
+
+    this.dialogService
+      .confirm(
+        'Confirmer la mise à jour de l\'utilisateur',
+        message,
+        'Enregistrer',
+        'Annuler'
+      )
+      .subscribe(confirmed => {
+        if (!confirmed) {
+          return;
+        }
+
+        user._saving = true;
+        this.admin.updateUser(user.id, { role: user.role, isActive: user.isActive }).subscribe({
+          next: (res) => {
+            user._saving = false;
+            // sync with server response
+            user.role = res.user.role;
+            user.isActive = res.user.isActive;
+            this.snack.open('Utilisateur mis à jour', 'Fermer', { duration: 2500, panelClass: ['success-snackbar'] });
+          },
+          error: (err) => {
+            user._saving = false;
+            this.snack.open(err || "Échec de la mise à jour de l'utilisateur", 'Fermer', { duration: 4000, panelClass: ['error-snackbar'] });
+          }
+        });
+      });
   }
 
   createUser(): void {
@@ -105,26 +129,44 @@ export class UsersAdminComponent implements OnInit {
       this.snack.open('Email et mot de passe (min 6) requis', 'Fermer', { duration: 3000 });
       return;
     }
-    this.creating = true;
-    this.admin.createUser({
-      email: this.newUser.email.trim().toLowerCase(),
-      password: this.newUser.password,
-      nom: this.newUser.nom?.trim(),
-      prenom: this.newUser.prenom?.trim(),
-      role: this.newUser.role,
-      isActive: this.newUser.isActive
-    }).subscribe({
-      next: (res) => {
-        this.creating = false;
-        this.users = [res.user, ...this.users];
-        this.snack.open('Utilisateur créé', 'Fermer', { duration: 2500, panelClass: ['success-snackbar'] });
-        this.newUser = { email: '', password: '', prenom: '', nom: '', role: 'user', isActive: true };
-      },
-      error: (err) => {
-        this.creating = false;
-        this.snack.open(err || 'Échec de la création', 'Fermer', { duration: 4000, panelClass: ['error-snackbar'] });
-      }
-    });
+    const message = `Vous allez créer un nouvel utilisateur pour <strong>${this.newUser.email.trim().toLowerCase()}</strong><br>` +
+      `Nom complet : <strong>${(this.newUser.prenom || '') + ' ' + (this.newUser.nom || '')}</strong><br>` +
+      `Rôle global : <strong>${this.newUser.role === 'admin' ? 'ADMIN' : 'USER'}</strong><br>` +
+      `Statut : <strong>${this.newUser.isActive ? 'Actif' : 'Inactif'}</strong>`;
+
+    this.dialogService
+      .confirm(
+        'Confirmer la création de l\'utilisateur',
+        message,
+        'Créer l\'utilisateur',
+        'Annuler'
+      )
+      .subscribe(confirmed => {
+        if (!confirmed) {
+          return;
+        }
+
+        this.creating = true;
+        this.admin.createUser({
+          email: this.newUser.email.trim().toLowerCase(),
+          password: this.newUser.password,
+          nom: this.newUser.nom?.trim(),
+          prenom: this.newUser.prenom?.trim(),
+          role: this.newUser.role,
+          isActive: this.newUser.isActive
+        }).subscribe({
+          next: (res) => {
+            this.creating = false;
+            this.users = [res.user, ...this.users];
+            this.snack.open('Utilisateur créé', 'Fermer', { duration: 2500, panelClass: ['success-snackbar'] });
+            this.newUser = { email: '', password: '', prenom: '', nom: '', role: 'user', isActive: true };
+          },
+          error: (err) => {
+            this.creating = false;
+            this.snack.open(err || 'Échec de la création', 'Fermer', { duration: 4000, panelClass: ['error-snackbar'] });
+          }
+        });
+      });
   }
 
   openUserWorkspaces(user: UserRow): void {
