@@ -145,10 +145,34 @@
                   color="warn"
                   class="action-button action-button--danger"
                   (click)="deleteWorkspace(ws)"
-                  [disabled]="deletingWorkspaceId === ws.id || savingWorkspace || loading"
+                  [disabled]="deletingWorkspaceId === ws.id || savingWorkspace || duplicatingWorkspaceId === ws.id || loading"
                 >
                   <mat-icon>delete</mat-icon>
                   Supprimer
+                </button>
+
+                <!-- Duplication -->
+                <button
+                  mat-stroked-button
+                  color="primary"
+                  class="action-button"
+                  (click)="duplicateWorkspace(ws)"
+                  [disabled]="duplicatingWorkspaceId === ws.id || deletingWorkspaceId === ws.id || savingWorkspace || loading"
+                >
+                  <mat-icon>content_copy</mat-icon>
+                  Dupliquer
+                </button>
+
+                <!-- Bascule workspace courant -->
+                <button
+                  mat-stroked-button
+                  color="primary"
+                  class="action-button"
+                  (click)="switchToWorkspace(ws)"
+                  [disabled]="loading"
+                >
+                  <mat-icon>open_in_new</mat-icon>
+                  Basculer sur cette base
                 </button>
               </div>
             </td>

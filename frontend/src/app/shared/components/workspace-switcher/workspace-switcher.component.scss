@@ -1,0 +1,88 @@
+.workspace-switcher {
+  position: relative;
+  margin-left: 16px;
+
+  &__button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .ws-label {
+    opacity: 0.85;
+  }
+
+  .ws-name {
+    font-weight: 600;
+  }
+
+  .ws-role {
+    opacity: 0.9;
+    font-size: 12px;
+  }
+
+  .ws-chevron {
+    font-size: 18px;
+  }
+
+  &__menu {
+    position: absolute;
+    z-index: 1000;
+    top: 100%;
+    left: 0;
+    margin-top: 4px;
+    min-width: 220px;
+    background: #ffffff;
+    color: #1f2933;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.25);
+    padding: 6px 0;
+  }
+
+  &__menu-header,
+  &__menu-empty {
+    padding: 6px 12px;
+    font-size: 13px;
+    color: #4b5563;
+  }
+
+  &__menu-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    li {
+      padding: 6px 12px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+
+      &.is-current {
+        background: rgba(59, 130, 246, 0.08);
+        font-weight: 600;
+      }
+
+      &:hover {
+        background: rgba(15, 23, 42, 0.06);
+      }
+    }
+  }
+
+  &__item-name {
+    font-size: 13px;
+  }
+
+  &__item-role {
+    font-size: 11px;
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
+}

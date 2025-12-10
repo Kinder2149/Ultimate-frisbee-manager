@@ -18,7 +18,7 @@ export class AppComponent implements OnInit {
   currentUser$!: Observable<User | null>;
   isAuthenticated$ = this.authService.isAuthenticated$;
   showStartupLoader$!: Observable<boolean>;
-   currentWorkspace$!: Observable<WorkspaceSummary | null>;
+  currentWorkspace$!: Observable<WorkspaceSummary | null>;
   private routerSubscription!: Subscription;
 
   isDropdownOpen = {

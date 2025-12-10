@@ -3,11 +3,7 @@
     <div class="container">
       <div class="header-left">
         <h1>{{ title }}</h1>
-        <div class="current-workspace" *ngIf="currentWorkspace$ | async as ws">
-          <span class="ws-label">Workspace :</span>
-          <span class="ws-name">{{ ws.name }}</span>
-          <span class="ws-role" *ngIf="ws.role">({{ ws.role | titlecase }})</span>
-        </div>
+        <app-workspace-switcher></app-workspace-switcher>
       </div>
       <nav class="main-nav" (click)="$event.stopPropagation()">
         <ul>

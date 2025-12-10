@@ -11,8 +11,10 @@ import { MatCardModule } from '@angular/material/card';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatListModule } from '@angular/material/list';
 import { MatCheckboxModule, MatCheckboxChange } from '@angular/material/checkbox';
+import { Router } from '@angular/router';
 import { AdminService, AdminWorkspaceSummary, AdminWorkspaceUser } from '../../../../core/services/admin.service';
 import { DialogService } from '../../../../shared/components/dialog/dialog.service';
+import { WorkspaceService } from '../../../../core/services/workspace.service';
 
 @Component({
   selector: 'app-admin-workspaces-page',
@@ -58,11 +60,14 @@ export class AdminWorkspacesPageComponent implements OnInit {
   savingWorkspace = false;
   deletingWorkspaceId: string | null = null;
   savingUsers = false;
+   duplicatingWorkspaceId: string | null = null;
 
   constructor(
     private adminService: AdminService,
     private snack: MatSnackBar,
-    private dialogService: DialogService
+    private dialogService: DialogService,
+    private workspaceService: WorkspaceService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -138,6 +143,48 @@ export class AdminWorkspacesPageComponent implements OnInit {
           }
         });
       });
+  }
+
+  duplicateWorkspace(ws: AdminWorkspaceSummary): void {
+    const message =
+      `Vous allez dupliquer la base <strong>${ws.name}</strong>.<br>` +
+      'Tous les contenus (exercices, entraînements, échauffements, situations, tags) et les membres seront copiés dans une nouvelle base.';
+
+    this.dialogService
+      .confirm(
+        'Confirmer la duplication de la base',
+        message,
+        'Dupliquer la base',
+        'Annuler'
+      )
+      .subscribe((confirmed) => {
+        if (!confirmed) {
+          return;
+        }
+
+        this.duplicatingWorkspaceId = ws.id;
+        this.adminService.duplicateWorkspace(ws.id).subscribe({
+          next: () => {
+            this.duplicatingWorkspaceId = null;
+            this.loadWorkspaces();
+            this.snack.open('Base dupliquée', 'Fermer', { duration: 2000 });
+          },
+          error: (err) => {
+            this.duplicatingWorkspaceId = null;
+            console.error('Erreur duplication workspace', err);
+            this.snack.open('Erreur lors de la duplication de la base', 'Fermer', { duration: 4000 });
+          }
+        });
+      });
+  }
+
+  switchToWorkspace(ws: AdminWorkspaceSummary): void {
+    this.workspaceService.setCurrentWorkspace({
+      id: ws.id,
+      name: ws.name,
+      createdAt: ws.createdAt,
+    });
+    this.router.navigate(['/']);
   }
 
   startEdit(ws: AdminWorkspaceSummary): void {

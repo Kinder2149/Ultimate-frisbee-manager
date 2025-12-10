@@ -17,6 +17,7 @@ router.get('/', authenticateToken, requireAdmin, workspaceController.adminListWo
 router.post('/', authenticateToken, requireAdmin, workspaceController.adminCreateWorkspace);
 router.put('/:id', authenticateToken, requireAdmin, workspaceController.adminUpdateWorkspace);
 router.delete('/:id', authenticateToken, requireAdmin, workspaceController.adminDeleteWorkspace);
+router.post('/:id/duplicate', authenticateToken, requireAdmin, workspaceController.adminDuplicateWorkspace);
 
 router.get('/:id/users', authenticateToken, requireAdmin, workspaceController.adminGetWorkspaceUsers);
 router.put('/:id/users', authenticateToken, requireAdmin, workspaceController.adminSetWorkspaceUsers);

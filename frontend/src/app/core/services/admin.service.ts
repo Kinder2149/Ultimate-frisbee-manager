@@ -135,6 +135,11 @@ export class AdminService {
     return this.http.delete<void>(url);
   }
 
+  duplicateWorkspace(id: string): Observable<AdminWorkspaceSummary> {
+    const url = this.api.getUrl(`workspaces/${id}/duplicate`);
+    return this.http.post<AdminWorkspaceSummary>(url, {});
+  }
+
   getWorkspaceUsers(id: string): Observable<{ workspaceId: string; name: string; users: AdminWorkspaceUser[] }> {
     const url = this.api.getUrl(`workspaces/${id}/users`);
     return this.http.get<{ workspaceId: string; name: string; users: AdminWorkspaceUser[] }>(url);

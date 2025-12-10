@@ -53,7 +53,7 @@ interface UserRow {
 export class UsersAdminComponent implements OnInit {
   loading = true;
   users: UserRow[] = [];
-  displayedColumns = ['avatar', 'name', 'email', 'role', 'active', 'workspaces', 'actions'];
+  displayedColumns = ['avatar', 'name', 'role', 'active', 'workspaces', 'actions'];
   // New user form model
   creating = false;
   newUser = {
