@@ -20,6 +20,7 @@ import { CoreModule } from './core/core.module';
 // Module de tags avancés
 import { TagsAdvancedModule } from './features/tags-advanced/tags-advanced.module';
 import { MaterialModule } from './core/material/material.module';
+import { WorkspaceSwitcherComponent } from './shared/components/workspace-switcher/workspace-switcher.component';
 
 // Import du guard d'authentification
 import { AuthGuard } from './core/guards/auth.guard';
@@ -126,7 +127,8 @@ const routes: Routes = [
     CommonModule, // Ajout de CommonModule pour *ngIf
     MaterialModule,
     RouterModule.forRoot(routes),
-    CoreModule // Module core qui inclut MaterialModule et HttpClientModule
+    CoreModule, // Module core qui inclut MaterialModule et HttpClientModule
+    WorkspaceSwitcherComponent
     // Tous les modules (ExercicesModule, TagsModule, TagsAdvancedModule, TrainingsModule) sont chargés en lazy loading
   ],
   providers: [
