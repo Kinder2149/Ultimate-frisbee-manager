@@ -4,9 +4,11 @@ const router = express.Router();
 const { getOverview, getUsers, updateUser, createUser, getAllContent, getAllTags, bulkDelete, bulkDuplicate, listExercices, listEntrainements, listEchauffements, listSituationsMatchs } = require('../controllers/admin.controller');
 const { exportUfm } = require('../controllers/export.controller');
 const { authenticateToken, requireAdmin } = require('../middleware/auth.middleware');
+const { workspaceGuard } = require('../middleware/workspace.middleware');
 
-// Toutes les routes admin sont protégées
-router.use(authenticateToken, requireAdmin);
+// Toutes les routes admin sont protégées par l'authentification, le rôle ADMIN
+// et, désormais, par le contexte de workspace courant (via X-Workspace-Id).
+router.use(authenticateToken, requireAdmin, workspaceGuard);
 
 // GET /api/admin/overview
 router.get('/overview', getOverview);

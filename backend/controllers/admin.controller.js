@@ -218,20 +218,27 @@ exports.getUsers = async (req, res) => {
  */
 exports.getAllContent = async (req, res) => {
   try {
+    const workspaceId = req.workspaceId;
+    const whereByWorkspace = workspaceId ? { workspaceId } : {};
+
     const [exercicesRaw, entrainements, echauffementsRaw, situationsRaw] = await Promise.all([
       prisma.exercice.findMany({
+        where: whereByWorkspace,
         orderBy: { createdAt: 'desc' },
         select: { id: true, nom: true, createdAt: true, tags: { select: { label: true, category: true, color: true } } }
       }),
       prisma.entrainement.findMany({
+        where: whereByWorkspace,
         orderBy: { createdAt: 'desc' },
         select: { id: true, titre: true, createdAt: true }
       }),
       prisma.echauffement.findMany({
+        where: whereByWorkspace,
         orderBy: { createdAt: 'desc' },
         select: { id: true, nom: true, createdAt: true }
       }),
       prisma.situationMatch.findMany({
+        where: whereByWorkspace,
         orderBy: { createdAt: 'desc' },
         select: { id: true, nom: true, type: true, createdAt: true, tags: { select: { label: true, category: true, color: true } } }
       })
@@ -257,7 +264,11 @@ exports.getAllContent = async (req, res) => {
 
 exports.getAllTags = async (req, res) => {
   try {
+    const workspaceId = req.workspaceId;
+    const whereByWorkspace = workspaceId ? { workspaceId } : {};
+
     const tags = await prisma.tag.findMany({
+      where: whereByWorkspace,
       orderBy: { createdAt: 'desc' },
       select: { id: true, label: true, category: true, createdAt: true }
     });
@@ -270,6 +281,9 @@ exports.getAllTags = async (req, res) => {
 
 exports.bulkDelete = async (req, res) => {
   try {
+    const workspaceId = req.workspaceId;
+    const workspaceFilter = workspaceId ? { workspaceId } : {};
+
     const { items } = req.body; // items: { id: string, type: string }[]
 
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -310,7 +324,7 @@ exports.bulkDelete = async (req, res) => {
           continue;
       }
       if (model) {
-        transactionPromises.push(model.deleteMany({ where: { id: { in: ids } } }));
+        transactionPromises.push(model.deleteMany({ where: { id: { in: ids }, ...workspaceFilter } }));
       }
     }
 
