@@ -39,7 +39,7 @@
           mat-raised-button
           color="primary"
           (click)="createWorkspace()"
-          [disabled]="creating || loading || !newWorkspaceName?.trim()"
+          [disabled]="creating || loading || !newWorkspaceName.trim()"
         >
           <mat-icon>add</mat-icon>
           Créer la base
@@ -243,7 +243,7 @@
             mat-raised-button
             color="primary"
             (click)="saveWorkspaceUsers()"
-            [disabled]="savingUsers || !workspaceUsers?.length"
+            [disabled]="savingUsers || !workspaceUsers.length"
           >
             <mat-icon>save</mat-icon>
             Enregistrer les membres de la base
