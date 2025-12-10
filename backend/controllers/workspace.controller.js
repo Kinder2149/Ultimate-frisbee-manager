@@ -270,6 +270,11 @@ exports.adminListWorkspaces = async (req, res, next) => {
  * ADMIN – créer un workspace
  * POST /api/admin/workspaces
  * body: { name, ownerUserId? }
+ *
+ * Nouveau comportement :
+ *  - crée un workspace vide
+ *  - copie automatiquement **tous les tags** du workspace BASE vers ce nouveau workspace
+ *  - ne copie **aucun** exercice / entraînement / échauffement / situation
  */
 exports.adminCreateWorkspace = async (req, res, next) => {
   try {
@@ -279,22 +284,58 @@ exports.adminCreateWorkspace = async (req, res, next) => {
       return res.status(400).json({ error: 'Le nom du workspace est requis', code: 'WORKSPACE_NAME_REQUIRED' });
     }
 
-    const data = { name: String(name).trim() };
+    const workspaceName = String(name).trim();
 
-    const workspace = await prisma.workspace.create({ data });
-
-    // Option: créer un OWNER associé
-    if (ownerUserId) {
-      await prisma.workspaceUser.create({
-        data: {
-          workspaceId: workspace.id,
-          userId: ownerUserId,
-          role: 'OWNER',
-        },
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Créer le nouveau workspace
+      const workspace = await tx.workspace.create({
+        data: { name: workspaceName },
       });
-    }
 
-    res.status(201).json(workspace);
+      const newWorkspaceId = workspace.id;
+
+      // 2. Optionnel : créer un OWNER associé
+      if (ownerUserId) {
+        await tx.workspaceUser.create({
+          data: {
+            workspaceId: newWorkspaceId,
+            userId: ownerUserId,
+            role: 'OWNER',
+          },
+        });
+      }
+
+      // 3. Copier les tags du workspace BASE vers le nouveau workspace
+      //    Si le workspace BASE n'existe pas ou n'a pas de tags, on continue sans erreur.
+      try {
+        const baseWorkspace = await tx.workspace.findFirst({
+          where: { name: DEFAULT_WORKSPACE_NAME },
+          include: { tags: true },
+        });
+
+        if (baseWorkspace && Array.isArray(baseWorkspace.tags) && baseWorkspace.tags.length > 0) {
+          const tagsToClone = baseWorkspace.tags;
+
+          for (const tag of tagsToClone) {
+            const { id, createdAt, workspaceId, ...rest } = tag;
+            await tx.tag.create({
+              data: {
+                ...rest,
+                workspaceId: newWorkspaceId,
+              },
+            });
+          }
+        }
+      } catch (cloneError) {
+        // On loggue mais on ne bloque pas la création du workspace
+        // eslint-disable-next-line no-console
+        console.error('[Workspace] Erreur lors de la copie des tags BASE vers un nouveau workspace:', cloneError);
+      }
+
+      return workspace;
+    });
+
+    res.status(201).json(result);
   } catch (error) {
     next(error);
   }
