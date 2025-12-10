@@ -103,11 +103,13 @@
 
     .table-wrapper {
       border-radius: 8px;
-      overflow: hidden;
       background: #fff;
+      overflow-x: auto;
+      overflow-y: hidden;
 
       .workspaces-table {
         width: 100%;
+        min-width: 900px; // garantit l'affichage complet des colonnes, notamment "Actions"
 
         th.mat-header-cell {
           font-weight: 600;
@@ -169,10 +171,12 @@
 
     .actions-header {
       text-align: right;
+      white-space: nowrap;
     }
 
     .actions-cell {
       text-align: right;
+      white-space: nowrap;
     }
 
     .actions-group {
@@ -188,6 +192,17 @@
 
         &--danger {
           border-color: rgba(211, 47, 47, 0.4);
+        }
+      }
+
+      @media (max-width: 900px) {
+        flex-direction: column;
+        align-items: flex-end;
+
+        .action-button {
+          width: 100%;
+          max-width: 260px;
+          justify-content: flex-start;
         }
       }
     }
