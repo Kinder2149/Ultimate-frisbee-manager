@@ -42,6 +42,13 @@ export class WorkspaceSwitcherComponent implements OnInit {
           createdAt: w.createdAt,
           role: w.role,
         }));
+
+        // Si aucun workspace courant mais une seule base disponible, l'appliquer automatiquement
+        if (!this.currentWorkspace && this.workspaces.length === 1) {
+          const ws = this.workspaces[0];
+          this.workspaceService.setCurrentWorkspace(ws);
+          this.currentWorkspace = ws;
+        }
       },
       error: () => {
         this.loading = false;

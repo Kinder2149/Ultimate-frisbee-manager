@@ -1,12 +1,12 @@
-<div class="workspace-switcher" *ngIf="currentWorkspace as ws" (click)="$event.stopPropagation()">
+<div class="workspace-switcher" (click)="$event.stopPropagation()">
   <button
     class="workspace-switcher__button"
     type="button"
     (click)="toggleMenu($event)"
   >
     <span class="ws-label">Workspace</span>
-    <span class="ws-name">{{ ws.name }}</span>
-    <span class="ws-role" *ngIf="ws.role">({{ ws.role | titlecase }})</span>
+    <span class="ws-name">{{ currentWorkspace?.name || 'Sélectionner une base' }}</span>
+    <span class="ws-role" *ngIf="currentWorkspace?.role">({{ currentWorkspace?.role | titlecase }})</span>
     <mat-icon class="ws-chevron">expand_more</mat-icon>
   </button>
 
@@ -24,7 +24,7 @@
         <li
           *ngFor="let w of workspaces"
           (click)="selectWorkspace(w, $event)"
-          [class.is-current]="w.id === ws.id"
+          [class.is-current]="currentWorkspace?.id === w.id"
         >
           <div class="workspace-switcher__item-name">{{ w.name }}</div>
           <div class="workspace-switcher__item-role" *ngIf="w.role">{{ w.role | uppercase }}</div>
