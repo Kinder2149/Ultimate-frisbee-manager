@@ -70,7 +70,11 @@ export class AuthService {
             this.isAuthenticatedSubject.next(true);
             this.syncUserProfileThrottled();
           } else {
-            this.clearStateAndRedirect();
+            // Pas de session utilisateur associée (par exemple lors d'un flux de reset
+            // de mot de passe). On ne force pas de redirection vers /login dans ce cas :
+            // on se contente de marquer l'utilisateur comme non authentifié.
+            this.currentUserSubject.next(null);
+            this.isAuthenticatedSubject.next(false);
           }
         } else if (event === 'SIGNED_OUT') {
           this.clearStateAndRedirect();
@@ -120,11 +124,11 @@ export class AuthService {
    * configurée côté Supabase (ou via l'option redirectTo de l'appel).
    */
   requestPasswordReset(email: string): Observable<void> {
-    // On redirige vers la racine de l'application, puis on laisse l'événement
-    // PASSWORD_RECOVERY nous amener vers /reset-password.
+    // On redirige directement vers la page Angular de réinitialisation.
+    // Supabase construira une ConfirmationURL qui inclut ce redirect_to.
     const redirectTo = environment.production
-      ? 'https://ultimate-frisbee-manager.vercel.app'
-      : 'http://localhost:4200';
+      ? 'https://ultimate-frisbee-manager.vercel.app/reset-password'
+      : 'http://localhost:4200/reset-password';
 
     return from(
       this.supabaseService.supabase.auth.resetPasswordForEmail(email, { redirectTo })
