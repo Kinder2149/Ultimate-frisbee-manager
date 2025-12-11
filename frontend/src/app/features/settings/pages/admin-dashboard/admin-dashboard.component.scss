@@ -7,6 +7,11 @@
   margin: 0 auto;
 }
 
+/* Couleur des onglets du mat-tab-group (fond bleu foncé) */
+:host ::ng-deep .admin-container .mat-mdc-tab-header .mdc-tab__text-label {
+  color: #ffffff !important;
+}
+
 .tab-content {
   padding: 24px;
 }
