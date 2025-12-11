@@ -43,6 +43,9 @@ export class AdminWorkspacesPageComponent implements OnInit {
   loading = false;
   error: string | null = null;
 
+  // Filtre de recherche sur les bases
+  workspaceFilter = '';
+
   // Création / édition
   newWorkspaceName = '';
   editingWorkspace: AdminWorkspaceSummary | null = null;
@@ -73,6 +76,19 @@ export class AdminWorkspacesPageComponent implements OnInit {
   ngOnInit(): void {
     this.loadWorkspaces();
     this.loadAllUsers();
+  }
+
+  get filteredWorkspaces(): AdminWorkspaceSummary[] {
+    const filter = this.workspaceFilter?.toLowerCase().trim();
+    if (!filter) {
+      return this.workspaces;
+    }
+
+    return this.workspaces.filter((ws) => {
+      const name = ws.name?.toLowerCase() ?? '';
+      const id = ws.id?.toLowerCase() ?? '';
+      return name.includes(filter) || id.includes(filter);
+    });
   }
 
   loadWorkspaces(): void {
@@ -334,6 +350,11 @@ export class AdminWorkspacesPageComponent implements OnInit {
       // Par défaut, rôle USER
       this.setUserRole(userId, 'USER');
     }
+  }
+
+  isCurrentWorkspace(ws: AdminWorkspaceSummary): boolean {
+    const current = this.workspaceService.getCurrentWorkspace();
+    return !!current && current.id === ws.id;
   }
 
   saveWorkspaceUsers(): void {

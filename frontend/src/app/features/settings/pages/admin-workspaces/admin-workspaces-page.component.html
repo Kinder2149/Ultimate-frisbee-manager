@@ -57,8 +57,88 @@
         <span class="panel-counter" *ngIf="workspaces?.length">{{ workspaces.length }} base(s)</span>
       </div>
 
+      <div class="panel-filters" *ngIf="workspaces?.length">
+        <mat-form-field appearance="outline" class="workspace-filter-field">
+          <mat-label>Rechercher un workspace</mat-label>
+          <input
+            matInput
+            [(ngModel)]="workspaceFilter"
+            placeholder="Nom ou ID du workspace"
+          />
+        </mat-form-field>
+      </div>
+
+      <!-- Barre d'outils pour le workspace sélectionné -->
+      <div class="workspaces-toolbar" *ngIf="workspaces?.length">
+        <div class="workspaces-toolbar__info">
+          <ng-container *ngIf="selectedWorkspace as ws; else noWorkspaceSelectedToolbar">
+            <div class="workspaces-toolbar__title">
+              <span class="label">Base sélectionnée :</span>
+              <span class="name">{{ ws.name }}</span>
+            </div>
+            <div class="workspaces-toolbar__subtitle">
+              ID : {{ ws.id }}
+            </div>
+          </ng-container>
+          <ng-template #noWorkspaceSelectedToolbar>
+            <div class="workspaces-toolbar__title">
+              <span class="label">Aucune base sélectionnée</span>
+            </div>
+            <div class="workspaces-toolbar__subtitle">
+              Cliquez sur une ligne dans la liste pour afficher les actions et gérer les membres.
+            </div>
+          </ng-template>
+        </div>
+
+        <div class="workspaces-toolbar__actions" *ngIf="selectedWorkspace as ws">
+          <button
+            mat-stroked-button
+            color="primary"
+            class="toolbar-button"
+            (click)="switchToWorkspace(ws)"
+            [disabled]="loading || isCurrentWorkspace(ws)"
+          >
+            <mat-icon>open_in_new</mat-icon>
+            Basculer sur cette base
+          </button>
+
+          <button
+            mat-stroked-button
+            color="primary"
+            class="toolbar-button"
+            (click)="startEdit(ws)"
+            [disabled]="savingWorkspace || deletingWorkspaceId === ws.id || duplicatingWorkspaceId === ws.id || loading"
+          >
+            <mat-icon>edit</mat-icon>
+            Renommer
+          </button>
+
+          <button
+            mat-stroked-button
+            color="primary"
+            class="toolbar-button"
+            (click)="duplicateWorkspace(ws)"
+            [disabled]="duplicatingWorkspaceId === ws.id || deletingWorkspaceId === ws.id || savingWorkspace || loading"
+          >
+            <mat-icon>content_copy</mat-icon>
+            Dupliquer
+          </button>
+
+          <button
+            mat-stroked-button
+            color="warn"
+            class="toolbar-button toolbar-button--danger"
+            (click)="deleteWorkspace(ws)"
+            [disabled]="deletingWorkspaceId === ws.id || savingWorkspace || duplicatingWorkspaceId === ws.id || loading"
+          >
+            <mat-icon>delete</mat-icon>
+            Supprimer
+          </button>
+        </div>
+      </div>
+
       <div class="table-wrapper mat-elevation-z2" *ngIf="workspaces?.length; else emptyWorkspaces">
-        <table mat-table [dataSource]="workspaces" class="workspaces-table">
+        <table mat-table [dataSource]="filteredWorkspaces" class="workspaces-table">
           <!-- Nom de la base -->
           <ng-container matColumnDef="name">
             <th mat-header-cell *matHeaderCellDef>Nom du workspace</th>
@@ -71,6 +151,7 @@
                     <mat-label>Nom du workspace</mat-label>
                     <input matInput [(ngModel)]="editName" />
                   </mat-form-field>
+                  <span *ngIf="isCurrentWorkspace(ws)" class="ws-current-chip">Workspace courant</span>
                   <span class="ws-id" *ngIf="editingWorkspace?.id !== ws.id">ID : {{ ws.id }}</span>
                 </div>
               </div>
