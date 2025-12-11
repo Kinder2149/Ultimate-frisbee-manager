@@ -57,6 +57,13 @@ export class AuthService {
   private listenToAuthStateChanges(): void {
     this.supabaseService.supabase.auth.onAuthStateChange(
       (event: AuthChangeEvent, session: Session | null) => {
+        if (event === 'PASSWORD_RECOVERY') {
+          // L'utilisateur vient de cliquer sur un lien de réinitialisation de mot de passe.
+          // On le redirige vers la page Angular de changement de mot de passe.
+          this.router.navigate(['/reset-password']);
+          return;
+        }
+
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
           if (session?.user) {
             // Le token Supabase est disponible, on considère l'utilisateur comme authentifié
@@ -113,9 +120,11 @@ export class AuthService {
    * configurée côté Supabase (ou via l'option redirectTo de l'appel).
    */
   requestPasswordReset(email: string): Observable<void> {
+    // On redirige vers la racine de l'application, puis on laisse l'événement
+    // PASSWORD_RECOVERY nous amener vers /reset-password.
     const redirectTo = environment.production
-      ? 'https://ultimate-frisbee-manager.vercel.app/reset-password'
-      : 'http://localhost:4200/reset-password';
+      ? 'https://ultimate-frisbee-manager.vercel.app'
+      : 'http://localhost:4200';
 
     return from(
       this.supabaseService.supabase.auth.resetPasswordForEmail(email, { redirectTo })
