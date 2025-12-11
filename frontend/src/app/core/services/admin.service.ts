@@ -46,6 +46,10 @@ export interface AdminWorkspaceSummary {
   createdAt: string;
   updatedAt?: string;
   membersCount: number;
+  exercicesCount?: number;
+  entrainementsCount?: number;
+  echauffementsCount?: number;
+  situationsCount?: number;
 }
 
 export interface AdminWorkspaceUser {

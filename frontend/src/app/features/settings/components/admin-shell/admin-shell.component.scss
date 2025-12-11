@@ -4,7 +4,7 @@
 
 .admin-sidenav {
   width: 260px;
-  background: #0b1b3b;
+  background: linear-gradient(180deg, #102a68 0%, #0b1b3b 100%);
   color: #fff;
 }
 
@@ -33,7 +33,8 @@ mat-nav-list a.mat-list-item mat-icon {
 }
 
 mat-nav-list a.mat-list-item.active {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.16);
+  border-left: 3px solid #ffca28;
 }
 
 .admin-toolbar {

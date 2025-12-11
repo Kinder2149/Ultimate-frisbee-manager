@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { DashboardService, DashboardStats } from '../../core/services/dashboard.service';
 import { AuthService } from '../../core/services/auth.service';
+import { WorkspaceService } from '../../core/services/workspace.service';
 import { filter, switchMap, take, retry, catchError, tap } from 'rxjs/operators';
 import { of, timer } from 'rxjs';
 
@@ -338,7 +339,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return `${this.tagsCount} tags (${categories.length} catégories)`;
   }
 
-  constructor(private dashboardService: DashboardService, private authService: AuthService) {
+  constructor(
+    private dashboardService: DashboardService,
+    private authService: AuthService,
+    private workspaceService: WorkspaceService
+  ) {
     console.log('🎯 Dashboard créé avec succès');
     
     // Fermer le menu d'ajout si on clique ailleurs
@@ -351,12 +356,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // Attendre que le profil utilisateur soit synchronisé pour éviter de solliciter le pool DB au réveil
-    this.authService.currentUser$.pipe(
-      filter((u): u is any => !!u),
-      take(1),
-      switchMap(() => this.loadDashboardStats$())
-    ).subscribe();
+    // 1) Attendre que le profil utilisateur soit synchronisé
+    // 2) Ensuite, écouter les changements de workspace courant
+    this.authService.currentUser$
+      .pipe(
+        filter((u): u is any => !!u),
+        take(1),
+        switchMap(() =>
+          this.workspaceService.currentWorkspace$.pipe(
+            filter((ws) => !!ws),
+            switchMap(() => this.loadDashboardStats$())
+          )
+        )
+      )
+      .subscribe();
   }
 
   private loadDashboardStats$() {

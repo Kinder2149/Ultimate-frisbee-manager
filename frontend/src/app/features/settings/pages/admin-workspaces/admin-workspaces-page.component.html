@@ -159,6 +159,21 @@
           </ng-container>
 
           <!-- Nombre de membres -->
+          <ng-container matColumnDef="contents">
+            <th mat-header-cell *matHeaderCellDef>Contenus</th>
+            <td mat-cell *matCellDef="let ws">
+              <div class="contents-cell">
+                <span class="contents-main">
+                  {{ ws.exercicesCount || 0 }} exos / {{ ws.entrainementsCount || 0 }} entr.
+                </span>
+                <span class="contents-secondary">
+                  {{ ws.echauffementsCount || 0 }} éch. / {{ ws.situationsCount || 0 }} sit.
+                </span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Nombre de membres -->
           <ng-container matColumnDef="membersCount">
             <th mat-header-cell *matHeaderCellDef>Membres</th>
             <td mat-cell *matCellDef="let ws">
@@ -184,78 +199,64 @@
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef class="actions-header">Actions</th>
             <td mat-cell *matCellDef="let ws" class="actions-cell">
-              <div class="actions-group">
-                <!-- Edition du nom -->
-                <ng-container *ngIf="editingWorkspace?.id !== ws.id; else editActions">
+              <button
+                mat-icon-button
+                [matMenuTriggerFor]="workspaceMenu"
+                (click)="$event.stopPropagation()"
+                aria-label="Actions sur le workspace"
+              >
+                <mat-icon>more_vert</mat-icon>
+              </button>
+
+              <mat-menu #workspaceMenu="matMenu">
+                <!-- Menu en mode normal -->
+                <ng-container *ngIf="editingWorkspace?.id !== ws.id; else editMenu">
+                  <button mat-menu-item (click)="selectWorkspace(ws)">
+                    <mat-icon>group</mat-icon>
+                    <span>Gérer les membres</span>
+                  </button>
+                  <button mat-menu-item (click)="switchToWorkspace(ws)" [disabled]="loading || isCurrentWorkspace(ws)">
+                    <mat-icon>open_in_new</mat-icon>
+                    <span>Basculer sur cette base</span>
+                  </button>
                   <button
-                    mat-stroked-button
-                    color="primary"
-                    class="action-button"
+                    mat-menu-item
                     (click)="startEdit(ws)"
-                    [disabled]="savingWorkspace || deletingWorkspaceId === ws.id || loading"
+                    [disabled]="savingWorkspace || deletingWorkspaceId === ws.id || duplicatingWorkspaceId === ws.id || loading"
                   >
                     <mat-icon>edit</mat-icon>
-                    Renommer
+                    <span>Renommer</span>
+                  </button>
+                  <button
+                    mat-menu-item
+                    (click)="duplicateWorkspace(ws)"
+                    [disabled]="duplicatingWorkspaceId === ws.id || deletingWorkspaceId === ws.id || savingWorkspace || loading"
+                  >
+                    <mat-icon>content_copy</mat-icon>
+                    <span>Dupliquer</span>
+                  </button>
+                  <button
+                    mat-menu-item
+                    (click)="deleteWorkspace(ws)"
+                    [disabled]="deletingWorkspaceId === ws.id || savingWorkspace || duplicatingWorkspaceId === ws.id || loading"
+                  >
+                    <mat-icon>delete</mat-icon>
+                    <span>Supprimer</span>
                   </button>
                 </ng-container>
-                <ng-template #editActions>
-                  <button
-                    mat-raised-button
-                    color="primary"
-                    class="action-button"
-                    (click)="saveEdit()"
-                    [disabled]="savingWorkspace || deletingWorkspaceId === ws.id || loading"
-                  >
+
+                <!-- Menu en mode édition du nom -->
+                <ng-template #editMenu>
+                  <button mat-menu-item (click)="saveEdit()" [disabled]="savingWorkspace || deletingWorkspaceId === ws.id || loading">
                     <mat-icon>check</mat-icon>
-                    Enregistrer
+                    <span>Enregistrer</span>
                   </button>
-                  <button
-                    mat-button
-                    class="action-button"
-                    (click)="cancelEdit()"
-                    [disabled]="savingWorkspace || deletingWorkspaceId === ws.id || loading"
-                  >
+                  <button mat-menu-item (click)="cancelEdit()" [disabled]="savingWorkspace || deletingWorkspaceId === ws.id || loading">
                     <mat-icon>close</mat-icon>
-                    Annuler
+                    <span>Annuler</span>
                   </button>
                 </ng-template>
-
-                <!-- Suppression -->
-                <button
-                  mat-stroked-button
-                  color="warn"
-                  class="action-button action-button--danger"
-                  (click)="deleteWorkspace(ws)"
-                  [disabled]="deletingWorkspaceId === ws.id || savingWorkspace || duplicatingWorkspaceId === ws.id || loading"
-                >
-                  <mat-icon>delete</mat-icon>
-                  Supprimer
-                </button>
-
-                <!-- Duplication -->
-                <button
-                  mat-stroked-button
-                  color="primary"
-                  class="action-button"
-                  (click)="duplicateWorkspace(ws)"
-                  [disabled]="duplicatingWorkspaceId === ws.id || deletingWorkspaceId === ws.id || savingWorkspace || loading"
-                >
-                  <mat-icon>content_copy</mat-icon>
-                  Dupliquer
-                </button>
-
-                <!-- Bascule workspace courant -->
-                <button
-                  mat-stroked-button
-                  color="primary"
-                  class="action-button"
-                  (click)="switchToWorkspace(ws)"
-                  [disabled]="loading"
-                >
-                  <mat-icon>open_in_new</mat-icon>
-                  Basculer sur cette base
-                </button>
-              </div>
+              </mat-menu>
             </td>
           </ng-container>
 

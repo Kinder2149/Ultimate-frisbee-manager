@@ -6,7 +6,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
-import { filter, takeUntil } from 'rxjs/operators';
+import { filter, takeUntil, finalize } from 'rxjs/operators';
 
 import { AuthService } from '../../../core/services/auth.service';
 import { LoginCredentials } from '../../../core/models/user.model';
@@ -77,7 +77,11 @@ export class LoginComponent implements OnInit, OnDestroy {
       password: this.loginForm.value.password
     };
 
-    this.authService.login(credentials).subscribe({
+    this.authService.login(credentials).pipe(
+      finalize(() => {
+        this.isLoading = false;
+      })
+    ).subscribe({
       next: () => {
         this.snackBar.open('Connexion réussie !', 'Fermer', {
           duration: 3000,
@@ -95,9 +99,6 @@ export class LoginComponent implements OnInit, OnDestroy {
           duration: 5000,
           panelClass: ['error-snackbar']
         });
-      },
-      complete: () => {
-        this.isLoading = false;
       }
     });
   }

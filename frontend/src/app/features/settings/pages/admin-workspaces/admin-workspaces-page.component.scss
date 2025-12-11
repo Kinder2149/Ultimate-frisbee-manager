@@ -27,6 +27,21 @@
       }
     }
 
+    .contents-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      font-size: 12px;
+
+      .contents-main {
+        font-weight: 500;
+      }
+
+      .contents-secondary {
+        color: rgba(0, 0, 0, 0.6);
+      }
+    }
+
     .workspaces-toolbar {
       display: flex;
       align-items: center;

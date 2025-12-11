@@ -11,6 +11,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatListModule } from '@angular/material/list';
 import { MatCheckboxModule, MatCheckboxChange } from '@angular/material/checkbox';
+import { MatMenuModule } from '@angular/material/menu';
 import { Router } from '@angular/router';
 import { AdminService, AdminWorkspaceSummary, AdminWorkspaceUser } from '../../../../core/services/admin.service';
 import { DialogService } from '../../../../shared/components/dialog/dialog.service';
@@ -31,14 +32,15 @@ import { WorkspaceService } from '../../../../core/services/workspace.service';
     MatCardModule,
     MatSnackBarModule,
     MatListModule,
-    MatCheckboxModule
+    MatCheckboxModule,
+    MatMenuModule
   ],
   templateUrl: './admin-workspaces-page.component.html',
   styleUrls: ['./admin-workspaces-page.component.scss']
 })
 export class AdminWorkspacesPageComponent implements OnInit {
   workspaces: AdminWorkspaceSummary[] = [];
-  displayedColumns = ['name', 'membersCount', 'createdAt', 'actions'];
+  displayedColumns = ['name', 'contents', 'membersCount', 'createdAt', 'actions'];
 
   loading = false;
   error: string | null = null;

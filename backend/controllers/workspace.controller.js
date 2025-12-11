@@ -249,6 +249,10 @@ exports.adminListWorkspaces = async (req, res, next) => {
         members: {
           include: { user: true },
         },
+        exercices: true,
+        entrainements: true,
+        echauffements: true,
+        situationsMatch: true,
       },
     });
 
@@ -258,6 +262,10 @@ exports.adminListWorkspaces = async (req, res, next) => {
       createdAt: ws.createdAt,
       updatedAt: ws.updatedAt,
       membersCount: ws.members.length,
+      exercicesCount: ws.exercices.length,
+      entrainementsCount: ws.entrainements.length,
+      echauffementsCount: ws.echauffements.length,
+      situationsCount: ws.situationsMatch.length,
     }));
 
     res.json(result);
