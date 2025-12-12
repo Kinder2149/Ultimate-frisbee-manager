@@ -40,6 +40,9 @@
 
 // Ligne spécifique pour Objectif / Travail spécifique
 .row--objectif-travail {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
   justify-items: stretch;
 }
 
@@ -53,7 +56,6 @@
   .row--objectif-travail {
     width: 100%;
     margin: 0;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
