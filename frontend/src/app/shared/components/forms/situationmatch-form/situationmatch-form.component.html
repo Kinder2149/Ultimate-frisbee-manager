@@ -64,21 +64,62 @@
       <div class="tags-section">
         <h3>Tags (Format, Temps moyen, Niveau)</h3>
         
-        <!-- Tags disponibles -->
+        <!-- Tags disponibles groupés par catégorie -->
         <div class="available-tags" *ngIf="availableTags.length > 0">
           <h4>Tags disponibles :</h4>
-          <div class="tags-grid">
-            <mat-chip-listbox>
-              <mat-chip 
-                *ngFor="let tag of availableTags" 
-                (click)="onTagSelect(tag)"
-                [style.background-color]="tag.color || '#e0e0e0'"
-                [style.color]="tag.color ? '#fff' : '#333'"
-                class="selectable-tag">
-                {{ tag.label }}
-                <mat-icon>add</mat-icon>
-              </mat-chip>
-            </mat-chip-listbox>
+
+          <!-- Format -->
+          <div *ngIf="formatTags.length > 0" class="tag-category">
+            <h5>Format</h5>
+            <div class="tags-grid">
+              <mat-chip-listbox>
+                <mat-chip
+                  *ngFor="let tag of formatTags"
+                  (click)="onTagSelect(tag)"
+                  [style.background-color]="tag.color || '#e0e0e0'"
+                  [style.color]="tag.color ? '#fff' : '#333'"
+                  class="selectable-tag">
+                  {{ tag.label }}
+                  <mat-icon>add</mat-icon>
+                </mat-chip>
+              </mat-chip-listbox>
+            </div>
+          </div>
+
+          <!-- Temps moyen -->
+          <div *ngIf="tempsTags.length > 0" class="tag-category">
+            <h5>Temps moyen</h5>
+            <div class="tags-grid">
+              <mat-chip-listbox>
+                <mat-chip
+                  *ngFor="let tag of tempsTags"
+                  (click)="onTagSelect(tag)"
+                  [style.background-color]="tag.color || '#e0e0e0'"
+                  [style.color]="tag.color ? '#fff' : '#333'"
+                  class="selectable-tag">
+                  {{ tag.label }}
+                  <mat-icon>add</mat-icon>
+                </mat-chip>
+              </mat-chip-listbox>
+            </div>
+          </div>
+
+          <!-- Niveau -->
+          <div *ngIf="niveauTags.length > 0" class="tag-category">
+            <h5>Niveau</h5>
+            <div class="tags-grid">
+              <mat-chip-listbox>
+                <mat-chip
+                  *ngFor="let tag of niveauTags"
+                  (click)="onTagSelect(tag)"
+                  [style.background-color]="tag.color || '#e0e0e0'"
+                  [style.color]="tag.color ? '#fff' : '#333'"
+                  class="selectable-tag">
+                  {{ tag.label }}
+                  <mat-icon>add</mat-icon>
+                </mat-chip>
+              </mat-chip-listbox>
+            </div>
           </div>
         </div>
 

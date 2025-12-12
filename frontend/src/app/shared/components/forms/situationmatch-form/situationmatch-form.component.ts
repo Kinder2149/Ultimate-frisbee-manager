@@ -63,6 +63,19 @@ export class SituationMatchFormComponent implements OnInit, OnChanges {
   // Options pour le sélecteur de type
   typeOptions = SITUATION_MATCH_TYPES;
 
+  // Getters pour organiser les tags par catégorie dans le template
+  get formatTags(): Tag[] {
+    return this.availableTags.filter(tag => tag.category === 'format');
+  }
+
+  get tempsTags(): Tag[] {
+    return this.availableTags.filter(tag => tag.category === 'temps');
+  }
+
+  get niveauTags(): Tag[] {
+    return this.availableTags.filter(tag => tag.category === 'niveau');
+  }
+
   constructor(private fb: FormBuilder) {
     this.form = this.createForm();
   }

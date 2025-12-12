@@ -38,11 +38,23 @@
 .col-12 { grid-column: span 12; }
 .col-6 { grid-column: span 12; }
 
+// Ligne spécifique pour Objectif / Travail spécifique
+.row--objectif-travail {
+  justify-items: stretch;
+}
+
 @media (min-width: 768px) {
   .grid { grid-template-columns: repeat(12, 1fr); }
   .row { grid-template-columns: repeat(12, 1fr); }
   .col-12 { grid-column: span 12; }
   .col-6 { grid-column: span 6; }
+
+  // Sur desktop, on centre et on élargit les champs Objectif / Travail spécifique
+  .row--objectif-travail {
+    max-width: 40rem;
+    margin: 0 auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 // Inputs
