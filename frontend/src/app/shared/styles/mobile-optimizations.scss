@@ -120,8 +120,8 @@
     justify-content: space-between;
     align-items: center;
     gap: var(--mobile-gap);
-    height: 48px;
-    max-height: 48px;
+    min-height: 56px; /* plus de hauteur pour éviter que le contenu soit coupé */
+    height: auto;
   }
   
   .main-header h1 {
@@ -139,7 +139,7 @@
   .main-nav {
     order: 2;
     flex-shrink: 0;
-    height: 32px;
+    min-height: var(--touch-target-min);
     display: flex;
     align-items: center;
   }
@@ -150,10 +150,10 @@
     flex-wrap: nowrap !important;
     justify-content: flex-end;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     padding: 0;
     margin: 0;
-    height: 32px;
+    height: auto;
     width: auto;
   }
   
@@ -169,8 +169,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: 44px;
+    height: 44px;
     padding: 0;
     border-radius: 50%;
     text-decoration: none;
@@ -189,9 +189,9 @@
   
   /* Icônes dans les bulles */
   .main-nav mat-icon:not(.dropdown-icon) {
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
     color: white;
   }
   

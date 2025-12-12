@@ -49,10 +49,10 @@
   .col-12 { grid-column: span 12; }
   .col-6 { grid-column: span 6; }
 
-  // Sur desktop, on centre et on élargit les champs Objectif / Travail spécifique
+  // Sur desktop, les champs Objectif / Travail spécifique occupent toute la largeur de la carte
   .row--objectif-travail {
-    max-width: 40rem;
-    margin: 0 auto;
+    width: 100%;
+    margin: 0;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
