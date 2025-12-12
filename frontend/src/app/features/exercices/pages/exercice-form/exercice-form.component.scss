@@ -40,10 +40,13 @@
 
 // Ligne spécifique pour Objectif / Travail spécifique
 .row--objectif-travail {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
+  flex-direction: row;
   gap: 16px;
-  justify-items: stretch;
+}
+
+.row--objectif-travail .col {
+  flex: 1 1 0;
 }
 
 @media (min-width: 768px) {
