@@ -308,6 +308,7 @@
   }
   
   /* Dropdowns mobiles - menu contextuel compact */
+  .main-nav .dropdown-menu,
   .dropdown-menu {
     position: fixed !important;
     left: 0 !important;
@@ -321,13 +322,15 @@
     box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
     min-width: unset !important;
     max-width: none !important;
-    z-index: 99999 !important;
+    z-index: 1100 !important;
     max-height: 65vh !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch !important;
     overscroll-behavior: contain !important;
     animation: slideInUp 0.2s ease !important;
     padding-bottom: calc(env(safe-area-inset-bottom) + 8px) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
   }
 
   .dropdown-menu::before {
@@ -400,6 +403,7 @@
     -webkit-overflow-scrolling: touch;
     border-radius: 16px 16px 0 0;
     padding-bottom: calc(env(safe-area-inset-bottom) + 8px);
+    z-index: 1100;
   }
 }
 
