@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -14,6 +14,8 @@ import { environment } from '../../../../environments/environment';
   styleUrls: ['./workspace-switcher.component.scss']
 })
 export class WorkspaceSwitcherComponent implements OnInit {
+  @Output() menuOpenChange = new EventEmitter<boolean>();
+
   currentWorkspace: WorkspaceSummary | null = null;
   workspaces: WorkspaceSummary[] = [];
   isMenuOpen = false;
@@ -63,6 +65,7 @@ export class WorkspaceSwitcherComponent implements OnInit {
       return;
     }
     this.isMenuOpen = !this.isMenuOpen;
+    this.menuOpenChange.emit(this.isMenuOpen);
   }
 
   selectWorkspace(ws: WorkspaceSummary, event: MouseEvent): void {
@@ -70,10 +73,12 @@ export class WorkspaceSwitcherComponent implements OnInit {
     this.workspaceService.setCurrentWorkspace(ws);
     this.currentWorkspace = ws;
     this.isMenuOpen = false;
+    this.menuOpenChange.emit(false);
     this.router.navigate(['/']);
   }
 
   closeMenu(): void {
     this.isMenuOpen = false;
+    this.menuOpenChange.emit(false);
   }
 }

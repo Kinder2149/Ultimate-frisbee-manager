@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef, OnInit, Renderer2, ElementRef } from '@angular/core';
+import { Component, ChangeDetectorRef, OnInit, Renderer2, ElementRef, AfterViewInit, ViewChild, OnDestroy, HostListener } from '@angular/core';
 import { Observable, Subscription, combineLatest } from 'rxjs';
 import { AuthService } from './core/services/auth.service';
 import { User } from './core/models/user.model';
@@ -7,19 +7,25 @@ import { ApiUrlService } from './core/services/api-url.service';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter, map, distinctUntilChanged } from 'rxjs/operators';
 import { WorkspaceService, WorkspaceSummary } from './core/services/workspace.service';
+import { WorkspaceSwitcherComponent } from './shared/components/workspace-switcher/workspace-switcher.component';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   title = 'Ultimate Frisbee Manager';
   currentUser$!: Observable<User | null>;
   isAuthenticated$ = this.authService.isAuthenticated$;
   showStartupLoader$!: Observable<boolean>;
   currentWorkspace$!: Observable<WorkspaceSummary | null>;
   private routerSubscription!: Subscription;
+
+  @ViewChild('mainHeader', { static: false }) mainHeader?: ElementRef<HTMLElement>;
+  @ViewChild('workspaceSwitcher', { static: false }) workspaceSwitcher?: WorkspaceSwitcherComponent;
+
+  isWorkspaceMenuOpen = false;
 
   isDropdownOpen = {
     exercices: false,
@@ -62,10 +68,48 @@ export class AppComponent implements OnInit {
     this.routerSubscription = this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe();
   }
 
+  ngAfterViewInit(): void {
+    this.updateMobileAppBarHeight();
+  }
+
+  ngOnDestroy(): void {
+    if (this.routerSubscription) {
+      this.routerSubscription.unsubscribe();
+    }
+  }
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    this.updateMobileAppBarHeight();
+  }
+
+  get isAnyMenuOpen(): boolean {
+    return this.isWorkspaceMenuOpen || Object.values(this.isDropdownOpen).some(Boolean);
+  }
+
+  private setBodyScrollLocked(locked: boolean): void {
+    if (locked) {
+      this.renderer.addClass(document.body, 'body-scroll-locked');
+    } else {
+      this.renderer.removeClass(document.body, 'body-scroll-locked');
+    }
+  }
+
+  private updateMobileAppBarHeight(): void {
+    const headerEl = this.mainHeader?.nativeElement;
+    if (!headerEl) return;
+
+    const height = Math.ceil(headerEl.getBoundingClientRect().height);
+    document.documentElement.style.setProperty('--mobile-appbar-height', `${height}px`);
+  }
+
   toggleDropdown(menu: keyof typeof this.isDropdownOpen, event: Event): void {
     console.log(`Clic détecté pour le menu : ${menu}`); // Log pour débogage
     event.preventDefault();
     event.stopPropagation();
+
+    this.workspaceSwitcher?.closeMenu();
+    this.isWorkspaceMenuOpen = false;
 
     const currentState = this.isDropdownOpen[menu];
 
@@ -77,6 +121,9 @@ export class AppComponent implements OnInit {
     // Ouvrir le menu cliqué s'il était fermé
     this.isDropdownOpen[menu] = !currentState;
 
+    this.setBodyScrollLocked(this.isAnyMenuOpen);
+    this.updateMobileAppBarHeight();
+
     // Forcer manuellement la détection des changements
     this.cdr.detectChanges();
   }
@@ -85,6 +132,24 @@ export class AppComponent implements OnInit {
     Object.keys(this.isDropdownOpen).forEach(key => {
       (this.isDropdownOpen as any)[key] = false;
     });
+
+    this.workspaceSwitcher?.closeMenu();
+    this.isWorkspaceMenuOpen = false;
+    this.setBodyScrollLocked(false);
+    this.updateMobileAppBarHeight();
+  }
+
+  onWorkspaceMenuOpenChange(open: boolean): void {
+    this.isWorkspaceMenuOpen = open;
+
+    if (open) {
+      Object.keys(this.isDropdownOpen).forEach(key => {
+        (this.isDropdownOpen as any)[key] = false;
+      });
+    }
+
+    this.setBodyScrollLocked(this.isAnyMenuOpen);
+    this.updateMobileAppBarHeight();
   }
 
   getAvatarUrl(path?: string | null): string | null {

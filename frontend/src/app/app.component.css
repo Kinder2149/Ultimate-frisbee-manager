@@ -11,6 +11,19 @@
   overflow: visible !important;
 }
 
+.appbar-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(2px);
+}
+
+body.body-scroll-locked {
+  overflow: hidden;
+  touch-action: none;
+}
+
 .container {
   width: 100%;
   max-width: 1200px;
@@ -384,15 +397,6 @@
 }
 
 @media (max-width: 768px) {
-  .main-nav ul {
-    flex-direction: column;
-  }
-  
-  .main-nav li {
-    margin-right: 0;
-    margin-bottom: 10px;
-  }
-
   .app-title {
     font-size: 2.5rem;
     letter-spacing: 1px;

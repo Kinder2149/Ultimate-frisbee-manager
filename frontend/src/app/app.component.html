@@ -1,12 +1,19 @@
 <div class="app-container" (click)="closeAllDropdowns()">
-  <header class="main-header">
+  <div class="appbar-backdrop" *ngIf="isAnyMenuOpen" (click)="$event.stopPropagation(); closeAllDropdowns()"></div>
+  <header class="main-header" #mainHeader>
     <div class="container">
-      <div class="header-left">
-        <h1>{{ title }}</h1>
-        <app-workspace-switcher></app-workspace-switcher>
-      </div>
-      <nav class="main-nav" (click)="$event.stopPropagation()">
-        <ul>
+      <div class="appbar">
+        <div class="appbar__left">
+          <div class="appbar__row appbar__row--title">
+            <h1>{{ title }}</h1>
+          </div>
+          <div class="appbar__row appbar__row--workspace">
+            <app-workspace-switcher #workspaceSwitcher (menuOpenChange)="onWorkspaceMenuOpenChange($event)"></app-workspace-switcher>
+          </div>
+        </div>
+        <div class="appbar__row appbar__row--nav">
+          <nav class="main-nav" (click)="$event.stopPropagation()">
+            <ul>
           <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" matTooltip="Tableau de bord">
             <mat-icon>dashboard</mat-icon>
             <span class="nav-text">Tableau de bord</span>
@@ -87,8 +94,10 @@
               <li *ngIf="isAuthenticated$ | async"><a href="#" (click)="$event.preventDefault(); onLogout()">Déconnexion</a></li>
             </ul>
           </li>
-        </ul>
-      </nav>
+            </ul>
+          </nav>
+        </div>
+      </div>
     </div>
   </header>
 
