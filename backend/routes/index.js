@@ -41,8 +41,11 @@ module.exports = (app) => {
   app.use('/api/auth', authRoutes);
   // Route publique de santé
   app.use('/api/health', healthRoutes);
-  // Debug réseau/DB (sans Prisma)
-  app.use('/api/debug', debugRoutes);
+  
+  // Debug réseau/DB (désactivé en production)
+  if (process.env.NODE_ENV !== 'production') {
+    app.use('/api/debug', debugRoutes);
+  }
 
   // Routes workspaces (utilisateur et admin)
   app.use('/api/workspaces', authenticateToken, workspaceRoutes);
