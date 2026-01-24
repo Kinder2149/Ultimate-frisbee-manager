@@ -211,3 +211,12 @@ temp/
 # Local development
 .local/
 local/
+
+# Package shared - Ne pas commiter les fichiers compilés
+shared/dist/
+shared/**/*.js
+shared/**/*.d.ts
+shared/**/*.js.map
+# Exceptions
+!shared/package.json
+!shared/jest.config.js
