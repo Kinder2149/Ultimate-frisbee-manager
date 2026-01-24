@@ -1,4 +1,0 @@
-require('./services/cloudinary.js');
-
-console.log('--- Test de configuration Cloudinary terminé ---');
-setTimeout(() => console.log('Attente de la réponse du ping...'), 1000); // Garde le script en vie pour voir la réponse async

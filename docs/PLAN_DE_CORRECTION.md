@@ -44,11 +44,12 @@ Phase 1 (CRITIQUE) → Phase 2 (IMPORTANT) → Phase 3 (MINEUR)
 
 ## 🔴 PHASE 1 : CRITIQUE - Avant migration (7 problèmes)
 
-### PROB-008 : Supprimer `render.yaml`
+### PROB-008 : Supprimer `render.yaml` ✅ TERMINÉ
 
 **Priorité** : 🔴 CRITIQUE  
 **Catégorie** : Configuration  
-**Temps estimé** : 5 min
+**Temps estimé** : 5 min  
+**Statut** : ✅ Résolu le 2026-01-24
 
 #### Analyse d'impact
 - **Fichier** : `/render.yaml`
@@ -83,11 +84,12 @@ grep -r "render.yaml" .
 
 ---
 
-### PROB-013 : Supprimer script `deploy:render`
+### PROB-013 : Supprimer script `deploy:render` ✅ TERMINÉ
 
 **Priorité** : 🔴 CRITIQUE  
 **Catégorie** : Configuration  
-**Temps estimé** : 5 min
+**Temps estimé** : 5 min  
+**Statut** : ✅ Résolu le 2026-01-24
 
 #### Analyse d'impact
 - **Fichier** : `backend/package.json`
@@ -123,11 +125,12 @@ grep -r "deploy:render" .
 
 ---
 
-### PROB-016 : Supprimer `render.env.example.json`
+### PROB-016 : Supprimer `render.env.example.json` ✅ TERMINÉ
 
 **Priorité** : 🔴 CRITIQUE  
 **Catégorie** : Configuration  
-**Temps estimé** : 5 min
+**Temps estimé** : 5 min  
+**Statut** : ✅ Résolu le 2026-01-24
 
 #### Analyse d'impact
 - **Fichier** : `backend/render.env.example.json`
@@ -160,11 +163,12 @@ grep -r "render.env.example" .
 
 ---
 
-### PROB-025 : 🚨 URGENT - Consolider les 3 services error-handler
+### PROB-025 : 🚨 URGENT - Consolider les 3 services error-handler ✅ TERMINÉ
 
 **Priorité** : 🔴 CRITIQUE  
 **Catégorie** : Frontend  
-**Temps estimé** : 2h
+**Temps estimé** : 2h  
+**Statut** : ✅ Résolu le 2026-01-24
 
 #### Analyse d'impact
 - **Fichiers concernés** :
@@ -312,11 +316,12 @@ cat frontend/src/environments/environment.prod.ts
 
 ---
 
-### PROB-031 : Supprimer `deploy-render.js`
+### PROB-031 : Supprimer `deploy-render.js` ✅ TERMINÉ
 
 **Priorité** : 🔴 CRITIQUE  
 **Catégorie** : Configuration  
-**Temps estimé** : 5 min
+**Temps estimé** : 5 min  
+**Statut** : ✅ Résolu le 2026-01-24
 
 #### Analyse d'impact
 - **Fichier** : `backend/scripts/deploy-render.js`
@@ -408,11 +413,12 @@ git commit -m "docs: replace all Render references with Vercel"
 
 ## 🟠 PHASE 2 : IMPORTANT - Pendant migration (18 problèmes)
 
-### PROB-002 : Consolider documentation racine dans `/docs`
+### PROB-002 : Consolider documentation racine dans `/docs` ✅ TERMINÉ
 
 **Priorité** : 🟠 Important  
 **Catégorie** : Architecture  
-**Temps estimé** : 30 min
+**Temps estimé** : 30 min  
+**Statut** : ✅ Résolu le 2026-01-24
 
 #### Analyse d'impact
 - **Fichiers** : 12 fichiers .md à la racine
@@ -599,11 +605,12 @@ vercel dev
 
 ---
 
-### PROB-011 : ✅ DÉCIDÉ - Tout en anglais, supprimer routes françaises
+### PROB-011 : ✅ DÉCIDÉ - Tout en anglais, supprimer routes françaises ✅ TERMINÉ
 
 **Priorité** : 🟠 Important  
 **Catégorie** : Backend  
-**Temps estimé** : 1h
+**Temps estimé** : 1h  
+**Statut** : ✅ Résolu le 2026-01-24
 
 #### Analyse d'impact
 - **Fichier** : `backend/routes/index.js`
@@ -962,11 +969,12 @@ Ajouter dans `REFERENCE_GUIDE.md` :
 
 ---
 
-### PROB-033 : ✅ DÉCIDÉ - Supprimer `export-ufm.js`
+### PROB-033 : ✅ DÉCIDÉ - Supprimer `export-ufm.js` ✅ TERMINÉ
 
 **Priorité** : 🟠 Important  
 **Catégorie** : Backend  
-**Temps estimé** : 5 min
+**Temps estimé** : 5 min  
+**Statut** : ✅ Résolu le 2026-01-24
 
 #### Analyse d'impact
 - **Fichiers** : `backend/scripts/export-ufm.js` (doublon de `.mjs`)
@@ -989,11 +997,12 @@ Ajouter dans `REFERENCE_GUIDE.md` :
 
 ---
 
-### PROB-034 : ✅ DÉCIDÉ - Supprimer tous scripts de migration
+### PROB-034 : ✅ DÉCIDÉ - Supprimer tous scripts de migration ✅ TERMINÉ
 
 **Priorité** : 🟠 Important  
 **Catégorie** : Backend  
-**Temps estimé** : 15 min
+**Temps estimé** : 15 min  
+**Statut** : ✅ Résolu le 2026-01-24
 
 #### Analyse d'impact
 - **Fichiers** : Scripts de migration one-shot

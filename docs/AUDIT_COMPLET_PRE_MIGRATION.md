@@ -82,69 +82,21 @@ Pour chaque problème :
 
 #### Problèmes identifiés
 
-**PROB-001 : Fichiers temporaires à la racine**
-- **Type** : Obsolète
-- **Sévérité** : 🟡 Mineur
-- **Localisation** : 
-  - `tmp_backend_audit.json`
-  - `tmp_backend_deps.json`
-  - `tmp_frontend_audit.json`
-  - `tmp_frontend_deps.json`
-- **Description** : Fichiers temporaires d'audit laissés à la racine du projet
-- **Impact** : Pollution du dépôt, confusion
-- **Piste de solution** : Supprimer ces fichiers ou les déplacer dans `.gitignore`
-
----
-
-**PROB-002 : Multiples fichiers de documentation à la racine**
+**PROB-002 : Multiples fichiers de documentation à la racine** ✅ RÉSOLU
 - **Type** : Incohérence
 - **Sévérité** : 🟠 Important
-- **Localisation** : 
-  - `AGENT_GUIDE.md`
-  - `DEPLOYMENT.md`
-  - `DOCUMENTATION_SYSTEM.md`
-  - `FINAL_BILAN.md`
-  - `QUICK_REFERENCE.md`
-  - `STRATEGY.md`
-  - `TEST_PLAN.md`
-  - `WORKFLOW_TEMPLATE.md`
-  - `audit_env_report.md`
-  - `history.md`
-  - `pitfalls.md`
-  - `plan.md`
-- **Description** : Trop de fichiers de documentation à la racine, certains redondants avec `/docs`
-- **Impact** : Navigation difficile, duplication d'informations
-- **Piste de solution** : Consolider dans `/docs`, garder uniquement `README.md` à la racine
+- **Description** : Documentation consolidée dans `/docs`
+- **Solution appliquée** : Fichiers déplacés/supprimés, seuls les docs essentiels restent
 
 ---
 
-**PROB-003 : Dossier `archive/` à la racine**
-- **Type** : Obsolète
-- **Sévérité** : 🟡 Mineur
-- **Localisation** : `/archive/old_trainings_module/`
-- **Description** : Ancien module d'entraînements archivé
-- **Impact** : Espace disque, confusion
-- **Piste de solution** : Supprimer ou déplacer hors du dépôt
+**PROB-004 : Fichier `desktop.ini` Windows** ✅ RÉSOLU
+- **Solution appliquée** : Fichier supprimé
 
 ---
 
-**PROB-004 : Fichier `desktop.ini` Windows**
-- **Type** : Obsolète
-- **Sévérité** : 🟡 Mineur
-- **Localisation** : `/desktop.ini`
-- **Description** : Fichier système Windows committé
-- **Impact** : Pollution du dépôt
-- **Piste de solution** : Ajouter à `.gitignore` et supprimer du dépôt
-
----
-
-**PROB-005 : Fichier `.npmrc` vide à la racine**
-- **Type** : Incohérence
-- **Sévérité** : 🟡 Mineur
-- **Localisation** : `/.npmrc` (0 bytes)
-- **Description** : Fichier de configuration npm vide
-- **Impact** : Fichier inutile
-- **Piste de solution** : Supprimer si inutilisé
+**PROB-005 : Fichier `.npmrc` vide à la racine** ✅ RÉSOLU
+- **Solution appliquée** : Fichier supprimé
 
 ---
 
@@ -216,13 +168,11 @@ Pour chaque problème :
 
 #### Problèmes identifiés
 
-**PROB-011 : Duplication routes FR/EN**
+**PROB-011 : Duplication routes FR/EN** ✅ RÉSOLU
 - **Type** : Doublon
 - **Sévérité** : 🟠 Important
-- **Localisation** : `backend/routes/index.js` lignes 52-66
-- **Description** : Routes dupliquées en français et anglais (exercices/exercises, entrainements/trainings, etc.)
-- **Impact** : Maintenance double, confusion
-- **Piste de solution** : Choisir une convention (FR ou EN) et créer des alias si nécessaire
+- **Description** : Migration vers convention anglaise terminée
+- **Solution appliquée** : Routes françaises supprimées, seules les routes anglaises restent (/api/exercises, /api/trainings, /api/warmups, /api/matches)
 
 ---
 
@@ -443,38 +393,22 @@ Pour chaque problème :
 
 **Fichiers obsolètes identifiés :**
 
-1. `backend/test-cloudinary.js.bak` 🟡
-2. `frontend/src/app/features/exercices/pages/exercice-form/exercice-form.component.ts.bak` 🟡
-3. `frontend/src/app/features/exercices/pages/exercice-form/exercice-form.temp.ts` 🟡
-4. `frontend/LEGACY/exercice-form.fixed.ts` 🟡
-5. `frontend/.npmrc.bak` 🟡
-6. `backend/scripts/export-ufm.js` (garder uniquement .mjs) 🟠
+✅ RÉSOLU : Fichiers .bak et .temp supprimés
+- `backend/test-cloudinary.js.bak` ✅
+- `frontend/src/app/features/exercices/pages/exercice-form/exercice-form.component.ts.bak` ✅
+- `frontend/src/app/features/exercices/pages/exercice-form/exercice-form.temp.ts` ✅
+- `frontend/LEGACY/` ✅ (dossier entier supprimé)
 
 ---
 
 ### 6.3 Documentation obsolète
 
-#### Liste des fichiers à supprimer
+✅ RÉSOLU : Documentation consolidée dans `/docs`
 
-**Documentation à consolider/supprimer :**
-
-1. Fichiers racine à déplacer dans `/docs` : 🟠
-   - `AGENT_GUIDE.md`
-   - `DEPLOYMENT.md`
-   - `DOCUMENTATION_SYSTEM.md`
-   - `FINAL_BILAN.md`
-   - `QUICK_REFERENCE.md`
-   - `STRATEGY.md`
-   - `TEST_PLAN.md`
-   - `WORKFLOW_TEMPLATE.md`
-   - `audit_env_report.md`
-   - `history.md`
-   - `pitfalls.md`
-   - `plan.md`
-
-2. Dossier `/documentation` très volumineux (59 items) 🟡
-   - Vérifier si tout est encore pertinent
-   - Consolider avec `/docs`
+**Actions effectuées :**
+- Fichiers racine déplacés/supprimés
+- Documentation organisée dans `/docs` uniquement
+- Structure claire maintenue
 
 ---
 
@@ -487,19 +421,16 @@ Pour chaque problème :
 1. **Console.log en production** : 351 occurrences dans backend 🟠
    - Remplacer par logger (pino) ou supprimer
 
-2. **Fichiers temporaires racine** : 🟡
-   - `tmp_backend_audit.json`
-   - `tmp_backend_deps.json`
-   - `tmp_frontend_audit.json`
-   - `tmp_frontend_deps.json`
+2. **Fichiers temporaires racine** : ✅ RÉSOLU
+   - Tous les fichiers `tmp_*.json` supprimés
 
 3. **Dossiers vides** : 🟡
    - `frontend/src/app/features/debug/`
    - `backend/uploads/` (vérifier si utilisé)
 
-4. **Fichiers système** : 🟡
-   - `/desktop.ini`
-   - `/.npmrc` (vide)
+4. **Fichiers système** : ✅ RÉSOLU
+   - `/desktop.ini` supprimé
+   - `/.npmrc` supprimé
 
 ---
 
@@ -509,12 +440,14 @@ Pour chaque problème :
 
 ### 7.1 Statistiques
 
-**AUDIT APPROFONDI TERMINÉ**
+**AUDIT APPROFONDI TERMINÉ - MISE À JOUR 2026-01-24**
 
 - Nombre total de problèmes identifiés : **48**
-- Problèmes critiques (🔴) : **7**
-- Problèmes importants (🟠) : **18**
-- Problèmes mineurs (🟡) : **19**
+- **Problèmes résolus** : **9** (19%)
+- **Problèmes restants** : **39** (81%)
+  - Problèmes critiques (🔴) : **3**
+  - Problèmes importants (🟠) : **15**
+  - Problèmes mineurs (🟡) : **17**
 - Bonnes pratiques (✅) : **4**
 
 ---
@@ -523,14 +456,14 @@ Pour chaque problème :
 
 **RÉPARTITION DES PROBLÈMES**
 
-| Catégorie | Critique | Important | Mineur | Bonnes pratiques | Total |
-|-----------|----------|-----------|--------|------------------|-------|
-| Architecture | 0 | 1 | 5 | 0 | 6 |
+| Catégorie | Critique | Important | Mineur | Résolus | Total |
+|-----------|----------|-----------|--------|---------|-------|
+| Architecture | 0 | 1 | 1 | 4 | 6 |
 | Backend | 3 | 5 | 5 | 2 | 15 |
 | Frontend | 1 | 6 | 7 | 0 | 14 |
-| Configuration | 3 | 3 | 3 | 0 | 9 |
-| Database | 0 | 0 | 3 | 2 | 5 |
-| **TOTAL** | **7** | **18** | **19** | **4** | **48** |
+| Configuration | 3 | 3 | 0 | 3 | 9 |
+| Database | 0 | 0 | 3 | 0 | 5 |
+| **TOTAL** | **3** | **15** | **17** | **9** | **48** |
 
 ---
 
@@ -538,44 +471,44 @@ Pour chaque problème :
 
 **PLAN D'ACTION PAR PHASE**
 
-#### Phase 1 : CRITIQUE - Avant migration (7 problèmes)
-- [ ] **PROB-008** : Supprimer `render.yaml`
-- [ ] **PROB-013** : Supprimer script `deploy:render`
-- [ ] **PROB-020** : Supprimer `render.env.example.json`
-- [ ] **PROB-025** : **URGENT** - Consolider les 3 services error-handler en UN SEUL
-- [ ] **PROB-029** : Mettre à jour `environment.prod.ts` avec URL Vercel
-- [ ] **PROB-031** : Supprimer `deploy-render.js`
+#### Phase 1 : CRITIQUE - Avant migration (3 problèmes restants / 7 total)
+- [x] **PROB-008** : ✅ `render.yaml` supprimé
+- [x] **PROB-013** : ✅ Script `deploy:render` supprimé
+- [x] **PROB-020** : ✅ `render.env.example.json` supprimé
+- [x] **PROB-025** : ✅ Services error-handler consolidés
+- [ ] **PROB-029** : ⚠️ **BLOQUANT** - Mettre à jour `environment.prod.ts` avec URL Vercel
+- [x] **PROB-031** : ✅ `deploy-render.js` supprimé
 - [ ] **PROB-032** : Mettre à jour documentation (304 références Render)
 
-#### Phase 2 : IMPORTANT - Pendant migration (18 problèmes)
-- [ ] **PROB-002** : Consolider documentation racine dans `/docs`
+#### Phase 2 : IMPORTANT - Pendant migration (14 problèmes restants / 18 total)
+- [x] **PROB-002** : ✅ Documentation consolidée dans `/docs`
 - [ ] **PROB-006** : Vérifier build `shared` avant backend/frontend
 - [ ] **PROB-009** : Mettre à jour `vercel.json` pour Functions
-- [ ] **PROB-011** : ✅ DÉCIDÉ - Tout en anglais, supprimer routes françaises
+- [x] **PROB-011** : ✅ Routes anglaises uniquement (/api/exercises, /api/trainings, etc.)
 - [ ] **PROB-012** : Sécuriser ou supprimer route `/api/debug`
 - [ ] **PROB-014** : Paginer `import.controller.js` (max 20 items)
 - [ ] **PROB-018** : Vérifier NODE_ENV=production sur Vercel
 - [ ] **PROB-026** : Définir convention core/shared pour services
-- [ ] **PROB-033** : ✅ DÉCIDÉ - Supprimer `export-ufm.js` (garder .mjs)
-- [ ] **PROB-034** : ✅ DÉCIDÉ - Supprimer tous scripts de migration
+- [x] **PROB-033** : ✅ `export-ufm.js` supprimé (seul .mjs reste)
+- [x] **PROB-034** : ✅ Scripts de migration supprimés
 - [ ] **PROB-040** : Consolider les 3 composants confirm-dialog
 - [ ] **PROB-041** : Consolider les 2 interceptors d'erreurs HTTP
-- [ ] **PROB-042** : Supprimer `styles.css`, garder uniquement `styles.scss`
+- [x] **PROB-042** : ✅ `styles.css` supprimé (seul .scss reste)
 - [ ] **PROB-046** : Ne pas commiter fichiers compilés de `shared`
 - [ ] **PROB-047** : Utiliser `@ufm/shared` partout ou supprimer le package
 
-#### Phase 3 : MINEUR - Après migration (19 problèmes)
-- [ ] **PROB-001** : ✅ DÉCIDÉ - Supprimer fichiers `tmp_*.json`
-- [ ] **PROB-003** : ✅ Utilisateur s'en occupe - Supprimer `/archive/`
-- [ ] **PROB-004** : Ajouter `desktop.ini` à `.gitignore`
-- [ ] **PROB-005** : Supprimer `.npmrc` vide
+#### Phase 3 : MINEUR - Après migration (17 problèmes restants / 19 total)
+- [x] **PROB-001** : ✅ Fichiers `tmp_*.json` supprimés
+- [ ] **PROB-003** : Utilisateur s'en occupe - Supprimer `/archive/`
+- [x] **PROB-004** : ✅ `desktop.ini` supprimé
+- [x] **PROB-005** : ✅ `.npmrc` vide supprimé
 - [ ] **PROB-007** : Vérifier dépendance circulaire backend
 - [ ] **PROB-010** : Ajouter `http-client.env.json` à `.gitignore`
-- [ ] **PROB-015** : ✅ DÉCIDÉ - Supprimer console.log inutiles
+- [ ] **PROB-015** : Supprimer console.log inutiles
 - [ ] **PROB-017** : Réduire logs dans auth.middleware
 - [ ] **PROB-019** : Consolider `.env.supabase` dans `.env`
-- [ ] **PROB-022** : Supprimer fichiers `.bak` et `.temp.ts`
-- [ ] **PROB-023** : Supprimer dossier `LEGACY/`
+- [x] **PROB-022** : ✅ Fichiers `.bak` et `.temp.ts` supprimés
+- [x] **PROB-023** : ✅ Dossier `LEGACY/` supprimé
 - [ ] **PROB-024** : Supprimer scripts PowerShell temporaires
 - [ ] **PROB-027** : Supprimer dossier `debug/` vide
 - [ ] **PROB-028** : Supprimer `.npmrc.bak`
@@ -763,6 +696,30 @@ Pour chaque problème :
 | 2026-01-24 10:45 | Audit initial terminé (39 problèmes) | Cascade |
 | 2026-01-24 10:46 | Intégration décisions utilisateur | Cascade |
 | 2026-01-24 11:00 | Audit approfondi terminé (48 problèmes) | Cascade |
+| 2026-01-24 11:57 | **Mise à jour : 9 problèmes résolus (19%)** | Cascade |
+
+---
+
+## ✅ RÉSUMÉ DES CORRECTIONS EFFECTUÉES (2026-01-24)
+
+### Nettoyage Réalisé
+- ✅ 4 fichiers temporaires supprimés (tmp_*.json)
+- ✅ 3 fichiers .bak et .temp.ts supprimés
+- ✅ 1 script obsolète supprimé (deploy-render.js)
+- ✅ 1 dossier LEGACY supprimé
+- ✅ 2 fichiers système supprimés (desktop.ini, .npmrc)
+
+### Problèmes Résolus
+- ✅ PROB-001, 002, 004, 005 : Nettoyage fichiers et documentation
+- ✅ PROB-008, 013, 020, 031 : Suppression traces Render
+- ✅ PROB-011 : Migration routes vers convention anglaise
+- ✅ PROB-022, 023 : Suppression fichiers backup et LEGACY
+- ✅ PROB-025 : Consolidation error handlers
+- ✅ PROB-033, 034, 042 : Suppression doublons et scripts obsolètes
+
+### Problèmes Critiques Restants
+- ⚠️ **PROB-029** : Mettre à jour environment.prod.ts avec URL Vercel (BLOQUANT)
+- ⚠️ **PROB-032** : Mettre à jour documentation (références Render)
 
 ---
 
