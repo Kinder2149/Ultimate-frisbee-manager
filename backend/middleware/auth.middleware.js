@@ -63,7 +63,6 @@ const getJwtSecret = () => {
  * Middleware de vérification du token JWT
  */
 const authenticateToken = async (req, res, next) => {
-  console.log('[AUTH] Middleware authenticateToken triggered for path:', req.path);
   try {
     const JWT_SECRET = getJwtSecret();
     const authHeader = req.headers['authorization'];
@@ -73,7 +72,6 @@ const authenticateToken = async (req, res, next) => {
     // Bypass en développement: si aucun token et NODE_ENV=development, autoriser la requête
     const isDev = String(process.env.NODE_ENV || '').toLowerCase() === 'development';
     if (isDev && !token) {
-      console.warn('[AUTH] Dev bypass active: aucune Authorization fournie, accès autorisé avec utilisateur factice.');
       req.user = {
         id: 'dev-user',
         email: 'dev@local',
@@ -84,7 +82,6 @@ const authenticateToken = async (req, res, next) => {
     }
 
     if (!token) {
-      console.log('[AUTH] No token found. Rejecting with 401.');
       return res.status(401).json({ 
         error: 'Token d\'authentification requis',
         code: 'NO_TOKEN'
@@ -92,7 +89,6 @@ const authenticateToken = async (req, res, next) => {
     }
 
     // Vérifier et décoder le token
-    console.log('[AUTH] Token found, attempting to verify...');
     let decoded;
     try {
       // Essai 1: token signé en interne (HS256)
@@ -101,10 +97,8 @@ const authenticateToken = async (req, res, next) => {
       // Essai 2: token Supabase (RS256 via JWKS)
       if (!jose) throw e; // jose indisponible
       const projectRef = process.env.SUPABASE_PROJECT_REF;
-      if (!projectRef) {
-        console.warn('[AUTH] SUPABASE_PROJECT_REF non défini — impossible de vérifier le token via JWKS.');
-        throw e;
-      }
+      if (!projectRef) throw e;
+      
       const jwksUrl = new URL(`https://${projectRef}.supabase.co/auth/v1/keys`);
       try {
         const JWKS = jose.createRemoteJWKSet(jwksUrl);
@@ -112,9 +106,7 @@ const authenticateToken = async (req, res, next) => {
           algorithms: ['RS256']
         });
         decoded = payload;
-        console.log('[AUTH] Token vérifié via Supabase JWKS.');
       } catch (e2) {
-        console.log('[AUTH] Verification via Supabase JWKS failed.');
         throw e; // conserver l'erreur initiale pour la logique existante
       }
     }
@@ -146,7 +138,6 @@ const authenticateToken = async (req, res, next) => {
         // autoriser les requêtes GET non admin avec un utilisateur minimal issu du token.
         const isSafeRead = req.method === 'GET' && !String(req.path || '').startsWith('/api/admin');
         if (isSafeRead && isTransientDbError(dbError)) {
-          console.warn('[Auth] DB transient error. Proceeding with token-only user for safe GET.');
           req.user = {
             id: decoded.sub || decoded.user_id || decoded.email || 'anon',
             email: decoded.email || 'unknown@token',
@@ -165,7 +156,6 @@ const authenticateToken = async (req, res, next) => {
 
     // Si l'utilisateur n'existe toujours pas, le créer (provisioning).
     if (!user) {
-      console.log(`[Auth] User with email ${decoded.email} not found. Creating new user.`);
       try {
         // Générer un mot de passe aléatoire uniquement pour satisfaire la contrainte de schéma
         // (l'authentification réelle est gérée par Supabase, ce mot de passe n'est jamais utilisé).
@@ -184,7 +174,6 @@ const authenticateToken = async (req, res, next) => {
             isActive: true,
           },
         });
-        console.log(`[Auth] New user created successfully: ${user.email}`);
       } catch (creationError) {
         console.error('[Auth] Error creating new user from token:', creationError);
         return res.status(500).json({ 
@@ -215,10 +204,8 @@ const authenticateToken = async (req, res, next) => {
     next();
 
   } catch (error) {
-    console.log('[AUTH] Caught error:', error.name);
     const isDev = String(process.env.NODE_ENV || '').toLowerCase() === 'development';
     if (isDev && (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError')) {
-      console.warn('[AUTH] Dev bypass on JWT error:', error.name, '— accès autorisé avec utilisateur factice.');
       req.user = {
         id: 'dev-user',
         email: 'dev@local',
