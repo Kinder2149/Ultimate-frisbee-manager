@@ -10,7 +10,10 @@
   ],
   "scripts": {
     "build": "npm -w shared run build && npm -w frontend run build",
-    "start": "cd frontend && ng serve"
+    "build:backend": "npm -w shared run build",
+    "build:frontend": "npm -w shared run build && npm -w frontend run build",
+    "start": "cd frontend && ng serve",
+    "dev:backend": "npm -w shared run build && cd backend && npm run dev"
   },
   "keywords": [
     "ultimate",
