@@ -1,0 +1,18 @@
+### List warmups
+GET {{API}}/api/echauffements
+Authorization: Bearer {{TOKEN}}
+X-Workspace-Id: {{WS}}
+
+### Create warmup with blocks
+POST {{API}}/api/echauffements
+Authorization: Bearer {{TOKEN}}
+X-Workspace-Id: {{WS}}
+Content-Type: application/json
+
+{
+  "nom": "Échauffement express",
+  "description": "Court échauffement",
+  "blocs": [
+    { "titre": "Course", "repetitions": "2x", "temps": "3min" }
+  ]
+}

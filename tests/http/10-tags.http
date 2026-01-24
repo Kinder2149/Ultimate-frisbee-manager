@@ -1,0 +1,21 @@
+### Get all tags
+GET {{API}}/api/tags
+Authorization: Bearer {{TOKEN}}
+X-Workspace-Id: {{WS}}
+
+### Get grouped tags
+GET {{API}}/api/tags/grouped
+Authorization: Bearer {{TOKEN}}
+X-Workspace-Id: {{WS}}
+
+### Create a tag (adjust values)
+POST {{API}}/api/tags
+Authorization: Bearer {{TOKEN}}
+X-Workspace-Id: {{WS}}
+Content-Type: application/json
+
+{
+  "label": "Débutant",
+  "category": "niveau",
+  "level": 1
+}

@@ -1,0 +1,4 @@
+### Dashboard stats
+GET {{API}}/api/dashboard/stats
+Authorization: Bearer {{TOKEN}}
+X-Workspace-Id: {{WS}}

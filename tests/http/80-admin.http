@@ -1,0 +1,9 @@
+### Admin overview — Requires ADMIN
+GET {{API}}/api/admin/overview
+Authorization: Bearer {{TOKEN}}
+X-Workspace-Id: {{WS}}
+
+### Admin users — list
+GET {{API}}/api/admin/users
+Authorization: Bearer {{TOKEN}}
+X-Workspace-Id: {{WS}}

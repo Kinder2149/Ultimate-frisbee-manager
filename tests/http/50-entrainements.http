@@ -1,0 +1,19 @@
+### List trainings
+GET {{API}}/api/entrainements
+Authorization: Bearer {{TOKEN}}
+X-Workspace-Id: {{WS}}
+
+### Create training (link existing exercice IDs)
+POST {{API}}/api/entrainements
+Authorization: Bearer {{TOKEN}}
+X-Workspace-Id: {{WS}}
+Content-Type: application/json
+
+{
+  "titre": "Séance démo",
+  "date": "2025-12-31T18:00:00.000Z",
+  "tagIds": [],
+  "exercices": [
+    { "exerciceId": "<EXERCICE_ID>", "ordre": 1, "duree": 10 }
+  ]
+}

@@ -1,0 +1,8 @@
+### List my workspaces
+GET {{API}}/api/workspaces/me
+Authorization: Bearer {{TOKEN}}
+
+### Owner-only: list members of current workspace
+GET {{API}}/api/workspaces/members
+Authorization: Bearer {{TOKEN}}
+X-Workspace-Id: {{WS}}

@@ -1,0 +1,5 @@
+### Health checks
+GET {{API}}/api/health
+
+### Health with DB probe
+GET {{API}}/api/health?db=true

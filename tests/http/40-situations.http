@@ -1,0 +1,17 @@
+### List situations
+GET {{API}}/api/situations-matchs
+Authorization: Bearer {{TOKEN}}
+X-Workspace-Id: {{WS}}
+
+### Create situation
+POST {{API}}/api/situations-matchs
+Authorization: Bearer {{TOKEN}}
+X-Workspace-Id: {{WS}}
+Content-Type: application/json
+
+{
+  "type": "Match",
+  "nom": "Sortie de disque",
+  "description": "Simulation de sortie",
+  "tagIds": []
+}

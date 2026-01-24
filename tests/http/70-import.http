@@ -1,0 +1,19 @@
+### Import exercices (dryRun) — Requires ADMIN if ALLOW_PUBLIC_IMPORT=false
+POST {{API}}/api/import/exercices?dryRun=true
+Authorization: Bearer {{TOKEN}}
+X-Workspace-Id: {{WS}}
+Content-Type: application/json
+
+{
+  "exercices": [
+    {
+      "nom": "Exo Import",
+      "description": "Depuis import",
+      "tags": [
+        { "label": "Débutant", "category": "niveau", "level": 1 },
+        { "label": "Objectif A", "category": "objectif" },
+        { "label": "Travail X", "category": "travail_specifique" }
+      ]
+    }
+  ]
+}

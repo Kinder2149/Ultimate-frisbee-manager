@@ -87,6 +87,13 @@ app.use(writeMethodsRateLimit);
 // Middleware pour parser le JSON
 app.use(express.json());
 
+// Désactiver explicitement les routes de debug en production
+if (String(process.env.NODE_ENV || '').toLowerCase() === 'production') {
+  app.use('/api/debug', (req, res) => {
+    return res.status(404).json({ error: 'Not found' });
+  });
+}
+
 // Initialisation des routes
 require('./routes')(app);
 

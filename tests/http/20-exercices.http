@@ -1,0 +1,22 @@
+### List exercices
+GET {{API}}/api/exercices
+Authorization: Bearer {{TOKEN}}
+X-Workspace-Id: {{WS}}
+
+### Create exercice (without file upload)
+POST {{API}}/api/exercices
+Authorization: Bearer {{TOKEN}}
+X-Workspace-Id: {{WS}}
+Content-Type: application/json
+
+{
+  "nom": "Passes courtes en triangle",
+  "description": "Description de test",
+  "variablesPlus": ["+1"],
+  "variablesMinus": [],
+  "points": [],
+  "tagIds": [
+    "<OBJECTIF_TAG_ID>",
+    "<TRAVAIL_SPECIFIQUE_TAG_ID>"
+  ]
+}

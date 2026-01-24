@@ -1,0 +1,7 @@
+### Profile (requires Authorization)
+GET {{API}}/api/auth/profile
+Authorization: Bearer {{TOKEN}}
+
+### Logout (symbolic)
+POST {{API}}/api/auth/logout
+Authorization: Bearer {{TOKEN}}
