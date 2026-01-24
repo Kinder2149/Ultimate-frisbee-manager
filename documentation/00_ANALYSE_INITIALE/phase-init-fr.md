@@ -1,1 +1,0 @@
-Le 2025-11-05, une branche d’audit dédiée « audit/reprise-20251105 » a été créée afin d’isoler le travail d’analyse sans impacter la branche principale. Un snapshot Git a été pris pour référence, matérialisé par le short hash 4ee5e64 (fichier .git/audit_snapshot.txt), garantissant que toutes les observations de l’audit se rapportent à un état précis et reproductible du dépôt.
