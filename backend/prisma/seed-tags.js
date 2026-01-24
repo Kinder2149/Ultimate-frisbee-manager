@@ -8,7 +8,7 @@ const {
   TAG_CATEGORIES,
   DEFAULT_TAG_COLORS,
   NIVEAU_LABELS,
-} = require('../../shared/constants/tag-categories');
+} = require('@ufm/shared/constants/tag-categories');
 
 const prisma = new PrismaClient();
 

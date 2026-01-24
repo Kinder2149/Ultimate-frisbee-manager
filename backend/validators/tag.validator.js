@@ -1,5 +1,5 @@
 const { z } = require('zod');
-const { TAG_CATEGORIES } = require('../../shared/constants/tag-categories');
+const { TAG_CATEGORIES } = require('@ufm/shared/constants/tag-categories');
 
 // Schéma de base pour un tag
 const tagSchema = z.object({

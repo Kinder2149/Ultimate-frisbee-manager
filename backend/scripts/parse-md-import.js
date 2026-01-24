@@ -16,7 +16,7 @@ const {
   NIVEAU_LABELS,
   isValidCategory,
   isValidLevel
-} = require('../../shared/constants/tag-categories');
+} = require('@ufm/shared/constants/tag-categories');
 
 const INPUT_DIR = path.resolve(__dirname, '../../docs/import/exercices');
 const OUTPUT_DIR = path.resolve(__dirname, './output');

@@ -1,4 +1,4 @@
-const { TAG_CATEGORIES, isValidCategory, isValidLevel } = require('../../shared/constants/tag-categories');
+const { TAG_CATEGORIES, isValidCategory, isValidLevel } = require('@ufm/shared/constants/tag-categories');
 const { prisma } = require('../services/prisma');
 const matter = require('gray-matter');
 
