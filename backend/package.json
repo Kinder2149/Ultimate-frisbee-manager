@@ -18,7 +18,6 @@
     "db:seed:destructive": "cross-env SEED_DESTRUCTIVE=true prisma db seed",
     "db:studio": "prisma studio",
     "db:reset": "prisma migrate reset",
-    "deploy:render": "prisma migrate deploy",
     "deploy": "npm run db:deploy && npm start",
     "export:dryrun": "cross-env-shell \"node backend/scripts/export-ufm.mjs --baseUrl=${API} --email=${ADMIN_EMAIL} --password=${ADMIN_PASSWORD} --dryRun\"",
     "export:run": "cross-env-shell \"node backend/scripts/export-ufm.mjs --baseUrl=${API} --token=${TOKEN} --outDir=backend/exports\""
