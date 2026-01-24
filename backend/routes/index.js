@@ -27,9 +27,6 @@ const importRoutes = require('./import.routes');
 
 // Route de santé (publique)
 const healthRoutes = require('./health.routes');
-
-// Routes de debug (publiques et non sensibles – ne retournent pas de secrets)
-const debugRoutes = require('./debug.routes');
 const workspaceRoutes = require('./workspace.routes');
 
 // Middleware d'authentification
@@ -41,11 +38,6 @@ module.exports = (app) => {
   app.use('/api/auth', authRoutes);
   // Route publique de santé
   app.use('/api/health', healthRoutes);
-  
-  // Debug réseau/DB (désactivé en production)
-  if (process.env.NODE_ENV !== 'production') {
-    app.use('/api/debug', debugRoutes);
-  }
 
   // Routes workspaces (utilisateur et admin)
   app.use('/api/workspaces', authenticateToken, workspaceRoutes);

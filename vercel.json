@@ -12,14 +12,18 @@
       "src": "backend/server.js",
       "use": "@vercel/node",
       "config": {
-        "maxDuration": 10
+        "maxDuration": 30,
+        "memory": 1024
       }
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "backend/server.js"
+      "dest": "backend/server.js",
+      "headers": {
+        "cache-control": "s-maxage=0"
+      }
     },
     {
       "src": "/(.*\\.[^/]+)$",
@@ -32,5 +36,11 @@
   ],
   "env": {
     "NODE_ENV": "production"
+  },
+  "functions": {
+    "backend/server.js": {
+      "maxDuration": 30,
+      "memory": 1024
+    }
   }
 }

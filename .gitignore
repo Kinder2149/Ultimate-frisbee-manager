@@ -146,6 +146,9 @@ $RECYCLE.BIN/
 *.draft.md
 *.backup.md
 
+# HTTP Client (IntelliJ/WebStorm)
+http-client.env.json
+
 # Cache directories
 .cache/
 .parcel-cache/
