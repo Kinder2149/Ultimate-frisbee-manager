@@ -36,6 +36,12 @@ bower_components
 node_modules/
 */node_modules/
 
+# Shared package compiled files
+shared/dist/
+shared/**/*.js
+shared/**/*.d.ts
+!shared/constants/*.ts
+
 # IDEs and editors
 /.idea
 .project
