@@ -564,9 +564,23 @@ exports.importExercices = async (req, res) => {
     return res.status(400).json({ error: 'Payload invalide: attendez { exercices: [...] }' });
   }
 
+  // Pagination pour éviter timeout Vercel Functions (10s max)
+  const batchSize = parseInt(req.query.batchSize) || 50;
+  const offset = parseInt(req.query.offset) || 0;
+  const exercicesToProcess = payload.exercices.slice(offset, offset + batchSize);
+  const hasMore = offset + batchSize < payload.exercices.length;
+
   const report = {
     dryRun,
-    totals: { input: payload.exercices.length, created: 0, updated: 0, skipped: 0 },
+    pagination: {
+      total: payload.exercices.length,
+      offset,
+      batchSize,
+      processed: exercicesToProcess.length,
+      hasMore,
+      nextOffset: hasMore ? offset + batchSize : null
+    },
+    totals: { input: exercicesToProcess.length, created: 0, updated: 0, skipped: 0 },
     exercices: [],
     tagsCreated: 0
   };
@@ -578,7 +592,7 @@ exports.importExercices = async (req, res) => {
     // Première passe: validation et résolution tags (peut créer en dry-run? non)
     // En dryRun: on ne crée pas réellement, on simule en vérifiant la validité et l'état existant
     if (dryRun) {
-      for (const exo of payload.exercices) {
+      for (const exo of exercicesToProcess) {
         try {
           const { data, tagIds } = await (async () => {
             // Simule ensureTag: vérifie seulement la validité et existence
@@ -631,7 +645,7 @@ exports.importExercices = async (req, res) => {
 
     // Mode apply: exécuter dans une transaction
     const result = await prisma.$transaction(async (tx) => {
-      for (const exo of payload.exercices) {
+      for (const exo of exercicesToProcess) {
         try {
           // Résoudre/Créer les tags réellement
           const tagIds = [];
