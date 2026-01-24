@@ -7,9 +7,20 @@
       "config": {
         "distDir": "frontend/dist/ultimate-frisbee-manager"
       }
+    },
+    {
+      "src": "backend/server.js",
+      "use": "@vercel/node",
+      "config": {
+        "maxDuration": 10
+      }
     }
   ],
   "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "backend/server.js"
+    },
     {
       "src": "/(.*\\.[^/]+)$",
       "dest": "/$1"
@@ -18,5 +29,8 @@
       "src": "/.*",
       "dest": "/index.html"
     }
-  ]
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
 }
