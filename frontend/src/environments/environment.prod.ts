@@ -6,8 +6,8 @@
  */
 export const environment = {
   production: true,
-  // URL Vercel Functions backend (ajuster après premier déploiement si nécessaire)
-  apiUrl: 'https://ultimate-frisbee-manager-kinder.vercel.app/api',
+  // URL Vercel Functions backend - Frontend et backend sur le même domaine
+  apiUrl: 'https://ultimate-frisbee-manager.vercel.app/api',
   supabaseUrl: 'https://rnreaaeiccqkwgwxwxeg.supabase.co',
   supabaseKey: 'sb_publishable_5C5PlWrOG7Krvpo6YEQZMg_rEEuKzVw'
 };
