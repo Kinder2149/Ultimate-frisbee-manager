@@ -9,7 +9,7 @@ import { EntityCrudService, CrudOptions } from '../../shared/services/entity-cru
   providedIn: 'root'
 })
 export class SituationMatchService {
-  private endpoint = 'situations-matchs';
+  private endpoint = 'matches';
   private crudOptions: Partial<CrudOptions<SituationMatch>> = {
     fileUploadField: 'image'
   };

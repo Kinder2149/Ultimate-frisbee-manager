@@ -1,170 +1,217 @@
 <div class="users-admin-page">
-  <!-- Bandeau ADMIN global : gestion de tous les comptes -->
-  <header class="page-header admin-theme">
-    <div class="page-header__icon">
-      <mat-icon>supervisor_account</mat-icon>
-    </div>
-    <div class="page-header__content">
-      <h1 class="page-title">Administration globale des utilisateurs</h1>
-      <p class="page-subtitle">
-        Créez et gérez les comptes utilisateurs au niveau global. Les rôles locaux dans chaque workspace
-        sont gérés séparément via l'affectation aux bases.
-      </p>
+  <!-- En-tête moderne avec gradient -->
+  <header class="page-header">
+    <div class="header-content">
+      <div class="header-icon">
+        <mat-icon>supervisor_account</mat-icon>
+      </div>
+      <div class="header-text">
+        <h1>Gestion des utilisateurs</h1>
+        <p>Créez et gérez les comptes utilisateurs. Rôles : <strong>USER</strong> (accès standard) ou <strong>ADMIN</strong> (accès complet).</p>
+      </div>
+      <div class="header-stats">
+        <div class="stat-badge">
+          <mat-icon>people</mat-icon>
+          <span>{{ users.length }} utilisateur{{ users.length > 1 ? 's' : '' }}</span>
+        </div>
+      </div>
     </div>
   </header>
 
-  <!-- Bloc création d'un utilisateur -->
-  <section class="create-user-section">
-    <mat-card class="create-user-card">
+  <!-- Formulaire de création -->
+  <section class="create-section">
+    <mat-card class="create-card" [class.creating]="creating">
       <mat-card-header>
-        <div mat-card-avatar class="create-user-card__avatar">
+        <mat-card-title>
           <mat-icon>person_add</mat-icon>
-        </div>
-        <mat-card-title>Créer un nouvel utilisateur</mat-card-title>
-        <mat-card-subtitle>
-          Définissez l'identité, le rôle global (Utilisateur / Administrateur) et le statut actif. Les accès aux
-          workspaces se gèrent ensuite dans le tableau ci-dessous.
-        </mat-card-subtitle>
+          Créer un utilisateur
+        </mat-card-title>
       </mat-card-header>
 
       <mat-card-content>
-        <div class="create-user-grid">
-          <div class="create-user-grid__form">
-            <mat-form-field appearance="outline" class="full-width">
+        <form class="create-form" (ngSubmit)="createUser()" #createForm="ngForm">
+          <div class="form-row">
+            <mat-form-field appearance="outline">
               <mat-label>Email</mat-label>
-              <input matInput type="email" [(ngModel)]="newUser.email" placeholder="email@domaine.com" />
+              <input matInput type="email" [(ngModel)]="newUser.email" name="email" required email placeholder="utilisateur@domaine.com">
+              <mat-icon matPrefix>email</mat-icon>
+              <mat-error>Email requis et valide</mat-error>
             </mat-form-field>
 
-            <mat-form-field appearance="outline" class="full-width">
+            <mat-form-field appearance="outline">
               <mat-label>Mot de passe</mat-label>
-              <input matInput type="password" [(ngModel)]="newUser.password" placeholder="min 6 caractères" />
+              <input matInput type="password" [(ngModel)]="newUser.password" name="password" required minlength="6" placeholder="Min. 6 caractères">
+              <mat-icon matPrefix>lock</mat-icon>
+              <mat-error>Min. 6 caractères</mat-error>
             </mat-form-field>
-
-            <div class="name-row">
-              <mat-form-field appearance="outline" class="half-width">
-                <mat-label>Prénom</mat-label>
-                <input matInput [(ngModel)]="newUser.prenom" />
-              </mat-form-field>
-
-              <mat-form-field appearance="outline" class="half-width">
-                <mat-label>Nom</mat-label>
-                <input matInput [(ngModel)]="newUser.nom" />
-              </mat-form-field>
-            </div>
           </div>
 
-          <div class="create-user-grid__role">
-            <mat-form-field appearance="outline" class="full-width">
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Prénom</mat-label>
+              <input matInput [(ngModel)]="newUser.prenom" name="prenom">
+              <mat-icon matPrefix>person</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Nom</mat-label>
+              <input matInput [(ngModel)]="newUser.nom" name="nom">
+              <mat-icon matPrefix>badge</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline">
               <mat-label>Rôle global</mat-label>
-              <mat-select [(ngModel)]="newUser.role">
-                <mat-option value="user">Utilisateur</mat-option>
-                <mat-option value="admin">Administrateur</mat-option>
+              <mat-select [(ngModel)]="newUser.role" name="role" required>
+                <mat-option [value]="UserRole.USER">
+                  <mat-icon>person</mat-icon>
+                  {{ UserRoleLabels[UserRole.USER] }}
+                </mat-option>
+                <mat-option [value]="UserRole.ADMIN">
+                  <mat-icon>admin_panel_settings</mat-icon>
+                  {{ UserRoleLabels[UserRole.ADMIN] }}
+                </mat-option>
               </mat-select>
+              <mat-icon matPrefix>shield</mat-icon>
             </mat-form-field>
 
-            <div class="status-row">
-              <mat-slide-toggle [(ngModel)]="newUser.isActive">Actif</mat-slide-toggle>
-            </div>
-
-            <div class="create-actions">
-              <button mat-raised-button color="primary" (click)="createUser()" [disabled]="creating">
-                <mat-icon>person_add</mat-icon>
-                Créer l'utilisateur
-              </button>
-              <mat-progress-spinner
-                *ngIf="creating"
-                diameter="22"
-                mode="indeterminate"
-                class="create-spinner"
-              ></mat-progress-spinner>
+            <div class="toggle-field">
+              <mat-slide-toggle [(ngModel)]="newUser.isActive" name="isActive" color="primary">
+                Compte actif
+              </mat-slide-toggle>
             </div>
           </div>
-        </div>
+
+          <div class="form-actions">
+            <button mat-raised-button color="primary" type="submit" [disabled]="!createForm.form.valid || creating">
+              <mat-icon *ngIf="!creating">person_add</mat-icon>
+              <mat-spinner *ngIf="creating" diameter="20"></mat-spinner>
+              {{ creating ? 'Création...' : 'Créer l\'utilisateur' }}
+            </button>
+            <button mat-button type="button" (click)="resetForm()" [disabled]="creating">
+              <mat-icon>clear</mat-icon>
+              Réinitialiser
+            </button>
+          </div>
+        </form>
       </mat-card-content>
     </mat-card>
   </section>
 
   <!-- Liste des utilisateurs -->
-  <section class="users-list-section">
-    <div *ngIf="loading" class="loading-row">
-      <mat-progress-spinner diameter="22" mode="indeterminate"></mat-progress-spinner>
-      <span>Chargement des utilisateurs...</span>
+  <section class="users-section">
+    <div class="section-header">
+      <h2>
+        <mat-icon>people</mat-icon>
+        Utilisateurs existants
+      </h2>
+      <button mat-icon-button (click)="refresh()" [disabled]="loading" matTooltip="Actualiser">
+        <mat-icon [class.spinning]="loading">refresh</mat-icon>
+      </button>
     </div>
 
-    <div *ngIf="!loading" class="users-table-wrapper mat-elevation-z2">
-      <table mat-table [dataSource]="users" class="users-table">
+    <div *ngIf="loading" class="loading-state">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Chargement des utilisateurs...</p>
+    </div>
+
+    <div *ngIf="!loading && users.length === 0" class="empty-state">
+      <mat-icon>people_outline</mat-icon>
+      <p>Aucun utilisateur pour le moment</p>
+      <small>Créez votre premier utilisateur ci-dessus</small>
+    </div>
+
+    <div *ngIf="!loading && users.length > 0" class="users-table-wrapper">
+      <table mat-table [dataSource]="users" class="users-table mat-elevation-z2">
         <!-- Avatar -->
         <ng-container matColumnDef="avatar">
-          <th mat-header-cell *matHeaderCellDef>Avatar</th>
+          <th mat-header-cell *matHeaderCellDef></th>
           <td mat-cell *matCellDef="let u">
-            <div class="avatar-wrapper">
-              <img *ngIf="u.iconUrl" [src]="u.iconUrl" alt="avatar" class="avatar" />
-              <div class="avatar-placeholder" *ngIf="!u.iconUrl">
-                <mat-icon>account_circle</mat-icon>
+            <div class="user-avatar">
+              <img *ngIf="u.iconUrl" [src]="u.iconUrl" alt="{{ u.prenom }} {{ u.nom }}">
+              <div *ngIf="!u.iconUrl" class="avatar-placeholder" [class.admin]="u.role === UserRole.ADMIN">
+                <mat-icon>{{ u.role === UserRole.ADMIN ? 'admin_panel_settings' : 'person' }}</mat-icon>
               </div>
             </div>
           </td>
         </ng-container>
 
-        <!-- Name -->
+        <!-- Identité -->
         <ng-container matColumnDef="name">
-          <th mat-header-cell *matHeaderCellDef>Identité</th>
+          <th mat-header-cell *matHeaderCellDef>Utilisateur</th>
           <td mat-cell *matCellDef="let u">
-            <div class="identity-cell">
-              <div class="identity-name">{{ u.prenom || '' }} {{ u.nom || '' }}</div>
-              <div class="identity-email">{{ u.email }}</div>
+            <div class="user-info">
+              <div class="user-name">{{ u.prenom || '' }} {{ u.nom || '' }}</div>
+              <div class="user-email">
+                <mat-icon>email</mat-icon>
+                {{ u.email }}
+              </div>
             </div>
           </td>
         </ng-container>
 
-        <!-- Role -->
+        <!-- Rôle -->
         <ng-container matColumnDef="role">
-          <th mat-header-cell *matHeaderCellDef>Rôle global</th>
+          <th mat-header-cell *matHeaderCellDef>Rôle</th>
           <td mat-cell *matCellDef="let u">
-            <div class="role-cell">
-              <span class="role-badge" [class.role-badge--admin]="u.role === 'admin'">
-                {{ u.role === 'admin' ? 'ADMIN' : 'USER' }}
-              </span>
-              <mat-form-field appearance="outline" class="role-select">
-                <mat-label>Modifier le rôle</mat-label>
-                <mat-select [(ngModel)]="u.role" [disabled]="u._saving">
-                  <mat-option value="user">Utilisateur</mat-option>
-                  <mat-option value="admin">Administrateur</mat-option>
-                </mat-select>
-              </mat-form-field>
-            </div>
+            <mat-chip-set>
+              <mat-chip [class.admin-chip]="u.role === UserRole.ADMIN" [class.user-chip]="u.role === UserRole.USER">
+                <mat-icon matChipAvatar>{{ u.role === UserRole.ADMIN ? 'admin_panel_settings' : 'person' }}</mat-icon>
+                {{ u.role }}
+              </mat-chip>
+            </mat-chip-set>
+            <mat-form-field appearance="outline" class="role-select">
+              <mat-select [(ngModel)]="u.role" [disabled]="u._saving">
+                <mat-option [value]="UserRole.USER">
+                  <mat-icon>person</mat-icon>
+                  {{ UserRoleLabels[UserRole.USER] }}
+                </mat-option>
+                <mat-option [value]="UserRole.ADMIN">
+                  <mat-icon>admin_panel_settings</mat-icon>
+                  {{ UserRoleLabels[UserRole.ADMIN] }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
           </td>
         </ng-container>
 
-        <!-- Active -->
+        <!-- Statut -->
         <ng-container matColumnDef="active">
           <th mat-header-cell *matHeaderCellDef>Statut</th>
           <td mat-cell *matCellDef="let u">
-            <div class="status-cell">
-              <mat-slide-toggle [(ngModel)]="u.isActive" [disabled]="u._saving">Actif</mat-slide-toggle>
+            <div class="status-toggle">
+              <mat-slide-toggle [(ngModel)]="u.isActive" [disabled]="u._saving" color="primary">
+                <span [class.active]="u.isActive" [class.inactive]="!u.isActive">
+                  {{ u.isActive ? 'Actif' : 'Inactif' }}
+                </span>
+              </mat-slide-toggle>
             </div>
           </td>
         </ng-container>
 
         <!-- Workspaces -->
         <ng-container matColumnDef="workspaces">
-          <th mat-header-cell *matHeaderCellDef>Workspaces</th>
+          <th mat-header-cell *matHeaderCellDef>Bases</th>
           <td mat-cell *matCellDef="let u">
-            <button mat-stroked-button color="primary" (click)="openUserWorkspaces(u)">
+            <button mat-stroked-button (click)="openUserWorkspaces(u)" [disabled]="u._saving">
               <mat-icon>group_work</mat-icon>
-              Gérer les bases
+              Gérer
             </button>
           </td>
         </ng-container>
 
         <!-- Actions -->
         <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef class="actions-header">Actions</th>
-          <td mat-cell *matCellDef="let u" class="actions-cell">
-            <button mat-raised-button color="primary" (click)="saveUser(u)" [disabled]="u._saving">
-              <mat-icon>save</mat-icon>
-              Enregistrer
-            </button>
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let u">
+            <div class="action-buttons">
+              <button mat-raised-button color="primary" (click)="saveUser(u)" [disabled]="u._saving">
+                <mat-icon *ngIf="!u._saving">save</mat-icon>
+                <mat-spinner *ngIf="u._saving" diameter="20"></mat-spinner>
+                {{ u._saving ? 'Enregistrement...' : 'Enregistrer' }}
+              </button>
+            </div>
           </td>
         </ng-container>
 

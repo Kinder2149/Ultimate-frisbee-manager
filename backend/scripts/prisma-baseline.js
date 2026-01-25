@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
-  Script de baseline Prisma pour Render
+  Script de baseline Prisma pour Vercel
   - Détecte les dossiers de migrations dans prisma/migrations
   - Marque chaque migration comme "applied" via `prisma migrate resolve --applied <dir>`
   - Ignore les erreurs si la migration est déjà appliquée

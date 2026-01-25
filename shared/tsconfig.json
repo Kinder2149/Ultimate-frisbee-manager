@@ -1,12 +1,14 @@
 {
   "compilerOptions": {
-    "target": "es2016",
+    "target": "ES2020",
     "module": "commonjs",
     "declaration": true,
     "outDir": "./dist",
-    "rootDir": "./constants",
+    "rootDir": ".",
     "strict": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "skipLibCheck": true
   },
-  "include": ["constants/**/*.ts"]
+  "include": ["constants/**/*", "formats/**/*", "src/**/*", "index.ts"],
+  "exclude": ["node_modules", "dist"]
 }

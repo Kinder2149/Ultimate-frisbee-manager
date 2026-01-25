@@ -13,10 +13,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -57,33 +58,24 @@ interface UserRow extends AdminOverviewItem {
   imports: [
     CommonModule,
     FormsModule,
-    MatTabsModule,
-    MatTableModule,
-    MatPaginatorModule,
-    MatSortModule,
-    MatSlideToggleModule,
     MatCardModule,
     MatButtonModule,
     MatIconModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatCheckboxModule,
     MatProgressSpinnerModule,
     MatProgressBarModule,
     MatSnackBarModule,
+    MatChipsModule,
+    MatTooltipModule,
     RouterModule
   ],
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.scss']
 })
 export class AdminDashboardComponent implements OnInit {
-  // Onglet actif (0 pour l'aperçu, 1 pour la gestion des utilisateurs)
-  activeTab: number = 0;
-  
-  // Données d'aperçu
   loading = false;
   error: string | null = null;
+
+  // Statistiques globales
   counts = {
     exercices: 0,
     entrainements: 0,
@@ -93,47 +85,13 @@ export class AdminDashboardComponent implements OnInit {
     users: 0
   };
 
-  // Tableaux de données
-  exercicesDS = new MatTableDataSource<AdminOverviewItem>([]);
-  entrainementsDS = new MatTableDataSource<AdminOverviewItem>([]);
-  echauffementsDS = new MatTableDataSource<AdminOverviewItem>([]);
-  situationsDS = new MatTableDataSource<AdminOverviewItem>([]);
-  tagsDS = new MatTableDataSource<AdminOverviewItem>([]);
-  usersDS = new MatTableDataSource<UserRow>([]);
-
-  // Colonnes affichées
-  overviewColumns = ['id', 'titre', 'category', 'email', 'role', 'createdAt'];
-  usersColumns = ['avatar', 'name', 'email', 'role', 'active', 'actions'];
-
-  // Paginateurs et tris
-  @ViewChild('exPaginator') exPaginator!: MatPaginator;
-  @ViewChild('enPaginator') enPaginator!: MatPaginator;
-  @ViewChild('ecPaginator') ecPaginator!: MatPaginator;
-  @ViewChild('siPaginator') siPaginator!: MatPaginator;
-  @ViewChild('taPaginator') taPaginator!: MatPaginator;
-  @ViewChild('usPaginator') usPaginator!: MatPaginator;
-
-  @ViewChild('exSort') exSort!: MatSort;
-  @ViewChild('enSort') enSort!: MatSort;
-  @ViewChild('ecSort') ecSort!: MatSort;
-  @ViewChild('siSort') siSort!: MatSort;
-  @ViewChild('taSort') taSort!: MatSort;
-  @ViewChild('usSort') usSort!: MatSort;
-
-  // Données pour un nouvel utilisateur
-  newUser: any = {
-    id: '',
-    email: '',
-    password: '',
-    prenom: '',
-    nom: '',
-    role: 'user',
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    _saving: false
-  };
-  hidePassword = true;
-  creating = false;
+  // Données récentes pour l'activité
+  recentExercices: AdminOverviewItem[] = [];
+  recentEntrainements: AdminOverviewItem[] = [];
+  recentEchauffements: AdminOverviewItem[] = [];
+  recentSituations: AdminOverviewItem[] = [];
+  recentTags: AdminOverviewItem[] = [];
+  recentUsers: UserRow[] = [];
 
   constructor(
     private adminService: AdminService, 
@@ -142,95 +100,35 @@ export class AdminDashboardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadOverview();
-    this.loadUsers();
+    this.refreshAll();
   }
 
-  // Charge les données d'aperçu
-  loadOverview(): void {
+  // Rafraîchir toutes les données
+  refreshAll(): void {
     this.loading = true;
     this.error = null;
+    
     this.adminService.getOverview().subscribe({
       next: (res: AdminOverviewResponse) => {
         this.counts = res.counts;
-        this.exercicesDS.data = res.recent.exercices;
-        this.entrainementsDS.data = res.recent.entrainements;
-        this.echauffementsDS.data = res.recent.echauffements;
-        this.situationsDS.data = res.recent.situations;
-        this.tagsDS.data = res.recent.tags;
+        this.recentExercices = res.recent.exercices || [];
+        this.recentEntrainements = res.recent.entrainements || [];
+        this.recentEchauffements = res.recent.echauffements || [];
+        this.recentSituations = res.recent.situations || [];
+        this.recentTags = res.recent.tags || [];
+        this.recentUsers = res.recent.users || [];
         
-        // Configuration des paginateurs et tris
-        setTimeout(() => this.setupDataSources());
         this.loading = false;
+        this.snack.open('Données actualisées', 'Fermer', { 
+          duration: 2000,
+          panelClass: ['success-snackbar'] 
+        });
       },
       error: (err: any) => {
         console.error('Erreur lors du chargement des données:', err);
-        this.error = 'Erreur lors du chargement des données';
+        this.error = 'Impossible de charger les données. Vérifiez votre connexion.';
         this.loading = false;
-      }
-    });
-  }
-
-  // Charge la liste des utilisateurs
-  loadUsers(): void {
-    this.loading = true;
-    this.adminService.getUsers().subscribe({
-      next: (res: { users: UserRow[] }) => {
-        this.usersDS.data = res.users.map(user => ({
-          ...user,
-          _saving: false
-        }));
-        if (this.usPaginator) this.usersDS.paginator = this.usPaginator;
-        if (this.usSort) this.usersDS.sort = this.usSort;
-        this.loading = false;
-      },
-      error: (err: any) => {
-        console.error('Erreur lors du chargement des utilisateurs:', err);
-        this.loading = false;
-        this.snack.open('Erreur de chargement des utilisateurs', 'Fermer', { 
-          duration: 4000, 
-          panelClass: ['error-snackbar'] 
-        });
-      }
-    });
-  }
-
-  // Configure les paginateurs et les tris pour les tableaux
-  private setupDataSources(): void {
-    if (this.exPaginator) this.exercicesDS.paginator = this.exPaginator;
-    if (this.enPaginator) this.entrainementsDS.paginator = this.enPaginator;
-    if (this.ecPaginator) this.echauffementsDS.paginator = this.ecPaginator;
-    if (this.siPaginator) this.situationsDS.paginator = this.siPaginator;
-    if (this.taPaginator) this.tagsDS.paginator = this.taPaginator;
-    if (this.usPaginator) this.usersDS.paginator = this.usPaginator;
-
-    if (this.exSort) this.exercicesDS.sort = this.exSort;
-    if (this.enSort) this.entrainementsDS.sort = this.enSort;
-    if (this.ecSort) this.echauffementsDS.sort = this.ecSort;
-    if (this.siSort) this.situationsDS.sort = this.siSort;
-    if (this.taSort) this.tagsDS.sort = this.taSort;
-    if (this.usSort) this.usersDS.sort = this.usSort;
-  }
-
-  // Met à jour un utilisateur
-  updateUser(user: any): void {
-    if (!user) return;
-    
-    user._saving = true;
-    this.adminService.updateUser(user.id, { 
-      role: user.role, 
-      isActive: user.isActive 
-    }).subscribe({
-      next: (res: any) => {
-        user._saving = false;
-        this.snack.open('Utilisateur mis à jour', 'Fermer', { 
-          duration: 2000,
-          panelClass: ['success-snackbar'] 
-        });
-      },
-      error: (err: any) => {
-        user._saving = false;
-        this.snack.open(err.error?.message || 'Erreur lors de la mise à jour', 'Fermer', { 
+        this.snack.open('Erreur de chargement', 'Fermer', { 
           duration: 4000,
           panelClass: ['error-snackbar'] 
         });
@@ -238,59 +136,17 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  // Crée un nouvel utilisateur
-  createUser(): void {
-    if (!this.newUser.email || !this.newUser.password) {
-      this.snack.open('Email et mot de passe sont obligatoires', 'Fermer', { 
-        duration: 4000,
-        panelClass: ['error-snackbar'] 
-      });
-      return;
-    }
-
-    this.creating = true;
-    this.adminService.createUser({
-      email: this.newUser.email,
-      password: this.newUser.password,
-      nom: this.newUser.nom,
-      prenom: this.newUser.prenom,
-      role: this.newUser.role,
-      isActive: this.newUser.isActive
-    }).subscribe({
-      next: () => {
-        this.creating = false;
-        this.newUser = {
-          id: '',
-          email: '',
-          password: '',
-          prenom: '',
-          nom: '',
-          role: 'user',
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          _saving: false
-        };
-        this.loadUsers();
-        this.activeTab = 1; // Index de l'onglet Utilisateurs
-        this.snack.open('Utilisateur créé avec succès', 'Fermer', { 
-          duration: 2000,
-          panelClass: ['success-snackbar'] 
-        });
-      },
-      error: (err: any) => {
-        this.creating = false;
-        this.snack.open(err.error?.message || 'Erreur lors de la création', 'Fermer', { 
-          duration: 4000,
-          panelClass: ['error-snackbar'] 
-        });
-      }
-    });
+  // Navigation vers une route
+  navigateTo(route: string): void {
+    this.router.navigate([route]);
   }
 
-  // Navigation vers l'explorateur de données avec un type préfiltré
-  goToExplorer(type: 'exercices' | 'entrainements' | 'echauffements' | 'situations' | 'tags'): void {
-    this.router.navigate(['/parametres/admin/explorer'], {
-      queryParams: { type }
+  // Exporter les données
+  exportData(): void {
+    this.snack.open('Export en cours de développement...', 'Fermer', { 
+      duration: 3000 
     });
+    // TODO: Implémenter l'export via /api/admin/export-ufm
   }
+
 }

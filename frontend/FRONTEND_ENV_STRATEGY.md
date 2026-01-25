@@ -32,7 +32,7 @@ Ce document décrit comment éviter de **hardcoder les URLs d’API** dans le fr
   ```ts
   export const environment = {
     production: true,
-    apiUrl: 'https://ultimate-frisbee-manager-api.onrender.com/api',
+    apiUrl: 'https://ultimate-frisbee-manager-kinder.vercel.app/api',
     supabaseUrl: 'https://rnreaaeiccqkwgwxwxeg.supabase.co',
     supabaseKey: 'sb_publishable_5C5PlWrOG7Krvpo6YEQZMg_rEEuKzVw'
   };
@@ -42,7 +42,7 @@ Ce document décrit comment éviter de **hardcoder les URLs d’API** dans le fr
 
 ### 1.2. Problème
 
-- Chaque fois que l’URL de l’API backend change (nouveau domaine Render, staging, etc.), il faut **modifier et re-committer** `environment.prod.ts`.
+- Chaque fois que l’URL de l’API backend change (nouveau domaine Vercel, staging, etc.), il faut **modifier et re-committer** `environment.prod.ts`.
 - Vercel permet de définir des **variables d’environnement**, mais le code front actuel ne les exploite pas : tout est codé en dur dans `environment*.ts`.
 
 ---
@@ -72,7 +72,7 @@ Ce document décrit comment éviter de **hardcoder les URLs d’API** dans le fr
 - Dev local :
   - `environment.ts.apiUrl = 'http://localhost:3002/api'`.
 - Prod :
-  - `environment.prod.ts.apiUrl = 'https://ultimate-frisbee-manager-api.onrender.com/api'` (ou autre URL Render).
+  - `environment.prod.ts.apiUrl = 'https://ultimate-frisbee-manager-kinder.vercel.app/api'` (ou autre URL Vercel).
 - À chaque changement d’URL backend, on modifie **uniquement** `environment.prod.ts` et éventuellement la doc associée (`frontend/.env.example`, `DEPLOYMENT.md`).
 
 **Avantages** :
@@ -81,7 +81,7 @@ Ce document décrit comment éviter de **hardcoder les URLs d’API** dans le fr
 
 **Inconvénients** :
 - Nécessite de **toucher le code** à chaque changement d’URL backend.
-- Risque d’oubli si on ne suit pas la checklist (ex : changement d’URL Render non répercuté dans le front).
+- Risque d’oubli si on ne suit pas la checklist (ex : changement d’URL Vercel non répercuté dans le front).
 
 **Usage recommandé** :
 - Si les changements d’URL backend sont rares.
@@ -98,7 +98,7 @@ Ce document décrit comment éviter de **hardcoder les URLs d’API** dans le fr
 
 **Principe** :
 1. Dans Vercel → Project Settings → Environment Variables, définir :
-   - `API_URL` (ex : `https://ultimate-frisbee-manager-api.onrender.com/api`),
+   - `API_URL` (ex : `https://ultimate-frisbee-manager-kinder.vercel.app/api`),
    - `SUPABASE_URL`,
    - `SUPABASE_ANON_KEY`.
 2. Ajouter un script Node dans le repo (par ex. `frontend/scripts/generate-environment.mjs`) qui :
@@ -191,7 +191,7 @@ Dans le dashboard Vercel, pour le projet frontend :
 
 Et définir dans **Environment Variables** :
 
-- `API_URL` = `https://ultimate-frisbee-manager-api.onrender.com/api`
+- `API_URL` = `https://ultimate-frisbee-manager-kinder.vercel.app/api`
 - `SUPABASE_URL` = `https://YOUR_REF.supabase.co`
 - `SUPABASE_ANON_KEY` = `sb_publishable_YOUR_KEY`
 

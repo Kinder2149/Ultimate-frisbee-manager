@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
+import { UserRole, UserRoleLabels } from '@ufm/shared';
 import { MatTableModule } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -13,6 +14,8 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { FormsModule } from '@angular/forms';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { AdminService } from '../../../../core/services/admin.service';
 import { DialogService } from '../../../../shared/components/dialog/dialog.service';
 
@@ -45,7 +48,9 @@ interface UserRow {
     MatSlideToggleModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
-    MatDialogModule
+    MatDialogModule,
+    MatChipsModule,
+    MatTooltipModule
   ],
   templateUrl: './users-admin.component.html',
   styleUrls: ['./users-admin.component.scss']
@@ -61,9 +66,13 @@ export class UsersAdminComponent implements OnInit {
     password: '',
     prenom: '',
     nom: '',
-    role: 'user',
+    role: UserRole.USER,
     isActive: true
   };
+
+  // Enum et labels pour le template
+  UserRole = UserRole;
+  UserRoleLabels = UserRoleLabels;
 
   constructor(
     private admin: AdminService,
@@ -92,7 +101,7 @@ export class UsersAdminComponent implements OnInit {
 
   saveUser(user: UserRow): void {
     const message = `Vous allez enregistrer les modifications pour <strong>${user.prenom || ''} ${user.nom || ''}</strong><br>` +
-      `Rôle global : <strong>${user.role === 'admin' ? 'ADMIN' : 'USER'}</strong><br>` +
+      `Rôle global : <strong>${user.role === UserRole.ADMIN ? 'ADMIN' : 'USER'}</strong><br>` +
       `Statut : <strong>${user.isActive ? 'Actif' : 'Inactif'}</strong>`;
 
     this.dialogService
@@ -108,7 +117,7 @@ export class UsersAdminComponent implements OnInit {
         }
 
         user._saving = true;
-        this.admin.updateUser(user.id, { role: user.role, isActive: user.isActive }).subscribe({
+        this.admin.updateUser(user.id, { role: user.role?.toUpperCase(), isActive: user.isActive }).subscribe({
           next: (res) => {
             user._saving = false;
             // sync with server response
@@ -131,7 +140,7 @@ export class UsersAdminComponent implements OnInit {
     }
     const message = `Vous allez créer un nouvel utilisateur pour <strong>${this.newUser.email.trim().toLowerCase()}</strong><br>` +
       `Nom complet : <strong>${(this.newUser.prenom || '') + ' ' + (this.newUser.nom || '')}</strong><br>` +
-      `Rôle global : <strong>${this.newUser.role === 'admin' ? 'ADMIN' : 'USER'}</strong><br>` +
+      `Rôle global : <strong>${this.newUser.role === UserRole.ADMIN ? 'ADMIN' : 'USER'}</strong><br>` +
       `Statut : <strong>${this.newUser.isActive ? 'Actif' : 'Inactif'}</strong>`;
 
     this.dialogService
@@ -152,14 +161,14 @@ export class UsersAdminComponent implements OnInit {
           password: this.newUser.password,
           nom: this.newUser.nom?.trim(),
           prenom: this.newUser.prenom?.trim(),
-          role: this.newUser.role,
+          role: this.newUser.role?.toUpperCase(),
           isActive: this.newUser.isActive
         }).subscribe({
           next: (res) => {
             this.creating = false;
             this.users = [res.user, ...this.users];
             this.snack.open('Utilisateur créé', 'Fermer', { duration: 2500, panelClass: ['success-snackbar'] });
-            this.newUser = { email: '', password: '', prenom: '', nom: '', role: 'user', isActive: true };
+            this.newUser = { email: '', password: '', prenom: '', nom: '', role: UserRole.USER, isActive: true };
           },
           error: (err) => {
             this.creating = false;
@@ -167,6 +176,17 @@ export class UsersAdminComponent implements OnInit {
           }
         });
       });
+  }
+
+  resetForm(): void {
+    this.newUser = {
+      email: '',
+      password: '',
+      prenom: '',
+      nom: '',
+      role: UserRole.USER,
+      isActive: true
+    };
   }
 
   openUserWorkspaces(user: UserRow): void {

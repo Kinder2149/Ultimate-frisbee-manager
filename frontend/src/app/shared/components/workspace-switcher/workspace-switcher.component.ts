@@ -1,9 +1,12 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
+import { Subject } from 'rxjs';
+import { takeUntil, filter, distinctUntilChanged } from 'rxjs/operators';
 import { WorkspaceService, WorkspaceSummary } from '../../../core/services/workspace.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { environment } from '../../../../environments/environment';
 
 @Component({
@@ -13,23 +16,43 @@ import { environment } from '../../../../environments/environment';
   templateUrl: './workspace-switcher.component.html',
   styleUrls: ['./workspace-switcher.component.scss']
 })
-export class WorkspaceSwitcherComponent implements OnInit {
+export class WorkspaceSwitcherComponent implements OnInit, OnDestroy {
   @Output() menuOpenChange = new EventEmitter<boolean>();
 
   currentWorkspace: WorkspaceSummary | null = null;
   workspaces: WorkspaceSummary[] = [];
   isMenuOpen = false;
   loading = false;
+  
+  private destroy$ = new Subject<void>();
 
   constructor(
     private workspaceService: WorkspaceService,
+    private authService: AuthService,
     private http: HttpClient,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     this.currentWorkspace = this.workspaceService.getCurrentWorkspace();
-    this.loadWorkspaces();
+    
+    // Écouter les changements d'authentification pour recharger les workspaces
+    this.authService.isAuthenticated$.pipe(
+      takeUntil(this.destroy$),
+      distinctUntilChanged()
+    ).subscribe(isAuth => {
+      if (isAuth) {
+        this.loadWorkspaces();
+      } else {
+        this.workspaces = [];
+        this.currentWorkspace = null;
+      }
+    });
+  }
+  
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadWorkspaces(): void {

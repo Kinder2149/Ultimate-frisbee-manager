@@ -1,0 +1,210 @@
+<div class="users-container">
+  <!-- Header avec stats -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-icon">
+        <mat-icon>people</mat-icon>
+      </div>
+      <div class="header-text">
+        <h1>Gestion des utilisateurs</h1>
+        <p>Gérez les utilisateurs, leurs rôles et leurs accès</p>
+      </div>
+      <div class="header-stats">
+        <div class="stat-card">
+          <mat-icon>people</mat-icon>
+          <div class="stat-content">
+            <span class="stat-value">{{ totalUsers }}</span>
+            <span class="stat-label">Total</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <mat-icon>check_circle</mat-icon>
+          <div class="stat-content">
+            <span class="stat-value">{{ activeUsers }}</span>
+            <span class="stat-label">Actifs</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <mat-icon>admin_panel_settings</mat-icon>
+          <div class="stat-content">
+            <span class="stat-value">{{ adminUsers }}</span>
+            <span class="stat-label">Admins</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barre d'actions et filtres -->
+  <mat-card class="filters-card">
+    <div class="filters-row">
+      <mat-form-field class="search-field" appearance="outline">
+        <mat-label>Rechercher</mat-label>
+        <input matInput [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Nom, prénom, email...">
+        <mat-icon matPrefix>search</mat-icon>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Rôle</mat-label>
+        <mat-select [(ngModel)]="roleFilter" (selectionChange)="applyFilters()">
+          <mat-option value="all">Tous les rôles</mat-option>
+          <mat-option value="ADMIN">Administrateur</mat-option>
+          <mat-option value="USER">Utilisateur</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Statut</mat-label>
+        <mat-select [(ngModel)]="statusFilter" (selectionChange)="applyFilters()">
+          <mat-option value="all">Tous les statuts</mat-option>
+          <mat-option value="active">Actifs</mat-option>
+          <mat-option value="inactive">Inactifs</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <button mat-stroked-button (click)="clearFilters()">
+        <mat-icon>clear</mat-icon>
+        Réinitialiser
+      </button>
+
+      <button mat-icon-button (click)="refresh()" matTooltip="Actualiser">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+  </mat-card>
+
+  <!-- État de chargement -->
+  <mat-card *ngIf="loading" class="loading-card">
+    <div class="loading-content">
+      <mat-spinner diameter="60"></mat-spinner>
+      <p>Chargement des utilisateurs...</p>
+    </div>
+  </mat-card>
+
+  <!-- Tableau des utilisateurs -->
+  <mat-card *ngIf="!loading" class="table-card">
+    <div class="table-wrapper">
+      <table mat-table [dataSource]="dataSource" matSort class="users-table">
+        
+        <!-- Colonne Avatar -->
+        <ng-container matColumnDef="avatar">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let user">
+            <div class="user-avatar">
+              <img *ngIf="user.iconUrl" [src]="user.iconUrl" [alt]="user.fullName">
+              <div *ngIf="!user.iconUrl" class="avatar-placeholder" 
+                   [style.background-color]="getAvatarColor(user.email)"
+                   [style.color]="getAvatarTextColor(user.email)">
+                {{ getInitials(user.prenom, user.nom) }}
+              </div>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Colonne Nom complet -->
+        <ng-container matColumnDef="fullName">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Nom</th>
+          <td mat-cell *matCellDef="let user">
+            <div class="user-name">{{ user.fullName }}</div>
+          </td>
+        </ng-container>
+
+        <!-- Colonne Email -->
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Email</th>
+          <td mat-cell *matCellDef="let user">
+            <div class="user-email">
+              <mat-icon>email</mat-icon>
+              {{ user.email }}
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Colonne Rôle -->
+        <ng-container matColumnDef="role">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Rôle</th>
+          <td mat-cell *matCellDef="let user">
+            <mat-chip [style.background-color]="getRoleColor(user.role)" 
+                      [style.color]="'white'"
+                      class="role-chip">
+              <mat-icon>{{ user.role === 'ADMIN' ? 'admin_panel_settings' : 'person' }}</mat-icon>
+              {{ getRoleLabel(user.role) }}
+            </mat-chip>
+          </td>
+        </ng-container>
+
+        <!-- Colonne Statut -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Statut</th>
+          <td mat-cell *matCellDef="let user">
+            <mat-chip [style.background-color]="getStatusColor(user.isActive)"
+                      [style.color]="'white'"
+                      class="status-chip">
+              <mat-icon>{{ user.isActive ? 'check_circle' : 'cancel' }}</mat-icon>
+              {{ getStatusLabel(user.isActive) }}
+            </mat-chip>
+          </td>
+        </ng-container>
+
+        <!-- Colonne Workspaces -->
+        <ng-container matColumnDef="workspaces">
+          <th mat-header-cell *matHeaderCellDef>Workspaces</th>
+          <td mat-cell *matCellDef="let user">
+            <div class="workspaces-count" [matTooltip]="user.workspacesCount + ' workspace(s)'">
+              <mat-icon>workspaces</mat-icon>
+              <span>{{ user.workspacesCount }}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Colonne Date création -->
+        <ng-container matColumnDef="createdAt">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Créé le</th>
+          <td mat-cell *matCellDef="let user">
+            <div class="created-date" [matTooltip]="(user.createdAt | date:'medium') || ''">
+              {{ getRelativeTime(user.createdAt) }}
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Colonne Actions -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let user">
+            <div class="action-buttons">
+              <button mat-icon-button (click)="viewUser(user.id)" matTooltip="Voir le détail">
+                <mat-icon>visibility</mat-icon>
+              </button>
+              <button mat-icon-button (click)="editUser(user.id, $event)" matTooltip="Éditer">
+                <mat-icon>edit</mat-icon>
+              </button>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" 
+            class="user-row"
+            (click)="viewUser(row.id)"></tr>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <mat-paginator 
+      [pageSizeOptions]="[10, 20, 50, 100]"
+      [pageSize]="20"
+      showFirstLastButtons>
+    </mat-paginator>
+  </mat-card>
+
+  <!-- État vide -->
+  <mat-card *ngIf="!loading && dataSource.data.length === 0" class="empty-state">
+    <mat-icon>people_outline</mat-icon>
+    <h2>Aucun utilisateur trouvé</h2>
+    <p>Aucun utilisateur ne correspond à vos critères de recherche.</p>
+    <button mat-raised-button color="primary" (click)="clearFilters()">
+      <mat-icon>clear</mat-icon>
+      Réinitialiser les filtres
+    </button>
+  </mat-card>
+</div>

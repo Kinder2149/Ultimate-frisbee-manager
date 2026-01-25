@@ -67,7 +67,8 @@ module.exports = (app) => {
         tags: '/api/tags',
         dashboard: '/api/dashboard',
         admin: '/api/admin',
-        import: '/api/import'
+        import: '/api/import',
+        workspaces: '/api/workspaces'
       }
     });
   });

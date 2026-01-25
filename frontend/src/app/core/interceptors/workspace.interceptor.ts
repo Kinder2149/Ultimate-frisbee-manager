@@ -21,6 +21,7 @@ export class WorkspaceInterceptor implements HttpInterceptor {
       return next.handle(req);
     }
 
+    // Ajouter le header X-Workspace-Id pour filtrer les données par workspace
     const cloned = req.clone({
       setHeaders: {
         'X-Workspace-Id': workspaceId,

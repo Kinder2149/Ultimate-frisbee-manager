@@ -8,11 +8,7 @@ import { SharedModule } from '../../shared/shared.module';
 import { TagsManagerComponent } from '../tags/pages/tags-manager.component';
 import { ProfilePageComponent } from './pages/profile/profile-page.component';
 import { ImportExercicesComponent } from './pages/import-exercices/import-exercices.component';
-import { AdminDashboardComponent } from './pages/admin-dashboard/admin-dashboard.component';
-import { DataExplorerPageComponent } from './pages/data-explorer/data-explorer-page.component';
 import { ImportExportComponent } from './pages/import-export/import-export.component';
-import { AdminWorkspacesPageComponent } from './pages/admin-workspaces/admin-workspaces-page.component';
-import { AdminShellComponent } from './components/admin-shell/admin-shell.component';
 
 const routes: Routes = [
   {
@@ -23,23 +19,9 @@ const routes: Routes = [
       { path: 'import-export', component: ImportExportComponent },
       { path: 'import-exercices', component: ImportExercicesComponent },
       { path: 'profil', component: ProfilePageComponent },
-      {
-        path: 'admin',
-        component: AdminShellComponent,
-        canActivate: [RoleGuard],
-        data: { role: 'admin' },
-        children: [
-          { path: '', component: AdminDashboardComponent },
-          { path: 'workspaces', component: AdminWorkspacesPageComponent },
-          { path: 'explorer', component: DataExplorerPageComponent },
-          {
-            path: 'users',
-            loadComponent: () => import('./pages/users-admin/users-admin.component').then(c => c.UsersAdminComponent)
-          }
-        ]
-      },
-      // Redirection pour maintenir la compatibilité avec les anciennes URL
-      { path: 'admin/overview', redirectTo: 'admin', pathMatch: 'full' },
+      // Redirection de l'ancienne admin vers la nouvelle
+      { path: 'admin', redirectTo: '/admin', pathMatch: 'full' },
+      { path: 'admin/**', redirectTo: '/admin' },
       { path: '', pathMatch: 'full', redirectTo: 'tags' }
     ]
   }
@@ -53,11 +35,7 @@ const routes: Routes = [
     // standalone components imported directly (only those used in templates)
     TagsManagerComponent,
     ImportExportComponent,
-    ImportExercicesComponent,
-    AdminDashboardComponent,
-    DataExplorerPageComponent,
-    AdminWorkspacesPageComponent,
-    AdminShellComponent
+    ImportExercicesComponent
   ]
 })
 export class SettingsModule {}

@@ -10,7 +10,7 @@ import { CacheService } from './cache.service';
   providedIn: 'root'
 })
 export class ExerciceService extends EntityCrudService<Exercice> {
-  private endpoint = 'exercices';
+  private endpoint = 'exercises';
   private crudOptions: Partial<CrudOptions<Exercice>> = {
     fileUploadField: 'image'
   };
@@ -33,14 +33,12 @@ export class ExerciceService extends EntityCrudService<Exercice> {
 
   getExercices(): Observable<Exercice[]> {
     return this.getAll(this.endpoint).pipe(
-      tap(list => console.log('Exercices reçus (liste):', list.map(e => ({ id: (e as any).id, nom: (e as any).nom, imageUrl: (e as any).imageUrl, legacy: { image: (e as any).image, picture: (e as any).picture } })))),
       map(list => list.map(ex => this.normalizeExercice(ex)))
     );
   }
 
   getExerciceById(id: string): Observable<Exercice> {
     return this.getById(this.endpoint, id).pipe(
-      tap(ex => console.log('Exercice reçu du backend:', ex)),
       map(ex => this.normalizeExercice(ex))
     );
   }

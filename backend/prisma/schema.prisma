@@ -7,6 +7,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  USER
+  ADMIN
+}
+
 model Exercice {
   id              String                 @id @default(uuid())
   nom             String
@@ -153,7 +158,7 @@ model User {
   passwordHash String
   nom          String
   prenom       String?
-  role         String   @default("USER")
+  role         UserRole @default(USER)
   isActive     Boolean  @default(true)
   iconUrl      String?
   createdAt    DateTime @default(now())

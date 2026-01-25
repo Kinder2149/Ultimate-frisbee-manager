@@ -6,7 +6,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
-import { filter, takeUntil, finalize } from 'rxjs/operators';
+import { filter, takeUntil, finalize, catchError } from 'rxjs/operators';
 
 import { AuthService } from '../../../core/services/auth.service';
 import { LoginCredentials } from '../../../core/models/user.model';
@@ -77,7 +77,12 @@ export class LoginComponent implements OnInit, OnDestroy {
       password: this.loginForm.value.password
     };
 
-    this.authService.login(credentials).pipe(
+    // Essayer d'abord le backend local, puis Supabase si échec
+    this.authService.loginWithBackend(credentials).pipe(
+      catchError(() => {
+        // Si le backend échoue, essayer Supabase
+        return this.authService.login(credentials);
+      }),
       finalize(() => {
         this.isLoading = false;
       })
@@ -87,6 +92,9 @@ export class LoginComponent implements OnInit, OnDestroy {
           duration: 3000,
           panelClass: ['success-snackbar']
         });
+
+        // Synchroniser le profil depuis le backend
+        this.authService.refreshUserProfile().subscribe();
 
         // En production, pour éviter tout effet de timing entre Supabase
         // et le flux isAuthenticated$, on force également une navigation

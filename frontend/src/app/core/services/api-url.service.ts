@@ -9,9 +9,7 @@ export class ApiUrlService {
   private apiBaseUrl = environment.apiUrl;
 
   constructor() {
-    if (!environment.production) {
-      console.log('ApiUrlService initialisé avec baseUrl:', this.apiBaseUrl);
-    }
+    // Log supprimé pour réduire le bruit en console
   }
 
   getUrl(endpoint: string): string {
@@ -27,60 +25,34 @@ export class ApiUrlService {
    * @returns URL relative ou absolue en fonction de l'environnement.
    */
   getMediaUrl(fileName?: string | null, context?: string): string | null {
-    if (!environment.production) {
-      console.log(`getMediaUrl appelé avec fileName: '${fileName}', context: '${context}'`);
-    }
-    
     if (!fileName) {
-      if (!environment.production) {
-        console.log('fileName est vide ou null, retourne null');
-      }
       return null;
     }
 
-    // Si le chemin est déjà une URL complète (http, https), on le retourne directement,
-    // même si aucun contexte n'est fourni.
+    // Si le chemin est déjà une URL complète (http, https), on le retourne directement
     if (/^https?:\/\//i.test(fileName)) {
-      if (!environment.production) {
-        console.log('URL complète détectée, retourne:', fileName);
-      }
       return fileName;
     }
 
-    // Pour les chemins relatifs, un contexte est requis pour construire le chemin final.
+    // Pour les chemins relatifs, un contexte est requis
     if (!context) {
-      if (!environment.production) {
-        console.log('Aucun contexte fourni pour le chemin relatif, retourne null');
-      }
       return null;
     }
 
-    // Pour les chemins relatifs, on continue le traitement
     const baseFileName = fileName.split('/').pop();
-
     if (!baseFileName) {
-      if (!environment.production) {
-        console.log('Impossible d\'extraire le nom de fichier, retourne null');
-      }
       return null;
     }
 
     const relativePath = `uploads/${context}/${baseFileName}`;
-    let result: string;
 
-    // En production, on construit une URL absolue à partir de l'origine de l'API.
+    // En production, URL absolue. En dev, URL relative pour le proxy.
     if (environment.production) {
       const origin = new URL(this.apiBaseUrl).origin;
-      result = `${origin}/${relativePath}`;
+      return `${origin}/${relativePath}`;
     } else {
-      // En développement, on retourne une URL relative préfixée par /api pour que le proxy la gère.
-      result = `/api/${relativePath}`;
+      return `/api/${relativePath}`;
     }
-    
-    if (!environment.production) {
-      console.log('URL construite:', result);
-    }
-    return result;
   }
 
   getTrainingsUrl(): string {

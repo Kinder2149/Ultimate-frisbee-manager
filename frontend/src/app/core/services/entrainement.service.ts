@@ -9,7 +9,7 @@ import { EntityCrudService, CrudOptions } from '../../shared/services/entity-cru
   providedIn: 'root'
 })
 export class EntrainementService {
-  private endpoint = 'entrainements';
+  private endpoint = 'trainings';
   private crudOptions: Partial<CrudOptions<Entrainement>> = {
     fileUploadField: 'image'
   };

@@ -1,0 +1,497 @@
+.user-detail-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+// État de chargement
+.loading-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  .loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    gap: 16px;
+
+    p {
+      color: #64748b;
+      font-size: 15px;
+      margin: 0;
+    }
+  }
+}
+
+// Contenu principal
+.detail-content {
+  animation: slideInUp 0.4s ease-out;
+}
+
+// Header avec actions
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+
+  .back-button {
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: #f1f5f9;
+      transform: scale(1.1);
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 12px;
+
+    button {
+      mat-icon {
+        margin-right: 8px;
+      }
+    }
+  }
+}
+
+// Carte profil
+.profile-card {
+  margin-bottom: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  animation: slideInUp 0.4s ease-out 0.1s both;
+
+  .profile-content {
+    display: flex;
+    gap: 32px;
+    padding: 32px;
+
+    .profile-avatar {
+      flex-shrink: 0;
+
+      img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #e2e8f0;
+      }
+
+      .avatar-placeholder {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 48px;
+        font-weight: 700;
+        border: 4px solid rgba(0, 0, 0, 0.1);
+      }
+    }
+
+    .profile-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+
+      h1 {
+        margin: 0;
+        font-size: 32px;
+        font-weight: 700;
+        color: #1e293b;
+      }
+
+      .profile-email {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #64748b;
+        font-size: 16px;
+
+        mat-icon {
+          font-size: 20px;
+          width: 20px;
+          height: 20px;
+        }
+      }
+
+      .profile-badges {
+        display: flex;
+        gap: 12px;
+        margin-top: 8px;
+
+        mat-chip {
+          font-weight: 600;
+          font-size: 13px;
+          height: 32px;
+          padding: 0 16px;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+
+          mat-icon {
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+          }
+        }
+      }
+
+      .profile-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #94a3b8;
+        font-size: 14px;
+        margin-top: 8px;
+
+        mat-icon {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+        }
+      }
+    }
+  }
+}
+
+// Grille de statistiques
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+
+  .stat-card {
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.3s ease;
+    animation: slideInUp 0.4s ease-out both;
+
+    @for $i from 1 through 5 {
+      &:nth-child(#{$i}) {
+        animation-delay: #{0.1 + $i * 0.05}s;
+      }
+    }
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    }
+
+    .stat-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      mat-icon {
+        font-size: 28px;
+        width: 28px;
+        height: 28px;
+      }
+    }
+
+    .stat-content {
+      display: flex;
+      flex-direction: column;
+
+      .stat-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1e293b;
+        line-height: 1;
+      }
+
+      .stat-label {
+        font-size: 13px;
+        color: #64748b;
+        margin-top: 4px;
+      }
+    }
+  }
+}
+
+// Cartes de section
+.section-card {
+  margin-bottom: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  animation: slideInUp 0.4s ease-out 0.3s both;
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px;
+
+    h2 {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 0;
+      font-size: 20px;
+      font-weight: 600;
+      color: #1e293b;
+
+      mat-icon {
+        color: #667eea;
+      }
+    }
+
+    .section-count {
+      background: #e0e7ff;
+      color: #667eea;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+  }
+
+  mat-divider {
+    margin: 0;
+  }
+}
+
+// État vide
+.empty-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+
+  mat-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    color: #cbd5e1;
+    margin-bottom: 16px;
+  }
+
+  p {
+    margin: 0;
+    color: #94a3b8;
+    font-size: 15px;
+  }
+}
+
+// Liste des workspaces
+.workspaces-list {
+  padding: 16px;
+
+  .workspace-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: #f8fafc;
+      transform: translateX(4px);
+    }
+
+    &:not(:last-child) {
+      margin-bottom: 8px;
+    }
+
+    .workspace-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+
+      mat-icon {
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+      }
+    }
+
+    .workspace-info {
+      flex: 1;
+
+      .workspace-name {
+        font-size: 16px;
+        font-weight: 500;
+        color: #1e293b;
+        margin-bottom: 4px;
+      }
+
+      .workspace-meta {
+        .role-chip-small {
+          font-size: 11px;
+          height: 22px;
+          padding: 0 10px;
+          font-weight: 600;
+        }
+      }
+    }
+
+    button {
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    &:hover button {
+      opacity: 1;
+    }
+  }
+}
+
+// Timeline d'activité
+.activity-timeline {
+  padding: 16px 24px;
+
+  .activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px 0;
+    position: relative;
+
+    &:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 23px;
+      top: 56px;
+      width: 2px;
+      height: calc(100% - 40px);
+      background: #e2e8f0;
+    }
+
+    .activity-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+      mat-icon {
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+      }
+    }
+
+    .activity-content {
+      flex: 1;
+      padding-top: 4px;
+
+      .activity-title {
+        font-size: 15px;
+        font-weight: 500;
+        color: #1e293b;
+        margin-bottom: 4px;
+      }
+
+      .activity-time {
+        font-size: 13px;
+        color: #94a3b8;
+      }
+    }
+  }
+}
+
+// Animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .user-detail-container {
+    padding: 16px;
+  }
+
+  .detail-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+
+    .header-actions {
+      width: 100%;
+
+      button {
+        flex: 1;
+      }
+    }
+  }
+
+  .profile-card {
+    .profile-content {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 24px;
+
+      .profile-info {
+        align-items: center;
+
+        h1 {
+          font-size: 24px;
+        }
+
+        .profile-badges {
+          justify-content: center;
+        }
+      }
+    }
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .workspaces-list {
+    .workspace-item {
+      button {
+        opacity: 1;
+      }
+    }
+  }
+}

@@ -1,12 +1,16 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, from, of, throwError } from 'rxjs';
-import { map, catchError, switchMap, finalize } from 'rxjs/operators';
+import { map, catchError, switchMap, finalize, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { User, LoginCredentials } from '../models/user.model';
 import { environment } from '../../../environments/environment';
 import { SupabaseService } from './supabase.service';
 import { AuthChangeEvent, Session, User as SupabaseUser } from '@supabase/supabase-js';
+
+// Clé localStorage pour le token backend local
+const LOCAL_TOKEN_KEY = 'ufm_access_token';
+const LOCAL_REFRESH_TOKEN_KEY = 'ufm_refresh_token';
 
 @Injectable({
   providedIn: 'root'
@@ -30,6 +34,23 @@ export class AuthService {
     private supabaseService: SupabaseService
   ) {
     this.listenToAuthStateChanges();
+    // Vérifier si un token backend local existe au démarrage
+    this.initFromLocalToken();
+  }
+
+  private initFromLocalToken(): void {
+    const localToken = localStorage.getItem(LOCAL_TOKEN_KEY);
+    if (localToken) {
+      this.isAuthenticatedSubject.next(true);
+      // Synchroniser le profil en arrière-plan
+      this.syncUserProfile().subscribe({
+        error: () => {
+          // Token invalide ou expiré, le supprimer
+          this.clearLocalToken();
+          this.isAuthenticatedSubject.next(false);
+        }
+      });
+    }
   }
 
   signUp(email: string, password: string): Observable<void> {
@@ -57,11 +78,27 @@ export class AuthService {
   private listenToAuthStateChanges(): void {
     this.supabaseService.supabase.auth.onAuthStateChange(
       (event: AuthChangeEvent, session: Session | null) => {
+        // Debug minimal pour auth events
+        
         if (event === 'PASSWORD_RECOVERY') {
           // L'utilisateur vient de cliquer sur un lien de réinitialisation de mot de passe.
           // On le redirige vers la page Angular de changement de mot de passe.
           this.router.navigate(['/reset-password']);
           return;
+        }
+
+        // Pour INITIAL_SESSION, on vérifie si on a déjà un token backend local
+        // Si oui, on ne touche pas à l'état d'auth (déjà géré par initFromLocalToken)
+        if (event === 'INITIAL_SESSION') {
+          const hasLocalToken = !!localStorage.getItem(LOCAL_TOKEN_KEY);
+          if (hasLocalToken) {
+            return; // Token local présent, ne pas modifier l'état
+          }
+          // Pas de token local, vérifier si Supabase a une vraie session
+          if (!session?.user) {
+            this.isAuthenticatedSubject.next(false);
+            return;
+          }
         }
 
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
@@ -70,9 +107,7 @@ export class AuthService {
             this.isAuthenticatedSubject.next(true);
             this.syncUserProfileThrottled();
           } else {
-            // Pas de session utilisateur associée (par exemple lors d'un flux de reset
-            // de mot de passe). On ne force pas de redirection vers /login dans ce cas :
-            // on se contente de marquer l'utilisateur comme non authentifié.
+            // Pas de session utilisateur associée
             this.currentUserSubject.next(null);
             this.isAuthenticatedSubject.next(false);
           }
@@ -112,7 +147,7 @@ export class AuthService {
       }),
       catchError(error => {
         console.error('Erreur de connexion Supabase:', error);
-        this.clearStateAndRedirect();
+        // Ne pas rediriger ici - laisser le composant gérer le fallback
         throw error;
       })
     );
@@ -144,6 +179,9 @@ export class AuthService {
   }
 
   logout(): Observable<void> {
+    // Nettoyer le token backend local
+    this.clearLocalToken();
+    
     return from(this.supabaseService.supabase.auth.signOut({ scope: 'local' })).pipe(
       map(({ error }) => {
         if (error) {
@@ -176,8 +214,58 @@ export class AuthService {
   }
 
   async getAccessToken(): Promise<string | null> {
+    // 1. Vérifier d'abord si un token backend local existe
+    const localToken = localStorage.getItem(LOCAL_TOKEN_KEY);
+    if (localToken) {
+      return localToken;
+    }
+    
+    // 2. Sinon, utiliser le token Supabase
     const { data } = await this.supabaseService.supabase.auth.getSession();
     return data.session?.access_token || null;
+  }
+
+  /**
+   * Connexion via le backend local (pour admin@ultimate.com et tests locaux)
+   */
+  loginWithBackend(credentials: LoginCredentials): Observable<void> {
+    return this.http.post<{ accessToken: string; refreshToken?: string; user?: User }>(
+      `${this.apiUrl}/login`,
+      credentials
+    ).pipe(
+      tap(response => {
+        // Stocker le token dans localStorage
+        localStorage.setItem(LOCAL_TOKEN_KEY, response.accessToken);
+        if (response.refreshToken) {
+          localStorage.setItem(LOCAL_REFRESH_TOKEN_KEY, response.refreshToken);
+        }
+        // Marquer comme authentifié
+        this.isAuthenticatedSubject.next(true);
+        if (response.user) {
+          this.currentUserSubject.next(response.user);
+        }
+      }),
+      map(() => void 0),
+      catchError(error => {
+        console.error('[Auth] Erreur connexion:', error?.status || error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Vérifie si un token backend local existe
+   */
+  hasLocalToken(): boolean {
+    return !!localStorage.getItem(LOCAL_TOKEN_KEY);
+  }
+
+  /**
+   * Supprime le token backend local
+   */
+  clearLocalToken(): void {
+    localStorage.removeItem(LOCAL_TOKEN_KEY);
+    localStorage.removeItem(LOCAL_REFRESH_TOKEN_KEY);
   }
 
   isAuthenticated(): boolean {

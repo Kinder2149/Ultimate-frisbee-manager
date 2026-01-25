@@ -16,25 +16,16 @@ router.get('/', exerciceController.getAllExercices);
 router.get('/:id', exerciceController.getExerciceById);
 
 // POST /api/exercices - Ajouter un nouvel exercice avec des tags et une image (via Cloudinary)
-// Middleware de logging pour débogage
-const logBody = (req, res, next) => {
-  console.log('--- Contenu de req.body avant validation ---');
-  console.dir(req.body, { depth: null });
-  console.log('------------------------------------------');
-  next();
-};
-
 router.post('/', 
   createUploader('image', 'exercices'), 
   transformFormData, 
-  logBody, // Ajout du logging
   validate(createExerciceSchema),
   exerciceController.createExercice
 );
 
 // PUT /api/exercices/:id - Mettre à jour un exercice avec une image (via Cloudinary)
 // Réactivation de la validation Zod suite à la correction du middleware
-router.put('/:id', createUploader('image', 'exercices'), transformFormData, logBody, validate(updateExerciceSchema), exerciceController.updateExercice);
+router.put('/:id', createUploader('image', 'exercices'), transformFormData, validate(updateExerciceSchema), exerciceController.updateExercice);
 
 // POST /api/exercices/:id/duplicate - Dupliquer un exercice
 router.post('/:id/duplicate', exerciceController.duplicateExercice);

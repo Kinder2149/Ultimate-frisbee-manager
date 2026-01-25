@@ -5,7 +5,7 @@ const path = require('path');
 const envPath = path.resolve(__dirname, '..', '.env');
 
 // Charge les variables d'environnement depuis le fichier .env à la racine du backend
-// En production, ne pas override les variables fournies par la plateforme (Render)
+// En production, ne pas override les variables fournies par Vercel
 const isProdRuntime = String(process.env.NODE_ENV || '').toLowerCase() === 'production';
 const result = dotenv.config({
   path: envPath,

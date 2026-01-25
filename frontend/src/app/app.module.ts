@@ -80,6 +80,11 @@ const routes: Routes = [
     canActivate: [AuthGuard, WorkspaceSelectedGuard]
   },
   { 
+    path: 'admin', 
+    loadChildren: () => import('./features/admin/admin.module').then(m => m.AdminModule),
+    canActivate: [AuthGuard, WorkspaceSelectedGuard]
+  },
+  { 
     path: 'parametres', 
     loadChildren: () => import('./features/settings/settings.module').then(m => m.SettingsModule),
     canActivate: [AuthGuard, WorkspaceSelectedGuard]

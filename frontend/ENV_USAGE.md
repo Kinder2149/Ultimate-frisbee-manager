@@ -15,7 +15,7 @@ Ce document explique comment le frontend Angular utilise les environnements et l
 - `src/environments/environment.prod.ts`  
   Utilisé pour les **builds de production** (`ng build --configuration production` → Vercel).
   - `production = true`
-  - `apiUrl = 'https://ultimate-frisbee-manager-api.onrender.com/api'`
+  - `apiUrl = 'https://ultimate-frisbee-manager-kinder.vercel.app/api'`
   - `supabaseUrl`, `supabaseKey`
 
 > **Règle stricte :**  

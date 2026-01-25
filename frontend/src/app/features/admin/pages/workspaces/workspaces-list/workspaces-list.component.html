@@ -1,0 +1,137 @@
+<div class="workspaces-container">
+  <!-- Header avec stats -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-icon">
+        <mat-icon>workspaces</mat-icon>
+      </div>
+      <div class="header-text">
+        <h1>Gestion des workspaces</h1>
+        <p>Gérez vos espaces de travail et leurs membres</p>
+      </div>
+      <div class="header-stats">
+        <div class="stat-card">
+          <mat-icon>workspaces</mat-icon>
+          <div class="stat-content">
+            <span class="stat-value">{{ totalWorkspaces }}</span>
+            <span class="stat-label">Workspaces</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <mat-icon>people</mat-icon>
+          <div class="stat-content">
+            <span class="stat-value">{{ totalMembers }}</span>
+            <span class="stat-label">Membres</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <mat-icon>folder</mat-icon>
+          <div class="stat-content">
+            <span class="stat-value">{{ totalContent }}</span>
+            <span class="stat-label">Contenus</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barre de filtres -->
+  <mat-card class="filters-card">
+    <div class="filters-row">
+      <mat-form-field class="search-field" appearance="outline">
+        <mat-label>Rechercher</mat-label>
+        <input matInput [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Nom, description...">
+        <mat-icon matPrefix>search</mat-icon>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Trier par</mat-label>
+        <mat-select [(ngModel)]="sortBy" (selectionChange)="applyFilters()">
+          <mat-option value="name">Nom</mat-option>
+          <mat-option value="date">Date de création</mat-option>
+          <mat-option value="members">Nombre de membres</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <button mat-stroked-button (click)="clearFilters()">
+        <mat-icon>clear</mat-icon>
+        Réinitialiser
+      </button>
+
+      <button mat-icon-button (click)="refresh()" matTooltip="Actualiser">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+  </mat-card>
+
+  <!-- État de chargement -->
+  <mat-card *ngIf="loading" class="loading-card">
+    <div class="loading-content">
+      <mat-spinner diameter="60"></mat-spinner>
+      <p>Chargement des workspaces...</p>
+    </div>
+  </mat-card>
+
+  <!-- Grille de cartes workspaces -->
+  <div *ngIf="!loading && filteredWorkspaces.length > 0" class="workspaces-grid">
+    <mat-card *ngFor="let workspace of filteredWorkspaces; let i = index" 
+              class="workspace-card"
+              [style.animation-delay]="(i * 0.05) + 's'"
+              (click)="viewWorkspace(workspace.id)">
+      
+      <!-- Header de la carte -->
+      <div class="card-header">
+        <div class="workspace-icon">
+          <mat-icon>workspaces</mat-icon>
+        </div>
+        <div class="workspace-info">
+          <h3>{{ workspace.name }}</h3>
+          <p class="workspace-description">{{ workspace.description || 'Aucune description' }}</p>
+        </div>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <!-- Stats de la carte -->
+      <div class="card-stats">
+        <div class="stat-item">
+          <mat-icon>people</mat-icon>
+          <span>{{ workspace.membersCount || 0 }} membre{{ (workspace.membersCount || 0) > 1 ? 's' : '' }}</span>
+        </div>
+        <div class="stat-item">
+          <mat-icon>fitness_center</mat-icon>
+          <span>{{ workspace.exercicesCount || 0 }} exercice{{ (workspace.exercicesCount || 0) > 1 ? 's' : '' }}</span>
+        </div>
+        <div class="stat-item">
+          <mat-icon>event</mat-icon>
+          <span>{{ workspace.entrainementsCount || 0 }} entraînement{{ (workspace.entrainementsCount || 0) > 1 ? 's' : '' }}</span>
+        </div>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <!-- Footer de la carte -->
+      <div class="card-footer">
+        <div class="workspace-date">
+          <mat-icon>calendar_today</mat-icon>
+          <span>{{ getRelativeTime(workspace.createdAt) }}</span>
+        </div>
+        <button mat-icon-button matTooltip="Voir le workspace" (click)="viewWorkspace(workspace.id); $event.stopPropagation()">
+          <mat-icon>arrow_forward</mat-icon>
+        </button>
+      </div>
+    </mat-card>
+  </div>
+
+  <!-- État vide -->
+  <mat-card *ngIf="!loading && filteredWorkspaces.length === 0" class="empty-state">
+    <mat-icon>workspaces_outline</mat-icon>
+    <h2>Aucun workspace trouvé</h2>
+    <p *ngIf="searchTerm">Aucun workspace ne correspond à votre recherche.</p>
+    <p *ngIf="!searchTerm">Vous n'avez pas encore de workspace.</p>
+    <button mat-raised-button color="primary" (click)="clearFilters()" *ngIf="searchTerm">
+      <mat-icon>clear</mat-icon>
+      Réinitialiser les filtres
+    </button>
+  </mat-card>
+</div>

@@ -1,233 +1,286 @@
-<div class="admin-container">
-  <h1 class="mat-h1">Tableau de bord d'administration</h1>
+<div class="admin-dashboard">
+  <!-- En-tête avec actions globales -->
+  <header class="dashboard-header">
+    <div class="header-content">
+      <div class="header-title">
+        <mat-icon>dashboard</mat-icon>
+        <div>
+          <h1>Tableau de bord administrateur</h1>
+          <p>Vue d'ensemble et gestion de la plateforme</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button mat-raised-button color="primary" routerLink="/parametres/admin/users">
+          <mat-icon>people</mat-icon>
+          Gérer les utilisateurs
+        </button>
+        <button mat-raised-button routerLink="/parametres/admin/workspaces">
+          <mat-icon>group_work</mat-icon>
+          Gérer les bases
+        </button>
+        <button mat-icon-button (click)="refreshAll()" [disabled]="loading" matTooltip="Actualiser">
+          <mat-icon [class.spinning]="loading">refresh</mat-icon>
+        </button>
+      </div>
+    </div>
+  </header>
 
-  <div *ngIf="loading && !error" class="loading-spinner">
-    <mat-spinner></mat-spinner>
-    <p>Chargement des données...</p>
+  <!-- État de chargement global -->
+  <div *ngIf="loading && !counts.users" class="loading-state">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Chargement des statistiques...</p>
   </div>
 
-  <div *ngIf="error" class="error-message">
-    <mat-icon color="warn">error_outline</mat-icon>
+  <!-- État d'erreur -->
+  <div *ngIf="error" class="error-state">
+    <mat-icon>error_outline</mat-icon>
+    <h3>Erreur de chargement</h3>
     <p>{{ error }}</p>
-    <button mat-button color="primary" (click)="loadOverview()">
+    <button mat-raised-button color="primary" (click)="refreshAll()">
       <mat-icon>refresh</mat-icon>
       Réessayer
     </button>
   </div>
 
-  <mat-tab-group [(selectedIndex)]="activeTab">
-    <!-- Onglet Aperçu des données -->
-    <mat-tab label="Aperçu des données">
-      <div class="tab-content">
-        <div *ngIf="!loading && !error" class="overview-grid">
-          <!-- Cartes de statistiques -->
-          <mat-card class="stat-card">
-            <mat-card-header>
-              <div mat-card-avatar class="stat-avatar primary">
-                <mat-icon>fitness_center</mat-icon>
-              </div>
-              <mat-card-title>{{ counts.exercices || 0 }}</mat-card-title>
-              <mat-card-subtitle>Exercices</mat-card-subtitle>
-            </mat-card-header>
-            <mat-card-actions align="end">
-              <button mat-button color="primary" (click)="goToExplorer('exercices')">Voir tout</button>
-            </mat-card-actions>
-          </mat-card>
-          
-          <mat-card class="stat-card">
-            <mat-card-header>
-              <div mat-card-avatar class="stat-avatar accent">
-                <mat-icon>sports_soccer</mat-icon>
-              </div>
-              <mat-card-title>{{ counts.entrainements || 0 }}</mat-card-title>
-              <mat-card-subtitle>Entraînements</mat-card-subtitle>
-            </mat-card-header>
-            <mat-card-actions align="end">
-              <button mat-button color="primary" (click)="goToExplorer('entrainements')">Voir tout</button>
-            </mat-card-actions>
-          </mat-card>
-          
-          <mat-card class="stat-card">
-            <mat-card-header>
-              <div mat-card-avatar class="stat-avatar warn">
-                <mat-icon>directions_run</mat-icon>
-              </div>
-              <mat-card-title>{{ counts.echauffements || 0 }}</mat-card-title>
-              <mat-card-subtitle>Échauffements</mat-card-subtitle>
-            </mat-card-header>
-            <mat-card-actions align="end">
-              <button mat-button color="primary" (click)="goToExplorer('echauffements')">Voir tout</button>
-            </mat-card-actions>
-          </mat-card>
-          
-          <mat-card class="stat-card">
-            <mat-card-header>
-              <div mat-card-avatar class="stat-avatar primary">
-                <mat-icon>sports</mat-icon>
-              </div>
-              <mat-card-title>{{ counts.situations || 0 }}</mat-card-title>
-              <mat-card-subtitle>Situations</mat-card-subtitle>
-            </mat-card-header>
-            <mat-card-actions align="end">
-              <button mat-button color="primary" (click)="goToExplorer('situations')">Voir tout</button>
-            </mat-card-actions>
-          </mat-card>
-          
-          <mat-card class="stat-card">
-            <mat-card-header>
-              <div mat-card-avatar class="stat-avatar accent">
-                <mat-icon>label</mat-icon>
-              </div>
-              <mat-card-title>{{ counts.tags || 0 }}</mat-card-title>
-              <mat-card-subtitle>Tags</mat-card-subtitle>
-            </mat-card-header>
-            <mat-card-actions align="end">
-              <button mat-button color="primary" (click)="goToExplorer('tags')">Voir tout</button>
-            </mat-card-actions>
-          </mat-card>
-          
-          <mat-card class="stat-card">
-            <mat-card-header>
-              <div mat-card-avatar class="stat-avatar warn">
-                <mat-icon>people</mat-icon>
-              </div>
-              <mat-card-title>{{ counts.users || 0 }}</mat-card-title>
-              <mat-card-subtitle>Utilisateurs</mat-card-subtitle>
-            </mat-card-header>
-          </mat-card>
-        </div>
-
-        <!-- Bouton global pour l'explorateur de données -->
-<div class="global-actions">
-            <a mat-raised-button color="primary" class="data-explorer-button" routerLink="/parametres/admin/explorer">
-              <mat-icon>travel_explore</mat-icon>
-              Explorer toutes les données
-            </a>
+  <!-- Contenu principal -->
+  <div *ngIf="!loading || counts.users" class="dashboard-content">
+    
+    <!-- Section Statistiques -->
+    <section class="stats-section">
+      <h2 class="section-title">
+        <mat-icon>analytics</mat-icon>
+        Statistiques globales
+      </h2>
+      
+      <div class="stats-grid">
+        <!-- Carte Exercices -->
+        <mat-card class="stat-card exercices-card" (click)="navigateTo('/exercices')">
+          <div class="stat-icon">
+            <mat-icon>fitness_center</mat-icon>
           </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ counts.exercices || 0 }}</div>
+            <div class="stat-label">Exercices</div>
+          </div>
+          <div class="stat-action">
+            <mat-icon>arrow_forward</mat-icon>
+          </div>
+        </mat-card>
 
+        <!-- Carte Entraînements -->
+        <mat-card class="stat-card entrainements-card" (click)="navigateTo('/entrainements')">
+          <div class="stat-icon">
+            <mat-icon>sports_soccer</mat-icon>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ counts.entrainements || 0 }}</div>
+            <div class="stat-label">Entraînements</div>
+          </div>
+          <div class="stat-action">
+            <mat-icon>arrow_forward</mat-icon>
+          </div>
+        </mat-card>
+
+        <!-- Carte Échauffements -->
+        <mat-card class="stat-card echauffements-card" (click)="navigateTo('/echauffements')">
+          <div class="stat-icon">
+            <mat-icon>directions_run</mat-icon>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ counts.echauffements || 0 }}</div>
+            <div class="stat-label">Échauffements</div>
+          </div>
+          <div class="stat-action">
+            <mat-icon>arrow_forward</mat-icon>
+          </div>
+        </mat-card>
+
+        <!-- Carte Situations -->
+        <mat-card class="stat-card situations-card" (click)="navigateTo('/situations-matchs')">
+          <div class="stat-icon">
+            <mat-icon>sports</mat-icon>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ counts.situations || 0 }}</div>
+            <div class="stat-label">Situations</div>
+          </div>
+          <div class="stat-action">
+            <mat-icon>arrow_forward</mat-icon>
+          </div>
+        </mat-card>
+
+        <!-- Carte Tags -->
+        <mat-card class="stat-card tags-card" (click)="navigateTo('/parametres/tags')">
+          <div class="stat-icon">
+            <mat-icon>label</mat-icon>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ counts.tags || 0 }}</div>
+            <div class="stat-label">Tags</div>
+          </div>
+          <div class="stat-action">
+            <mat-icon>arrow_forward</mat-icon>
+          </div>
+        </mat-card>
+
+        <!-- Carte Utilisateurs -->
+        <mat-card class="stat-card users-card" (click)="navigateTo('/parametres/admin/users')">
+          <div class="stat-icon">
+            <mat-icon>people</mat-icon>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ counts.users || 0 }}</div>
+            <div class="stat-label">Utilisateurs</div>
+          </div>
+          <div class="stat-action">
+            <mat-icon>arrow_forward</mat-icon>
+          </div>
+        </mat-card>
       </div>
-    </mat-tab>
+    </section>
 
-    <!-- Onglet Gestion des utilisateurs -->
-    <mat-tab label="Gestion des utilisateurs">
-    <div class="tab-content">
-    <div class="user-management">
-    <div class="user-form">
-    <h2>Créer un nouvel utilisateur</h2>
-    <form (ngSubmit)="createUser()" #userForm="ngForm">
-    <div class="form-row">
-    <mat-form-field appearance="outline">
-    <mat-label>Email</mat-label>
-    <input matInput type="email" [(ngModel)]="newUser.email" name="email" required>
-    <mat-error>L'email est obligatoire</mat-error>
-    </mat-form-field>
-    
-    <mat-form-field appearance="outline">
-    <mat-label>Mot de passe</mat-label>
-    <input matInput [type]="hidePassword ? 'password' : 'text'" [(ngModel)]="newUser.password" name="password" required>
-    <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button">
-    <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
-    </button>
-    <mat-error>Le mot de passe est obligatoire</mat-error>
-    </mat-form-field>
-    </div>
-    
-    <div class="form-row">
-    <mat-form-field appearance="outline">
-    <mat-label>Prénom</mat-label>
-    <input matInput [(ngModel)]="newUser.prenom" name="prenom">
-    </mat-form-field>
-    
-    <mat-form-field appearance="outline">
-    <mat-label>Nom</mat-label>
-    <input matInput [(ngModel)]="newUser.nom" name="nom">
-    </mat-form-field>
-    </div>
-    
-    <div class="form-row">
-    <mat-form-field appearance="outline">
-    <mat-label>Rôle</mat-label>
-    <mat-select [(ngModel)]="newUser.role" name="role">
-    <mat-option value="user">Utilisateur</mat-option>
-    <mat-option value="admin">Administrateur</mat-option>
-    </mat-select>
-    </mat-form-field>
-    
-    <mat-checkbox [(ngModel)]="newUser.isActive" name="isActive">
-    Compte actif
-    </mat-checkbox>
-    </div>
-    
-    <div class="form-actions">
-    <button 
-    mat-raised-button 
-    color="primary" 
-    type="submit" 
-    [disabled]="!userForm.form.valid || creating">
-    <span *ngIf="!creating">Créer l'utilisateur</span>
-    <mat-spinner *ngIf="creating" diameter="24"></mat-spinner>
-    </button>
-    </div>
-    </form>
-    </div>
+    <!-- Section Actions rapides -->
+    <section class="actions-section">
+      <h2 class="section-title">
+        <mat-icon>flash_on</mat-icon>
+        Actions rapides
+      </h2>
+      
+      <div class="actions-grid">
+        <button mat-raised-button class="action-button create-button" routerLink="/exercices/nouveau">
+          <mat-icon>add_circle</mat-icon>
+          <span>Créer un exercice</span>
+        </button>
+        
+        <button mat-raised-button class="action-button create-button" routerLink="/entrainements/nouveau">
+          <mat-icon>add_circle</mat-icon>
+          <span>Créer un entraînement</span>
+        </button>
+        
+        <button mat-raised-button class="action-button manage-button" routerLink="/parametres/admin/users">
+          <mat-icon>person_add</mat-icon>
+          <span>Ajouter un utilisateur</span>
+        </button>
+        
+        <button mat-raised-button class="action-button manage-button" routerLink="/parametres/tags">
+          <mat-icon>label</mat-icon>
+          <span>Gérer les tags</span>
+        </button>
+        
+        <button mat-raised-button class="action-button export-button" routerLink="/parametres/admin/explorer">
+          <mat-icon>travel_explore</mat-icon>
+          <span>Explorateur de données</span>
+        </button>
+        
+        <button mat-raised-button class="action-button export-button" (click)="exportData()">
+          <mat-icon>download</mat-icon>
+          <span>Exporter les données</span>
+        </button>
+      </div>
+    </section>
 
-    <div class="user-list">
-    <h2>Liste des utilisateurs</h2>
-    <div class="table-container">
-    <table mat-table [dataSource]="usersDS" matSort class="mat-elevation-z1">
-    <ng-container matColumnDef="email">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header>Email</th>
-    <td mat-cell *matCellDef="let user">{{user.email}}</td>
-    </ng-container>
-    
-    <ng-container matColumnDef="nomComplet">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header>Nom</th>
-    <td mat-cell *matCellDef="let user">{{user.prenom}} {{user.nom}}</td>
-    </ng-container>
-    
-    <ng-container matColumnDef="role">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header>Rôle</th>
-    <td mat-cell *matCellDef="let user">
-    <mat-form-field floatLabel="always" appearance="fill">
-    <mat-select [(ngModel)]="user.role" (selectionChange)="updateUser(user)" [disabled]="user._saving">
-    <mat-option value="admin">Administrateur</mat-option>
-    <mat-option value="user">Utilisateur</mat-option>
-    </mat-select>
-    </mat-form-field>
-    </td>
-    </ng-container>
-    
-    <ng-container matColumnDef="isActive">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header>Actif</th>
-    <td mat-cell *matCellDef="let user">
-    <mat-slide-toggle 
-    [(ngModel)]="user.isActive" 
-    (change)="updateUser(user)" 
-    [disabled]="user._saving"
-    color="primary">
-    {{ user.isActive ? 'Oui' : 'Non' }}
-    </mat-slide-toggle>
-    </td>
-    </ng-container>
-    
-    <ng-container matColumnDef="createdAt">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header>Inscrit le</th>
-    <td mat-cell *matCellDef="let user">{{user.createdAt | date:'dd/MM/yyyy'}}</td>
-    </ng-container>
-    
-    <tr mat-header-row *matHeaderRowDef="['email', 'nomComplet', 'role', 'isActive', 'createdAt']"></tr>
-    <tr mat-row *matRowDef="let row; columns: ['email', 'nomComplet', 'role', 'isActive', 'createdAt'];"></tr>
-    </table>
-    
-    <mat-paginator 
-    [pageSizeOptions]="[5, 10, 25, 100]" 
-    aria-label="Sélectionner la page"
-    #userPaginator>
-    </mat-paginator>
-    </div>
-    </div>
-    </div>
-    </div>
-    </mat-tab>
-  </mat-tab-group>
+    <!-- Section Activité récente -->
+    <section class="activity-section">
+      <h2 class="section-title">
+        <mat-icon>history</mat-icon>
+        Activité récente
+      </h2>
+      
+      <div class="activity-grid">
+        <!-- Derniers exercices -->
+        <mat-card class="activity-card">
+          <mat-card-header>
+            <mat-icon mat-card-avatar class="activity-icon exercices-icon">fitness_center</mat-icon>
+            <mat-card-title>Derniers exercices</mat-card-title>
+            <mat-card-subtitle>{{ recentExercices.length }} ajoutés récemment</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div *ngIf="recentExercices.length === 0" class="empty-activity">
+              <mat-icon>inbox</mat-icon>
+              <p>Aucun exercice récent</p>
+            </div>
+            <div *ngIf="recentExercices.length > 0" class="activity-list">
+              <div *ngFor="let item of recentExercices.slice(0, 5)" class="activity-item" (click)="navigateTo('/exercices/' + item.id)">
+                <div class="activity-item-content">
+                  <div class="activity-item-title">{{ item.titre }}</div>
+                  <div class="activity-item-date">{{ item.createdAt | date:'dd/MM/yyyy HH:mm' }}</div>
+                </div>
+                <mat-icon>chevron_right</mat-icon>
+              </div>
+            </div>
+          </mat-card-content>
+          <mat-card-actions>
+            <button mat-button color="primary" routerLink="/exercices">
+              Voir tous les exercices
+              <mat-icon>arrow_forward</mat-icon>
+            </button>
+          </mat-card-actions>
+        </mat-card>
+
+        <!-- Derniers entraînements -->
+        <mat-card class="activity-card">
+          <mat-card-header>
+            <mat-icon mat-card-avatar class="activity-icon entrainements-icon">sports_soccer</mat-icon>
+            <mat-card-title>Derniers entraînements</mat-card-title>
+            <mat-card-subtitle>{{ recentEntrainements.length }} ajoutés récemment</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div *ngIf="recentEntrainements.length === 0" class="empty-activity">
+              <mat-icon>inbox</mat-icon>
+              <p>Aucun entraînement récent</p>
+            </div>
+            <div *ngIf="recentEntrainements.length > 0" class="activity-list">
+              <div *ngFor="let item of recentEntrainements.slice(0, 5)" class="activity-item" (click)="navigateTo('/entrainements/' + item.id)">
+                <div class="activity-item-content">
+                  <div class="activity-item-title">{{ item.titre }}</div>
+                  <div class="activity-item-date">{{ item.createdAt | date:'dd/MM/yyyy HH:mm' }}</div>
+                </div>
+                <mat-icon>chevron_right</mat-icon>
+              </div>
+            </div>
+          </mat-card-content>
+          <mat-card-actions>
+            <button mat-button color="primary" routerLink="/entrainements">
+              Voir tous les entraînements
+              <mat-icon>arrow_forward</mat-icon>
+            </button>
+          </mat-card-actions>
+        </mat-card>
+
+        <!-- Derniers utilisateurs -->
+        <mat-card class="activity-card">
+          <mat-card-header>
+            <mat-icon mat-card-avatar class="activity-icon users-icon">people</mat-icon>
+            <mat-card-title>Derniers utilisateurs</mat-card-title>
+            <mat-card-subtitle>{{ recentUsers.length }} inscrits récemment</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div *ngIf="recentUsers.length === 0" class="empty-activity">
+              <mat-icon>inbox</mat-icon>
+              <p>Aucun utilisateur récent</p>
+            </div>
+            <div *ngIf="recentUsers.length > 0" class="activity-list">
+              <div *ngFor="let user of recentUsers.slice(0, 5)" class="activity-item">
+                <div class="activity-item-content">
+                  <div class="activity-item-title">{{ user.prenom }} {{ user.nom }}</div>
+                  <div class="activity-item-subtitle">{{ user.email }}</div>
+                  <div class="activity-item-date">{{ user.createdAt | date:'dd/MM/yyyy HH:mm' }}</div>
+                </div>
+                <mat-chip [class.admin-chip]="user.role === 'ADMIN'" [class.user-chip]="user.role === 'USER'">
+                  {{ user.role }}
+                </mat-chip>
+              </div>
+            </div>
+          </mat-card-content>
+          <mat-card-actions>
+            <button mat-button color="primary" routerLink="/parametres/admin/users">
+              Gérer les utilisateurs
+              <mat-icon>arrow_forward</mat-icon>
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    </section>
+
+  </div>
 </div>

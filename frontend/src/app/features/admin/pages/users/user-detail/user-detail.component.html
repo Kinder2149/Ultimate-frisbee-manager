@@ -1,0 +1,188 @@
+<div class="user-detail-container">
+  <!-- État de chargement -->
+  <mat-card *ngIf="loading" class="loading-card">
+    <div class="loading-content">
+      <mat-spinner diameter="60"></mat-spinner>
+      <p>Chargement des informations...</p>
+    </div>
+  </mat-card>
+
+  <!-- Contenu principal -->
+  <div *ngIf="!loading && user" class="detail-content">
+    <!-- Header avec bouton retour -->
+    <div class="detail-header">
+      <button mat-icon-button (click)="goBack()" class="back-button" matTooltip="Retour à la liste">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-actions">
+        <button mat-stroked-button (click)="editUser()">
+          <mat-icon>edit</mat-icon>
+          Éditer
+        </button>
+        <button mat-stroked-button [color]="user.isActive ? 'warn' : 'primary'" (click)="toggleStatus()">
+          <mat-icon>{{ user.isActive ? 'block' : 'check_circle' }}</mat-icon>
+          {{ user.isActive ? 'Désactiver' : 'Activer' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Carte profil utilisateur -->
+    <mat-card class="profile-card">
+      <div class="profile-content">
+        <div class="profile-avatar">
+          <img *ngIf="user.iconUrl" [src]="user.iconUrl" [alt]="getFullName()">
+          <div *ngIf="!user.iconUrl" class="avatar-placeholder"
+               [style.background-color]="getAvatarColor()"
+               [style.color]="getAvatarTextColor()">
+            {{ getInitials() }}
+          </div>
+        </div>
+        
+        <div class="profile-info">
+          <h1>{{ getFullName() }}</h1>
+          <div class="profile-email">
+            <mat-icon>email</mat-icon>
+            <span>{{ user.email }}</span>
+          </div>
+          
+          <div class="profile-badges">
+            <mat-chip [style.background-color]="getRoleColor()" [style.color]="'white'">
+              <mat-icon>{{ user.role === 'ADMIN' ? 'admin_panel_settings' : 'person' }}</mat-icon>
+              {{ getRoleLabel() }}
+            </mat-chip>
+            <mat-chip [style.background-color]="getStatusColor()" [style.color]="'white'">
+              <mat-icon>{{ user.isActive ? 'check_circle' : 'cancel' }}</mat-icon>
+              {{ getStatusLabel() }}
+            </mat-chip>
+          </div>
+          
+          <div class="profile-meta">
+            <mat-icon>calendar_today</mat-icon>
+            <span>Membre depuis le {{ user.createdAt | date:'longDate':'':'fr' }}</span>
+          </div>
+        </div>
+      </div>
+    </mat-card>
+
+    <!-- Grille de statistiques -->
+    <div class="stats-grid">
+      <mat-card class="stat-card">
+        <div class="stat-icon" style="background: #e3f2fd; color: #1976d2;">
+          <mat-icon>workspaces</mat-icon>
+        </div>
+        <div class="stat-content">
+          <span class="stat-value">{{ stats.workspacesCount }}</span>
+          <span class="stat-label">Workspaces</span>
+        </div>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <div class="stat-icon" style="background: #f3e5f5; color: #7b1fa2;">
+          <mat-icon>fitness_center</mat-icon>
+        </div>
+        <div class="stat-content">
+          <span class="stat-value">{{ stats.exercicesCount }}</span>
+          <span class="stat-label">Exercices</span>
+        </div>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <div class="stat-icon" style="background: #e8f5e9; color: #388e3c;">
+          <mat-icon>event</mat-icon>
+        </div>
+        <div class="stat-content">
+          <span class="stat-value">{{ stats.entrainementsCount }}</span>
+          <span class="stat-label">Entraînements</span>
+        </div>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <div class="stat-icon" style="background: #fff3e0; color: #f57c00;">
+          <mat-icon>local_fire_department</mat-icon>
+        </div>
+        <div class="stat-content">
+          <span class="stat-value">{{ stats.echauffementsCount }}</span>
+          <span class="stat-label">Échauffements</span>
+        </div>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <div class="stat-icon" style="background: #fce4ec; color: #c2185b;">
+          <mat-icon>sports</mat-icon>
+        </div>
+        <div class="stat-content">
+          <span class="stat-value">{{ stats.situationsCount }}</span>
+          <span class="stat-label">Situations</span>
+        </div>
+      </mat-card>
+    </div>
+
+    <!-- Section Workspaces -->
+    <mat-card class="section-card">
+      <div class="section-header">
+        <h2>
+          <mat-icon>workspaces</mat-icon>
+          Workspaces associés
+        </h2>
+        <span class="section-count">{{ workspaces.length }}</span>
+      </div>
+      
+      <mat-divider></mat-divider>
+
+      <div *ngIf="workspaces.length === 0" class="empty-section">
+        <mat-icon>workspaces_outline</mat-icon>
+        <p>Aucun workspace associé</p>
+      </div>
+
+      <div *ngIf="workspaces.length > 0" class="workspaces-list">
+        <div *ngFor="let workspace of workspaces" class="workspace-item" (click)="viewWorkspace(workspace.id)">
+          <div class="workspace-icon">
+            <mat-icon>workspaces</mat-icon>
+          </div>
+          <div class="workspace-info">
+            <div class="workspace-name">{{ workspace.name }}</div>
+            <div class="workspace-meta" *ngIf="workspace.role">
+              <mat-chip [style.background-color]="workspace.role === 'ADMIN' ? '#f59e0b' : '#3b82f6'" 
+                        [style.color]="'white'"
+                        class="role-chip-small">
+                {{ workspace.role === 'ADMIN' ? 'Admin' : 'Membre' }}
+              </mat-chip>
+            </div>
+          </div>
+          <button mat-icon-button matTooltip="Voir le workspace">
+            <mat-icon>arrow_forward</mat-icon>
+          </button>
+        </div>
+      </div>
+    </mat-card>
+
+    <!-- Section Activité récente -->
+    <mat-card class="section-card">
+      <div class="section-header">
+        <h2>
+          <mat-icon>history</mat-icon>
+          Activité récente
+        </h2>
+      </div>
+      
+      <mat-divider></mat-divider>
+
+      <div *ngIf="recentActivity.length === 0" class="empty-section">
+        <mat-icon>history</mat-icon>
+        <p>Aucune activité récente</p>
+      </div>
+
+      <div *ngIf="recentActivity.length > 0" class="activity-timeline">
+        <div *ngFor="let activity of recentActivity" class="activity-item">
+          <div class="activity-icon" [style.background-color]="activity.color">
+            <mat-icon>{{ activity.icon }}</mat-icon>
+          </div>
+          <div class="activity-content">
+            <div class="activity-title">{{ activity.title }}</div>
+            <div class="activity-time">{{ getRelativeTime(activity.date) }}</div>
+          </div>
+        </div>
+      </div>
+    </mat-card>
+  </div>
+</div>

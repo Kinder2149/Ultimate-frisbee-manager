@@ -344,8 +344,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private workspaceService: WorkspaceService
   ) {
-    console.log('🎯 Dashboard créé avec succès');
-    
     // Fermer le menu d'ajout si on clique ailleurs
     document.addEventListener('click', (event) => {
       const target = event.target as HTMLElement;
@@ -356,18 +354,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // 1) Attendre que le profil utilisateur soit synchronisé
-    // 2) Ensuite, écouter les changements de workspace courant
-    this.authService.currentUser$
+    // Charger les stats dès qu'un workspace est sélectionné
+    this.workspaceService.currentWorkspace$
       .pipe(
-        filter((u): u is any => !!u),
+        filter((ws) => !!ws),
         take(1),
-        switchMap(() =>
-          this.workspaceService.currentWorkspace$.pipe(
-            filter((ws) => !!ws),
-            switchMap(() => this.loadDashboardStats$())
-          )
-        )
+        switchMap(() => this.loadDashboardStats$())
       )
       .subscribe();
   }
@@ -386,10 +378,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.tagsDetails = stats.tagsDetails;
         this.recentActivity = stats.recentActivity;
         this.isLoading = false;
-        console.log('📊 Statistiques dashboard chargées:', stats);
       }),
-      catchError((error) => {
-        console.error('❌ Erreur lors du chargement des statistiques:', error);
+      catchError(() => {
         this.isLoading = false;
         return of(null);
       })

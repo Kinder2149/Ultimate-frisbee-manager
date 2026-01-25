@@ -415,7 +415,7 @@ exports.updateUser = async (req, res) => {
     const { role, isActive } = req.body || {};
 
     const data = {};
-    if (typeof role === 'string') data.role = role;
+    if (typeof role === 'string') data.role = role.toUpperCase();
     if (typeof isActive === 'boolean') data.isActive = isActive;
 
     const updated = await prisma.user.update({ where: { id }, data });
