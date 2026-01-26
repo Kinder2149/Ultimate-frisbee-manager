@@ -93,11 +93,17 @@ export class WorkspaceSwitcherComponent implements OnInit, OnDestroy {
 
   selectWorkspace(ws: WorkspaceSummary, event: MouseEvent): void {
     event.stopPropagation();
+    console.log('[WorkspaceSwitcher] Changing workspace to:', ws.id, ws.name);
+    
+    // Définir le nouveau workspace
     this.workspaceService.setCurrentWorkspace(ws);
     this.currentWorkspace = ws;
     this.isMenuOpen = false;
     this.menuOpenChange.emit(false);
-    this.router.navigate(['/']);
+    
+    // Recharger complètement la page pour forcer le rechargement de toutes les données
+    // Cela garantit que tous les composants et services utilisent le nouveau workspace
+    window.location.href = '/';
   }
 
   closeMenu(): void {

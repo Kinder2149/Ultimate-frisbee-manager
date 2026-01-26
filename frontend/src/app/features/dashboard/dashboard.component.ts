@@ -1,11 +1,13 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { DashboardService, DashboardStats } from '../../core/services/dashboard.service';
 import { AuthService } from '../../core/services/auth.service';
 import { WorkspaceService, WorkspaceSummary } from '../../core/services/workspace.service';
 import { DataCacheService } from '../../core/services/data-cache.service';
 import { filter, switchMap, take, retry, catchError, tap } from 'rxjs/operators';
 import { of, timer, Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-dashboard',
@@ -20,7 +22,7 @@ import { of, timer, Observable } from 'rxjs';
             <span class="workspace-role" [class.owner]="currentWorkspace.role === 'OWNER'">{{ getRoleLabel(currentWorkspace.role || 'USER') }}</span>
           </div>
         </div>
-        <div class="workspace-actions">
+        <div class="workspace-actions" *ngIf="hasMultipleWorkspaces()">
           <button class="btn-workspace" (click)="navigateToWorkspaceSelection()">
             <span class="btn-icon">🔄</span>
             Changer d'espace
@@ -456,6 +458,7 @@ import { of, timer, Observable } from 'rxjs';
 export class DashboardComponent implements OnInit, OnDestroy {
   showAddMenu = false;
   currentWorkspace: WorkspaceSummary | null = null;
+  availableWorkspaces: WorkspaceSummary[] = [];
   
   // Données réelles depuis l'API
   exercicesCount = 0;
@@ -491,7 +494,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private workspaceService: WorkspaceService,
     private dataCache: DataCacheService,
-    private router: Router
+    private router: Router,
+    private http: HttpClient
   ) {
     // Fermer le menu d'ajout si on clique ailleurs
     document.addEventListener('click', (event) => {
@@ -503,17 +507,23 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // S'abonner au workspace actuel
-    this.workspaceService.currentWorkspace$.subscribe(ws => {
-      this.currentWorkspace = ws;
-    });
+    // Charger la liste des workspaces disponibles
+    this.loadAvailableWorkspaces();
 
-    // Charger les stats dès qu'un workspace est sélectionné
+    // S'abonner au workspace actuel ET recharger les stats à chaque changement
     this.workspaceService.currentWorkspace$
       .pipe(
+        tap(ws => {
+          this.currentWorkspace = ws;
+          console.log('[Dashboard] Workspace changed:', ws?.id);
+        }),
         filter((ws) => !!ws),
-        take(1),
-        switchMap(() => this.loadDashboardStats$())
+        switchMap(() => {
+          // Invalider le cache avant de recharger
+          this.dataCache.clear('dashboard-stats');
+          console.log('[Dashboard] Loading stats for workspace:', this.currentWorkspace?.id);
+          return this.loadDashboardStats$();
+        })
       )
       .subscribe();
   }
@@ -552,6 +562,22 @@ export class DashboardComponent implements OnInit, OnDestroy {
       case 'USER': return 'Utilisateur';
       default: return role;
     }
+  }
+
+  loadAvailableWorkspaces(): void {
+    this.http.get<WorkspaceSummary[]>(`${environment.apiUrl}/workspaces/me`).subscribe({
+      next: (workspaces) => {
+        this.availableWorkspaces = workspaces || [];
+      },
+      error: (err) => {
+        console.error('[Dashboard] Error loading workspaces:', err);
+        this.availableWorkspaces = [];
+      }
+    });
+  }
+
+  hasMultipleWorkspaces(): boolean {
+    return this.availableWorkspaces.length > 1;
   }
 
   navigateToWorkspaceSelection(): void {

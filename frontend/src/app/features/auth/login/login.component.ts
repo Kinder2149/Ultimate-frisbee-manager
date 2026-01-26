@@ -40,9 +40,11 @@ export class LoginComponent implements OnInit, OnDestroy {
     // Récupérer l'URL de retour si elle existe
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
 
-    // Si l'utilisateur est déjà connecté, le rediriger
+    // Si l'utilisateur est déjà connecté, le rediriger immédiatement
     if (this.authService.isAuthenticated()) {
+      console.log('[Login] User already authenticated, redirecting to:', this.returnUrl);
       this.router.navigate([this.returnUrl]);
+      return;
     }
 
     // Réagir aux changements d'état d'authentification globaux.
@@ -53,6 +55,7 @@ export class LoginComponent implements OnInit, OnDestroy {
         filter(isAuth => isAuth === true)
       )
       .subscribe(() => {
+        console.log('[Login] Authentication state changed, redirecting to:', this.returnUrl);
         this.router.navigate([this.returnUrl]);
       });
   }
@@ -93,18 +96,17 @@ export class LoginComponent implements OnInit, OnDestroy {
       })
     ).subscribe({
       next: () => {
+        console.log('[Login] Login successful, redirecting to:', this.returnUrl);
         this.snackBar.open('Connexion réussie !', 'Fermer', {
-          duration: 3000,
+          duration: 2000,
           panelClass: ['success-snackbar']
         });
 
-        // Synchroniser le profil depuis le backend
-        this.authService.refreshUserProfile().subscribe();
-
-        // En production, pour éviter tout effet de timing entre Supabase
-        // et le flux isAuthenticated$, on force également une navigation
-        // immédiate vers l'URL de retour.
-        this.router.navigate([this.returnUrl]);
+        // La redirection sera gérée automatiquement par l'observable isAuthenticated$
+        // ou on force la navigation si nécessaire
+        setTimeout(() => {
+          this.router.navigate([this.returnUrl]);
+        }, 100);
       },
       error: (error) => {
         console.error('Erreur de connexion:', error);

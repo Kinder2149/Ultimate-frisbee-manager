@@ -43,15 +43,25 @@ export class AuthService {
   private initFromLocalToken(): void {
     const localToken = localStorage.getItem(LOCAL_TOKEN_KEY);
     if (localToken) {
+      console.log('[Auth] Token found in localStorage, restoring session');
       this.isAuthenticatedSubject.next(true);
       // Synchroniser le profil en arrière-plan
       this.syncUserProfile().subscribe({
-        error: () => {
+        next: (user) => {
+          console.log('[Auth] Session restored successfully for:', user.email);
+          // Charger les workspaces et sélectionner automatiquement si nécessaire
+          this.ensureWorkspaceSelected();
+        },
+        error: (err) => {
+          console.error('[Auth] Token invalid or expired:', err);
           // Token invalide ou expiré, le supprimer
           this.clearLocalToken();
           this.isAuthenticatedSubject.next(false);
+          this.workspaceService.clear();
         }
       });
+    } else {
+      console.log('[Auth] No token found, user must login');
     }
   }
 
@@ -238,6 +248,7 @@ export class AuthService {
       credentials
     ).pipe(
       tap(response => {
+        console.log('[Auth] Login successful, storing token');
         // Stocker le token dans localStorage
         localStorage.setItem(LOCAL_TOKEN_KEY, response.accessToken);
         if (response.refreshToken) {
@@ -248,6 +259,8 @@ export class AuthService {
         if (response.user) {
           this.currentUserSubject.next(response.user);
         }
+        // Charger les workspaces et sélectionner automatiquement
+        this.ensureWorkspaceSelected();
       }),
       map(() => void 0),
       catchError(error => {
@@ -305,10 +318,44 @@ export class AuthService {
     );
   }
 
+  /**
+   * Assure qu'un workspace est sélectionné après connexion
+   */
+  private ensureWorkspaceSelected(): void {
+    // Vérifier si un workspace est déjà sélectionné
+    const currentWorkspace = this.workspaceService.getCurrentWorkspace();
+    if (currentWorkspace) {
+      console.log('[Auth] Workspace already selected:', currentWorkspace.name);
+      return;
+    }
+
+    // Charger les workspaces disponibles
+    this.http.get<any[]>(`${environment.apiUrl}/workspaces/me`).subscribe({
+      next: (workspaces) => {
+        console.log('[Auth] Workspaces loaded:', workspaces.length);
+        if (workspaces.length === 0) {
+          console.warn('[Auth] No workspaces available');
+          return;
+        }
+
+        // Sélectionner automatiquement le premier workspace (BASE en priorité)
+        const baseWorkspace = workspaces.find(w => w.name === 'BASE');
+        const selectedWorkspace = baseWorkspace || workspaces[0];
+        
+        console.log('[Auth] Auto-selecting workspace:', selectedWorkspace.name);
+        this.workspaceService.setCurrentWorkspace(selectedWorkspace);
+      },
+      error: (err) => {
+        console.error('[Auth] Error loading workspaces:', err);
+      }
+    });
+  }
+
   private clearStateAndRedirect(): void {
     this.currentUserSubject.next(null);
     this.isAuthenticatedSubject.next(false);
     this.router.navigate(['/login']);
   }
 }
+
 

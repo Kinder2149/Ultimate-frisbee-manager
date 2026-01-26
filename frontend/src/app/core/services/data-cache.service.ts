@@ -71,13 +71,20 @@ export class DataCacheService {
   }
 
   /**
+   * Invalide une entrée spécifique du cache (alias pour invalidate)
+   */
+  clear(key: string): void {
+    this.invalidate(key);
+  }
+
+  /**
    * Invalide une entrée spécifique du cache
    */
   invalidate(key: string): void {
     const currentWorkspaceId = this.workspaceService.getCurrentWorkspaceId();
     const cacheKey = `${currentWorkspaceId}_${key}`;
     this.cache.delete(cacheKey);
-    console.log(`[DataCache] Invalidated ${key}`);
+    console.log(`[DataCache] Invalidated ${key} for workspace ${currentWorkspaceId}`);
   }
 
   /**

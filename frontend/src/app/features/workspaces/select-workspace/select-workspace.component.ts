@@ -65,19 +65,32 @@ export class SelectWorkspaceComponent implements OnInit {
           return;
         }
 
-        if (workspaces.length === 1) {
-          // Sélection automatique si 1 seul workspace
-          this.selectWorkspace(workspaces[0]);
-          return;
-        }
-
         // Pré-sélection si workspace précédent toujours valide
         const current = this.workspaceService.getCurrentWorkspace();
         if (current && workspaces.find(w => w.id === current.id)) {
           // Workspace toujours valide, rediriger directement
           console.log('[SelectWorkspace] Previous workspace still valid, redirecting');
           this.router.navigateByUrl(this.returnUrl || '/');
+          return;
         }
+
+        // Sélection automatique si 1 seul workspace
+        if (workspaces.length === 1) {
+          console.log('[SelectWorkspace] Only one workspace, auto-selecting:', workspaces[0].name);
+          this.selectWorkspace(workspaces[0]);
+          return;
+        }
+
+        // Si plusieurs workspaces, chercher BASE et le sélectionner par défaut
+        const baseWorkspace = workspaces.find(w => w.name === 'BASE');
+        if (baseWorkspace) {
+          console.log('[SelectWorkspace] Multiple workspaces, auto-selecting BASE');
+          this.selectWorkspace(baseWorkspace);
+          return;
+        }
+
+        // Sinon, laisser l'utilisateur choisir
+        console.log('[SelectWorkspace] Multiple workspaces, user must choose');
       })
     );
   }

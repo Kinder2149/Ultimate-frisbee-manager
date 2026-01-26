@@ -50,20 +50,11 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.showStartupLoader$ = combineLatest([
-      this.isAuthenticated$,
-      this.backendStatus.getState()
-    ]).pipe(
-      map(([isAuth, state]) => isAuth && (state.status === 'checking' || state.status === 'waking')),
+    // N'afficher le loader que lors du réveil du backend (waking), pas au chargement initial
+    this.showStartupLoader$ = this.backendStatus.getState().pipe(
+      map(state => state.status === 'waking'),
       distinctUntilChanged()
     );
-
-    // Si l'utilisateur est authentifié, vérifier la santé du backend au démarrage
-    this.isAuthenticated$.subscribe((auth) => {
-      if (auth) {
-        this.backendStatus.checkHealthOnce();
-      }
-    });
 
     this.routerSubscription = this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe();
   }
