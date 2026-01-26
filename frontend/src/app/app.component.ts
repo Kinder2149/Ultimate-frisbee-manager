@@ -1,5 +1,6 @@
 import { Component, ChangeDetectorRef, OnInit, Renderer2, ElementRef, AfterViewInit, ViewChild, OnDestroy, HostListener } from '@angular/core';
 import { Observable, Subscription, combineLatest } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 import { AuthService } from './core/services/auth.service';
 import { User } from './core/models/user.model';
 import { BackendStatusService } from './core/services/backend-status.service';
@@ -8,6 +9,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { filter, map, distinctUntilChanged } from 'rxjs/operators';
 import { WorkspaceService, WorkspaceSummary } from './core/services/workspace.service';
 import { WorkspaceSwitcherComponent } from './shared/components/workspace-switcher/workspace-switcher.component';
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -43,7 +45,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     private renderer: Renderer2,
     private el: ElementRef,
     private router: Router,
-    private workspaceService: WorkspaceService
+    private workspaceService: WorkspaceService,
+    private http: HttpClient
   ) {
     this.currentUser$ = this.authService.currentUser$;
     this.currentWorkspace$ = this.workspaceService.currentWorkspace$;
@@ -62,6 +65,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isAuthenticated$.subscribe((auth) => {
       if (auth) {
         this.backendStatus.checkHealthOnce();
+        // AMÉLIORATION: Valider le workspace au démarrage
+        this.validateCurrentWorkspace();
       }
     });
 
@@ -160,6 +165,40 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.authService.logout().subscribe({
       error: (error) => {
         console.error('Erreur lors de la déconnexion', error);
+      }
+    });
+  }
+
+  private validateCurrentWorkspace(): void {
+    const current = this.workspaceService.getCurrentWorkspace();
+    
+    // Si pas de workspace sélectionné, ne rien faire
+    if (!current) {
+      return;
+    }
+
+    // Vérifier que le workspace existe toujours
+    this.http.get<WorkspaceSummary[]>(`${environment.apiUrl}/workspaces/me`).subscribe({
+      next: (workspaces) => {
+        const exists = workspaces.some(w => w.id === current.id);
+        
+        if (!exists) {
+          console.warn('[AppComponent] Current workspace no longer available, clearing');
+          this.workspaceService.clear();
+          
+          // Ne rediriger que si on n'est pas déjà sur une page publique
+          const currentUrl = this.router.url;
+          if (!currentUrl.startsWith('/login') && 
+              !currentUrl.startsWith('/select-workspace')) {
+            this.router.navigate(['/select-workspace'], {
+              queryParams: { reason: 'workspace-unavailable' }
+            });
+          }
+        }
+      },
+      error: (error) => {
+        console.error('[AppComponent] Error validating workspace:', error);
+        // Ne pas bloquer l'app en cas d'erreur réseau
       }
     });
   }

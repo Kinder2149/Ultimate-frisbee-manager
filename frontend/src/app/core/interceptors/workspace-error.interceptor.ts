@@ -28,14 +28,23 @@ export class WorkspaceErrorInterceptor implements HttpInterceptor {
       catchError((err: any) => {
         if (err instanceof HttpErrorResponse) {
           const status = err.status;
+          const errorCode = err.error?.code;
 
-          // On ne s'intéresse ici qu'aux 403/404 potentiellement liés au workspace courant
-          if (status === 403 || status === 404) {
+          // AMÉLIORATION: Vérifier le code d'erreur spécifique au workspace
+          const isWorkspaceError = 
+            errorCode === 'WORKSPACE_FORBIDDEN' ||
+            errorCode === 'WORKSPACE_ID_REQUIRED' ||
+            errorCode === 'WORKSPACE_NOT_FOUND' ||
+            errorCode === 'NO_USER_FOR_WORKSPACE';
+
+          if (isWorkspaceError && (status === 403 || status === 400 || status === 404)) {
             const currentUrl = this.router.url || '/';
 
             // Si on est déjà sur la page de sélection, ne pas boucler
             if (!currentUrl.startsWith('/select-workspace')) {
-              // On nettoie le workspace courant côté front
+              console.warn('[WorkspaceErrorInterceptor] Workspace error detected:', errorCode);
+              
+              // Nettoyer le workspace courant côté front
               this.workspaceService.clear();
 
               // Redirection vers la sélection de workspace avec retour prévu
