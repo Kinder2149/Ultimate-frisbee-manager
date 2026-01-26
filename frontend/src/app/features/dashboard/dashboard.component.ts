@@ -17,7 +17,7 @@ import { of, timer, Observable } from 'rxjs';
           <div class="workspace-icon">🏢</div>
           <div class="workspace-details">
             <h2 class="workspace-name">{{ currentWorkspace.name }}</h2>
-            <span class="workspace-role" [class.owner]="currentWorkspace.role === 'OWNER'">{{ getRoleLabel(currentWorkspace.role) }}</span>
+            <span class="workspace-role" [class.owner]="currentWorkspace.role === 'OWNER'">{{ getRoleLabel(currentWorkspace.role || 'USER') }}</span>
           </div>
         </div>
         <div class="workspace-actions">
