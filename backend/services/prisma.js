@@ -9,19 +9,10 @@ if (process.env.NODE_ENV === 'test') {
   prisma = new PrismaClient();
 } else if (process.env.NODE_ENV === 'production') {
   // Configuration spéciale pour Vercel serverless avec Supabase pooler
+  // Les prepared statements sont désactivés via pgbouncer=true dans DATABASE_URL
   prisma = new PrismaClient({
-    datasources: {
-      db: {
-        url: process.env.DATABASE_URL,
-      },
-    },
-    // Désactiver les prepared statements pour éviter les conflits en serverless
-    // Erreur: "prepared statement 's0' already exists"
-    adapter: undefined,
+    log: ['error', 'warn'],
   });
-  
-  // Désactiver explicitement les prepared statements via la connection string
-  // Ceci est géré par pgbouncer=true dans DATABASE_URL
 } else {
   // En développement, utiliser le singleton pour le rechargement à chaud
   if (!global.prisma) {
