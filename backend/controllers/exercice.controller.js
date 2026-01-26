@@ -1,4 +1,5 @@
 const { prisma } = require('../services/prisma');
+const { validateTagsInWorkspace } = require('../utils/workspace-validation');
 
 /**
  * Récupérer tous les exercices avec leurs tags
@@ -139,6 +140,16 @@ exports.createExercice = async (req, res, next) => {
       return res.status(400).json({ error: 'Au moins un tag est requis.' });
     }
 
+    // SÉCURITÉ: Valider que tous les tags appartiennent au workspace
+    const tagValidation = await validateTagsInWorkspace(finalTagIds, workspaceId);
+    if (!tagValidation.valid) {
+      return res.status(400).json({
+        error: 'Certains tags n\'appartiennent pas à ce workspace',
+        code: 'INVALID_TAGS',
+        invalidIds: tagValidation.invalidIds
+      });
+    }
+
     const tagsFromDb = await prisma.tag.findMany({ where: { id: { in: finalTagIds } } });
     const objectifTags = tagsFromDb.filter(t => t.category === 'objectif');
     const travailSpecifiqueTags = tagsFromDb.filter(t => t.category === 'travail_specifique');
@@ -268,6 +279,16 @@ exports.updateExercice = async (req, res, next) => {
 
     // Gestion spécifique et sécurisée pour les tags
     if (Array.isArray(tagIds)) {
+      // SÉCURITÉ: Valider que tous les tags appartiennent au workspace
+      const tagValidation = await validateTagsInWorkspace(tagIds, workspaceId);
+      if (!tagValidation.valid) {
+        return res.status(400).json({
+          error: 'Certains tags n\'appartiennent pas à ce workspace',
+          code: 'INVALID_TAGS',
+          invalidIds: tagValidation.invalidIds
+        });
+      }
+
       const tagsFromDb = await prisma.tag.findMany({ where: { id: { in: tagIds } } });
       const objectifTags = tagsFromDb.filter(t => t.category === 'objectif');
       const travailSpecifiqueTags = tagsFromDb.filter(t => t.category === 'travail_specifique');

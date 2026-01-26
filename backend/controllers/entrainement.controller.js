@@ -1,4 +1,10 @@
 const { prisma } = require('../services/prisma');
+const {
+  validateTagsInWorkspace,
+  validateExerciceInWorkspace,
+  validateSituationMatchInWorkspace,
+  validateEchauffementInWorkspace
+} = require('../utils/workspace-validation');
 
 const calculerDureeTotal = (exercices) => {
   if (!exercices || exercices.length === 0) return 0;
@@ -70,6 +76,55 @@ exports.createEntrainement = async (req, res, next) => {
       exercicesCount: Array.isArray(exercices) ? exercices.length : 0,
     });
 
+    // SÉCURITÉ: Valider que tous les tags appartiennent au workspace
+    if (tagIds && tagIds.length > 0) {
+      const tagValidation = await validateTagsInWorkspace(tagIds, workspaceId);
+      if (!tagValidation.valid) {
+        return res.status(400).json({
+          error: 'Certains tags n\'appartiennent pas à ce workspace',
+          code: 'INVALID_TAGS',
+          invalidIds: tagValidation.invalidIds
+        });
+      }
+    }
+
+    // SÉCURITÉ: Valider l'échauffement
+    if (echauffementId) {
+      const valid = await validateEchauffementInWorkspace(echauffementId, workspaceId);
+      if (!valid) {
+        return res.status(400).json({
+          error: 'L\'échauffement n\'appartient pas à ce workspace',
+          code: 'INVALID_ECHAUFFEMENT'
+        });
+      }
+    }
+
+    // SÉCURITÉ: Valider la situation de match
+    if (situationMatchId) {
+      const valid = await validateSituationMatchInWorkspace(situationMatchId, workspaceId);
+      if (!valid) {
+        return res.status(400).json({
+          error: 'La situation de match n\'appartient pas à ce workspace',
+          code: 'INVALID_SITUATION'
+        });
+      }
+    }
+
+    // SÉCURITÉ: Valider les exercices
+    if (exercices && exercices.length > 0) {
+      for (const ex of exercices) {
+        if (ex.exerciceId) {
+          const valid = await validateExerciceInWorkspace(ex.exerciceId, workspaceId);
+          if (!valid) {
+            return res.status(400).json({
+              error: `L'exercice ${ex.exerciceId} n'appartient pas à ce workspace`,
+              code: 'INVALID_EXERCICE'
+            });
+          }
+        }
+      }
+    }
+
     // Gestion robuste de la date: null si vide; si invalide -> fallback null (pas d'erreur bloquante)
     let finalDate = null;
     if (date != null && String(date).trim() !== '') {
@@ -119,6 +174,55 @@ exports.updateEntrainement = async (req, res, next) => {
     const workspaceId = req.workspaceId;
 
     const { titre, date, exercices, echauffementId, situationMatchId, tagIds } = req.body;
+
+    // SÉCURITÉ: Valider que tous les tags appartiennent au workspace
+    if (tagIds && tagIds.length > 0) {
+      const tagValidation = await validateTagsInWorkspace(tagIds, workspaceId);
+      if (!tagValidation.valid) {
+        return res.status(400).json({
+          error: 'Certains tags n\'appartiennent pas à ce workspace',
+          code: 'INVALID_TAGS',
+          invalidIds: tagValidation.invalidIds
+        });
+      }
+    }
+
+    // SÉCURITÉ: Valider l'échauffement
+    if (echauffementId) {
+      const valid = await validateEchauffementInWorkspace(echauffementId, workspaceId);
+      if (!valid) {
+        return res.status(400).json({
+          error: 'L\'échauffement n\'appartient pas à ce workspace',
+          code: 'INVALID_ECHAUFFEMENT'
+        });
+      }
+    }
+
+    // SÉCURITÉ: Valider la situation de match
+    if (situationMatchId) {
+      const valid = await validateSituationMatchInWorkspace(situationMatchId, workspaceId);
+      if (!valid) {
+        return res.status(400).json({
+          error: 'La situation de match n\'appartient pas à ce workspace',
+          code: 'INVALID_SITUATION'
+        });
+      }
+    }
+
+    // SÉCURITÉ: Valider les exercices
+    if (exercices && exercices.length > 0) {
+      for (const ex of exercices) {
+        if (ex.exerciceId) {
+          const valid = await validateExerciceInWorkspace(ex.exerciceId, workspaceId);
+          if (!valid) {
+            return res.status(400).json({
+              error: `L'exercice ${ex.exerciceId} n'appartient pas à ce workspace`,
+              code: 'INVALID_EXERCICE'
+            });
+          }
+        }
+      }
+    }
 
     // La logique de mise à jour des relations many-to-many avec Prisma
     // est de supprimer les anciennes relations, puis de recréer les nouvelles.

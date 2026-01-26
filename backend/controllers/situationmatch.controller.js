@@ -3,6 +3,7 @@
  * Gère : type (Match/Situation), description, tags, temps
  */
 const { prisma } = require('../services/prisma');
+const { validateTagsInWorkspace } = require('../utils/workspace-validation');
 
 /**
  * Récupère toutes les situations/matchs
@@ -58,6 +59,18 @@ exports.createSituationMatch = async (req, res, next) => {
     const workspaceId = req.workspaceId;
     const { nom, type, description, temps, tagIds } = req.body;
     
+    // SÉCURITÉ: Valider que tous les tags appartiennent au workspace
+    if (tagIds && tagIds.length > 0) {
+      const tagValidation = await validateTagsInWorkspace(tagIds, workspaceId);
+      if (!tagValidation.valid) {
+        return res.status(400).json({
+          error: 'Certains tags n\'appartiennent pas à ce workspace',
+          code: 'INVALID_TAGS',
+          invalidIds: tagValidation.invalidIds
+        });
+      }
+    }
+    
     const nouvelleSituationMatch = await prisma.situationMatch.create({
       data: {
         nom,
@@ -86,6 +99,18 @@ exports.updateSituationMatch = async (req, res, next) => {
     const { id } = req.params;
     const workspaceId = req.workspaceId;
     const { nom, type, description, temps, tagIds } = req.body;
+
+    // SÉCURITÉ: Valider que tous les tags appartiennent au workspace
+    if (tagIds && tagIds.length > 0) {
+      const tagValidation = await validateTagsInWorkspace(tagIds, workspaceId);
+      if (!tagValidation.valid) {
+        return res.status(400).json({
+          error: 'Certains tags n\'appartiennent pas à ce workspace',
+          code: 'INVALID_TAGS',
+          invalidIds: tagValidation.invalidIds
+        });
+      }
+    }
 
     const updateData = {
       nom,
