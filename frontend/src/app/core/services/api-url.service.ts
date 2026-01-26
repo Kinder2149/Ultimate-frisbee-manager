@@ -20,16 +20,16 @@ export class ApiUrlService {
 
   /**
    * Construit une URL pour une ressource statique (média) à partir de son nom de fichier et de son contexte.
-   * @param fileName Le nom du fichier (ex: 'image.jpg') ou une URL complète.
-   * @param context Le dossier de la ressource (ex: 'entrainements', 'exercices')
-   * @returns URL relative ou absolue en fonction de l'environnement.
+   * @param fileName Le nom du fichier (ex: 'image.jpg') ou une URL complète (Cloudinary, etc.).
+   * @param context Le dossier de la ressource (ex: 'entrainements', 'exercices', 'avatars')
+   * @returns URL relative, absolue ou Cloudinary en fonction du type de fichier.
    */
   getMediaUrl(fileName?: string | null, context?: string): string | null {
     if (!fileName) {
       return null;
     }
 
-    // Si le chemin est déjà une URL complète (http, https), on le retourne directement
+    // Si le chemin est déjà une URL complète (http, https, Cloudinary), on le retourne directement
     if (/^https?:\/\//i.test(fileName)) {
       return fileName;
     }
