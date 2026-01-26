@@ -1,51 +1,38 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
 import { SituationMatch } from '../models/situationmatch.model';
-import { EntityCrudService, CrudOptions } from '../../shared/services/entity-crud.service';
- 
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SituationMatchService {
-  private endpoint = 'matches';
-  private crudOptions: Partial<CrudOptions<SituationMatch>> = {
-    fileUploadField: 'image'
-  };
+  private readonly apiUrl = `${environment.apiUrl}/matches`;
 
-  constructor(private entityCrudService: EntityCrudService<SituationMatch>) {}
+  constructor(private http: HttpClient) {}
 
   getSituationsMatchs(): Observable<SituationMatch[]> {
-    return this.entityCrudService.getAll(this.endpoint);
+    return this.http.get<SituationMatch[]>(this.apiUrl);
   }
 
   getSituationMatchById(id: string): Observable<SituationMatch> {
-    return this.entityCrudService.getById(this.endpoint, id);
+    return this.http.get<SituationMatch>(`${this.apiUrl}/${id}`);
   }
 
-  createSituationMatch(data: Partial<SituationMatch> | FormData): Observable<SituationMatch> {
-    return this.entityCrudService.create(this.endpoint, data as any, this.crudOptions).pipe(
-      tap(() => this.entityCrudService.invalidateCache())
-    );
+  createSituationMatch(data: FormData | Partial<SituationMatch>): Observable<SituationMatch> {
+    return this.http.post<SituationMatch>(this.apiUrl, data);
   }
 
-  updateSituationMatch(id: string, data: Partial<SituationMatch> | FormData): Observable<SituationMatch> {
-    return this.entityCrudService.update(this.endpoint, id, data as any, this.crudOptions).pipe(
-      tap(() => this.entityCrudService.invalidateCache())
-    );
+  updateSituationMatch(id: string, data: FormData | Partial<SituationMatch>): Observable<SituationMatch> {
+    return this.http.put<SituationMatch>(`${this.apiUrl}/${id}`, data);
   }
 
   deleteSituationMatch(id: string): Observable<void> {
-    return this.entityCrudService.delete(this.endpoint, id).pipe(
-      tap(() => this.entityCrudService.invalidateCache())
-    );
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
   duplicateSituationMatch(id: string): Observable<SituationMatch> {
-    const url = `${this.endpoint}/${id}/duplicate`;
-    return this.entityCrudService.http.post<SituationMatch>(url, {}).pipe(
-      tap(() => this.entityCrudService.invalidateCache())
-    );
+    return this.http.post<SituationMatch>(`${this.apiUrl}/${id}/duplicate`, {});
   }
 }

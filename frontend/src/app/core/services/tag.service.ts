@@ -1,52 +1,55 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { tap, map } from 'rxjs/operators';
 import { Tag } from '../models/tag.model';
-import { EntityCrudService, CrudOptions } from '../../shared/services/entity-crud.service';
-import { HttpGenericService } from '../../shared/services/http-generic.service';
-import { CacheService } from './cache.service';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
-export class TagService extends EntityCrudService<Tag> {
-  private endpoint = 'tags';
+export class TagService {
+  private readonly apiUrl = `${environment.apiUrl}/tags`;
 
   private tagsUpdatedSource = new Subject<void>();
   public tagsUpdated$ = this.tagsUpdatedSource.asObservable();
 
-  constructor(httpService: HttpGenericService, cacheService: CacheService) {
-    super(httpService, cacheService);
-  }
+  constructor(private http: HttpClient) {}
 
   getTags(category?: string): Observable<Tag[]> {
-    const httpOptions = category ? { params: { category } } : {};
-    return this.getAll(this.endpoint, { httpOptions });
+    if (category) {
+      return this.http.get<Tag[]>(this.apiUrl, { params: { category } });
+    }
+    return this.http.get<Tag[]>(this.apiUrl);
   }
 
   getAllGrouped(): Observable<{ [key: string]: Tag[] }> {
-    return this.httpService.get<{ [key: string]: Tag[] }>(`${this.endpoint}/grouped`);
+    return this.http.get<{ [key: string]: Tag[] }>(`${this.apiUrl}/grouped`);
   }
 
   getTagById(id: string): Observable<Tag> {
-    return this.getById(this.endpoint, id);
+    return this.http.get<Tag>(`${this.apiUrl}/${id}`);
   }
 
   createTag(data: Partial<Tag>): Observable<Tag> {
-    return this.create(this.endpoint, data as Tag).pipe(
+    return this.http.post<Tag>(this.apiUrl, data).pipe(
       tap(() => this.tagsUpdatedSource.next())
     );
   }
 
   updateTag(id: string, data: Partial<Tag>): Observable<Tag> {
-    return this.update(this.endpoint, id, data as Tag).pipe(
+    return this.http.put<Tag>(`${this.apiUrl}/${id}`, data).pipe(
       tap(() => this.tagsUpdatedSource.next())
     );
   }
 
   deleteTag(id: string, force: boolean = false): Observable<void> {
-    const httpOptions = force ? { params: { force: 'true' } } : {};
-    return this.delete(this.endpoint, id, { httpOptions }).pipe(
+    if (force) {
+      return this.http.delete<void>(`${this.apiUrl}/${id}`, { params: { force: 'true' } }).pipe(
+        tap(() => this.tagsUpdatedSource.next())
+      );
+    }
+    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
       tap(() => this.tagsUpdatedSource.next())
     );
   }

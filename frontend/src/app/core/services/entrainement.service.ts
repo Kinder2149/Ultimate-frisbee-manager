@@ -1,51 +1,38 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
 import { Entrainement } from '../models/entrainement.model';
-import { EntityCrudService, CrudOptions } from '../../shared/services/entity-crud.service';
- 
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class EntrainementService {
-  private endpoint = 'trainings';
-  private crudOptions: Partial<CrudOptions<Entrainement>> = {
-    fileUploadField: 'image'
-  };
+  private readonly apiUrl = `${environment.apiUrl}/trainings`;
 
-  constructor(private entityCrudService: EntityCrudService<Entrainement>) {}
+  constructor(private http: HttpClient) {}
 
   getEntrainements(): Observable<Entrainement[]> {
-    return this.entityCrudService.getAll(this.endpoint);
+    return this.http.get<Entrainement[]>(this.apiUrl);
   }
 
   getEntrainementById(id: string): Observable<Entrainement> {
-    return this.entityCrudService.getById(this.endpoint, id);
+    return this.http.get<Entrainement>(`${this.apiUrl}/${id}`);
   }
 
-  createEntrainement(data: Partial<Entrainement> | FormData): Observable<Entrainement> {
-    return this.entityCrudService.create(this.endpoint, data as any, this.crudOptions).pipe(
-      tap(() => this.entityCrudService.invalidateCache())
-    );
+  createEntrainement(data: FormData | Partial<Entrainement>): Observable<Entrainement> {
+    return this.http.post<Entrainement>(this.apiUrl, data);
   }
 
-  updateEntrainement(id: string, data: Partial<Entrainement> | FormData): Observable<Entrainement> {
-    return this.entityCrudService.update(this.endpoint, id, data as any, this.crudOptions).pipe(
-      tap(() => this.entityCrudService.invalidateCache())
-    );
+  updateEntrainement(id: string, data: FormData | Partial<Entrainement>): Observable<Entrainement> {
+    return this.http.put<Entrainement>(`${this.apiUrl}/${id}`, data);
   }
 
   deleteEntrainement(id: string): Observable<void> {
-    return this.entityCrudService.delete(this.endpoint, id).pipe(
-      tap(() => this.entityCrudService.invalidateCache())
-    );
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
   duplicateEntrainement(id: string): Observable<Entrainement> {
-    const url = `${this.endpoint}/${id}/duplicate`;
-    return this.entityCrudService.http.post<Entrainement>(url, {}).pipe(
-      tap(() => this.entityCrudService.invalidateCache())
-    );
+    return this.http.post<Entrainement>(`${this.apiUrl}/${id}/duplicate`, {});
   }
 }

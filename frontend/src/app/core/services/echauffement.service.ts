@@ -1,51 +1,38 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
 import { Echauffement } from '../models/echauffement.model';
-import { EntityCrudService, CrudOptions } from '../../shared/services/entity-crud.service';
- 
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class EchauffementService {
-  private endpoint = 'warmups';
-  private crudOptions: Partial<CrudOptions<Echauffement>> = {
-    fileUploadField: 'image'
-  };
+  private readonly apiUrl = `${environment.apiUrl}/warmups`;
 
-  constructor(private entityCrudService: EntityCrudService<Echauffement>) {}
+  constructor(private http: HttpClient) {}
 
   getEchauffements(): Observable<Echauffement[]> {
-    return this.entityCrudService.getAll(this.endpoint);
+    return this.http.get<Echauffement[]>(this.apiUrl);
   }
 
   getEchauffementById(id: string): Observable<Echauffement> {
-    return this.entityCrudService.getById(this.endpoint, id);
+    return this.http.get<Echauffement>(`${this.apiUrl}/${id}`);
   }
 
-  createEchauffement(data: Partial<Echauffement>): Observable<Echauffement> {
-    return this.entityCrudService.create(this.endpoint, data as Echauffement, this.crudOptions).pipe(
-      tap(() => this.entityCrudService.invalidateCache())
-    );
+  createEchauffement(data: FormData | Partial<Echauffement>): Observable<Echauffement> {
+    return this.http.post<Echauffement>(this.apiUrl, data);
   }
 
-  updateEchauffement(id: string, data: Partial<Echauffement>): Observable<Echauffement> {
-    return this.entityCrudService.update(this.endpoint, id, data, this.crudOptions).pipe(
-      tap(() => this.entityCrudService.invalidateCache())
-    );
+  updateEchauffement(id: string, data: FormData | Partial<Echauffement>): Observable<Echauffement> {
+    return this.http.put<Echauffement>(`${this.apiUrl}/${id}`, data);
   }
 
   deleteEchauffement(id: string): Observable<void> {
-    return this.entityCrudService.delete(this.endpoint, id).pipe(
-      tap(() => this.entityCrudService.invalidateCache())
-    );
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
   duplicateEchauffement(id: string): Observable<Echauffement> {
-    const url = `${this.endpoint}/${id}/duplicate`;
-    return this.entityCrudService.http.post<Echauffement>(url, {}).pipe(
-      tap(() => this.entityCrudService.invalidateCache())
-    );
+    return this.http.post<Echauffement>(`${this.apiUrl}/${id}/duplicate`, {});
   }
 }

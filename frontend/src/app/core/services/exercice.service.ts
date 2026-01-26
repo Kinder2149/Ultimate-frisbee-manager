@@ -1,26 +1,20 @@
 import { Injectable } from '@angular/core';
-import { Observable, Subject, tap, map } from 'rxjs';
-
+import { HttpClient } from '@angular/common/http';
+import { Observable, Subject } from 'rxjs';
+import { tap, map } from 'rxjs/operators';
 import { Exercice } from '../models/exercice.model';
-import { EntityCrudService, CrudOptions } from '../../shared/services/entity-crud.service';
-import { HttpGenericService } from '../../shared/services/http-generic.service';
-import { CacheService } from './cache.service';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
-export class ExerciceService extends EntityCrudService<Exercice> {
-  private endpoint = 'exercises';
-  private crudOptions: Partial<CrudOptions<Exercice>> = {
-    fileUploadField: 'image'
-  };
+export class ExerciceService {
+  private readonly apiUrl = `${environment.apiUrl}/exercises`;
 
   private exercicesUpdated = new Subject<void>();
   exercicesUpdated$ = this.exercicesUpdated.asObservable();
 
-  constructor(httpService: HttpGenericService, cacheService: CacheService) {
-    super(httpService, cacheService);
-  }
+  constructor(private http: HttpClient) {}
 
   private normalizeExercice(ex: Exercice): Exercice {
     // Normalisation défensive: si imageUrl est absent/vidé dans certaines réponses (liste),
@@ -32,51 +26,38 @@ export class ExerciceService extends EntityCrudService<Exercice> {
   }
 
   getExercices(): Observable<Exercice[]> {
-    return this.getAll(this.endpoint).pipe(
+    return this.http.get<Exercice[]>(this.apiUrl).pipe(
       map(list => list.map(ex => this.normalizeExercice(ex)))
     );
   }
 
   getExerciceById(id: string): Observable<Exercice> {
-    return this.getById(this.endpoint, id).pipe(
+    return this.http.get<Exercice>(`${this.apiUrl}/${id}`).pipe(
       map(ex => this.normalizeExercice(ex))
     );
   }
 
-  createExercice(data: Partial<Exercice>): Observable<Exercice> {
-    return this.create(this.endpoint, data as Exercice, this.crudOptions).pipe(
-      tap(() => {
-        this.exercicesUpdated.next();
-        this.invalidateCache();
-      })
+  createExercice(data: FormData | Partial<Exercice>): Observable<Exercice> {
+    return this.http.post<Exercice>(this.apiUrl, data).pipe(
+      tap(() => this.exercicesUpdated.next())
     );
   }
 
-  updateExercice(id: string, data: Partial<Exercice>): Observable<Exercice> {
-    return this.update(this.endpoint, id, data, this.crudOptions).pipe(
-      tap(() => {
-        this.exercicesUpdated.next();
-        this.invalidateCache();
-      })
+  updateExercice(id: string, data: FormData | Partial<Exercice>): Observable<Exercice> {
+    return this.http.put<Exercice>(`${this.apiUrl}/${id}`, data).pipe(
+      tap(() => this.exercicesUpdated.next())
     );
   }
 
   deleteExercice(id: string): Observable<void> {
-    return this.delete(this.endpoint, id).pipe(
-      tap(() => {
-        this.exercicesUpdated.next();
-        this.invalidateCache();
-      })
+    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
+      tap(() => this.exercicesUpdated.next())
     );
   }
 
   duplicateExercice(id: string): Observable<Exercice> {
-    const url = `${this.endpoint}/${id}/duplicate`;
-    return this.http.post<Exercice>(url, {}).pipe(
-      tap(() => {
-        this.exercicesUpdated.next();
-        this.invalidateCache();
-      })
+    return this.http.post<Exercice>(`${this.apiUrl}/${id}/duplicate`, {}).pipe(
+      tap(() => this.exercicesUpdated.next())
     );
   }
 }

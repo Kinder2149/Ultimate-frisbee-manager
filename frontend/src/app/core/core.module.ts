@@ -8,7 +8,6 @@ import { MaterialModule } from './material/material.module';
 // Import des services
 import { ExerciceService } from './services/exercice.service';
 import { TagService } from './services/tag.service';
-import { CacheService } from './services/cache.service';
 import { NotificationService } from './services/notification.service';
 import { DataMappingService } from './services/data-mapping.service';
 import { ApiUrlService } from './services/api-url.service';
@@ -25,6 +24,7 @@ import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { BackendStatusInterceptor } from './interceptors/backend-status.interceptor';
 import { WorkspaceInterceptor } from './interceptors/workspace.interceptor';
 import { WorkspaceErrorInterceptor } from './interceptors/workspace-error.interceptor';
+import { HttpErrorInterceptor } from './errors/http-error.interceptor';
 
 /**
  * Module Core regroupant tous les services et modules partagés
@@ -38,7 +38,6 @@ import { WorkspaceErrorInterceptor } from './interceptors/workspace-error.interc
   providers: [
     ExerciceService,
     TagService,
-    CacheService,
     NotificationService,
     DataMappingService,
     ApiUrlService,
@@ -67,6 +66,11 @@ import { WorkspaceErrorInterceptor } from './interceptors/workspace-error.interc
     {
       provide: HTTP_INTERCEPTORS,
       useClass: WorkspaceErrorInterceptor,
+      multi: true
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: HttpErrorInterceptor,
       multi: true
     }
   ]
