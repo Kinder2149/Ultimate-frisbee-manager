@@ -5,7 +5,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Subject } from 'rxjs';
+import { Subject, throwError } from 'rxjs';
 import { filter, takeUntil, finalize, catchError } from 'rxjs/operators';
 
 import { AuthService } from '../../../core/services/auth.service';
@@ -79,8 +79,13 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     // Essayer d'abord le backend local, puis Supabase si échec
     this.authService.loginWithBackend(credentials).pipe(
-      catchError(() => {
-        // Si le backend échoue, essayer Supabase
+      catchError((backendError) => {
+        // Si le backend échoue avec une erreur 401, c'est un problème d'authentification
+        // Ne pas essayer Supabase dans ce cas, afficher l'erreur directement
+        if (backendError?.status === 401) {
+          return throwError(() => backendError);
+        }
+        // Pour les autres erreurs (500, timeout, etc.), essayer Supabase en fallback
         return this.authService.login(credentials);
       }),
       finalize(() => {
@@ -102,8 +107,20 @@ export class LoginComponent implements OnInit, OnDestroy {
         this.router.navigate([this.returnUrl]);
       },
       error: (error) => {
-        // Les erreurs de Supabase ont une structure différente. On affiche un message générique.
-        this.snackBar.open('Email ou mot de passe incorrect.', 'Fermer', {
+        console.error('Erreur de connexion:', error);
+        
+        // Message d'erreur plus spécifique selon le code d'erreur
+        let errorMessage = 'Email ou mot de passe incorrect.';
+        
+        if (error?.status === 401) {
+          errorMessage = 'Email ou mot de passe incorrect. Veuillez réessayer.';
+        } else if (error?.status === 500) {
+          errorMessage = 'Erreur serveur. Veuillez réessayer dans quelques instants.';
+        } else if (error?.status === 0) {
+          errorMessage = 'Impossible de contacter le serveur. Vérifiez votre connexion.';
+        }
+        
+        this.snackBar.open(errorMessage, 'Fermer', {
           duration: 5000,
           panelClass: ['error-snackbar']
         });
