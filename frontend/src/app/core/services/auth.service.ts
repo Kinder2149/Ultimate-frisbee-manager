@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { User, LoginCredentials } from '../models/user.model';
 import { environment } from '../../../environments/environment';
 import { SupabaseService } from './supabase.service';
+import { WorkspaceService } from './workspace.service';
 import { AuthChangeEvent, Session, User as SupabaseUser } from '@supabase/supabase-js';
 
 // Clé localStorage pour le token backend local
@@ -31,7 +32,8 @@ export class AuthService {
   constructor(
     private http: HttpClient,
     private router: Router,
-    private supabaseService: SupabaseService
+    private supabaseService: SupabaseService,
+    private workspaceService: WorkspaceService
   ) {
     this.listenToAuthStateChanges();
     // Vérifier si un token backend local existe au démarrage
@@ -181,6 +183,8 @@ export class AuthService {
   logout(): Observable<void> {
     // Nettoyer le token backend local
     this.clearLocalToken();
+    // Nettoyer le workspace sélectionné
+    this.workspaceService.clear();
     
     return from(this.supabaseService.supabase.auth.signOut({ scope: 'local' })).pipe(
       map(({ error }) => {

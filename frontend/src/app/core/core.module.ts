@@ -56,17 +56,17 @@ import { WorkspaceErrorInterceptor } from './interceptors/workspace-error.interc
     },
     {
       provide: HTTP_INTERCEPTORS,
+      useClass: WorkspaceInterceptor,
+      multi: true
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
       useClass: BackendStatusInterceptor,
       multi: true
     },
     {
       provide: HTTP_INTERCEPTORS,
       useClass: WorkspaceErrorInterceptor,
-      multi: true
-    },
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: WorkspaceInterceptor,
       multi: true
     }
   ]

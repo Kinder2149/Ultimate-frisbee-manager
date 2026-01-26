@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, of, shareReplay, tap } from 'rxjs';
 import { WorkspaceService } from './workspace.service';
+import { AuthService } from './auth.service';
 
 interface CacheEntry<T> {
   data$: Observable<T>;
@@ -15,10 +16,20 @@ export class DataCacheService {
   private cache = new Map<string, CacheEntry<any>>();
   private defaultTTL = 5 * 60 * 1000; // 5 minutes par défaut
 
-  constructor(private workspaceService: WorkspaceService) {
+  constructor(
+    private workspaceService: WorkspaceService,
+    private authService: AuthService
+  ) {
     // Nettoyer le cache quand le workspace change
     this.workspaceService.currentWorkspace$.subscribe(() => {
       this.clearAll();
+    });
+
+    // Nettoyer le cache lors de la déconnexion
+    this.authService.isAuthenticated$.subscribe(isAuth => {
+      if (!isAuth) {
+        this.clearAll();
+      }
     });
   }
 
