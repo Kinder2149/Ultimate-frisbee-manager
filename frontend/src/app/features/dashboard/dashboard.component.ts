@@ -1,14 +1,33 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { DashboardService, DashboardStats } from '../../core/services/dashboard.service';
 import { AuthService } from '../../core/services/auth.service';
-import { WorkspaceService } from '../../core/services/workspace.service';
+import { WorkspaceService, WorkspaceSummary } from '../../core/services/workspace.service';
+import { DataCacheService } from '../../core/services/data-cache.service';
 import { filter, switchMap, take, retry, catchError, tap } from 'rxjs/operators';
-import { of, timer } from 'rxjs';
+import { of, timer, Observable } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
   template: `
     <div class="dashboard-container">
+      <!-- Section Workspace -->
+      <div class="workspace-header" *ngIf="currentWorkspace">
+        <div class="workspace-info">
+          <div class="workspace-icon">🏢</div>
+          <div class="workspace-details">
+            <h2 class="workspace-name">{{ currentWorkspace.name }}</h2>
+            <span class="workspace-role" [class.owner]="currentWorkspace.role === 'OWNER'">{{ getRoleLabel(currentWorkspace.role) }}</span>
+          </div>
+        </div>
+        <div class="workspace-actions">
+          <button class="btn-workspace" (click)="navigateToWorkspaceSelection()">
+            <span class="btn-icon">🔄</span>
+            Changer d'espace
+          </button>
+        </div>
+      </div>
+
       <div class="welcome-section">
         <h1 class="app-title">Ultimate Frisbee Manager</h1>
         <p class="subtitle">Tableau de bord principal</p>
@@ -106,6 +125,94 @@ import { of, timer } from 'rxjs';
       padding: 2rem;
       max-width: 1400px;
       margin: 0 auto;
+    }
+
+    .workspace-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 16px;
+      padding: 1.5rem 2rem;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .workspace-info {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .workspace-icon {
+      font-size: 3rem;
+      background: rgba(255, 255, 255, 0.2);
+      width: 70px;
+      height: 70px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .workspace-details {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .workspace-name {
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin: 0;
+      color: white;
+    }
+
+    .workspace-role {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .workspace-role.owner {
+      background: rgba(255, 215, 0, 0.3);
+      color: #ffd700;
+    }
+
+    .workspace-actions {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .btn-workspace {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s;
+    }
+
+    .btn-workspace:hover {
+      background: rgba(255, 255, 255, 0.3);
+      border-color: rgba(255, 255, 255, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .btn-icon {
+      font-size: 1.2rem;
     }
     
     .welcome-section {
@@ -287,7 +394,46 @@ import { of, timer } from 'rxjs';
       letter-spacing: 1px;
     }
 
+    .workspace-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem;
+      border-bottom: 1px solid #ecf0f1;
+    }
+
+    .workspace-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .workspace-actions {
+      display: flex;
+      gap: 1rem;
+    }
+
     @media (max-width: 768px) {
+      .workspace-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+      }
+
+      .workspace-info {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .workspace-actions {
+        width: 100%;
+      }
+
+      .btn-workspace {
+        width: 100%;
+        justify-content: center;
+      }
+
       .database-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 1rem;
@@ -309,6 +455,7 @@ import { of, timer } from 'rxjs';
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   showAddMenu = false;
+  currentWorkspace: WorkspaceSummary | null = null;
   
   // Données réelles depuis l'API
   exercicesCount = 0;
@@ -342,7 +489,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   constructor(
     private dashboardService: DashboardService,
     private authService: AuthService,
-    private workspaceService: WorkspaceService
+    private workspaceService: WorkspaceService,
+    private dataCache: DataCacheService,
+    private router: Router
   ) {
     // Fermer le menu d'ajout si on clique ailleurs
     document.addEventListener('click', (event) => {
@@ -354,6 +503,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    // S'abonner au workspace actuel
+    this.workspaceService.currentWorkspace$.subscribe(ws => {
+      this.currentWorkspace = ws;
+    });
+
     // Charger les stats dès qu'un workspace est sélectionné
     this.workspaceService.currentWorkspace$
       .pipe(
@@ -366,9 +520,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   private loadDashboardStats$() {
     this.isLoading = true;
-    return this.dashboardService.getStats().pipe(
-      // Backoff léger en cas d'erreur 500 (pool en réveil)
-      retry({ count: 1, delay: () => timer(700) }),
+    
+    // Utiliser le cache avec TTL de 2 minutes
+    return this.dataCache.get(
+      'dashboard-stats',
+      () => this.dashboardService.getStats().pipe(
+        retry({ count: 1, delay: () => timer(700) })
+      ),
+      2 * 60 * 1000 // 2 minutes
+    ).pipe(
       tap((stats: DashboardStats) => {
         this.exercicesCount = stats.exercicesCount;
         this.entrainementsCount = stats.entrainementsCount;
@@ -384,6 +544,21 @@ export class DashboardComponent implements OnInit, OnDestroy {
         return of(null);
       })
     );
+  }
+
+  getRoleLabel(role: string): string {
+    switch(role) {
+      case 'OWNER': return 'Propriétaire';
+      case 'USER': return 'Utilisateur';
+      default: return role;
+    }
+  }
+
+  navigateToWorkspaceSelection(): void {
+    // Invalider le cache avant de changer de workspace
+    this.dataCache.clearAll();
+    // Naviguer vers la page de sélection
+    this.router.navigate(['/select-workspace']);
   }
 
   ngOnDestroy() {
