@@ -36,14 +36,14 @@ export class SelectWorkspaceComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Récupérer l'URL de retour éventuelle (quand on vient d'un guard ou d'un intercepteur)
+    // Récupérer l'URL de retour éventuelle
     this.returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
 
-    // Afficher un message si on a été redirigé parce que le workspace courant n'est plus disponible
+    // Afficher un message si on a été redirigé
     const reason = this.route.snapshot.queryParamMap.get('reason');
     if (reason === 'workspace-unavailable') {
-      this.error = 'Votre workspace courant n\'est plus accessible (supprimé ou droits retirés). ' +
-        'Veuillez sélectionner une autre base de travail.';
+      this.error = 'Votre espace de travail n\'est plus accessible (supprimé ou droits retirés). ' +
+        'Veuillez sélectionner un autre espace.';
     }
 
     this.loadWorkspaces();
@@ -54,19 +54,29 @@ export class SelectWorkspaceComponent implements OnInit {
     this.error = null;
 
     const url = `${environment.apiUrl}/workspaces/me`;
-    this.workspaces$ = this.http.get<WorkspaceApiDto[]>(url).pipe(
-      map((items: WorkspaceApiDto[]) => {
+    this.workspaces$ = this.http.get<WorkspaceSummary[]>(url).pipe(
+      map((items: WorkspaceSummary[]) => {
         this.loading = false;
-        return (items || []).map((w: WorkspaceApiDto) => ({
-          id: w.id,
-          name: w.name,
-          createdAt: w.createdAt,
-          role: w.role,
-        }));
+        return items || [];
       }),
       tap((workspaces) => {
+        if (workspaces.length === 0) {
+          this.error = 'Aucun espace de travail disponible. Contactez un administrateur.';
+          return;
+        }
+
         if (workspaces.length === 1) {
+          // Sélection automatique si 1 seul workspace
           this.selectWorkspace(workspaces[0]);
+          return;
+        }
+
+        // Pré-sélection si workspace précédent toujours valide
+        const current = this.workspaceService.getCurrentWorkspace();
+        if (current && workspaces.find(w => w.id === current.id)) {
+          // Workspace toujours valide, rediriger directement
+          console.log('[SelectWorkspace] Previous workspace still valid, redirecting');
+          this.router.navigateByUrl(this.returnUrl || '/');
         }
       })
     );
