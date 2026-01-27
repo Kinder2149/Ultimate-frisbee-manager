@@ -528,16 +528,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
       .subscribe();
   }
 
-  private loadDashboardStats$() {
+  private loadDashboardStats$(): Observable<DashboardStats | null> {
     this.isLoading = true;
     
     // Utiliser le cache avec TTL de 2 minutes
-    return this.dataCache.get(
+    return this.dataCache.get<DashboardStats>(
       'dashboard-stats',
+      'dashboard',
       () => this.dashboardService.getStats().pipe(
         retry({ count: 1, delay: () => timer(700) })
       ),
-      2 * 60 * 1000 // 2 minutes
+      { ttl: 2 * 60 * 1000 } // 2 minutes
     ).pipe(
       tap((stats: DashboardStats) => {
         this.exercicesCount = stats.exercicesCount;
