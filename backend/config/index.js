@@ -19,16 +19,8 @@ if (result.error) {
   }
 }
 
-// Validation préalable des secrets JWT
-const isProd = process.env.NODE_ENV === 'production';
-if (!process.env.JWT_SECRET) {
-  console.error('[Config] FATAL: JWT_SECRET manquant.');
-  process.exit(1);
-}
-if (!process.env.JWT_REFRESH_SECRET) {
-  // Refresh optionnel: démarrage autorisé avec avertissement clair
-  console.warn('[Config] Warning: JWT_REFRESH_SECRET absent — rafraîchissement de token désactivé.');
-}
+// Note: JWT_SECRET et JWT_REFRESH_SECRET ne sont plus utilisés
+// On utilise uniquement Supabase Auth maintenant
 
 // Valider et exporter la configuration
 const config = {
@@ -41,11 +33,8 @@ const config = {
     apiKey: process.env.CLOUDINARY_API_KEY,
     apiSecret: process.env.CLOUDINARY_API_SECRET,
   },
-  jwt: {
-    secret: process.env.JWT_SECRET,
-    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
-    refreshSecret: process.env.JWT_REFRESH_SECRET,
-    refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d',
+  supabase: {
+    projectRef: process.env.SUPABASE_PROJECT_REF,
   },
   rateLimit: {
     windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000),
