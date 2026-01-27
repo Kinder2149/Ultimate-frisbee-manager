@@ -305,6 +305,48 @@ export class AuthService {
       map(response => response.user),
       catchError(error => {
         console.error('[Auth] Erreur sync profil:', error);
+        
+        // Si l'utilisateur n'existe pas en base (403), le créer via /register
+        if (error.status === 403) {
+          console.log('[Auth] Utilisateur non trouvé en base, création automatique...');
+          return this.provisionUser().pipe(
+            switchMap(() => this.http.get<{ user: User }>(`${this.apiUrl}/profile`)),
+            tap(response => {
+              this.currentUserSubject.next(response.user);
+              this.cacheUserProfile(response.user);
+              console.log('[Auth] Profil créé et synchronisé:', response.user.email);
+            }),
+            map(response => response.user)
+          );
+        }
+        
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Créer l'utilisateur en base locale via /register
+   */
+  private provisionUser(): Observable<any> {
+    return from(this.supabaseService.supabase.auth.getUser()).pipe(
+      switchMap(({ data }) => {
+        if (!data.user) {
+          return throwError(() => new Error('Aucun utilisateur Supabase connecté'));
+        }
+        
+        const payload = {
+          supabaseUserId: data.user.id,
+          email: data.user.email,
+          nom: data.user.user_metadata?.nom || '',
+          prenom: data.user.user_metadata?.prenom || data.user.email?.split('@')[0] || ''
+        };
+        
+        console.log('[Auth] Appel /register avec:', payload);
+        return this.http.post(`${this.apiUrl}/register`, payload);
+      }),
+      catchError(error => {
+        console.error('[Auth] Erreur provisioning:', error);
         return throwError(() => error);
       })
     );
