@@ -5,7 +5,7 @@ import { AuthService } from './auth.service';
 import { IndexedDbService } from './indexed-db.service';
 import { CacheOptions, CacheStats } from '../models/cache.model';
 
-interface CacheEntry<T> {
+interface CacheEntry<T = any> {
   data$: Observable<T>;
   timestamp: number;
   workspaceId: string;
@@ -15,7 +15,7 @@ interface CacheEntry<T> {
   providedIn: 'root'
 })
 export class DataCacheService {
-  private memoryCache = new Map<string, CacheEntry<any>>();
+  private memoryCache = new Map<string, CacheEntry<unknown>>();
   private defaultTTL = 5 * 60 * 1000; // 5 minutes par défaut
   
   // Configuration TTL par type de données
@@ -93,7 +93,7 @@ export class DataCacheService {
     }
 
     // NIVEAU 1: Vérifier cache mémoire
-    const memoryData = this.getFromMemory(key, workspaceId, ttl);
+    const memoryData = this.getFromMemory<T>(key, workspaceId, ttl);
     if (memoryData) {
       this.stats.hits++;
       return memoryData;
@@ -166,7 +166,7 @@ export class DataCacheService {
         cached.workspaceId === (workspaceId || '') &&
         (now - cached.timestamp) < ttl) {
       console.log(`[DataCache] Memory HIT for ${key}`);
-      return cached.data$;
+      return cached.data$ as Observable<T>;
     }
     
     return null;
