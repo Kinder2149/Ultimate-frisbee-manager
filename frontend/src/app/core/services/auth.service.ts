@@ -338,8 +338,8 @@ export class AuthService {
         const payload = {
           supabaseUserId: data.user.id,
           email: data.user.email,
-          nom: data.user.user_metadata?.nom || '',
-          prenom: data.user.user_metadata?.prenom || data.user.email?.split('@')[0] || ''
+          nom: data.user.user_metadata?.['nom'] || '',
+          prenom: data.user.user_metadata?.['prenom'] || data.user.email?.split('@')[0] || ''
         };
         
         console.log('[Auth] Appel /register avec:', payload);
