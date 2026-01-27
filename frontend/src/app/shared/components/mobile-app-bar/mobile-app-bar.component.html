@@ -1,0 +1,25 @@
+<header class="mobile-app-bar">
+  <div class="app-bar__content">
+    <h1 class="app-bar__title">{{ title }}</h1>
+    
+    <div class="app-bar__actions">
+      <button 
+        *ngIf="showSearch"
+        mat-icon-button 
+        (click)="onSearchClick()"
+        aria-label="Rechercher"
+        class="app-bar__action-btn">
+        <mat-icon>search</mat-icon>
+      </button>
+      
+      <button 
+        *ngIf="canCreate"
+        mat-icon-button 
+        (click)="onCreateClick()"
+        aria-label="Créer"
+        class="app-bar__action-btn">
+        <mat-icon>add</mat-icon>
+      </button>
+    </div>
+  </div>
+</header>

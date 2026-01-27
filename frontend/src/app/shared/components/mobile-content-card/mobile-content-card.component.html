@@ -1,0 +1,35 @@
+<div class="mobile-content-card" [class.compact]="compact" (click)="onCardClick()">
+  <div class="card-image" *ngIf="hasImage">
+    <img [src]="item.metadata.imageUrl" [alt]="item.title" loading="lazy">
+    <button 
+      *ngIf="isFavorite"
+      class="favorite-badge"
+      mat-icon-button
+      (click)="onFavoriteClick($event)"
+      aria-label="Favori">
+      <mat-icon>star</mat-icon>
+    </button>
+    <span *ngIf="isRecent" class="recent-badge">Récent</span>
+  </div>
+  
+  <div class="card-content">
+    <h3 class="card-title">{{ item.title }}</h3>
+    
+    <div class="card-meta" *ngIf="hasDuration || item.metadata.tags?.length">
+      <span *ngIf="hasDuration" class="duration">
+        <mat-icon>schedule</mat-icon>
+        {{ item.metadata.duration }}
+      </span>
+      
+      <div class="tags" *ngIf="item.metadata.tags && item.metadata.tags.length > 0 && !compact">
+        <mat-chip *ngFor="let tag of item.metadata.tags.slice(0, 2)">
+          {{ tag.label }}
+        </mat-chip>
+      </div>
+    </div>
+    
+    <p class="card-description" *ngIf="item.metadata.description && !compact">
+      {{ item.metadata.description }}
+    </p>
+  </div>
+</div>

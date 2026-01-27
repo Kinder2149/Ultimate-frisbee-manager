@@ -1,0 +1,76 @@
+<div class="content-sections">
+  <!-- Loading state -->
+  <div class="loading-container" *ngIf="isLoading">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Chargement...</p>
+  </div>
+
+  <!-- Error state -->
+  <div class="error-container" *ngIf="error && !isLoading">
+    <mat-icon>error_outline</mat-icon>
+    <p>{{ error }}</p>
+  </div>
+
+  <!-- Sections -->
+  <div *ngIf="!isLoading && !error">
+    <div *ngFor="let section of sections" class="content-section">
+      <div class="section-header">
+        <h2>{{ section.label }}</h2>
+        <button 
+          *ngIf="hasSeeAll(section)"
+          mat-button
+          (click)="onSeeAll(section)"
+          class="see-all-btn">
+          Voir tout ({{ section.totalCount }})
+          <mat-icon>arrow_forward</mat-icon>
+        </button>
+      </div>
+      
+      <!-- Carousel -->
+      <div 
+        *ngIf="section.type === 'carousel'"
+        class="section-carousel">
+        <div class="carousel-track">
+          <app-mobile-content-card
+            *ngFor="let item of section.items"
+            [item]="item"
+            [compact]="true"
+            (cardClick)="onItemClick(item)"
+            (favoriteClick)="onFavoriteToggle(item)">
+          </app-mobile-content-card>
+        </div>
+      </div>
+      
+      <!-- Grid -->
+      <div 
+        *ngIf="section.type === 'grid'"
+        class="section-grid">
+        <app-mobile-content-card
+          *ngFor="let item of section.items"
+          [item]="item"
+          (cardClick)="onItemClick(item)"
+          (favoriteClick)="onFavoriteToggle(item)">
+        </app-mobile-content-card>
+      </div>
+
+      <!-- List -->
+      <div 
+        *ngIf="section.type === 'list'"
+        class="section-list">
+        <app-mobile-content-card
+          *ngFor="let item of section.items"
+          [item]="item"
+          (cardClick)="onItemClick(item)"
+          (favoriteClick)="onFavoriteToggle(item)">
+        </app-mobile-content-card>
+      </div>
+    </div>
+    
+    <!-- Empty state -->
+    <div *ngIf="sections.length === 0" class="empty-state">
+      <mat-icon>inbox</mat-icon>
+      <h3>Aucun contenu disponible</h3>
+      <p>Essayez de modifier vos filtres ou votre recherche</p>
+    </div>
+  </div>
+</div>

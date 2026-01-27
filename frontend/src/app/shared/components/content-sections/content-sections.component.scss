@@ -1,0 +1,143 @@
+.content-sections {
+  padding-top: 104px;
+  padding-bottom: 80px;
+  min-height: 100vh;
+}
+
+.loading-container,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 16px;
+  }
+  
+  p {
+    color: #666;
+    margin: 0;
+  }
+}
+
+.error-container {
+  mat-icon {
+    color: #e74c3c;
+  }
+}
+
+.content-section {
+  margin-bottom: 32px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px 12px;
+  
+  h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #333;
+  }
+}
+
+.see-all-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #3498db;
+  font-weight: 500;
+  
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.section-carousel {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.carousel-track {
+  display: flex;
+  gap: 12px;
+  padding: 0 16px;
+  
+  app-mobile-content-card {
+    flex-shrink: 0;
+    width: 280px;
+    scroll-snap-align: start;
+  }
+}
+
+.section-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  padding: 0 16px;
+}
+
+.section-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 16px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+  
+  mat-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    color: #ccc;
+    margin-bottom: 16px;
+  }
+  
+  h3 {
+    margin: 0 0 8px 0;
+    color: #333;
+    font-size: 1.25rem;
+  }
+  
+  p {
+    margin: 0;
+    color: #666;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .content-sections {
+    padding-top: 104px;
+  }
+  
+  .carousel-track {
+    app-mobile-content-card {
+      width: 260px;
+    }
+  }
+}

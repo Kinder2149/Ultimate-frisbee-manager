@@ -1,0 +1,30 @@
+<div class="categories-bar" *ngIf="categories.length > 0">
+  <div class="categories-scroll">
+    <button
+      *ngFor="let category of categories"
+      class="category-chip"
+      [class.active]="isActive(category.id)"
+      (click)="onCategoryClick(category.id)">
+      {{ category.label }}
+    </button>
+  </div>
+  
+  <button 
+    class="categories-menu-btn"
+    mat-icon-button
+    [matMenuTriggerFor]="menu"
+    aria-label="Toutes les catégories">
+    <mat-icon>expand_more</mat-icon>
+  </button>
+  
+  <mat-menu #menu="matMenu">
+    <button 
+      *ngFor="let category of categories"
+      mat-menu-item
+      (click)="onCategoryClick(category.id)">
+      <span [class.active-menu-item]="isActive(category.id)">
+        {{ category.label }}
+      </span>
+    </button>
+  </mat-menu>
+</div>
