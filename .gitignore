@@ -143,10 +143,7 @@ Thumbs.db
 desktop.ini
 $RECYCLE.BIN/
 
-# Scripts PowerShell temporaires
-*.ps1
-!setup.ps1
-!install.ps1
+
 
 # Documentation temporaire
 *.draft.md
@@ -229,3 +226,5 @@ shared/**/*.js.map
 # Exceptions
 !shared/package.json
 !shared/jest.config.js
+.vercel
+.env*.local
