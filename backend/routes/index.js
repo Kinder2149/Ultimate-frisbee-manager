@@ -29,6 +29,9 @@ const importRoutes = require('./import.routes');
 const healthRoutes = require('./health.routes');
 const workspaceRoutes = require('./workspace.routes');
 
+// Route de debug (temporaire pour diagnostiquer)
+const debugRoutes = require('./debug.routes');
+
 // Routes de synchronisation
 const syncRoutes = require('./sync.routes');
 
@@ -41,6 +44,8 @@ module.exports = (app) => {
   app.use('/api/auth', authRoutes);
   // Route publique de santé
   app.use('/api/health', healthRoutes);
+  // Route debug (temporaire)
+  app.use('/api/debug', debugRoutes);
 
   // Routes workspaces (utilisateur et admin)
   app.use('/api/workspaces', authenticateToken, workspaceRoutes);
