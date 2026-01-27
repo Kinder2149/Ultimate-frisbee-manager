@@ -61,13 +61,15 @@ export class ExerciceService {
         this.cache.invalidate('exercices-list', 'exercices');
         
         // Notifier les autres onglets
-        this.sync.notifyChange({
-          type: 'exercice',
-          action: 'create',
-          id: exercice.id,
-          workspaceId: this.cache.getCurrentWorkspaceId() || '',
-          timestamp: Date.now()
-        });
+        if (exercice.id) {
+          this.sync.notifyChange({
+            type: 'exercice',
+            action: 'create',
+            id: exercice.id,
+            workspaceId: this.cache.getCurrentWorkspaceId() || '',
+            timestamp: Date.now()
+          });
+        }
         
         this.exercicesUpdated.next();
       })
@@ -123,13 +125,15 @@ export class ExerciceService {
         this.cache.invalidate('exercices-list', 'exercices');
         
         // Notifier les autres onglets
-        this.sync.notifyChange({
-          type: 'exercice',
-          action: 'create',
-          id: exercice.id,
-          workspaceId: this.cache.getCurrentWorkspaceId() || '',
-          timestamp: Date.now()
-        });
+        if (exercice.id) {
+          this.sync.notifyChange({
+            type: 'exercice',
+            action: 'create',
+            id: exercice.id,
+            workspaceId: this.cache.getCurrentWorkspaceId() || '',
+            timestamp: Date.now()
+          });
+        }
         
         this.exercicesUpdated.next();
       })
