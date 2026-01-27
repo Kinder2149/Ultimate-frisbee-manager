@@ -9,6 +9,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../../../core/services/auth.service';
+import { AuthLayoutComponent } from '../../shared/auth-layout/auth-layout.component';
+import { AuthErrorComponent } from '../../shared/auth-error/auth-error.component';
+import { AuthLoaderComponent } from '../../shared/auth-loader/auth-loader.component';
 
 @Component({
   selector: 'app-forgot-password-page',
@@ -22,7 +25,10 @@ import { AuthService } from '../../../../core/services/auth.service';
     MatInputModule,
     MatButtonModule,
     MatProgressSpinnerModule,
-    MatIconModule
+    MatIconModule,
+    AuthLayoutComponent,
+    AuthErrorComponent,
+    AuthLoaderComponent
   ],
   templateUrl: './forgot-password-page.component.html',
   styleUrls: ['./forgot-password-page.component.scss']

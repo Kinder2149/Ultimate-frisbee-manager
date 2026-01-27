@@ -1,0 +1,35 @@
+<app-auth-layout 
+  title="Confirmation de votre email" 
+  subtitle="Activation de votre compte"
+  maxWidth="420px">
+  
+  <!-- État de chargement -->
+  <div *ngIf="loading" class="confirm-content">
+    <mat-spinner diameter="60" color="primary"></mat-spinner>
+    <p class="loading-text">Vérification de votre email...</p>
+  </div>
+
+  <!-- Succès -->
+  <div *ngIf="!loading && success" class="success-box">
+    <mat-icon>check_circle</mat-icon>
+    <h3>Email confirmé !</h3>
+    <p>Votre compte a été activé avec succès.</p>
+    <p style="font-size: 13px; margin-top: 12px;">Vous pouvez maintenant accéder à toutes les fonctionnalités d'Ultimate Frisbee Manager.</p>
+    <button mat-raised-button color="primary" class="btn-primary" (click)="goToDashboard()" style="margin-top: 20px;">
+      <mat-icon>dashboard</mat-icon>
+      <span>Accéder au tableau de bord</span>
+    </button>
+  </div>
+
+  <!-- Erreur -->
+  <div *ngIf="!loading && error">
+    <app-auth-error [message]="error"></app-auth-error>
+    <div style="text-align: center; margin-top: 20px;">
+      <button mat-raised-button color="primary" class="btn-primary" routerLink="/login">
+        <mat-icon>arrow_back</mat-icon>
+        <span>Retour à la connexion</span>
+      </button>
+    </div>
+  </div>
+  
+</app-auth-layout>

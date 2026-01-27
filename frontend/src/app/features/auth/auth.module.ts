@@ -13,10 +13,17 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 // Composants
 import { LoginComponent } from './login/login.component';
 import { SignupComponent } from './signup/signup.component';
+
+// Composants partagés (standalone)
+import { AuthLayoutComponent } from './shared/auth-layout/auth-layout.component';
+import { AuthErrorComponent } from './shared/auth-error/auth-error.component';
+import { AuthLoaderComponent } from './shared/auth-loader/auth-loader.component';
+import { PasswordStrengthComponent } from './shared/password-strength/password-strength.component';
 
 const routes: Routes = [
   {
@@ -45,7 +52,14 @@ const routes: Routes = [
     MatInputModule,
     MatButtonModule,
     MatIconModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatProgressSpinnerModule,
+    
+    // Composants partagés standalone
+    AuthLayoutComponent,
+    AuthErrorComponent,
+    AuthLoaderComponent,
+    PasswordStrengthComponent
   ]
 })
 export class AuthModule { }

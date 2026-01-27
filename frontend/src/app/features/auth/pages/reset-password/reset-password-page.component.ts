@@ -10,6 +10,10 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../../../core/services/auth.service';
 import { passwordMatchValidator } from '../../../settings/pages/profile/profile-page.component';
+import { AuthLayoutComponent } from '../../shared/auth-layout/auth-layout.component';
+import { AuthErrorComponent } from '../../shared/auth-error/auth-error.component';
+import { AuthLoaderComponent } from '../../shared/auth-loader/auth-loader.component';
+import { PasswordStrengthComponent } from '../../shared/password-strength/password-strength.component';
 
 @Component({
   selector: 'app-reset-password-page',
@@ -23,7 +27,11 @@ import { passwordMatchValidator } from '../../../settings/pages/profile/profile-
     MatInputModule,
     MatButtonModule,
     MatProgressSpinnerModule,
-    MatIconModule
+    MatIconModule,
+    AuthLayoutComponent,
+    AuthErrorComponent,
+    AuthLoaderComponent,
+    PasswordStrengthComponent
   ],
   templateUrl: './reset-password-page.component.html',
   styleUrls: ['./reset-password-page.component.scss']
@@ -38,7 +46,7 @@ export class ResetPasswordPageComponent {
 
   constructor(private fb: FormBuilder, private authService: AuthService) {
     this.form = this.fb.group({
-      newPassword: ['', [Validators.required, Validators.minLength(6)]],
+      newPassword: ['', [Validators.required, Validators.minLength(8)]],
       confirmPassword: ['', [Validators.required]]
     }, { validators: passwordMatchValidator() });
   }

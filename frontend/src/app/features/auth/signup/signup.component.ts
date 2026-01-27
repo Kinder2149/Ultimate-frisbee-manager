@@ -13,6 +13,7 @@ export class SignupComponent {
   signupForm: FormGroup;
   isLoading = false;
   hidePassword = true;
+  errorMessage: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -39,26 +40,33 @@ export class SignupComponent {
     }
 
     this.isLoading = true;
+    this.errorMessage = '';
+    
     const email = this.signupForm.value.email.trim().toLowerCase();
     const password = this.signupForm.value.password;
 
     this.authService.signUp(email, password).subscribe({
       next: () => {
-        this.snackBar.open('Compte créé. Vérifiez vos emails pour confirmer votre inscription.', 'Fermer', {
+        this.isLoading = false;
+        this.snackBar.open('Compte créé ! Vérifiez vos emails pour confirmer votre inscription.', 'Fermer', {
           duration: 6000,
           panelClass: ['success-snackbar']
         });
         this.router.navigate(['/login']);
       },
       error: (error) => {
-        const message = error?.message || 'Impossible de créer le compte. Veuillez réessayer.';
-        this.snackBar.open(message, 'Fermer', {
-          duration: 6000,
-          panelClass: ['error-snackbar']
-        });
-      },
-      complete: () => {
         this.isLoading = false;
+        console.error('[Signup] Erreur inscription:', error);
+        
+        if (error?.message?.includes('already registered')) {
+          this.errorMessage = 'Cet email est déjà utilisé. Essayez de vous connecter.';
+        } else if (error?.message?.includes('invalid email')) {
+          this.errorMessage = 'Format d\'email invalide.';
+        } else if (error?.status === 0) {
+          this.errorMessage = 'Impossible de contacter le serveur. Vérifiez votre connexion internet.';
+        } else {
+          this.errorMessage = 'Impossible de créer le compte. Veuillez réessayer.';
+        }
       }
     });
   }

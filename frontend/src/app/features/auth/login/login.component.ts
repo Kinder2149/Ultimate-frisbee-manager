@@ -5,8 +5,8 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Subject, throwError } from 'rxjs';
-import { filter, takeUntil, finalize, catchError } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { filter, takeUntil, finalize } from 'rxjs/operators';
 
 import { AuthService } from '../../../core/services/auth.service';
 import { LoginCredentials } from '../../../core/models/user.model';
@@ -21,6 +21,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   isLoading = false;
   hidePassword = true;
   returnUrl = '/';
+  errorMessage: string = '';
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -80,52 +81,38 @@ export class LoginComponent implements OnInit, OnDestroy {
       password: this.loginForm.value.password
     };
 
-    // Essayer d'abord le backend local, puis Supabase si échec
-    this.authService.loginWithBackend(credentials).pipe(
-      catchError((backendError) => {
-        // Si le backend échoue avec une erreur 401, c'est un problème d'authentification
-        // Ne pas essayer Supabase dans ce cas, afficher l'erreur directement
-        if (backendError?.status === 401) {
-          return throwError(() => backendError);
-        }
-        // Pour les autres erreurs (500, timeout, etc.), essayer Supabase en fallback
-        return this.authService.login(credentials);
-      }),
+    this.errorMessage = '';
+
+    this.authService.login(credentials).pipe(
       finalize(() => {
         this.isLoading = false;
       })
     ).subscribe({
       next: () => {
-        console.log('[Login] Login successful, redirecting to:', this.returnUrl);
+        console.log('[Login] Connexion réussie, redirection vers:', this.returnUrl);
         this.snackBar.open('Connexion réussie !', 'Fermer', {
           duration: 2000,
           panelClass: ['success-snackbar']
         });
 
         // La redirection sera gérée automatiquement par l'observable isAuthenticated$
-        // ou on force la navigation si nécessaire
         setTimeout(() => {
           this.router.navigate([this.returnUrl]);
         }, 100);
       },
       error: (error) => {
-        console.error('Erreur de connexion:', error);
+        console.error('[Login] Erreur de connexion:', error);
         
-        // Message d'erreur plus spécifique selon le code d'erreur
-        let errorMessage = 'Email ou mot de passe incorrect.';
-        
-        if (error?.status === 401) {
-          errorMessage = 'Email ou mot de passe incorrect. Veuillez réessayer.';
-        } else if (error?.status === 500) {
-          errorMessage = 'Erreur serveur. Veuillez réessayer dans quelques instants.';
+        // Message d'erreur plus spécifique selon le type d'erreur
+        if (error?.message?.includes('Invalid login credentials')) {
+          this.errorMessage = 'Email ou mot de passe incorrect. Veuillez réessayer.';
+        } else if (error?.message?.includes('Email not confirmed')) {
+          this.errorMessage = 'Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte mail.';
         } else if (error?.status === 0) {
-          errorMessage = 'Impossible de contacter le serveur. Vérifiez votre connexion.';
+          this.errorMessage = 'Impossible de contacter le serveur. Vérifiez votre connexion internet.';
+        } else {
+          this.errorMessage = 'Une erreur est survenue. Veuillez réessayer.';
         }
-        
-        this.snackBar.open(errorMessage, 'Fermer', {
-          duration: 5000,
-          panelClass: ['error-snackbar']
-        });
       }
     });
   }

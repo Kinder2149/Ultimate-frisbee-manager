@@ -26,7 +26,7 @@ import { WorkspaceSelectedGuard } from './core/guards/workspace-selected.guard';
 
 // Définition des routes de l'application
 const routes: Routes = [
-  // Routes publiques pour la réinitialisation de mot de passe
+  // Routes publiques pour l'authentification
   {
     path: 'forgot-password',
     loadComponent: () => import('./features/auth/pages/forgot-password/forgot-password-page.component').then(c => c.ForgotPasswordPageComponent)
@@ -34,6 +34,10 @@ const routes: Routes = [
   {
     path: 'reset-password',
     loadComponent: () => import('./features/auth/pages/reset-password/reset-password-page.component').then(c => c.ResetPasswordPageComponent)
+  },
+  {
+    path: 'auth/confirm',
+    loadComponent: () => import('./features/auth/pages/confirm-email/confirm-email-page.component').then(c => c.ConfirmEmailPageComponent)
   },
 
   // Route de connexion (publique)

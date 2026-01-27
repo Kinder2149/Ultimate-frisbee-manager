@@ -1,81 +1,100 @@
-<div class="login-container">
-  <div class="login-card">
-    <mat-card>
-      <mat-card-header>
-        <div mat-card-avatar class="login-avatar">
-          <mat-icon>sports</mat-icon>
-        </div>
-        <mat-card-title>Créer un compte</mat-card-title>
-        <mat-card-subtitle>Accédez à Ultimate Frisbee Manager</mat-card-subtitle>
-      </mat-card-header>
+<app-auth-layout 
+  title="Créer un compte" 
+  subtitle="Rejoignez Ultimate Frisbee Manager"
+  maxWidth="460px">
+  
+  <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="auth-form">
+    <!-- Erreur globale -->
+    <app-auth-error [message]="errorMessage" *ngIf="errorMessage"></app-auth-error>
+    
+    <!-- Loader -->
+    <app-auth-loader 
+      *ngIf="isLoading" 
+      message="Création de votre compte..."
+      [size]="40">
+    </app-auth-loader>
 
-      <mat-card-content>
-        <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="login-form">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Email</mat-label>
-            <input
-              matInput
-              type="email"
-              formControlName="email"
-              placeholder="vous@exemple.com"
-              autocomplete="email">
-            <mat-icon matSuffix>email</mat-icon>
-            <mat-error *ngIf="signupForm.get('email')?.invalid && signupForm.get('email')?.touched">
-              {{ getFieldError('email') }}
-            </mat-error>
-          </mat-form-field>
+    <div *ngIf="!isLoading">
+      <!-- Champ Email -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Email</mat-label>
+        <input
+          matInput
+          type="email"
+          formControlName="email"
+          placeholder="vous@exemple.com"
+          autocomplete="email">
+        <mat-icon matSuffix>email</mat-icon>
+        <mat-error *ngIf="signupForm.get('email')?.invalid && signupForm.get('email')?.touched">
+          {{ getFieldError('email') }}
+        </mat-error>
+      </mat-form-field>
 
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Mot de passe</mat-label>
-            <input
-              matInput
-              [type]="hidePassword ? 'password' : 'text'"
-              formControlName="password"
-              placeholder="Votre mot de passe"
-              autocomplete="new-password">
-            <button
-              mat-icon-button
-              matSuffix
-              type="button"
-              (click)="togglePasswordVisibility()"
-              [attr.aria-label]="'Masquer le mot de passe'"
-              [attr.aria-pressed]="hidePassword">
-              <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
-            </button>
-            <mat-error *ngIf="signupForm.get('password')?.invalid && signupForm.get('password')?.touched">
-              {{ getFieldError('password') }}
-            </mat-error>
-          </mat-form-field>
+      <!-- Champ Mot de passe -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Mot de passe</mat-label>
+        <input
+          matInput
+          [type]="hidePassword ? 'password' : 'text'"
+          formControlName="password"
+          placeholder="Choisissez un mot de passe fort"
+          autocomplete="new-password">
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          (click)="togglePasswordVisibility()"
+          [attr.aria-label]="'Masquer le mot de passe'"
+          [attr.aria-pressed]="hidePassword">
+          <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        <mat-error *ngIf="signupForm.get('password')?.invalid && signupForm.get('password')?.touched">
+          {{ getFieldError('password') }}
+        </mat-error>
+      </mat-form-field>
+      
+      <!-- Indicateur de force du mot de passe -->
+      <app-password-strength 
+        [password]="signupForm.get('password')?.value || ''"
+        [showDetails]="true">
+      </app-password-strength>
 
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Confirmer le mot de passe</mat-label>
-            <input
-              matInput
-              type="password"
-              formControlName="confirmPassword"
-              placeholder="Confirmez votre mot de passe"
-              autocomplete="new-password">
-            <mat-error *ngIf="(signupForm.get('confirmPassword')?.touched || signupForm.get('confirmPassword')?.dirty) && signupForm.hasError('passwordsMismatch')">
-              {{ getFieldError('confirmPassword') }}
-            </mat-error>
-          </mat-form-field>
+      <!-- Champ Confirmation mot de passe -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Confirmer le mot de passe</mat-label>
+        <input
+          matInput
+          type="password"
+          formControlName="confirmPassword"
+          placeholder="Retapez votre mot de passe"
+          autocomplete="new-password">
+        <mat-icon matSuffix>lock</mat-icon>
+        <mat-error *ngIf="(signupForm.get('confirmPassword')?.touched || signupForm.get('confirmPassword')?.dirty) && signupForm.hasError('passwordsMismatch')">
+          {{ getFieldError('confirmPassword') }}
+        </mat-error>
+      </mat-form-field>
 
-          <button
-            mat-raised-button
-            color="primary"
-            type="submit"
-            class="login-button full-width"
-            [disabled]="signupForm.invalid || isLoading">
-            <mat-icon *ngIf="isLoading" class="spinning">refresh</mat-icon>
-            <mat-icon *ngIf="!isLoading">person_add</mat-icon>
-            {{ isLoading ? 'Création du compte...' : 'Créer mon compte' }}
-          </button>
+      <!-- Info confirmation email -->
+      <div class="info-box">
+        <mat-icon>info</mat-icon>
+        Un email de confirmation vous sera envoyé pour activer votre compte.
+      </div>
 
-          <div class="forgot-password-link">
-            <span>Déjà un compte ? <a routerLink="/login">Se connecter</a></span>
-          </div>
-        </form>
-      </mat-card-content>
-    </mat-card>
-  </div>
-</div>
+      <!-- Bouton d'inscription -->
+      <button
+        mat-raised-button
+        color="primary"
+        type="submit"
+        class="btn-primary full-width"
+        [disabled]="signupForm.invalid">
+        <mat-icon>person_add</mat-icon>
+        <span>Créer mon compte</span>
+      </button>
+
+      <div class="form-footer">
+        <p>Déjà un compte ? <a routerLink="/login" class="link-primary">Se connecter</a></p>
+      </div>
+    </div>
+  </form>
+  
+</app-auth-layout>

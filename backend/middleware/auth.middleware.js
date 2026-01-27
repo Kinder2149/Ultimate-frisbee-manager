@@ -1,10 +1,18 @@
 /**
- * Middleware d'authentification JWT
+ * Middleware d'authentification Supabase uniquement
+ * Suppression du système JWT local pour simplification
  */
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
 const { prisma } = require('../services/prisma');
 const sleep = (ms) => new Promise(res => setTimeout(res, ms));
+
+// Support vérification JWT Supabase (RS256 via JWKS)
+let jose;
+try {
+  jose = require('jose');
+} catch (_) {
+  console.warn('[Auth] jose non installé - vérification Supabase désactivée');
+  jose = null;
+}
 
 // Détection d'erreurs DB transitoires (connexion/timeout)
 function isTransientDbError(e) {
@@ -38,33 +46,23 @@ async function fetchUserWithRetry(where) {
   throw lastErr;
 }
 
-// Cache simple en mémoire pour les profils utilisateurs déjà résolus
-// Clé principale: id (sub), fallback: email
+// Cache simple en mémoire pour les profils utilisateurs (15 min TTL)
 const userCacheById = new Map();
-const userCacheByEmail = new Map();
-// Support vérification JWT Supabase (RS256 via JWKS)
-let jose;
-try {
-  jose = require('jose');
-} catch (_) {
-  // jose non installé: la vérification Supabase sera ignorée
-  jose = null;
-}
+const CACHE_TTL = 15 * 60 * 1000; // 15 minutes
 
-const getJwtSecret = () => {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    throw new Error('FATAL ERROR: JWT_SECRET is not defined at runtime.');
+const getSupabaseProjectRef = () => {
+  const ref = process.env.SUPABASE_PROJECT_REF;
+  if (!ref) {
+    throw new Error('FATAL ERROR: SUPABASE_PROJECT_REF is not defined. Required for auth.');
   }
-  return secret;
+  return ref;
 };
 
 /**
- * Middleware de vérification du token JWT
+ * Middleware de vérification du token Supabase uniquement
  */
 const authenticateToken = async (req, res, next) => {
   try {
-    const JWT_SECRET = getJwtSecret();
     const authHeader = req.headers['authorization'];
     const rawToken = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
     const token = rawToken && rawToken !== 'null' && rawToken !== 'undefined' && rawToken.trim().length > 0 ? rawToken : null;
@@ -72,6 +70,7 @@ const authenticateToken = async (req, res, next) => {
     // Bypass en développement: si aucun token et NODE_ENV=development, autoriser la requête
     const isDev = String(process.env.NODE_ENV || '').toLowerCase() === 'development';
     if (isDev && !token) {
+      console.log('[Auth] Mode dev - bypass auth');
       req.user = {
         id: 'dev-user',
         email: 'dev@local',
@@ -88,37 +87,39 @@ const authenticateToken = async (req, res, next) => {
       });
     }
 
-    // Vérifier et décoder le token
+    // Vérifier le token Supabase (RS256 via JWKS)
+    if (!jose) {
+      return res.status(500).json({
+        error: 'Configuration serveur invalide (jose manquant)',
+        code: 'SERVER_CONFIG_ERROR'
+      });
+    }
+
+    const projectRef = getSupabaseProjectRef();
     let decoded;
+    
+    const jwksUrl = new URL(`https://${projectRef}.supabase.co/auth/v1/keys`);
     try {
-      // Essai 1: token signé en interne (HS256)
-      decoded = jwt.verify(token, JWT_SECRET);
-    } catch (e) {
-      // Essai 2: token Supabase (RS256 via JWKS)
-      if (!jose) throw e; // jose indisponible
-      const projectRef = process.env.SUPABASE_PROJECT_REF;
-      if (!projectRef) throw e;
-      
-      const jwksUrl = new URL(`https://${projectRef}.supabase.co/auth/v1/keys`);
-      try {
-        const JWKS = jose.createRemoteJWKSet(jwksUrl);
-        const { payload } = await jose.jwtVerify(token, JWKS, {
-          algorithms: ['RS256']
-        });
-        decoded = payload;
-      } catch (e2) {
-        throw e; // conserver l'erreur initiale pour la logique existante
-      }
+      const JWKS = jose.createRemoteJWKSet(jwksUrl);
+      const { payload } = await jose.jwtVerify(token, JWKS, {
+        algorithms: ['RS256']
+      });
+      decoded = payload;
+    } catch (verifyError) {
+      console.error('[Auth] Token verification failed:', verifyError.message);
+      return res.status(401).json({
+        error: 'Token invalide ou expiré',
+        code: 'INVALID_TOKEN'
+      });
     }
     
     // Vérifier si l'utilisateur existe dans notre base de données
     let user = null;
 
-    // 1) Tenter depuis le cache mémoire
-    if (decoded.sub && userCacheById.has(decoded.sub)) {
-      user = userCacheById.get(decoded.sub);
-    } else if (decoded.email && userCacheByEmail.has(decoded.email)) {
-      user = userCacheByEmail.get(decoded.email);
+    // 1) Tenter depuis le cache mémoire (avec vérification TTL)
+    const cachedEntry = userCacheById.get(decoded.sub);
+    if (cachedEntry && (Date.now() - cachedEntry.timestamp) < CACHE_TTL) {
+      user = cachedEntry.user;
     }
 
     // 2) Si pas trouvé en cache, interroger Prisma
@@ -154,41 +155,22 @@ const authenticateToken = async (req, res, next) => {
       }
     }
 
-    // Si l'utilisateur n'existe toujours pas, le créer (provisioning).
+    // Si l'utilisateur n'existe pas en base, refuser l'accès
+    // Le provisioning se fait maintenant via la route /api/auth/register
     if (!user) {
-      try {
-        // Générer un mot de passe aléatoire uniquement pour satisfaire la contrainte de schéma
-        // (l'authentification réelle est gérée par Supabase, ce mot de passe n'est jamais utilisé).
-        const randomPassword = `supabase-${Math.random().toString(36).slice(2)}`;
-        const passwordHash = await bcrypt.hash(randomPassword, 10);
-
-        user = await prisma.user.create({
-          data: {
-            id: decoded.sub, // ID de Supabase
-            email: decoded.email,
-            nom: decoded.user_metadata?.last_name || '',
-            prenom: decoded.user_metadata?.first_name || decoded.email.split('@')[0],
-            iconUrl: decoded.user_metadata?.avatar_url || '',
-            passwordHash,
-            role: 'USER',
-            isActive: true,
-          },
-        });
-      } catch (creationError) {
-        console.error('[Auth] Error creating new user from token:', creationError);
-        return res.status(500).json({ 
-          error: 'Impossible de créer le profil utilisateur local.',
-          code: 'USER_PROVISIONING_ERROR'
-        });
-      }
+      console.warn('[Auth] User not found in database:', decoded.sub, decoded.email);
+      return res.status(403).json({ 
+        error: 'Compte non trouvé. Veuillez vous inscrire.',
+        code: 'USER_NOT_FOUND'
+      });
     }
 
-    // Mettre en cache l'utilisateur pour les prochaines requêtes
+    // Mettre en cache l'utilisateur avec timestamp
     if (user.id) {
-      userCacheById.set(user.id, user);
-    }
-    if (user.email) {
-      userCacheByEmail.set(user.email, user);
+      userCacheById.set(user.id, {
+        user,
+        timestamp: Date.now()
+      });
     }
 
     // Vérifier si l'utilisateur est actif
@@ -204,30 +186,7 @@ const authenticateToken = async (req, res, next) => {
     next();
 
   } catch (error) {
-    const isDev = String(process.env.NODE_ENV || '').toLowerCase() === 'development';
-    if (isDev && (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError')) {
-      req.user = {
-        id: 'dev-user',
-        email: 'dev@local',
-        role: 'ADMIN',
-        isActive: true,
-      };
-      return next();
-    }
-    if (error.name === 'JsonWebTokenError') {
-      return res.status(401).json({ 
-        error: 'Token invalide',
-        code: 'INVALID_TOKEN'
-      });
-    }
-    if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ 
-        error: 'Token expiré',
-        code: 'TOKEN_EXPIRED'
-      });
-    }
-
-    console.error('Erreur middleware auth:', error);
+    console.error('[Auth] Middleware error:', error);
     return res.status(500).json({ 
       error: 'Erreur serveur lors de l\'authentification',
       code: 'AUTH_ERROR'
@@ -250,38 +209,18 @@ const requireAdmin = (req, res, next) => {
 };
 
 /**
- * Générer un token JWT
+ * Nettoyer le cache utilisateur (utile pour les tests ou invalidation manuelle)
  */
-const generateToken = (user) => {
-  return jwt.sign(
-    { sub: user.id, email: user.email, role: user.role },
-    getJwtSecret(),
-    { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
-  );
-};
-
-/**
- * Générer un refresh token
- */
-const getJwtRefreshSecret = () => {
-  const secret = process.env.JWT_REFRESH_SECRET;
-  if (!secret) {
-    throw new Error('FATAL ERROR: JWT_REFRESH_SECRET is not defined at runtime.');
+const clearUserCache = (userId) => {
+  if (userId) {
+    userCacheById.delete(userId);
+  } else {
+    userCacheById.clear();
   }
-  return secret;
-};
-
-const generateRefreshToken = (user) => {
-  return jwt.sign(
-    { sub: user.id, type: 'refresh' },
-    getJwtRefreshSecret(),
-    { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d' }
-  );
 };
 
 module.exports = {
   authenticateToken,
   requireAdmin,
-  generateToken,
-  generateRefreshToken,
+  clearUserCache,
 };

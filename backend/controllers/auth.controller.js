@@ -1,9 +1,10 @@
 /**
  * Contrôleur pour l'authentification et la gestion de profil
+ * Authentification gérée par Supabase, ce contrôleur gère uniquement le profil local
  */
 const { prisma } = require('../services/prisma');
 const bcrypt = require('bcryptjs');
-const { generateToken, generateRefreshToken } = require('../middleware/auth.middleware');
+const { clearUserCache } = require('../middleware/auth.middleware');
 
 /**
  * Récupérer le profil utilisateur
@@ -47,44 +48,84 @@ module.exports = {
   getProfile,
   logout,
   /**
-   * POST /api/auth/login
-   * Body: { email, password }
+   * POST /api/auth/register
+   * Créer un utilisateur en base après inscription Supabase
+   * Body: { supabaseUserId, email, nom?, prenom? }
    */
-  async login(req, res) {
+  async register(req, res) {
     try {
-      const { email, password } = req.body || {};
+      const { supabaseUserId, email, nom, prenom } = req.body || {};
 
-      if (!email || typeof email !== 'string' || !password || typeof password !== 'string') {
-        return res.status(400).json({ error: 'Champs requis: email et password', code: 'BAD_REQUEST' });
+      if (!supabaseUserId || !email) {
+        return res.status(400).json({ 
+          error: 'Champs requis: supabaseUserId et email', 
+          code: 'BAD_REQUEST' 
+        });
       }
 
       const normalizedEmail = String(email).trim().toLowerCase();
-      const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
 
-      if (!user) {
-        console.warn('[login] utilisateur introuvable', { email: normalizedEmail });
-        return res.status(401).json({ error: 'Identifiants invalides', code: 'INVALID_CREDENTIALS' });
+      // Vérifier si l'utilisateur existe déjà
+      const existing = await prisma.user.findUnique({ 
+        where: { id: supabaseUserId } 
+      });
+
+      if (existing) {
+        console.log('[register] Utilisateur déjà existant:', supabaseUserId);
+        return res.json({
+          user: {
+            id: existing.id,
+            email: existing.email,
+            nom: existing.nom,
+            prenom: existing.prenom,
+            role: existing.role,
+            isActive: existing.isActive,
+            iconUrl: existing.iconUrl
+          }
+        });
       }
 
-      if (user.isActive === false) {
-        console.warn('[login] utilisateur inactif', { id: user.id, email: normalizedEmail });
-        return res.status(403).json({ error: 'Compte inactif', code: 'INACTIVE_ACCOUNT' });
+      // Créer l'utilisateur en base
+      // Mot de passe aléatoire car l'auth est gérée par Supabase
+      const randomPassword = `supabase-${Math.random().toString(36).slice(2)}`;
+      const passwordHash = await bcrypt.hash(randomPassword, 10);
+
+      const user = await prisma.user.create({
+        data: {
+          id: supabaseUserId,
+          email: normalizedEmail,
+          nom: nom || '',
+          prenom: prenom || normalizedEmail.split('@')[0],
+          passwordHash,
+          role: 'USER',
+          isActive: true,
+        },
+      });
+
+      console.log('[register] Nouvel utilisateur créé:', user.id, user.email);
+
+      // Créer le workspace BASE pour le nouvel utilisateur
+      try {
+        const baseWorkspace = await prisma.workspace.findFirst({
+          where: { name: 'BASE' }
+        });
+
+        if (baseWorkspace) {
+          await prisma.workspaceUser.create({
+            data: {
+              workspaceId: baseWorkspace.id,
+              userId: user.id,
+              role: 'VIEWER'
+            }
+          });
+          console.log('[register] Utilisateur ajouté au workspace BASE');
+        }
+      } catch (workspaceError) {
+        console.error('[register] Erreur ajout workspace BASE:', workspaceError);
+        // Ne pas bloquer l'inscription si l'ajout au workspace échoue
       }
 
-      const ok = await bcrypt.compare(password, user.passwordHash);
-      if (!ok) {
-        console.warn('[login] mot de passe invalide', { id: user.id, email: normalizedEmail });
-        return res.status(401).json({ error: 'Identifiants invalides', code: 'INVALID_CREDENTIALS' });
-      }
-
-      const accessToken = generateToken(user);
-      const refreshToken = generateRefreshToken(user);
-
-      console.log('[login] succès', { id: user.id, role: user.role });
-
-      return res.json({
-        accessToken,
-        refreshToken,
+      return res.status(201).json({
         user: {
           id: user.id,
           email: user.email,
@@ -96,8 +137,11 @@ module.exports = {
         }
       });
     } catch (error) {
-      console.error('Erreur login:', error);
-      return res.status(500).json({ error: 'Erreur serveur lors de la connexion', code: 'LOGIN_ERROR' });
+      console.error('[register] Erreur:', error);
+      return res.status(500).json({ 
+        error: 'Erreur serveur lors de l\'inscription', 
+        code: 'REGISTER_ERROR' 
+      });
     }
   },
   /**
