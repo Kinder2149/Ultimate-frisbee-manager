@@ -7,6 +7,7 @@ import { User, LoginCredentials } from '../models/user.model';
 import { environment } from '../../../environments/environment';
 import { SupabaseService } from './supabase.service';
 import { WorkspaceService } from './workspace.service';
+import { IndexedDbService } from './indexed-db.service';
 import { AuthChangeEvent, Session, User as SupabaseUser } from '@supabase/supabase-js';
 
 // Clé localStorage pour le token backend local
@@ -33,7 +34,8 @@ export class AuthService {
     private http: HttpClient,
     private router: Router,
     private supabaseService: SupabaseService,
-    private workspaceService: WorkspaceService
+    private workspaceService: WorkspaceService,
+    private indexedDb: IndexedDbService
   ) {
     this.listenToAuthStateChanges();
     // Vérifier si un token backend local existe au démarrage
@@ -45,20 +47,30 @@ export class AuthService {
     if (localToken) {
       console.log('[Auth] Token found in localStorage, restoring session');
       this.isAuthenticatedSubject.next(true);
-      // Synchroniser le profil en arrière-plan
-      this.syncUserProfile().subscribe({
-        next: (user) => {
-          console.log('[Auth] Session restored successfully for:', user.email);
-          // Charger les workspaces et sélectionner automatiquement si nécessaire
+      
+      // Charger le profil depuis le cache d'abord
+      this.loadCachedProfile().then(cachedUser => {
+        if (cachedUser) {
+          console.log('[Auth] Profile loaded from cache:', cachedUser.email);
+          this.currentUserSubject.next(cachedUser);
           this.ensureWorkspaceSelected();
-        },
-        error: (err) => {
-          console.error('[Auth] Token invalid or expired:', err);
-          // Token invalide ou expiré, le supprimer
-          this.clearLocalToken();
-          this.isAuthenticatedSubject.next(false);
-          this.workspaceService.clear();
         }
+        
+        // Synchroniser le profil en arrière-plan pour mettre à jour
+        this.syncUserProfile().subscribe({
+          next: (user) => {
+            console.log('[Auth] Profile synced from API:', user.email);
+            this.ensureWorkspaceSelected();
+          },
+          error: (err) => {
+            console.error('[Auth] Token invalid or expired:', err);
+            // Token invalide ou expiré, le supprimer
+            this.clearLocalToken();
+            this.clearCachedProfile();
+            this.isAuthenticatedSubject.next(false);
+            this.workspaceService.clear();
+          }
+        });
       });
     } else {
       console.log('[Auth] No token found, user must login');
@@ -258,6 +270,8 @@ export class AuthService {
         this.isAuthenticatedSubject.next(true);
         if (response.user) {
           this.currentUserSubject.next(response.user);
+          // Cacher le profil
+          this.cacheUserProfile(response.user);
         }
         // Charger les workspaces et sélectionner automatiquement
         this.ensureWorkspaceSelected();
@@ -283,6 +297,8 @@ export class AuthService {
   clearLocalToken(): void {
     localStorage.removeItem(LOCAL_TOKEN_KEY);
     localStorage.removeItem(LOCAL_REFRESH_TOKEN_KEY);
+    // Nettoyer aussi le cache
+    this.clearCachedProfile();
   }
 
   isAuthenticated(): boolean {
@@ -304,6 +320,10 @@ export class AuthService {
   private syncUserProfile(): Observable<User> {
     // L'intercepteur ajoutera le token JWT de Supabase à cette requête
     return this.http.get<{ user: User }>(`${this.apiUrl}/profile`).pipe(
+      tap(response => {
+        // Cacher le profil dans IndexedDB
+        this.cacheUserProfile(response.user);
+      }),
       map(response => {
         this.currentUserSubject.next(response.user);
         this.isAuthenticatedSubject.next(true);
@@ -316,6 +336,43 @@ export class AuthService {
         return throwError(() => error);
       })
     );
+  }
+
+  /**
+   * Cache le profil utilisateur dans IndexedDB
+   */
+  private async cacheUserProfile(user: User): Promise<void> {
+    try {
+      await this.indexedDb.set('auth', 'user-profile', user, null, 24 * 60 * 60 * 1000); // 24h
+      console.log('[Auth] Profile cached in IndexedDB');
+    } catch (error) {
+      console.error('[Auth] Failed to cache profile:', error);
+    }
+  }
+
+  /**
+   * Charge le profil utilisateur depuis le cache IndexedDB
+   */
+  private async loadCachedProfile(): Promise<User | null> {
+    try {
+      const cachedUser = await this.indexedDb.get<User>('auth', 'user-profile', null);
+      return cachedUser;
+    } catch (error) {
+      console.error('[Auth] Failed to load cached profile:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Supprime le profil utilisateur du cache
+   */
+  private async clearCachedProfile(): Promise<void> {
+    try {
+      await this.indexedDb.delete('auth', 'user-profile', null);
+      console.log('[Auth] Cached profile cleared');
+    } catch (error) {
+      console.error('[Auth] Failed to clear cached profile:', error);
+    }
   }
 
   /**
@@ -354,6 +411,9 @@ export class AuthService {
   private clearStateAndRedirect(): void {
     this.currentUserSubject.next(null);
     this.isAuthenticatedSubject.next(false);
+    // Nettoyer le cache et les données
+    this.clearLocalToken();
+    this.indexedDb.clearAll();
     this.router.navigate(['/login']);
   }
 }

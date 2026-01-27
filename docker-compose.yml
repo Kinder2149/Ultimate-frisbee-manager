@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    env_file:
+      - ./backend/.env
+    command: sh -c "npx prisma migrate dev --name add_updated_at_fields && npx prisma generate && npm run dev"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

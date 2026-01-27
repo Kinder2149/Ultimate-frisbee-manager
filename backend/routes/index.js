@@ -29,6 +29,9 @@ const importRoutes = require('./import.routes');
 const healthRoutes = require('./health.routes');
 const workspaceRoutes = require('./workspace.routes');
 
+// Routes de synchronisation
+const syncRoutes = require('./sync.routes');
+
 // Middleware d'authentification
 const { authenticateToken } = require('../middleware/auth.middleware');
 const { workspaceGuard } = require('../middleware/workspace.middleware');
@@ -68,7 +71,8 @@ module.exports = (app) => {
         dashboard: '/api/dashboard',
         admin: '/api/admin',
         import: '/api/import',
-        workspaces: '/api/workspaces'
+        workspaces: '/api/workspaces',
+        sync: '/api/sync'
       }
     });
   });

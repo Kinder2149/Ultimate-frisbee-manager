@@ -24,6 +24,7 @@ model Exercice {
   variablesPlus   String                 @default("")
   variablesMinus  String                 @default("")
   createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
   entrainements   EntrainementExercice[]
   tags            Tag[]                  @relation("ExerciseTags")
 
@@ -41,6 +42,7 @@ model Tag {
   color            String?
   level            Int?
   createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
   entrainements    Entrainement[]   @relation("EntrainementTags")
   exercices        Exercice[]       @relation("ExerciseTags")
   situationsMatchs SituationMatch[] @relation("SituationMatchTags")
@@ -59,6 +61,7 @@ model Entrainement {
   date             DateTime?
   imageUrl         String?
   createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
   echauffementId   String?
   situationMatchId String?
   echauffement     Echauffement?          @relation(fields: [echauffementId], references: [id])
@@ -102,6 +105,7 @@ model Echauffement {
   description   String?
   imageUrl      String?
   createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
   blocs         BlocEchauffement[]
   entrainements Entrainement[]
 
@@ -142,6 +146,7 @@ model SituationMatch {
   temps         String?
   imageUrl      String?
   createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
   entrainements Entrainement[]
   tags          Tag[]          @relation("SituationMatchTags")
 

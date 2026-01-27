@@ -4,6 +4,9 @@ import { Observable, Subject } from 'rxjs';
 import { tap, map } from 'rxjs/operators';
 import { Exercice } from '../models/exercice.model';
 import { environment } from '../../../environments/environment';
+import { DataCacheService } from './data-cache.service';
+import { SyncService } from './sync.service';
+import { CacheOptions } from '../models/cache.model';
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +17,11 @@ export class ExerciceService {
   private exercicesUpdated = new Subject<void>();
   exercicesUpdated$ = this.exercicesUpdated.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private cache: DataCacheService,
+    private sync: SyncService
+  ) {}
 
   private normalizeExercice(ex: Exercice): Exercice {
     // Normalisation défensive: si imageUrl est absent/vidé dans certaines réponses (liste),
@@ -25,39 +32,107 @@ export class ExerciceService {
     return { ...ex, imageUrl };
   }
 
-  getExercices(): Observable<Exercice[]> {
-    return this.http.get<Exercice[]>(this.apiUrl).pipe(
-      map(list => list.map(ex => this.normalizeExercice(ex)))
+  getExercices(options: CacheOptions = {}): Observable<Exercice[]> {
+    return this.cache.get<Exercice[]>(
+      'exercices-list',
+      'exercices',
+      () => this.http.get<Exercice[]>(this.apiUrl).pipe(
+        map(list => list.map(ex => this.normalizeExercice(ex)))
+      ),
+      options
     );
   }
 
-  getExerciceById(id: string): Observable<Exercice> {
-    return this.http.get<Exercice>(`${this.apiUrl}/${id}`).pipe(
-      map(ex => this.normalizeExercice(ex))
+  getExerciceById(id: string, options: CacheOptions = {}): Observable<Exercice> {
+    return this.cache.get<Exercice>(
+      `exercice-${id}`,
+      'exercices',
+      () => this.http.get<Exercice>(`${this.apiUrl}/${id}`).pipe(
+        map(ex => this.normalizeExercice(ex))
+      ),
+      options
     );
   }
 
   createExercice(data: FormData | Partial<Exercice>): Observable<Exercice> {
     return this.http.post<Exercice>(this.apiUrl, data).pipe(
-      tap(() => this.exercicesUpdated.next())
+      tap((exercice) => {
+        // Invalider le cache
+        this.cache.invalidate('exercices-list', 'exercices');
+        
+        // Notifier les autres onglets
+        this.sync.notifyChange({
+          type: 'exercice',
+          action: 'create',
+          id: exercice.id,
+          workspaceId: this.cache.getCurrentWorkspaceId() || '',
+          timestamp: Date.now()
+        });
+        
+        this.exercicesUpdated.next();
+      })
     );
   }
 
   updateExercice(id: string, data: FormData | Partial<Exercice>): Observable<Exercice> {
     return this.http.put<Exercice>(`${this.apiUrl}/${id}`, data).pipe(
-      tap(() => this.exercicesUpdated.next())
+      tap(() => {
+        // Invalider le cache
+        this.cache.invalidate('exercices-list', 'exercices');
+        this.cache.invalidate(`exercice-${id}`, 'exercices');
+        
+        // Notifier les autres onglets
+        this.sync.notifyChange({
+          type: 'exercice',
+          action: 'update',
+          id,
+          workspaceId: this.cache.getCurrentWorkspaceId() || '',
+          timestamp: Date.now()
+        });
+        
+        this.exercicesUpdated.next();
+      })
     );
   }
 
   deleteExercice(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
-      tap(() => this.exercicesUpdated.next())
+      tap(() => {
+        // Invalider le cache
+        this.cache.invalidate('exercices-list', 'exercices');
+        this.cache.invalidate(`exercice-${id}`, 'exercices');
+        
+        // Notifier les autres onglets
+        this.sync.notifyChange({
+          type: 'exercice',
+          action: 'delete',
+          id,
+          workspaceId: this.cache.getCurrentWorkspaceId() || '',
+          timestamp: Date.now()
+        });
+        
+        this.exercicesUpdated.next();
+      })
     );
   }
 
   duplicateExercice(id: string): Observable<Exercice> {
     return this.http.post<Exercice>(`${this.apiUrl}/${id}/duplicate`, {}).pipe(
-      tap(() => this.exercicesUpdated.next())
+      tap((exercice) => {
+        // Invalider le cache
+        this.cache.invalidate('exercices-list', 'exercices');
+        
+        // Notifier les autres onglets
+        this.sync.notifyChange({
+          type: 'exercice',
+          action: 'create',
+          id: exercice.id,
+          workspaceId: this.cache.getCurrentWorkspaceId() || '',
+          timestamp: Date.now()
+        });
+        
+        this.exercicesUpdated.next();
+      })
     );
   }
 }
