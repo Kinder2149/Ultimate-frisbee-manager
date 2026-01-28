@@ -15,8 +15,12 @@ export class AuthInterceptor implements HttpInterceptor {
   constructor(private authService: AuthService) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    const isBackendApiRequest =
+      req.url.startsWith(environment.apiUrl) ||
+      req.url.startsWith('/api/');
+
     // Intercepter uniquement les requêtes vers notre API backend
-    if (req.url.startsWith(environment.apiUrl)) {
+    if (isBackendApiRequest) {
       // Récupérer le token Supabase de manière asynchrone
       return from(this.authService.getAccessToken()).pipe(
         switchMap(token => {

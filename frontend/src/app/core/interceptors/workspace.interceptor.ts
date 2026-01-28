@@ -10,7 +10,11 @@ export class WorkspaceInterceptor implements HttpInterceptor {
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     // N'ajouter le header que pour notre API backend
-    if (!req.url.startsWith(environment.apiUrl)) {
+    const isBackendApiRequest =
+      req.url.startsWith(environment.apiUrl) ||
+      req.url.startsWith('/api/');
+
+    if (!isBackendApiRequest) {
       return next.handle(req);
     }
 
