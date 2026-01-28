@@ -81,6 +81,7 @@ Thumbs.db
 # Backend specific
 backend/node_modules/
 backend/.env
+backend/.env.CLEAN
 backend/uploads/*
 !backend/uploads/.gitkeep
 backend/dist/

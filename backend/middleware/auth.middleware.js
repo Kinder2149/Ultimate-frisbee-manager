@@ -100,13 +100,22 @@ const authenticateToken = async (req, res, next) => {
     
     const jwksUrl = new URL(`https://${projectRef}.supabase.co/auth/v1/keys`);
     try {
+      // Décoder le header pour diagnostiquer
+      const tokenParts = token.split('.');
+      if (tokenParts.length === 3) {
+        const header = JSON.parse(Buffer.from(tokenParts[0], 'base64').toString());
+        console.log('[Auth] Token header:', { alg: header.alg, typ: header.typ, kid: header.kid });
+      }
+      
       const JWKS = jose.createRemoteJWKSet(jwksUrl);
       const { payload } = await jose.jwtVerify(token, JWKS, {
         algorithms: ['RS256']
       });
       decoded = payload;
+      console.log('[Auth] Token verified successfully for user:', decoded.sub);
     } catch (verifyError) {
       console.error('[Auth] Token verification failed:', verifyError.message);
+      console.error('[Auth] Error details:', verifyError.code || verifyError.name);
       return res.status(401).json({
         error: 'Token invalide ou expiré',
         code: 'INVALID_TOKEN'
