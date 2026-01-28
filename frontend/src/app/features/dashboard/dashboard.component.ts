@@ -580,8 +580,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   navigateToWorkspaceSelection(): void {
     // Invalider le cache avant de changer de workspace
     this.dataCache.clearAll();
-    // Naviguer vers la page de sélection
-    this.router.navigate(['/select-workspace']);
+    // Naviguer vers la page de sélection avec forceSelection pour afficher tous les workspaces
+    this.router.navigate(['/select-workspace'], {
+      queryParams: { forceSelection: 'true' }
+    });
   }
 
   ngOnDestroy() {

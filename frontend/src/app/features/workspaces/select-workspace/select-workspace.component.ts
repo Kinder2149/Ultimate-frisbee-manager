@@ -51,6 +51,12 @@ export class SelectWorkspaceComponent implements OnInit {
     this.loadWorkspaces();
   }
 
+  private shouldAutoSelect(): boolean {
+    // Ne pas auto-sélectionner si l'utilisateur vient du bouton "Changer d'espace"
+    const forceSelection = this.route.snapshot.queryParamMap.get('forceSelection');
+    return forceSelection !== 'true';
+  }
+
   loadWorkspaces(): void {
     this.loading = true;
     this.error = null;
@@ -64,6 +70,12 @@ export class SelectWorkspaceComponent implements OnInit {
       tap((workspaces) => {
         if (workspaces.length === 0) {
           this.error = 'Aucun espace de travail disponible. Contactez un administrateur.';
+          return;
+        }
+
+        // Si forceSelection=true, ne pas auto-sélectionner, laisser l'utilisateur choisir
+        if (!this.shouldAutoSelect()) {
+          console.log('[SelectWorkspace] Force selection mode, showing all workspaces');
           return;
         }
 
