@@ -35,6 +35,7 @@ const config = {
   },
   supabase: {
     projectRef: process.env.SUPABASE_PROJECT_REF,
+    jwtSecret: process.env.SUPABASE_JWT_SECRET,
   },
   rateLimit: {
     windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000),

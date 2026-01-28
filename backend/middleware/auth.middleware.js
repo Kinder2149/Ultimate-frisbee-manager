@@ -5,7 +5,7 @@
 const { prisma } = require('../services/prisma');
 const sleep = (ms) => new Promise(res => setTimeout(res, ms));
 
-// Support vérification JWT Supabase (RS256 via JWKS)
+// Support vérification JWT Supabase (HS256 avec secret OU RS256 via JWKS)
 let jose;
 try {
   jose = require('jose');
@@ -13,6 +13,8 @@ try {
   console.warn('[Auth] jose non installé - vérification Supabase désactivée');
   jose = null;
 }
+
+const config = require('../config');
 
 // Détection d'erreurs DB transitoires (connexion/timeout)
 function isTransientDbError(e) {
@@ -96,23 +98,88 @@ const authenticateToken = async (req, res, next) => {
     }
 
     const projectRef = getSupabaseProjectRef();
+    const jwtSecret = config.supabase.jwtSecret;
     let decoded;
     
-    const jwksUrl = new URL(`https://${projectRef}.supabase.co/auth/v1/keys`);
-    try {
-      // Décoder le header pour diagnostiquer
-      const tokenParts = token.split('.');
-      if (tokenParts.length === 3) {
+    // Décoder le header pour déterminer l'algorithme
+    const tokenParts = token.split('.');
+    let tokenAlgorithm = 'unknown';
+    if (tokenParts.length === 3) {
+      try {
         const header = JSON.parse(Buffer.from(tokenParts[0], 'base64').toString());
+        tokenAlgorithm = header.alg;
         console.log('[Auth] Token header:', { alg: header.alg, typ: header.typ, kid: header.kid });
+      } catch (e) {
+        console.error('[Auth] Erreur décodage header:', e.message);
       }
-      
-      const JWKS = jose.createRemoteJWKSet(jwksUrl);
-      const { payload } = await jose.jwtVerify(token, JWKS, {
-        algorithms: ['RS256']
-      });
-      decoded = payload;
-      console.log('[Auth] Token verified successfully for user:', decoded.sub);
+    }
+    
+    try {
+      // Vérifier selon l'algorithme détecté
+      if (tokenAlgorithm === 'HS256') {
+        // Token HS256 - utiliser le JWT secret
+        if (!jwtSecret) {
+          console.error('[Auth] SUPABASE_JWT_SECRET manquant pour vérifier token HS256');
+          return res.status(500).json({
+            error: 'Configuration serveur invalide (JWT secret manquant)',
+            code: 'SERVER_CONFIG_ERROR'
+          });
+        }
+        
+        console.log('[Auth] Vérification token HS256 avec JWT secret');
+        const secret = new TextEncoder().encode(jwtSecret);
+        const { payload } = await jose.jwtVerify(token, secret, {
+          algorithms: ['HS256']
+        });
+        decoded = payload;
+        console.log('[Auth] Token HS256 vérifié avec succès pour:', decoded.sub);
+        
+      } else if (tokenAlgorithm === 'RS256') {
+        // Token RS256 - utiliser JWKS
+        console.log('[Auth] Vérification token RS256 via JWKS');
+        const jwksUrl = new URL(`https://${projectRef}.supabase.co/auth/v1/keys`);
+        const JWKS = jose.createRemoteJWKSet(jwksUrl);
+        const { payload } = await jose.jwtVerify(token, JWKS, {
+          algorithms: ['RS256']
+        });
+        decoded = payload;
+        console.log('[Auth] Token RS256 vérifié avec succès pour:', decoded.sub);
+        
+      } else {
+        // Algorithme non supporté ou inconnu - essayer les deux méthodes
+        console.warn('[Auth] Algorithme inconnu, tentative HS256 puis RS256');
+        
+        // Essayer d'abord HS256 si on a le secret
+        if (jwtSecret) {
+          try {
+            const secret = new TextEncoder().encode(jwtSecret);
+            const { payload } = await jose.jwtVerify(token, secret, {
+              algorithms: ['HS256']
+            });
+            decoded = payload;
+            console.log('[Auth] Token vérifié avec HS256 (fallback):', decoded.sub);
+          } catch (hs256Error) {
+            // Si HS256 échoue, essayer RS256
+            console.log('[Auth] HS256 échoué, tentative RS256');
+            const jwksUrl = new URL(`https://${projectRef}.supabase.co/auth/v1/keys`);
+            const JWKS = jose.createRemoteJWKSet(jwksUrl);
+            const { payload } = await jose.jwtVerify(token, JWKS, {
+              algorithms: ['RS256']
+            });
+            decoded = payload;
+            console.log('[Auth] Token vérifié avec RS256 (fallback):', decoded.sub);
+          }
+        } else {
+          // Pas de secret, essayer uniquement RS256
+          const jwksUrl = new URL(`https://${projectRef}.supabase.co/auth/v1/keys`);
+          const JWKS = jose.createRemoteJWKSet(jwksUrl);
+          const { payload } = await jose.jwtVerify(token, JWKS, {
+            algorithms: ['RS256']
+          });
+          decoded = payload;
+          console.log('[Auth] Token vérifié avec RS256 (seule option):', decoded.sub);
+        }
+      }
     } catch (verifyError) {
       console.error('[Auth] Token verification failed:', verifyError.message);
       console.error('[Auth] Error details:', verifyError.code || verifyError.name);
