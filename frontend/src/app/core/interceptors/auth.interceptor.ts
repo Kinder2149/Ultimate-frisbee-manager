@@ -25,6 +25,7 @@ export class AuthInterceptor implements HttpInterceptor {
       return from(this.authService.getAccessToken()).pipe(
         switchMap(token => {
           if (token) {
+            console.log('[Interceptor] Token ajouté à la requête:', req.url);
             // Cloner la requête pour ajouter le header d'autorisation
             const clonedReq = req.clone({
               headers: req.headers.set('Authorization', `Bearer ${token}`)
@@ -32,6 +33,7 @@ export class AuthInterceptor implements HttpInterceptor {
             return next.handle(clonedReq);
           }
           // S'il n'y a pas de token, envoyer la requête originale
+          console.warn('[Interceptor] Pas de token disponible pour:', req.url);
           return next.handle(req);
         })
       );

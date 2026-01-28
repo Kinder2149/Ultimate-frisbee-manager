@@ -265,8 +265,42 @@ export class AuthService {
    * Récupérer le token d'accès Supabase
    */
   async getAccessToken(): Promise<string | null> {
-    const { data } = await this.supabaseService.supabase.auth.getSession();
-    return data.session?.access_token || null;
+    const { data, error } = await this.supabaseService.supabase.auth.getSession();
+    
+    if (error) {
+      console.error('[Frontend Auth] Erreur getSession:', error);
+      return null;
+    }
+    
+    if (!data.session) {
+      console.warn('[Frontend Auth] Pas de session active');
+      return null;
+    }
+    
+    const token = data.session.access_token;
+    
+    // LOG DIAGNOSTIC - Décoder le header du token
+    try {
+      const parts = token.split('.');
+      if (parts.length === 3) {
+        const header = JSON.parse(atob(parts[0]));
+        console.log('[Frontend Auth] Token header:', { 
+          alg: header.alg, 
+          typ: header.typ,
+          kid: header.kid 
+        });
+        
+        if (header.alg !== 'RS256') {
+          console.error('[Frontend Auth] ⚠️ PROBLÈME: Token n\'est pas RS256!', header);
+        } else {
+          console.log('[Frontend Auth] ✅ Token RS256 correct');
+        }
+      }
+    } catch (e) {
+      console.error('[Frontend Auth] Erreur décodage token:', e);
+    }
+    
+    return token;
   }
 
 
