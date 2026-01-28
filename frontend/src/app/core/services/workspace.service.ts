@@ -69,12 +69,7 @@ export class WorkspaceService {
 
     if (workspace) {
       window.localStorage.setItem(this.STORAGE_KEY, JSON.stringify(workspace));
-      
-      // Mini-reload transparent si pas de skipReload
-      if (!skipReload) {
-        console.log('[Workspace] Performing mini-reload for workspace:', workspace.name);
-        window.location.reload();
-      }
+      console.log('[Workspace] Workspace changed to:', workspace.name);
     } else {
       window.localStorage.removeItem(this.STORAGE_KEY);
     }

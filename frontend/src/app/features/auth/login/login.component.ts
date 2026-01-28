@@ -43,7 +43,6 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     // Si l'utilisateur est déjà connecté, le rediriger immédiatement
     if (this.authService.isAuthenticated()) {
-      console.log('[Login] User already authenticated, redirecting to:', this.returnUrl);
       this.router.navigate([this.returnUrl]);
       return;
     }
@@ -56,7 +55,6 @@ export class LoginComponent implements OnInit, OnDestroy {
         filter(isAuth => isAuth === true)
       )
       .subscribe(() => {
-        console.log('[Login] Authentication state changed, redirecting to:', this.returnUrl);
         this.router.navigate([this.returnUrl]);
       });
   }
@@ -89,16 +87,12 @@ export class LoginComponent implements OnInit, OnDestroy {
       })
     ).subscribe({
       next: () => {
-        console.log('[Login] Connexion réussie, redirection vers:', this.returnUrl);
         this.snackBar.open('Connexion réussie !', 'Fermer', {
           duration: 2000,
           panelClass: ['success-snackbar']
         });
 
-        // La redirection sera gérée automatiquement par l'observable isAuthenticated$
-        setTimeout(() => {
-          this.router.navigate([this.returnUrl]);
-        }, 100);
+        // La redirection sera gérée automatiquement par l'observable isAuthenticated$ (ligne 53-61)
       },
       error: (error) => {
         console.error('[Login] Erreur de connexion:', error);

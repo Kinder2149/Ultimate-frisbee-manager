@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, from, throwError } from 'rxjs';
-import { map, catchError, tap, switchMap } from 'rxjs/operators';
+import { BehaviorSubject, Observable, from, throwError, of } from 'rxjs';
+import { map, catchError, tap, switchMap, retry, delay } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { User, LoginCredentials } from '../models/user.model';
 import { environment } from '../../../environments/environment';
@@ -50,13 +50,16 @@ export class AuthService {
       const cachedUser = await this.loadCachedProfile();
       if (cachedUser) {
         this.currentUserSubject.next(cachedUser);
-        this.ensureWorkspaceSelected();
       }
       
-      // Synchroniser avec le backend
-      this.syncUserProfile().subscribe({
-        next: () => this.ensureWorkspaceSelected(),
-        error: (err) => console.error('[Auth] Erreur sync profil:', err)
+      // Synchroniser avec le backend ET s'assurer qu'un workspace est sélectionné
+      this.syncUserProfile().pipe(
+        switchMap(() => this.ensureWorkspaceSelected())
+      ).subscribe({
+        next: () => {
+          console.log('[Auth] Init complète : profil + workspace prêts');
+        },
+        error: (err) => console.error('[Auth] Erreur init auth:', err)
       });
     } else {
       console.log('[Auth] Aucune session active');
@@ -79,33 +82,25 @@ export class AuthService {
         
         // Si l'utilisateur est créé, créer son profil backend
         if (data.user) {
-          return this.createBackendProfile(data.user.id, email);
+          return this.http.post<{ user: User }>(`${this.apiUrl}/register`, {
+            supabaseUserId: data.user.id,
+            email
+          }).pipe(
+            tap(response => {
+              this.currentUserSubject.next(response.user);
+              this.cacheUserProfile(response.user);
+              console.log('[Auth] Profil backend créé:', response.user.email);
+            }),
+            map(() => void 0)
+          );
         }
         
-        return from(Promise.resolve());
+        return of(void 0);
       }),
-      map(() => void 0),
       catchError(error => {
         console.error('[Auth] Erreur inscription:', error);
         return throwError(() => error);
       })
-    );
-  }
-
-  /**
-   * Créer le profil utilisateur dans le backend
-   */
-  private createBackendProfile(supabaseUserId: string, email: string): Observable<void> {
-    return this.http.post<{ user: User }>(`${this.apiUrl}/register`, {
-      supabaseUserId,
-      email
-    }).pipe(
-      tap(response => {
-        console.log('[Auth] Profil backend créé:', response.user.email);
-        this.currentUserSubject.next(response.user);
-        this.cacheUserProfile(response.user);
-      }),
-      map(() => void 0)
     );
   }
 
@@ -155,16 +150,21 @@ export class AuthService {
     console.log('[Auth] Connexion réussie:', session.user.email);
     this.isAuthenticatedSubject.next(true);
     
-    // Synchroniser le profil avec le backend
-    this.syncUserProfile().subscribe({
-      next: () => this.ensureWorkspaceSelected(),
+    // Chaîner syncUserProfile → ensureWorkspaceSelected
+    this.syncUserProfile().pipe(
+      switchMap(() => this.ensureWorkspaceSelected())
+    ).subscribe({
+      next: () => {
+        console.log('[Auth] Profil et workspace prêts');
+      },
       error: (err) => {
         console.error('[Auth] Erreur sync profil après connexion:', err);
-        // Si l'utilisateur n'existe pas en backend, le créer
+        // Si l'utilisateur n'existe pas en backend, rediriger vers signup
         if (err.status === 403) {
-          this.createBackendProfile(session.user.id, session.user.email!).subscribe({
-            next: () => this.ensureWorkspaceSelected(),
-            error: (createErr) => console.error('[Auth] Erreur création profil:', createErr)
+          console.error('[Auth] Profil utilisateur non trouvé en base');
+          this.supabaseService.supabase.auth.signOut();
+          this.router.navigate(['/signup'], {
+            queryParams: { reason: 'profile-not-found' }
           });
         }
       }
@@ -297,6 +297,13 @@ export class AuthService {
    */
   private syncUserProfile(): Observable<User> {
     return this.http.get<{ user: User }>(`${this.apiUrl}/profile`).pipe(
+      retry({
+        count: 2,
+        delay: (error, retryCount) => {
+          console.log(`[Auth] Retry ${retryCount}/2 pour syncUserProfile`);
+          return of(error).pipe(delay(1000));
+        }
+      }),
       tap(response => {
         this.currentUserSubject.next(response.user);
         this.cacheUserProfile(response.user);
@@ -306,18 +313,15 @@ export class AuthService {
       catchError(error => {
         console.error('[Auth] Erreur sync profil:', error);
         
-        // Si l'utilisateur n'existe pas en base (403), le créer via /register
+        // Si l'utilisateur n'existe pas en base (403), rediriger vers signup
         if (error.status === 403) {
-          console.log('[Auth] Utilisateur non trouvé en base, création automatique...');
-          return this.provisionUser().pipe(
-            switchMap(() => this.http.get<{ user: User }>(`${this.apiUrl}/profile`)),
-            tap(response => {
-              this.currentUserSubject.next(response.user);
-              this.cacheUserProfile(response.user);
-              console.log('[Auth] Profil créé et synchronisé:', response.user.email);
-            }),
-            map(response => response.user)
-          );
+          console.error('[Auth] Profil utilisateur non trouvé en base');
+          // Déconnecter de Supabase
+          this.supabaseService.supabase.auth.signOut();
+          // Rediriger vers signup avec message
+          this.router.navigate(['/signup'], {
+            queryParams: { reason: 'profile-not-found' }
+          });
         }
         
         return throwError(() => error);
@@ -325,32 +329,6 @@ export class AuthService {
     );
   }
 
-  /**
-   * Créer l'utilisateur en base locale via /register
-   */
-  private provisionUser(): Observable<any> {
-    return from(this.supabaseService.supabase.auth.getUser()).pipe(
-      switchMap(({ data }) => {
-        if (!data.user) {
-          return throwError(() => new Error('Aucun utilisateur Supabase connecté'));
-        }
-        
-        const payload = {
-          supabaseUserId: data.user.id,
-          email: data.user.email,
-          nom: data.user.user_metadata?.['nom'] || '',
-          prenom: data.user.user_metadata?.['prenom'] || data.user.email?.split('@')[0] || ''
-        };
-        
-        console.log('[Auth] Appel /register avec:', payload);
-        return this.http.post(`${this.apiUrl}/register`, payload);
-      }),
-      catchError(error => {
-        console.error('[Auth] Erreur provisioning:', error);
-        return throwError(() => error);
-      })
-    );
-  }
 
   /**
    * Mettre en cache le profil utilisateur
@@ -388,16 +366,25 @@ export class AuthService {
 
   /**
    * S'assurer qu'un workspace est sélectionné
+   * Retourne un Observable qui se complète une fois le workspace prêt
    */
-  private ensureWorkspaceSelected(): void {
+  private ensureWorkspaceSelected(): Observable<void> {
     const currentWorkspace = this.workspaceService.getCurrentWorkspace();
     if (currentWorkspace) {
       console.log('[Auth] Workspace déjà sélectionné:', currentWorkspace.name);
-      return;
+      return of(void 0);
     }
 
-    this.http.get<any[]>(`${environment.apiUrl}/workspaces/me`).subscribe({
-      next: (workspaces) => {
+    console.log('[Auth] Chargement des workspaces disponibles...');
+    return this.http.get<any[]>(`${environment.apiUrl}/workspaces/me`).pipe(
+      retry({
+        count: 2,
+        delay: (error, retryCount) => {
+          console.log(`[Auth] Retry ${retryCount}/2 pour workspaces/me`);
+          return of(error).pipe(delay(1000));
+        }
+      }),
+      tap((workspaces) => {
         if (workspaces.length === 0) {
           console.warn('[Auth] Aucun workspace disponible');
           return;
@@ -407,10 +394,16 @@ export class AuthService {
         const selectedWorkspace = baseWorkspace || workspaces[0];
         
         console.log('[Auth] Sélection auto workspace:', selectedWorkspace.name);
-        this.workspaceService.setCurrentWorkspace(selectedWorkspace);
-      },
-      error: (err) => console.error('[Auth] Erreur chargement workspaces:', err)
-    });
+        // skipReload=true pour éviter le rechargement page
+        this.workspaceService.setCurrentWorkspace(selectedWorkspace, true);
+      }),
+      map(() => void 0),
+      catchError((err) => {
+        console.error('[Auth] Erreur chargement workspaces:', err);
+        // Ne pas bloquer l'authentification si les workspaces ne chargent pas
+        return of(void 0);
+      })
+    );
   }
 }
 

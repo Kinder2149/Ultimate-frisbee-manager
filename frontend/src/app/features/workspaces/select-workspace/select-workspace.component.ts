@@ -44,6 +44,8 @@ export class SelectWorkspaceComponent implements OnInit {
     if (reason === 'workspace-unavailable') {
       this.error = 'Votre espace de travail n\'est plus accessible (supprimé ou droits retirés). ' +
         'Veuillez sélectionner un autre espace.';
+    } else if (reason === 'workspace-invalid') {
+      this.error = 'Votre espace de travail n\'existe plus. Veuillez en sélectionner un autre.';
     }
 
     this.loadWorkspaces();

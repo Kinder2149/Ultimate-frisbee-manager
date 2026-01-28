@@ -515,13 +515,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
       .pipe(
         tap(ws => {
           this.currentWorkspace = ws;
-          console.log('[Dashboard] Workspace changed:', ws?.id);
         }),
         filter((ws) => !!ws),
         switchMap(() => {
-          // Invalider le cache avant de recharger
           this.dataCache.clear('dashboard-stats');
-          console.log('[Dashboard] Loading stats for workspace:', this.currentWorkspace?.id);
           return this.loadDashboardStats$();
         })
       )
@@ -531,14 +528,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private loadDashboardStats$(): Observable<DashboardStats | null> {
     this.isLoading = true;
     
-    // Utiliser le cache avec TTL de 2 minutes
+    // Utiliser le cache avec TTL centralisé (5min configuré dans DataCacheService)
     return this.dataCache.get<DashboardStats>(
       'dashboard-stats',
-      'dashboard',
+      'dashboard-stats',
       () => this.dashboardService.getStats().pipe(
         retry({ count: 1, delay: () => timer(700) })
-      ),
-      { ttl: 2 * 60 * 1000 } // 2 minutes
+      )
     ).pipe(
       tap((stats: DashboardStats) => {
         this.exercicesCount = stats.exercicesCount;

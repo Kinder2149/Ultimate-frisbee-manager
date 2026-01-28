@@ -18,15 +18,26 @@ export class DataCacheService {
   private memoryCache = new Map<string, CacheEntry<unknown>>();
   private defaultTTL = 5 * 60 * 1000; // 5 minutes par défaut
   
-  // Configuration TTL par type de données
+  // Configuration TTL par type de données (centralisée)
   private readonly TTL_CONFIG = {
-    auth: 24 * 60 * 60 * 1000,      // 24h
-    workspaces: 60 * 60 * 1000,     // 1h
-    exercices: 30 * 60 * 1000,      // 30min
-    entrainements: 30 * 60 * 1000,  // 30min
-    tags: 60 * 60 * 1000,           // 1h
-    echauffements: 30 * 60 * 1000,  // 30min
-    situations: 30 * 60 * 1000      // 30min
+    // Authentification et workspaces
+    auth: 24 * 60 * 60 * 1000,           // 24h (rarement modifié)
+    workspaces: 60 * 60 * 1000,          // 1h (peut changer si admin modifie)
+    
+    // Données métier (réduites pour plus de fraîcheur)
+    exercices: 15 * 60 * 1000,           // 15min (au lieu de 30min)
+    entrainements: 15 * 60 * 1000,       // 15min
+    echauffements: 15 * 60 * 1000,       // 15min
+    situations: 15 * 60 * 1000,          // 15min
+    
+    // Métadonnées
+    tags: 60 * 60 * 1000,                // 1h (rarement modifiés)
+    
+    // Dashboard et stats
+    'dashboard-stats': 5 * 60 * 1000,    // 5min (déplacé depuis dashboard.component.ts)
+    
+    // Par défaut pour types non configurés
+    default: 5 * 60 * 1000               // 5min
   };
   
   // Statistiques de cache
@@ -45,9 +56,19 @@ export class DataCacheService {
       console.error('[DataCache] Failed to initialize IndexedDB:', err);
     });
     
-    // Nettoyer le cache mémoire quand le workspace change
-    this.workspaceService.currentWorkspace$.subscribe(() => {
+    // Nettoyer TOUT le cache (mémoire + IndexedDB) quand le workspace change
+    this.workspaceService.workspaceChanging$.subscribe(({ from, to }) => {
+      console.log('[DataCache] Workspace changing from', from?.name, 'to', to.name);
+      
+      // Nettoyer le cache mémoire immédiatement
       this.clearMemoryCache();
+      
+      // Nettoyer IndexedDB de l'ancien workspace
+      if (from?.id) {
+        this.indexedDb.clearWorkspace(from.id).catch(err => {
+          console.error('[DataCache] Failed to clear IndexedDB for workspace:', err);
+        });
+      }
     });
 
     // Nettoyer tout lors de la déconnexion
@@ -188,7 +209,12 @@ export class DataCacheService {
    * Obtient le TTL configuré pour un store
    */
   private getTTL(store: string): number {
-    return (this.TTL_CONFIG as any)[store] || this.defaultTTL;
+    const ttl = (this.TTL_CONFIG as any)[store];
+    if (ttl !== undefined) {
+      return ttl;
+    }
+    console.warn(`[DataCache] No TTL configured for store "${store}", using default`);
+    return this.TTL_CONFIG.default;
   }
   
   /**
