@@ -65,4 +65,19 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET /api/health/auth
+// Public: diagnostic non sensible pour vérifier si le client envoie bien Authorization: Bearer ...
+router.get('/auth', (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const hasAuthorizationHeader = typeof authHeader === 'string' && authHeader.trim().length > 0;
+  const isBearer = hasAuthorizationHeader && authHeader.toLowerCase().startsWith('bearer ');
+  const tokenLength = isBearer ? authHeader.slice('bearer '.length).trim().length : 0;
+
+  return res.status(200).json({
+    hasAuthorizationHeader,
+    isBearer,
+    tokenLength
+  });
+});
+
 module.exports = router;
