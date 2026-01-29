@@ -3,7 +3,8 @@ import { CanActivate, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
-import { WorkspaceService } from '../services/workspace.service';
+import { WorkspaceService, WorkspaceSummary } from '../services/workspace.service';
+import { DataCacheService } from '../services/data-cache.service';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -11,7 +12,8 @@ export class WorkspaceSelectedGuard implements CanActivate {
   constructor(
     private workspaceService: WorkspaceService,
     private router: Router,
-    private http: HttpClient
+    private http: HttpClient,
+    private cache: DataCacheService
   ) {}
 
   canActivate(
@@ -29,9 +31,16 @@ export class WorkspaceSelectedGuard implements CanActivate {
       return of(false);
     }
 
-    // Vérifier que le workspace existe toujours côté backend
+    // Vérifier que le workspace existe toujours côté backend (avec cache)
     console.log('[WorkspaceGuard] Validating workspace:', workspaceId);
-    return this.http.get<any[]>(`${environment.apiUrl}/workspaces/me`).pipe(
+    
+    // Utiliser le cache avec TTL de 1h pour éviter les appels répétés
+    return this.cache.get<WorkspaceSummary[]>(
+      'workspaces-list',
+      'workspaces',
+      () => this.http.get<WorkspaceSummary[]>(`${environment.apiUrl}/workspaces/me`),
+      { ttl: 60 * 60 * 1000 } // 1h
+    ).pipe(
       map(workspaces => {
         const isValid = workspaces.some(w => w.id === workspaceId);
         
@@ -47,7 +56,7 @@ export class WorkspaceSelectedGuard implements CanActivate {
           return false;
         }
         
-        console.log('[WorkspaceGuard] Workspace valid');
+        console.log('[WorkspaceGuard] Workspace valid (from cache)');
         return true;
       }),
       catchError((error) => {

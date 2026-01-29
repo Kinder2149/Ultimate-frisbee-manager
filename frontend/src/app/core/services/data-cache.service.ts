@@ -24,17 +24,17 @@ export class DataCacheService {
     auth: 24 * 60 * 60 * 1000,           // 24h (rarement modifié)
     workspaces: 60 * 60 * 1000,          // 1h (peut changer si admin modifie)
     
-    // Données métier (réduites pour plus de fraîcheur)
-    exercices: 15 * 60 * 1000,           // 15min (au lieu de 30min)
-    entrainements: 15 * 60 * 1000,       // 15min
-    echauffements: 15 * 60 * 1000,       // 15min
-    situations: 15 * 60 * 1000,          // 15min
+    // Données métier (réduites pour plus de fraîcheur avec stale-while-revalidate)
+    exercices: 5 * 60 * 1000,            // 5min (au lieu de 15min)
+    entrainements: 5 * 60 * 1000,        // 5min (au lieu de 15min)
+    echauffements: 5 * 60 * 1000,        // 5min (au lieu de 15min)
+    situations: 5 * 60 * 1000,           // 5min (au lieu de 15min)
     
     // Métadonnées
-    tags: 60 * 60 * 1000,                // 1h (rarement modifiés)
+    tags: 30 * 60 * 1000,                // 30min (au lieu de 1h)
     
     // Dashboard et stats
-    'dashboard-stats': 5 * 60 * 1000,    // 5min (déplacé depuis dashboard.component.ts)
+    'dashboard-stats': 2 * 60 * 1000,    // 2min (au lieu de 5min)
     
     // Par défaut pour types non configurés
     default: 5 * 60 * 1000               // 5min
@@ -56,19 +56,22 @@ export class DataCacheService {
       console.error('[DataCache] Failed to initialize IndexedDB:', err);
     });
     
-    // Nettoyer TOUT le cache (mémoire + IndexedDB) quand le workspace change
+    // ✅ Vider uniquement le cache MÉMOIRE au changement de workspace
+    // Le cache IndexedDB est CONSERVÉ pour permettre un retour rapide
     this.workspaceService.workspaceChanging$.subscribe(({ from, to }) => {
       console.log('[DataCache] Workspace changing from', from?.name, 'to', to.name);
       
-      // Nettoyer le cache mémoire immédiatement
+      // Nettoyer le cache mémoire immédiatement (pour libérer la RAM)
       this.clearMemoryCache();
+      console.log('[DataCache] Memory cache cleared, IndexedDB cache preserved for multi-workspace support');
       
-      // Nettoyer IndexedDB de l'ancien workspace
-      if (from?.id) {
-        this.indexedDb.clearWorkspace(from.id).catch(err => {
-          console.error('[DataCache] Failed to clear IndexedDB for workspace:', err);
-        });
-      }
+      // ❌ NE PLUS vider IndexedDB pour conserver le cache multi-workspace
+      // Le nettoyage LRU se fera automatiquement si nécessaire
+      // if (from?.id) {
+      //   this.indexedDb.clearWorkspace(from.id).catch(err => {
+      //     console.error('[DataCache] Failed to clear IndexedDB for workspace:', err);
+      //   });
+      // }
     });
 
     // Nettoyer tout lors de la déconnexion
@@ -100,7 +103,7 @@ export class DataCacheService {
       ttl = this.getTTL(store), 
       forceRefresh = false, 
       skipCache = false,
-      staleWhileRevalidate = false 
+      staleWhileRevalidate = true  // ✅ Activé par défaut pour affichage instantané
     } = options;
     
     // Bypass complet du cache si demandé

@@ -4,8 +4,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
+import { MatDialog } from '@angular/material/dialog';
 import { MaterialModule } from '../../../core/material/material.module';
 import { WorkspaceService, WorkspaceSummary } from '../../../core/services/workspace.service';
+import { WorkspacePreloaderService } from '../../../core/services/workspace-preloader.service';
+import { PreloadDialogComponent } from '../../../shared/components/preload-dialog/preload-dialog.component';
 import { environment } from '../../../../environments/environment';
 
 interface WorkspaceApiDto {
@@ -32,7 +35,9 @@ export class SelectWorkspaceComponent implements OnInit {
     private http: HttpClient,
     private router: Router,
     private route: ActivatedRoute,
-    private workspaceService: WorkspaceService
+    private workspaceService: WorkspaceService,
+    private preloader: WorkspacePreloaderService,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -109,9 +114,50 @@ export class SelectWorkspaceComponent implements OnInit {
     );
   }
 
-  selectWorkspace(ws: WorkspaceSummary): void {
-    this.workspaceService.setCurrentWorkspace(ws);
-    const target = this.returnUrl || '/';
-    this.router.navigateByUrl(target);
+  async selectWorkspace(ws: WorkspaceSummary): Promise<void> {
+    // 1. Vérifier si le workspace est déjà en cache
+    const completeness = await this.preloader.getCacheCompleteness(ws.id);
+    
+    console.log(`[SelectWorkspace] Cache completeness for ${ws.name}: ${completeness}%`);
+    
+    if (completeness > 80) {
+      // Cache suffisant, navigation immédiate
+      console.log('[SelectWorkspace] Cache sufficient, navigating immediately');
+      await this.workspaceService.setCurrentWorkspace(ws);
+      const target = this.returnUrl || '/';
+      this.router.navigateByUrl(target);
+      
+      // Rafraîchir en arrière-plan pour garantir la fraîcheur des données
+      this.preloader.smartPreload(ws.id).subscribe({
+        next: () => console.log('[SelectWorkspace] Background refresh completed'),
+        error: (err) => console.error('[SelectWorkspace] Background refresh failed:', err)
+      });
+    } else {
+      // Cache insuffisant, afficher le dialog de préchargement
+      console.log('[SelectWorkspace] Cache insufficient, showing preload dialog');
+      const dialogRef = this.dialog.open(PreloadDialogComponent, {
+        data: { 
+          workspace: ws,
+          allowSkip: true
+        },
+        disableClose: true,
+        width: '500px'
+      });
+      
+      dialogRef.afterClosed().subscribe(async (result) => {
+        if (result?.completed || result?.skipped) {
+          // Préchargement terminé ou utilisateur a choisi de continuer
+          await this.workspaceService.setCurrentWorkspace(ws);
+          const target = this.returnUrl || '/';
+          this.router.navigateByUrl(target);
+        } else if (result?.error) {
+          // Erreur lors du préchargement, mais on laisse l'utilisateur continuer
+          console.error('[SelectWorkspace] Preload error, continuing anyway:', result.error);
+          await this.workspaceService.setCurrentWorkspace(ws);
+          const target = this.returnUrl || '/';
+          this.router.navigateByUrl(target);
+        }
+      });
+    }
   }
 }

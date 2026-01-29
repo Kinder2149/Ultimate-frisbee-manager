@@ -652,3 +652,80 @@ exports.ownerUpdateWorkspaceSettings = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * Précharge toutes les données d'un workspace (endpoint optimisé)
+ * GET /api/workspaces/:id/preload
+ * Nécessite: authenticateToken
+ */
+exports.preloadWorkspace = async (req, res, next) => {
+  try {
+    const { id: workspaceId } = req.params;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Utilisateur non authentifié', code: 'NO_USER' });
+    }
+
+    // Vérifier que l'utilisateur a accès à ce workspace
+    const workspaceUser = await prisma.workspaceUser.findFirst({
+      where: {
+        workspaceId,
+        userId,
+      },
+    });
+
+    if (!workspaceUser) {
+      return res.status(403).json({ 
+        error: 'Accès non autorisé à ce workspace', 
+        code: 'WORKSPACE_FORBIDDEN' 
+      });
+    }
+
+    // Charger toutes les données en parallèle
+    const [exercices, entrainements, echauffements, situations, tags] = await Promise.all([
+      prisma.exercice.findMany({ 
+        where: { workspaceId },
+        include: { tags: true },
+        orderBy: { createdAt: 'desc' }
+      }),
+      prisma.entrainement.findMany({ 
+        where: { workspaceId },
+        include: { tags: true },
+        orderBy: { createdAt: 'desc' }
+      }),
+      prisma.echauffement.findMany({ 
+        where: { workspaceId },
+        include: { blocs: true },
+        orderBy: { createdAt: 'desc' }
+      }),
+      prisma.situationMatch.findMany({ 
+        where: { workspaceId },
+        include: { tags: true },
+        orderBy: { createdAt: 'desc' }
+      }),
+      prisma.tag.findMany({ 
+        where: { workspaceId },
+        orderBy: { label: 'asc' }
+      })
+    ]);
+
+    res.json({
+      exercices,
+      entrainements,
+      echauffements,
+      situations,
+      tags,
+      stats: {
+        totalExercices: exercices.length,
+        totalEntrainements: entrainements.length,
+        totalEchauffements: echauffements.length,
+        totalSituations: situations.length,
+        totalTags: tags.length
+      }
+    });
+  } catch (error) {
+    console.error('[Workspace] Error preloading workspace:', error);
+    next(error);
+  }
+};

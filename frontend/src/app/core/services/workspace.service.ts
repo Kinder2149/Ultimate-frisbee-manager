@@ -57,10 +57,11 @@ export class WorkspaceService {
       this.workspaceChangingSubject.next({ from: previous, to: workspace });
     }
 
-    // Nettoyer le cache du workspace précédent
+    // ✅ NE PLUS vider le cache du workspace précédent
+    // Le cache sera conservé pour permettre un retour rapide
+    // Le nettoyage LRU se fera automatiquement dans IndexedDbService si nécessaire
     if (previous?.id) {
-      console.log('[Workspace] Clearing cache for previous workspace:', previous.name);
-      await this.indexedDb.clearWorkspace(previous.id);
+      console.log('[Workspace] Keeping cache for previous workspace:', previous.name, '(LRU cleanup will handle old data)');
     }
 
     // Mettre à jour le workspace actuel

@@ -1,8 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { SituationMatch } from '../models/situationmatch.model';
 import { environment } from '../../../environments/environment';
+import { DataCacheService } from './data-cache.service';
+import { SyncService } from './sync.service';
+import { CacheOptions } from '../models/cache.model';
 
 @Injectable({
   providedIn: 'root'
@@ -10,29 +14,96 @@ import { environment } from '../../../environments/environment';
 export class SituationMatchService {
   private readonly apiUrl = `${environment.apiUrl}/matches`;
 
-  constructor(private http: HttpClient) {}
+  private situationsUpdated = new Subject<void>();
+  situationsUpdated$ = this.situationsUpdated.asObservable();
 
-  getSituationsMatchs(): Observable<SituationMatch[]> {
-    return this.http.get<SituationMatch[]>(this.apiUrl);
+  constructor(
+    private http: HttpClient,
+    private cache: DataCacheService,
+    private sync: SyncService
+  ) {}
+
+  getSituationsMatchs(options: CacheOptions = {}): Observable<SituationMatch[]> {
+    return this.cache.get<SituationMatch[]>(
+      'situations-list',
+      'situations',
+      () => this.http.get<SituationMatch[]>(this.apiUrl),
+      options
+    );
   }
 
-  getSituationMatchById(id: string): Observable<SituationMatch> {
-    return this.http.get<SituationMatch>(`${this.apiUrl}/${id}`);
+  getSituationMatchById(id: string, options: CacheOptions = {}): Observable<SituationMatch> {
+    return this.cache.get<SituationMatch>(
+      `situation-${id}`,
+      'situations',
+      () => this.http.get<SituationMatch>(`${this.apiUrl}/${id}`),
+      options
+    );
   }
 
   createSituationMatch(data: FormData | Partial<SituationMatch>): Observable<SituationMatch> {
-    return this.http.post<SituationMatch>(this.apiUrl, data);
+    return this.http.post<SituationMatch>(this.apiUrl, data).pipe(
+      tap((situation) => {
+        this.cache.invalidate('situations-list', 'situations');
+        this.sync.notifyChange({
+          type: 'situation',
+          action: 'create',
+          id: situation.id,
+          workspaceId: this.cache.getCurrentWorkspaceId() || '',
+          timestamp: Date.now()
+        });
+        this.situationsUpdated.next();
+      })
+    );
   }
 
   updateSituationMatch(id: string, data: FormData | Partial<SituationMatch>): Observable<SituationMatch> {
-    return this.http.put<SituationMatch>(`${this.apiUrl}/${id}`, data);
+    return this.http.put<SituationMatch>(`${this.apiUrl}/${id}`, data).pipe(
+      tap(() => {
+        this.cache.invalidate('situations-list', 'situations');
+        this.cache.invalidate(`situation-${id}`, 'situations');
+        this.sync.notifyChange({
+          type: 'situation',
+          action: 'update',
+          id,
+          workspaceId: this.cache.getCurrentWorkspaceId() || '',
+          timestamp: Date.now()
+        });
+        this.situationsUpdated.next();
+      })
+    );
   }
 
   deleteSituationMatch(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
+      tap(() => {
+        this.cache.invalidate('situations-list', 'situations');
+        this.cache.invalidate(`situation-${id}`, 'situations');
+        this.sync.notifyChange({
+          type: 'situation',
+          action: 'delete',
+          id,
+          workspaceId: this.cache.getCurrentWorkspaceId() || '',
+          timestamp: Date.now()
+        });
+        this.situationsUpdated.next();
+      })
+    );
   }
 
   duplicateSituationMatch(id: string): Observable<SituationMatch> {
-    return this.http.post<SituationMatch>(`${this.apiUrl}/${id}/duplicate`, {});
+    return this.http.post<SituationMatch>(`${this.apiUrl}/${id}/duplicate`, {}).pipe(
+      tap((situation) => {
+        this.cache.invalidate('situations-list', 'situations');
+        this.sync.notifyChange({
+          type: 'situation',
+          action: 'create',
+          id: situation.id,
+          workspaceId: this.cache.getCurrentWorkspaceId() || '',
+          timestamp: Date.now()
+        });
+        this.situationsUpdated.next();
+      })
+    );
   }
 }

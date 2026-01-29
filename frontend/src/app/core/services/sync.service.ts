@@ -19,6 +19,12 @@ export class SyncService implements OnDestroy {
   private syncSubscription: Subscription | null = null;
   private lastVersions: SyncVersion | null = null;
   private isOnline = true;
+  private isUserActive = true;
+  private lastActivityTime = Date.now();
+  
+  // Configuration du polling adaptatif
+  private readonly ACTIVE_INTERVAL = 10 * 1000;    // 10s si utilisateur actif
+  private readonly INACTIVE_INTERVAL = 60 * 1000;  // 1min si inactif
   
   // Événements de synchronisation
   private dataChanged$ = new Subject<SyncMessage>();
@@ -31,6 +37,7 @@ export class SyncService implements OnDestroy {
   ) {
     this.initBroadcastChannel();
     this.setupOnlineDetection();
+    this.setupActivityDetection();
   }
 
   ngOnDestroy(): void {
@@ -153,20 +160,37 @@ export class SyncService implements OnDestroy {
   }
 
   /**
-   * Démarre la synchronisation périodique
+   * Démarre la synchronisation périodique avec polling adaptatif
    */
-  startPeriodicSync(intervalMs: number = 30000): void {
+  startPeriodicSync(intervalMs: number = 10000): void {
     if (this.syncSubscription) {
       console.warn('[Sync] Periodic sync already running');
       return;
     }
 
-    console.log(`[Sync] Starting periodic sync (interval: ${intervalMs}ms)`);
+    console.log(`[Sync] Starting adaptive periodic sync (active: ${this.ACTIVE_INTERVAL}ms, inactive: ${this.INACTIVE_INTERVAL}ms)`);
 
-    this.syncSubscription = interval(intervalMs)
+    // Polling adaptatif basé sur l'activité utilisateur
+    this.syncSubscription = interval(1000)
       .pipe(
         filter(() => this.isOnline),
         filter(() => !!this.workspaceService.getCurrentWorkspaceId()),
+        // Vérifier si on doit faire un sync selon l'activité
+        filter(() => {
+          const now = Date.now();
+          const timeSinceLastActivity = now - this.lastActivityTime;
+          this.isUserActive = timeSinceLastActivity < 60000; // Actif si activité < 1min
+          
+          const interval = this.isUserActive ? this.ACTIVE_INTERVAL : this.INACTIVE_INTERVAL;
+          const lastCheck = (this as any).lastSyncCheck || 0;
+          const shouldSync = (now - lastCheck) >= interval;
+          
+          if (shouldSync) {
+            (this as any).lastSyncCheck = now;
+          }
+          
+          return shouldSync;
+        }),
         switchMap(() => this.checkForUpdates()),
         catchError((error) => {
           console.error('[Sync] Error during periodic sync:', error);
@@ -292,6 +316,25 @@ export class SyncService implements OnDestroy {
   resetVersions(): void {
     this.lastVersions = null;
     console.log('[Sync] Versions reset');
+  }
+
+  /**
+   * Configure la détection d'activité utilisateur
+   */
+  private setupActivityDetection(): void {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
+    events.forEach(event => {
+      window.addEventListener(event, () => {
+        this.lastActivityTime = Date.now();
+        this.isUserActive = true;
+      }, { passive: true });
+    });
+
+    console.log('[Sync] Activity detection initialized');
   }
 
   /**

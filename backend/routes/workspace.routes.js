@@ -6,6 +6,7 @@ const { workspaceGuard, requireWorkspaceOwner } = require('../middleware/workspa
 
 // Routes utilisateur (non admin)
 router.get('/me', authenticateToken, workspaceController.getMyWorkspaces);
+router.get('/:id/preload', authenticateToken, workspaceController.preloadWorkspace);
 
 // Routes OWNER pour la gestion de SON workspace courant (basées sur X-Workspace-Id)
 router.get('/members', authenticateToken, workspaceGuard, requireWorkspaceOwner, workspaceController.ownerGetWorkspaceMembers);
