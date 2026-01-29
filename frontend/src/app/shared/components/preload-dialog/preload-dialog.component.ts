@@ -237,7 +237,7 @@ export class PreloadDialogComponent implements OnInit, OnDestroy {
             current: this.progress.current,
             total: this.progress.total,
             percentage: this.progress.percentage,
-            currentTask: 'Erreur lors du chargement',
+            currentTask: 'Le chargement a échoué. Vous pouvez continuer.',
             completed: false
           };
           

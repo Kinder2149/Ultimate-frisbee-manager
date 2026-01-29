@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
 import { takeUntil, filter, distinctUntilChanged } from 'rxjs/operators';
 import { WorkspaceService, WorkspaceSummary } from '../../../core/services/workspace.service';
@@ -30,7 +31,8 @@ export class WorkspaceSwitcherComponent implements OnInit, OnDestroy {
     private workspaceService: WorkspaceService,
     private authService: AuthService,
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -75,9 +77,11 @@ export class WorkspaceSwitcherComponent implements OnInit, OnDestroy {
           this.currentWorkspace = ws;
         }
       },
-      error: () => {
+      error: (error) => {
+        console.error('[WorkspaceSwitcher] Error loading workspaces:', error);
         this.loading = false;
         this.workspaces = [];
+        this.snackBar.open('Impossible de charger vos espaces de travail. Veuillez réessayer.', 'Fermer', { duration: 5000 });
       }
     });
   }

@@ -14,7 +14,18 @@ const calculerDureeTotal = (exercices) => {
 exports.getAllEntrainements = async (req, res, next) => {
   try {
     const workspaceId = req.workspaceId;
+    
+    // Paramètres de pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const skip = (page - 1) * limit;
 
+    // Compter le total d'entraînements
+    const total = await prisma.entrainement.count({
+      where: { workspaceId }
+    });
+
+    // Récupérer les entraînements paginés
     const entrainements = await prisma.entrainement.findMany({
       where: { workspaceId },
       include: {
@@ -23,11 +34,21 @@ exports.getAllEntrainements = async (req, res, next) => {
         echauffement: { include: { blocs: { orderBy: { ordre: 'asc' } } } },
         situationMatch: { include: { tags: true } }
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit
     });
 
     const resultats = entrainements.map(e => ({ ...e, dureeTotal: calculerDureeTotal(e.exercices) }));
-    res.json(resultats);
+    
+    // Réponse paginée standardisée
+    res.json({
+      data: resultats,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    });
   } catch (error) {
     next(error);
   }
@@ -67,14 +88,16 @@ exports.createEntrainement = async (req, res, next) => {
     const { titre, date, exercices, echauffementId, situationMatchId, tagIds } = req.body;
 
     // Log minimal pour diagnostiquer les erreurs 500 côté création
-    console.log('[createEntrainement] payload reçu', {
-      titre,
-      date,
-      echauffementId,
-      situationMatchId,
-      tagIdsCount: Array.isArray(tagIds) ? tagIds.length : 0,
-      exercicesCount: Array.isArray(exercices) ? exercices.length : 0,
-    });
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[createEntrainement] payload reçu', {
+        titre,
+        date,
+        echauffementId,
+        situationMatchId,
+        tagIdsCount: Array.isArray(tagIds) ? tagIds.length : 0,
+        exercicesCount: Array.isArray(exercices) ? exercices.length : 0,
+      });
+    }
 
     // SÉCURITÉ: Valider que tous les tags appartiennent au workspace
     if (tagIds && tagIds.length > 0) {

@@ -69,10 +69,15 @@ const authenticateToken = async (req, res, next) => {
     const rawToken = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
     const token = rawToken && rawToken !== 'null' && rawToken !== 'undefined' && rawToken.trim().length > 0 ? rawToken : null;
 
-    // Bypass en développement: si aucun token et NODE_ENV=development, autoriser la requête
+    // Bypass en développement: DÉSACTIVÉ PAR DÉFAUT
+    // Nécessite NODE_ENV=development ET DEV_BYPASS_AUTH=true explicitement
     const isDev = String(process.env.NODE_ENV || '').toLowerCase() === 'development';
-    if (isDev && !token) {
-      console.log('[Auth] Mode dev - bypass auth');
+    const bypassEnabled = String(process.env.DEV_BYPASS_AUTH || '').toLowerCase() === 'true';
+    
+    if (isDev && bypassEnabled && !token) {
+      console.warn('⚠️  [Auth] BYPASS AUTHENTIFICATION ACTIF - MODE DÉVELOPPEMENT UNIQUEMENT');
+      console.warn('⚠️  [Auth] Utilisateur fictif créé avec rôle ADMIN');
+      console.warn('⚠️  [Auth] Ce mode NE DOIT JAMAIS être activé en production');
       req.user = {
         id: 'dev-user',
         email: 'dev@local',
@@ -108,7 +113,9 @@ const authenticateToken = async (req, res, next) => {
       try {
         const header = JSON.parse(Buffer.from(tokenParts[0], 'base64').toString());
         tokenAlgorithm = header.alg;
-        console.log('[Auth] Token header:', { alg: header.alg, typ: header.typ, kid: header.kid });
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('[Auth] Token header:', { alg: header.alg, typ: header.typ, kid: header.kid });
+        }
       } catch (e) {
         console.error('[Auth] Erreur décodage header:', e.message);
       }
@@ -126,24 +133,32 @@ const authenticateToken = async (req, res, next) => {
           });
         }
         
-        console.log('[Auth] Vérification token HS256 avec JWT secret');
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('[Auth] Vérification token HS256 avec JWT secret');
+        }
         const secret = new TextEncoder().encode(jwtSecret);
         const { payload } = await jose.jwtVerify(token, secret, {
           algorithms: ['HS256']
         });
         decoded = payload;
-        console.log('[Auth] Token HS256 vérifié avec succès pour:', decoded.sub);
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('[Auth] Token HS256 vérifié avec succès pour:', decoded.sub);
+        }
         
       } else if (tokenAlgorithm === 'RS256') {
         // Token RS256 - utiliser JWKS
-        console.log('[Auth] Vérification token RS256 via JWKS');
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('[Auth] Vérification token RS256 via JWKS');
+        }
         const jwksUrl = new URL(`https://${projectRef}.supabase.co/auth/v1/keys`);
         const JWKS = jose.createRemoteJWKSet(jwksUrl);
         const { payload } = await jose.jwtVerify(token, JWKS, {
           algorithms: ['RS256']
         });
         decoded = payload;
-        console.log('[Auth] Token RS256 vérifié avec succès pour:', decoded.sub);
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('[Auth] Token RS256 vérifié avec succès pour:', decoded.sub);
+        }
         
       } else {
         // Algorithme non supporté ou inconnu - essayer les deux méthodes
@@ -157,17 +172,23 @@ const authenticateToken = async (req, res, next) => {
               algorithms: ['HS256']
             });
             decoded = payload;
-            console.log('[Auth] Token vérifié avec HS256 (fallback):', decoded.sub);
+            if (process.env.NODE_ENV !== 'production') {
+              console.log('[Auth] Token vérifié avec HS256 (fallback):', decoded.sub);
+            }
           } catch (hs256Error) {
             // Si HS256 échoue, essayer RS256
-            console.log('[Auth] HS256 échoué, tentative RS256');
+            if (process.env.NODE_ENV !== 'production') {
+              console.log('[Auth] HS256 échoué, tentative RS256');
+            }
             const jwksUrl = new URL(`https://${projectRef}.supabase.co/auth/v1/keys`);
             const JWKS = jose.createRemoteJWKSet(jwksUrl);
             const { payload } = await jose.jwtVerify(token, JWKS, {
               algorithms: ['RS256']
             });
             decoded = payload;
-            console.log('[Auth] Token vérifié avec RS256 (fallback):', decoded.sub);
+            if (process.env.NODE_ENV !== 'production') {
+              console.log('[Auth] Token vérifié avec RS256 (fallback):', decoded.sub);
+            }
           }
         } else {
           // Pas de secret, essayer uniquement RS256
@@ -177,7 +198,9 @@ const authenticateToken = async (req, res, next) => {
             algorithms: ['RS256']
           });
           decoded = payload;
-          console.log('[Auth] Token vérifié avec RS256 (seule option):', decoded.sub);
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('[Auth] Token vérifié avec RS256 (seule option):', decoded.sub);
+          }
         }
       }
     } catch (verifyError) {

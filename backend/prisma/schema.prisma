@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum UserRole {
@@ -158,16 +159,15 @@ model SituationMatch {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
-  passwordHash String
-  nom          String
-  prenom       String?
-  role         UserRole @default(USER)
-  isActive     Boolean  @default(true)
-  iconUrl      String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id        String   @id @default(uuid())
+  email     String   @unique
+  nom       String
+  prenom    String?
+  role      UserRole @default(USER)
+  isActive  Boolean  @default(true)
+  iconUrl   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   workspaces WorkspaceUser[]
 

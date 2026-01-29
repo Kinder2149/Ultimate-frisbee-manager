@@ -6,7 +6,9 @@ const { exportOne } = require('../services/export.service');
  */
 exports.exportUfm = async (req, res) => {
   const { type, id } = req.query || {};
-  console.log('[exportUfm] demande reçue', { type, id });
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[exportUfm] demande reçue', { type, id });
+  }
 
   try {
     if (!type || !id) {

@@ -3,7 +3,6 @@
  * Authentification gérée par Supabase, ce contrôleur gère uniquement le profil local
  */
 const { prisma } = require('../services/prisma');
-const bcrypt = require('bcryptjs');
 const { clearUserCache } = require('../middleware/auth.middleware');
 
 /**
@@ -71,7 +70,9 @@ module.exports = {
       });
 
       if (existing) {
-        console.log('[register] Utilisateur déjà existant:', supabaseUserId);
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('[register] Utilisateur déjà existant:', supabaseUserId);
+        }
         return res.json({
           user: {
             id: existing.id,
@@ -86,23 +87,21 @@ module.exports = {
       }
 
       // Créer l'utilisateur en base
-      // Mot de passe aléatoire car l'auth est gérée par Supabase
-      const randomPassword = `supabase-${Math.random().toString(36).slice(2)}`;
-      const passwordHash = await bcrypt.hash(randomPassword, 10);
-
+      // L'authentification est entièrement gérée par Supabase
       const user = await prisma.user.create({
         data: {
           id: supabaseUserId,
           email: normalizedEmail,
           nom: nom || '',
           prenom: prenom || normalizedEmail.split('@')[0],
-          passwordHash,
           role: 'USER',
           isActive: true,
         },
       });
 
-      console.log('[register] Nouvel utilisateur créé:', user.id, user.email);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('[register] Nouvel utilisateur créé:', user.id, user.email);
+      }
 
       // Créer le workspace BASE pour le nouvel utilisateur
       try {
@@ -118,7 +117,9 @@ module.exports = {
               role: 'VIEWER'
             }
           });
-          console.log('[register] Utilisateur ajouté au workspace BASE');
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('[register] Utilisateur ajouté au workspace BASE');
+          }
         }
       } catch (workspaceError) {
         console.error('[register] Erreur ajout workspace BASE:', workspaceError);
@@ -174,11 +175,6 @@ module.exports = {
         data.iconUrl = iconUrl || null;
       }
 
-      // Mot de passe optionnel
-      if (password && typeof password === 'string' && password.length >= 6) {
-        data.password = await bcrypt.hash(password, 10);
-      }
-
       // Rôle et statut actif: uniquement si admin connecté
       const isAdmin = (authUser.role || '').toLowerCase() === 'admin';
       if (isAdmin) {
@@ -198,6 +194,12 @@ module.exports = {
         where: { id: authUser.id },
         data
       });
+
+      // Invalider le cache utilisateur après mutation
+      clearUserCache(authUser.id);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('[Auth] Cache invalidé pour utilisateur:', authUser.id);
+      }
 
       return res.json({
         user: {

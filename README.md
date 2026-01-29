@@ -185,17 +185,24 @@ npm test                       # Lancer les tests
 
 ## 📚 Documentation
 
-### Guides Principaux
+### 📖 Document de Référence Unique
 
-- **[DATABASE_GUIDE.md](docs/DATABASE_GUIDE.md)** - Configuration PostgreSQL/Supabase
+**[AUDIT_GLOBAL_COMPLET.md](docs/AUDIT_GLOBAL_COMPLET.md)** - **Documentation officielle et source de vérité unique du projet**
+
+Ce document contient :
+- Audit complet du projet (architecture, backend, frontend, sécurité)
+- Plan de consolidation structuré et séquencé
+- Suivi de progression des missions
+- Recommandations prioritaires
+
+### Guides Techniques Complémentaires
+
 - **[SUPABASE_CONFIGURATION.md](docs/SUPABASE_CONFIGURATION.md)** - Configuration Supabase Auth
-- **[VERCEL_DEPLOYMENT.md](docs/VERCEL_DEPLOYMENT.md)** - Guide de déploiement Vercel
 - **[ENV_CONFIGURATION.md](docs/ENV_CONFIGURATION.md)** - Variables d'environnement
-- **[WORKSPACE_FLOW.md](docs/WORKSPACE_FLOW.md)** - Système de workspaces
 
-### Diagnostics Archivés
+### Documentation Archivée
 
-Les fichiers de diagnostic temporaires sont dans `docs/diagnostics-archive/`
+Les anciens audits et documents obsolètes sont dans `docs/archive/`
 
 ---
 

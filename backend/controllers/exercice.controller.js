@@ -2,18 +2,33 @@ const { prisma } = require('../services/prisma');
 const { validateTagsInWorkspace } = require('../utils/workspace-validation');
 
 /**
- * Récupérer tous les exercices avec leurs tags
+ * Récupérer tous les exercices avec leurs tags (avec pagination)
  * @route GET /api/exercices
+ * @query page - Numéro de page (défaut: 1)
+ * @query limit - Nombre d'éléments par page (défaut: 50)
  */
 exports.getAllExercices = async (req, res, next) => {
   try {
     const workspaceId = req.workspaceId;
+    
+    // Paramètres de pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const skip = (page - 1) * limit;
 
+    // Compter le total d'exercices
+    const total = await prisma.exercice.count({
+      where: { workspaceId }
+    });
+
+    // Récupérer les exercices paginés
     let exercices = await prisma.exercice.findMany({
       where: { workspaceId },
       include: {
         tags: true // Inclure les tags associés
-      }
+      },
+      skip,
+      take: limit
     });
 
     exercices = exercices.map(ex => ({
@@ -23,7 +38,14 @@ exports.getAllExercices = async (req, res, next) => {
       points: JSON.parse(ex.points || '[]'),
     }));
 
-    res.json(exercices);
+    // Réponse paginée standardisée
+    res.json({
+      data: exercices,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    });
   } catch (error) {
     next(error);
   }
@@ -69,17 +91,20 @@ exports.createExercice = async (req, res, next) => {
     const { nom, description, variablesPlus, variablesMinus, points, tags, tagIds, materiel, notes, critereReussite } = req.body;
 
     // LOG: Ajout d'un log pour vérifier les données entrantes
-    console.log('--- Contenu de req.body pour la création ---', {
-      nom,
-      description: description ? `${description.length} chars` : 'absent',
-      variablesPlus: Array.isArray(variablesPlus) ? `[${variablesPlus.length} items]` : 'non-array',
-      variablesMinus: Array.isArray(variablesMinus) ? `[${variablesMinus.length} items]` : 'non-array',
-      points: Array.isArray(points) ? `[${points.length} items]` : 'non-array',
-
-      tagIds: Array.isArray(tagIds) ? `[${tagIds.length} IDs]` : 'absent',
-      materiel: materiel ? 'présent' : 'absent',
-      notes: notes ? 'présent' : 'absent',
-    });
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('--- Contenu de req.body pour la création ---', {
+        nom,
+        description: description ? `${description.length} chars` : 'absent',
+        variablesPlus: Array.isArray(variablesPlus) ? `[${variablesPlus.length} items]` : 'non-array',
+        variablesMinus: Array.isArray(variablesMinus) ? `[${variablesMinus.length} items]` : 'non-array',
+        points: Array.isArray(points) ? `[${points.length} items]` : 'non-array',
+        tags: tags ? `[${tags.length} items]` : 'absent',
+        tagIds: tagIds ? `[${tagIds.length} items]` : 'absent',
+        materiel: materiel ? `${materiel.length} chars` : 'absent',
+        notes: notes ? `${notes.length} chars` : 'absent',
+        critereReussite: critereReussite ? `${critereReussite.length} chars` : 'absent'
+      });
+    }
 
     // Helper local pour normaliser un tableau de chaînes
     const normalizeStringArray = (value) => {
@@ -171,10 +196,12 @@ exports.createExercice = async (req, res, next) => {
     }
 
     // LOG: Ajout d'un log pour vérifier les données envoyées à Prisma
-    console.log('--- Données envoyées à prisma.exercice.create ---', {
-      ...createData,
-      tags: createData.tags.connect ? `${createData.tags.connect.length} tags à connecter` : 'aucun',
-    });
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('--- Données envoyées à prisma.exercice.create ---', {
+        ...createData,
+        tags: createData.tags.connect ? `${createData.tags.connect.length} tags à connecter` : 'aucun',
+      });
+    }
 
     const newExercice = await prisma.exercice.create({
       data: createData,
@@ -188,7 +215,9 @@ exports.createExercice = async (req, res, next) => {
     newExercice.points = JSON.parse(newExercice.points || '[]');
 
     // LOG: Confirmation de la création
-    console.log(`--- Exercice créé avec succès (ID: ${newExercice.id}) ---`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`--- Exercice créé avec succès (ID: ${newExercice.id}) ---`);
+    }
 
     // La réponse est déjà conforme, car Prisma retourne les tableaux `variablesPlus` et `variablesMinus`
     res.status(201).json(newExercice);
@@ -310,7 +339,9 @@ exports.updateExercice = async (req, res, next) => {
     }
 
     // 3. Log des données qui seront envoyées à Prisma
-    console.log(`--- Données préparées pour prisma.exercice.update (ID: ${id}) ---`, updateData);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`--- Données préparées pour prisma.exercice.update (ID: ${id}) ---`, updateData);
+    }
 
     // 4. Exécuter la mise à jour
     const exerciceUpdated = await prisma.exercice.update({
@@ -323,7 +354,9 @@ exports.updateExercice = async (req, res, next) => {
     exerciceUpdated.variablesMinus = JSON.parse(exerciceUpdated.variablesMinus || '[]');
     exerciceUpdated.points = JSON.parse(exerciceUpdated.points || '[]');
 
-    console.log(`--- Exercice mis à jour avec succès (ID: ${exerciceUpdated.id}) ---`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`--- Exercice mis à jour avec succès (ID: ${exerciceUpdated.id}) ---`);
+    }
 
     // 5. Renvoyer la réponse
     res.json(exerciceUpdated);
@@ -374,7 +407,9 @@ exports.duplicateExercice = async (req, res, next) => {
       include: { tags: true }
     });
 
-    console.log(`--- Exercice dupliqué avec succès (Nouveau ID: ${duplicatedExercice.id}) ---`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`--- Exercice dupliqué avec succès (Nouveau ID: ${duplicatedExercice.id}) ---`);
+    }
 
     // La réponse est déjà conforme
     res.status(201).json(duplicatedExercice);

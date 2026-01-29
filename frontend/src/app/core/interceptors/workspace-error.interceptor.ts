@@ -7,6 +7,7 @@ import {
   HttpRequest
 } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Observable, catchError, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { WorkspaceService } from '../services/workspace.service';
@@ -15,7 +16,8 @@ import { WorkspaceService } from '../services/workspace.service';
 export class WorkspaceErrorInterceptor implements HttpInterceptor {
   constructor(
     private workspaceService: WorkspaceService,
-    private router: Router
+    private router: Router,
+    private snackBar: MatSnackBar
   ) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
@@ -46,6 +48,13 @@ export class WorkspaceErrorInterceptor implements HttpInterceptor {
               
               // Nettoyer le workspace courant côté front
               this.workspaceService.clear();
+
+              // Notifier l'utilisateur explicitement
+              this.snackBar.open(
+                'Le workspace sélectionné n\'est plus accessible. Veuillez en sélectionner un autre.',
+                'OK',
+                { duration: 5000, panelClass: ['snackbar-warning'] }
+              );
 
               // Redirection vers la sélection de workspace avec retour prévu
               this.router.navigate(['/select-workspace'], {

@@ -10,7 +10,9 @@ if (config.cloudinary.url) {
   // Le SDK Cloudinary accepte une URL directe
   cloudinary.config(config.cloudinary.url);
   cloudinary.config({ secure: true });
-  console.log('[Config] Cloudinary: utilisation de CLOUDINARY_URL');
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[Config] Cloudinary: utilisation de CLOUDINARY_URL');
+  }
 } else {
   cloudinary.config({
     cloud_name: config.cloudinary.cloudName,
@@ -19,7 +21,9 @@ if (config.cloudinary.url) {
     secure: true,
   });
   // Ne pas logguer les secrets
-  console.log('[Config] Cloudinary: utilisation du triplet CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET (secure)');
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[Config] Cloudinary: utilisation du triplet CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET (secure)');
+  }
 }
 
 /**

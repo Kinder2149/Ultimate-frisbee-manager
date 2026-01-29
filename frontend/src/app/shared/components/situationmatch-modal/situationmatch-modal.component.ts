@@ -94,7 +94,7 @@ export class SituationMatchModalComponent implements OnInit {
       .pipe(
         catchError(error => {
           console.error('Erreur lors du chargement des situations/matchs:', error);
-          this.snackBar.open('Erreur lors du chargement des situations/matchs', 'Fermer', { duration: 3000 });
+          this.snackBar.open('Impossible de charger les situations. Veuillez réessayer.', 'Fermer', { duration: 3000 });
           return of([]);
         }),
         finalize(() => this.isLoading = false)
@@ -110,7 +110,7 @@ export class SituationMatchModalComponent implements OnInit {
       .pipe(
         catchError(error => {
           console.error('Erreur lors du chargement des tags:', error);
-          this.snackBar.open('Erreur lors du chargement des tags', 'Fermer', { duration: 3000 });
+          this.snackBar.open('Impossible de charger les tags. Veuillez réessayer.', 'Fermer', { duration: 3000 });
           return of([]);
         }),
         finalize(() => this.isLoading = false)
@@ -163,7 +163,7 @@ export class SituationMatchModalComponent implements OnInit {
       .pipe(
         catchError(error => {
           console.error('Erreur lors de la création de la situation/match:', error);
-          this.snackBar.open('Erreur lors de la création de la situation/match', 'Fermer', { duration: 3000 });
+          this.snackBar.open('La création a échoué. Vérifiez les informations saisies.', 'Fermer', { duration: 3000 });
           return of(null);
         }),
         finalize(() => this.isLoading = false)

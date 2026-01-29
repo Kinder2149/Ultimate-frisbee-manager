@@ -6,19 +6,42 @@ const { prisma } = require('../services/prisma');
 const { validateTagsInWorkspace } = require('../utils/workspace-validation');
 
 /**
- * Récupère toutes les situations/matchs
+ * Récupère toutes les situations/matchs (avec pagination)
  * @route GET /api/situations-matchs
+ * @query page - Numéro de page (défaut: 1)
+ * @query limit - Nombre d'éléments par page (défaut: 50)
  */
 exports.getAllSituationsMatchs = async (req, res, next) => {
   try {
     const workspaceId = req.workspaceId;
+    
+    // Paramètres de pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const skip = (page - 1) * limit;
 
+    // Compter le total de situations/matchs
+    const total = await prisma.situationMatch.count({
+      where: { workspaceId }
+    });
+
+    // Récupérer les situations/matchs paginés
     const situationsMatchs = await prisma.situationMatch.findMany({
       where: { workspaceId },
       include: { tags: true },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit
     });
-    res.json(situationsMatchs);
+    
+    // Réponse paginée standardisée
+    res.json({
+      data: situationsMatchs,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    });
   } catch (error) {
     next(error);
   }

@@ -1,14 +1,27 @@
 const { prisma } = require('../services/prisma');
 
 /**
- * Récupère tous les échauffements avec leurs blocs
+ * Récupère tous les échauffements avec leurs blocs (avec pagination)
  * @param {Object} req - Requête Express
  * @param {Object} res - Réponse Express
+ * @query page - Numéro de page (défaut: 1)
+ * @query limit - Nombre d'éléments par page (défaut: 50)
  */
 exports.getAllEchauffements = async (req, res, next) => {
   try {
     const workspaceId = req.workspaceId;
+    
+    // Paramètres de pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const skip = (page - 1) * limit;
 
+    // Compter le total d'échauffements
+    const total = await prisma.echauffement.count({
+      where: { workspaceId }
+    });
+
+    // Récupérer les échauffements paginés
     const echauffements = await prisma.echauffement.findMany({
       where: { workspaceId },
       include: {
@@ -16,10 +29,19 @@ exports.getAllEchauffements = async (req, res, next) => {
           orderBy: { ordre: 'asc' }
         }
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit
     });
     
-    res.json(echauffements);
+    // Réponse paginée standardisée
+    res.json({
+      data: echauffements,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    });
   } catch (error) {
     next(error);
   }

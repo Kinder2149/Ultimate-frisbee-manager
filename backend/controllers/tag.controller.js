@@ -161,12 +161,14 @@ exports.getGroupedTags = async (req, res, next) => {
     try {
       const presentCats = Object.keys(filled);
       const counts = presentCats.reduce((m, k) => { m[k] = filled[k].length; return m; }, {});
-      // eslint-disable-next-line no-console
-      console.log('[TAGS] Categories in DB:', presentCats);
-      // eslint-disable-next-line no-console
-      console.log('[TAGS] Counts per category:', counts);
-      // eslint-disable-next-line no-console
-      console.log('[TAGS] Expected categories (TAG_CATEGORIES):', TAG_CATEGORIES);
+      if (process.env.NODE_ENV !== 'production') {
+        // eslint-disable-next-line no-console
+        console.log('[TAGS] Categories in DB:', presentCats);
+        // eslint-disable-next-line no-console
+        console.log('[TAGS] Counts per category:', counts);
+        // eslint-disable-next-line no-console
+        console.log('[TAGS] Expected categories (TAG_CATEGORIES):', TAG_CATEGORIES);
+      }
     } catch {}
 
     // Fusionner la base et les catégories remplies pour garantir la présence de toutes les clés
