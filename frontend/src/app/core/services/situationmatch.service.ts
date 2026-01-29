@@ -48,7 +48,7 @@ export class SituationMatchService {
         this.sync.notifyChange({
           type: 'situation',
           action: 'create',
-          id: situation.id,
+          id: situation.id || '',
           workspaceId: this.cache.getCurrentWorkspaceId() || '',
           timestamp: Date.now()
         });
@@ -98,7 +98,7 @@ export class SituationMatchService {
         this.sync.notifyChange({
           type: 'situation',
           action: 'create',
-          id: situation.id,
+          id: situation.id || '',
           workspaceId: this.cache.getCurrentWorkspaceId() || '',
           timestamp: Date.now()
         });

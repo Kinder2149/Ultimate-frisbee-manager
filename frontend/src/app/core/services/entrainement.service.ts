@@ -48,7 +48,7 @@ export class EntrainementService {
         this.sync.notifyChange({
           type: 'entrainement',
           action: 'create',
-          id: entrainement.id,
+          id: entrainement.id || '',
           workspaceId: this.cache.getCurrentWorkspaceId() || '',
           timestamp: Date.now()
         });
@@ -98,7 +98,7 @@ export class EntrainementService {
         this.sync.notifyChange({
           type: 'entrainement',
           action: 'create',
-          id: entrainement.id,
+          id: entrainement.id || '',
           workspaceId: this.cache.getCurrentWorkspaceId() || '',
           timestamp: Date.now()
         });

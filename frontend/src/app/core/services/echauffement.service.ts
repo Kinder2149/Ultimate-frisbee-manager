@@ -48,7 +48,7 @@ export class EchauffementService {
         this.sync.notifyChange({
           type: 'echauffement',
           action: 'create',
-          id: echauffement.id,
+          id: echauffement.id || '',
           workspaceId: this.cache.getCurrentWorkspaceId() || '',
           timestamp: Date.now()
         });
@@ -98,7 +98,7 @@ export class EchauffementService {
         this.sync.notifyChange({
           type: 'echauffement',
           action: 'create',
-          id: echauffement.id,
+          id: echauffement.id || '',
           workspaceId: this.cache.getCurrentWorkspaceId() || '',
           timestamp: Date.now()
         });

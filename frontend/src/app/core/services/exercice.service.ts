@@ -65,7 +65,7 @@ export class ExerciceService {
           this.sync.notifyChange({
             type: 'exercice',
             action: 'create',
-            id: exercice.id,
+            id: exercice.id || '',
             workspaceId: this.cache.getCurrentWorkspaceId() || '',
             timestamp: Date.now()
           });
@@ -129,7 +129,7 @@ export class ExerciceService {
           this.sync.notifyChange({
             type: 'exercice',
             action: 'create',
-            id: exercice.id,
+            id: exercice.id || '',
             workspaceId: this.cache.getCurrentWorkspaceId() || '',
             timestamp: Date.now()
           });

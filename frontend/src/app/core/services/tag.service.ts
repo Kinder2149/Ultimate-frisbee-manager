@@ -65,7 +65,7 @@ export class TagService {
         this.sync.notifyChange({
           type: 'tag',
           action: 'create',
-          id: tag.id,
+          id: tag.id || '',
           workspaceId: this.cache.getCurrentWorkspaceId() || '',
           timestamp: Date.now()
         });
@@ -76,7 +76,7 @@ export class TagService {
 
   updateTag(id: string, data: Partial<Tag>): Observable<Tag> {
     return this.http.put<Tag>(`${this.apiUrl}/${id}`, data).pipe(
-      tap(() => {
+      tap((tag) => {
         this.cache.invalidate('tags-list', 'tags');
         this.cache.invalidatePattern('tags-list-');
         this.cache.invalidate('tags-grouped', 'tags');
