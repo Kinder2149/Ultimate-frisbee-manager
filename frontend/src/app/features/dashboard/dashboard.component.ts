@@ -477,6 +477,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   getTagsDescription(): string {
     if (this.isLoading) return 'Chargement...';
     
+    // Guard clause: vérifier que tagsDetails existe et n'est pas null/undefined
+    if (!this.tagsDetails || typeof this.tagsDetails !== 'object') {
+      return 'Aucun tag créé';
+    }
+    
     const categories = Object.keys(this.tagsDetails);
     if (categories.length === 0) return 'Aucun tag créé';
     
@@ -543,12 +548,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.echauffementsCount = stats.echauffementsCount;
         this.situationsCount = stats.situationsCount;
         this.tagsCount = stats.tagsCount;
-        this.tagsDetails = stats.tagsDetails;
+        this.tagsDetails = stats.tagsDetails || {};
         this.recentActivity = stats.recentActivity;
         this.isLoading = false;
       }),
       catchError(() => {
         this.isLoading = false;
+        // Initialiser tagsDetails à un objet vide en cas d'erreur
+        this.tagsDetails = {};
         return of(null);
       })
     );

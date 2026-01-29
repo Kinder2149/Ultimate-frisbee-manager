@@ -36,8 +36,12 @@ export class ExerciceService {
     return this.cache.get<Exercice[]>(
       'exercices-list',
       'exercices',
-      () => this.http.get<Exercice[]>(this.apiUrl).pipe(
-        map(list => list.map(ex => this.normalizeExercice(ex)))
+      () => this.http.get<any>(this.apiUrl).pipe(
+        map(response => {
+          // Gérer la réponse paginée du backend
+          const list = Array.isArray(response) ? response : (response.data || []);
+          return list.map((ex: Exercice) => this.normalizeExercice(ex));
+        })
       ),
       options
     );

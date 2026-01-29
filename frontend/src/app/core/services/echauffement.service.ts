@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { tap, map } from 'rxjs/operators';
 import { Echauffement } from '../models/echauffement.model';
 import { environment } from '../../../environments/environment';
 import { DataCacheService } from './data-cache.service';
@@ -27,7 +27,12 @@ export class EchauffementService {
     return this.cache.get<Echauffement[]>(
       'echauffements-list',
       'echauffements',
-      () => this.http.get<Echauffement[]>(this.apiUrl),
+      () => this.http.get<any>(this.apiUrl).pipe(
+        map((response: any) => {
+          // Gérer la réponse paginée du backend
+          return Array.isArray(response) ? response : (response.data || []);
+        })
+      ),
       options
     );
   }

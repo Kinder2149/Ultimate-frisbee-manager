@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { tap, map } from 'rxjs/operators';
 import { SituationMatch } from '../models/situationmatch.model';
 import { environment } from '../../../environments/environment';
 import { DataCacheService } from './data-cache.service';
@@ -27,7 +27,12 @@ export class SituationMatchService {
     return this.cache.get<SituationMatch[]>(
       'situations-list',
       'situations',
-      () => this.http.get<SituationMatch[]>(this.apiUrl),
+      () => this.http.get<any>(this.apiUrl).pipe(
+        map((response: any) => {
+          // Gérer la réponse paginée du backend
+          return Array.isArray(response) ? response : (response.data || []);
+        })
+      ),
       options
     );
   }
