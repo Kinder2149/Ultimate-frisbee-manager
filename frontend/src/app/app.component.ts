@@ -7,7 +7,6 @@ import { ApiUrlService } from './core/services/api-url.service';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter, map, distinctUntilChanged } from 'rxjs/operators';
 import { WorkspaceService, WorkspaceSummary } from './core/services/workspace.service';
-import { WorkspaceSwitcherComponent } from './shared/components/workspace-switcher/workspace-switcher.component';
 import { GlobalPreloaderService } from './core/services/global-preloader.service';
 
 @Component({
@@ -24,9 +23,6 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   private routerSubscription!: Subscription;
 
   @ViewChild('mainHeader', { static: false }) mainHeader?: ElementRef<HTMLElement>;
-  @ViewChild('workspaceSwitcher', { static: false }) workspaceSwitcher?: WorkspaceSwitcherComponent;
-
-  isWorkspaceMenuOpen = false;
 
   isDropdownOpen = {
     exercices: false,
@@ -82,7 +78,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   get isAnyMenuOpen(): boolean {
-    return this.isWorkspaceMenuOpen || Object.values(this.isDropdownOpen).some(Boolean);
+    return Object.values(this.isDropdownOpen).some(Boolean);
   }
 
   private setBodyScrollLocked(locked: boolean): void {
@@ -106,9 +102,6 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     event.preventDefault();
     event.stopPropagation();
 
-    this.workspaceSwitcher?.closeMenu();
-    this.isWorkspaceMenuOpen = false;
-
     const currentState = this.isDropdownOpen[menu];
 
     // Fermer tous les menus
@@ -131,24 +124,10 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       (this.isDropdownOpen as any)[key] = false;
     });
 
-    this.workspaceSwitcher?.closeMenu();
-    this.isWorkspaceMenuOpen = false;
     this.setBodyScrollLocked(false);
     this.updateMobileAppBarHeight();
   }
 
-  onWorkspaceMenuOpenChange(open: boolean): void {
-    this.isWorkspaceMenuOpen = open;
-
-    if (open) {
-      Object.keys(this.isDropdownOpen).forEach(key => {
-        (this.isDropdownOpen as any)[key] = false;
-      });
-    }
-
-    this.setBodyScrollLocked(this.isAnyMenuOpen);
-    this.updateMobileAppBarHeight();
-  }
 
   getAvatarUrl(path?: string | null): string | null {
     return this.apiUrlService.getMediaUrl(path, 'avatars');

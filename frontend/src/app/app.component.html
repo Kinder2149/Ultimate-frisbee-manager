@@ -7,9 +7,6 @@
           <div class="appbar__row appbar__row--title">
             <h1>{{ title }}</h1>
           </div>
-          <div class="appbar__row appbar__row--workspace">
-            <app-workspace-switcher #workspaceSwitcher (menuOpenChange)="onWorkspaceMenuOpenChange($event)"></app-workspace-switcher>
-          </div>
         </div>
         <div class="appbar__row appbar__row--nav">
           <nav class="main-nav" (click)="$event.stopPropagation()">
