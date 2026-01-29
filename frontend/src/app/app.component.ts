@@ -54,7 +54,12 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       distinctUntilChanged()
     );
 
-    this.routerSubscription = this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe();
+    // Fermer automatiquement tous les menus déroulants lors de la navigation
+    this.routerSubscription = this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      this.closeAllDropdowns();
+    });
     
     // ✅ Initialiser le préchargement automatique des données
     this.globalPreloader.initialize();
