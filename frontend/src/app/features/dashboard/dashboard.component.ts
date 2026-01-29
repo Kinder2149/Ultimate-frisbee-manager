@@ -510,7 +510,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     // Charger la liste des workspaces disponibles
     this.loadAvailableWorkspaces();
 
-    // S'abonner au workspace actuel ET recharger les stats à chaque changement
+    // S'abonner au workspace actuel ET charger les stats
     this.workspaceService.currentWorkspace$
       .pipe(
         tap(ws => {
@@ -518,7 +518,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
         }),
         filter((ws) => !!ws),
         switchMap(() => {
-          this.dataCache.clear('dashboard-stats');
+          // ✅ Utiliser le cache au lieu de le vider
+          // Le TTL de 2min + SWR garantit la fraîcheur des données
           return this.loadDashboardStats$();
         })
       )
