@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { Observable, of } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { map, catchError, tap } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { WorkspaceService, WorkspaceSummary } from '../services/workspace.service';
 import { DataCacheService } from '../services/data-cache.service';
+import { WorkspacePreloaderService } from '../services/workspace-preloader.service';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })

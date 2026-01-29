@@ -8,6 +8,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { filter, map, distinctUntilChanged } from 'rxjs/operators';
 import { WorkspaceService, WorkspaceSummary } from './core/services/workspace.service';
 import { WorkspaceSwitcherComponent } from './shared/components/workspace-switcher/workspace-switcher.component';
+import { GlobalPreloaderService } from './core/services/global-preloader.service';
 
 @Component({
   selector: 'app-root',
@@ -43,7 +44,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     private renderer: Renderer2,
     private el: ElementRef,
     private router: Router,
-    private workspaceService: WorkspaceService
+    private workspaceService: WorkspaceService,
+    private globalPreloader: GlobalPreloaderService
   ) {
     this.currentUser$ = this.authService.currentUser$;
     this.currentWorkspace$ = this.workspaceService.currentWorkspace$;
@@ -57,6 +59,10 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     );
 
     this.routerSubscription = this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe();
+    
+    // ✅ Initialiser le préchargement automatique des données
+    this.globalPreloader.initialize();
+    console.log('[App] Global preloader initialized');
   }
 
   ngAfterViewInit(): void {
@@ -67,6 +73,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.routerSubscription) {
       this.routerSubscription.unsubscribe();
     }
+    this.globalPreloader.destroy();
   }
 
   @HostListener('window:resize')
