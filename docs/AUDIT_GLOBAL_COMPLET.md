@@ -9,12 +9,19 @@
 ## 🎯 STATUT GLOBAL DU PROJET
 
 **État du projet** : 🟠 En cours (Consolidation active)  
-**Chantier en cours** : Chantier 5 - Expérience utilisateur  
+**Chantier en cours** : Chantier 6 - Refactoring avancé  
 **Mission active** : Aucune  
-**Dernière mission validée** : Mission 5.3 - Implémenter pagination frontend  
-**Progression globale** : 14/27 missions (52%)
+**Dernière mission validée** : Mission 5.5 - Corriger erreurs critiques production  
+**Progression globale** : 18/27 missions (67%)
 
-**Prochaine étape** : Chantier 6 - Refactoring avancé
+**Prochaine étape** : Mission 6.1 - Extraire logique métier vers services
+
+**Chantiers terminés** : 
+- ✅ Chantier 1 - Sécurité critique (5/5 missions)
+- ✅ Chantier 2 - Nettoyage architecture (3/3 missions)
+- ✅ Chantier 3 - Performance backend (4/4 missions)
+- ✅ Chantier 4 - Organisation frontend (4/4 missions)
+- ✅ Chantier 5 - Expérience utilisateur (4/4 missions validées, 1 à revoir)
 
 ---
 
@@ -3503,6 +3510,89 @@ ngOnInit(): void {
 - ❌ Navigation back/forward ne préserve pas filtres
 
 **Risque si non fait** : Filtres perdus à la navigation, frustration utilisateur (UX dégradée)
+
+---
+
+#### Mission 5.5 : Corriger erreurs critiques production
+
+**Statut** : ✅ Validée  
+**Date de validation** : 29 janvier 2026
+
+**Objectif** : Corriger les erreurs massives en production
+
+**Périmètre** :
+- Erreur `getTagsDescription` : `Object.keys()` sur null/undefined
+- Erreur `pe.map is not a function` : Réponse paginée backend non gérée
+- Services frontend : exercices, entraînements, échauffements, situations
+
+**Dépendances** : Mission 3.1 (pagination backend)
+
+**Problèmes identifiés** :
+
+### 1️⃣ **Erreur getTagsDescription (×50+ occurrences)**
+```
+TypeError: Cannot convert undefined or null to object
+    at Object.keys (<anonymous>)
+    at P.getTagsDescription
+```
+
+**Cause** : `this.tagsDetails` était `null` ou `undefined` dans `DashboardComponent`
+
+### 2️⃣ **Erreur pe.map is not a function**
+```
+TypeError: pe.map is not a function
+```
+
+**Cause** : Backend retourne `{data: [], total, page, limit, totalPages}` mais frontend attendait un tableau direct
+
+**Corrections appliquées** :
+
+### **Fichier 1** : `dashboard.component.ts`
+- ✅ Ajout guard clause dans `getTagsDescription()` pour vérifier `tagsDetails`
+- ✅ Initialisation sécurisée de `tagsDetails = {}` dans `catchError`
+- ✅ Fallback `stats.tagsDetails || {}` dans le `tap`
+
+### **Fichiers 2-5** : Services frontend
+- ✅ `exercice.service.ts` - Gérer réponse paginée
+- ✅ `entrainement.service.ts` - Gérer réponse paginée + import `map`
+- ✅ `echauffement.service.ts` - Gérer réponse paginée + import `map`
+- ✅ `situationmatch.service.ts` - Gérer réponse paginée + import `map`
+
+**Pattern de correction appliqué** :
+```typescript
+getExercices(): Observable<Exercice[]> {
+  return this.http.get<any>(this.apiUrl).pipe(
+    map(response => {
+      // Gérer la réponse paginée du backend
+      const list = Array.isArray(response) ? response : (response.data || []);
+      return list.map((ex: Exercice) => this.normalizeExercice(ex));
+    })
+  );
+}
+```
+
+**Critères de validation** :
+- ✅ Erreur `Object.keys(null)` corrigée avec guard clause
+- ✅ Erreur `pe.map is not a function` corrigée (compatibilité tableau/objet)
+- ✅ 5 fichiers modifiés (1 composant + 4 services)
+- ✅ Compatibilité avec les deux formats de réponse (tableau OU objet paginé)
+- ✅ Initialisation défensive de tous les objets
+- ✅ Aucun crash si données manquantes
+
+**Impact** :
+- ✅ Application stable en production
+- ✅ Pas d'erreurs console massives
+- ✅ Dashboard s'affiche correctement
+- ✅ Listes se chargent sans erreur
+
+**Fichiers modifiés** :
+1. `frontend/src/app/features/dashboard/dashboard.component.ts` (guard clause + init)
+2. `frontend/src/app/core/services/exercice.service.ts` (réponse paginée)
+3. `frontend/src/app/core/services/entrainement.service.ts` (réponse paginée + import)
+4. `frontend/src/app/core/services/echauffement.service.ts` (réponse paginée + import)
+5. `frontend/src/app/core/services/situationmatch.service.ts` (réponse paginée + import)
+
+**Risque si non fait** : Résolu (corrections déployées)
 
 ---
 
