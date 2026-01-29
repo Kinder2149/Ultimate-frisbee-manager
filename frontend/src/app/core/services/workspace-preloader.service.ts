@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, Subject, forkJoin, of } from 'rxjs';
-import { map, tap, catchError, finalize } from 'rxjs/operators';
+import { map, tap, catchError, finalize, switchMap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { IndexedDbService } from './indexed-db.service';
 import { DataCacheService } from './data-cache.service';
@@ -167,25 +167,47 @@ export class WorkspacePreloaderService {
   preloadFromBulkEndpoint(workspaceId: string): Observable<WorkspaceData> {
     console.log('[WorkspacePreloader] Using bulk endpoint for workspace:', workspaceId);
     
+    // ✅ Émettre immédiatement la progression de démarrage
+    this.progressSubject.next({
+      current: 0,
+      total: 6,
+      percentage: 0,
+      currentTask: 'Démarrage du préchargement...',
+      completed: false
+    });
+    
     return this.http.get<WorkspaceData>(`${environment.apiUrl}/workspaces/${workspaceId}/preload`).pipe(
       tap(data => {
-        // Sauvegarder toutes les données dans le cache
-        const cachePromises = [
+        // ✅ Émettre progression pendant le chargement
+        this.progressSubject.next({
+          current: 3,
+          total: 6,
+          percentage: 50,
+          currentTask: 'Sauvegarde des données en cache...',
+          completed: false
+        });
+      }),
+      switchMap(data => {
+        // ✅ Sauvegarder toutes les données dans le cache et ATTENDRE la fin
+        const cacheObservables = [
           this.cache.get('exercices-list', 'exercices', () => of(data.exercices)),
           this.cache.get('entrainements-list', 'entrainements', () => of(data.entrainements)),
           this.cache.get('echauffements-list', 'echauffements', () => of(data.echauffements)),
           this.cache.get('situations-list', 'situations', () => of(data.situations)),
-          this.cache.get('tags-list', 'tags', () => of(data.tags))
+          this.cache.get('tags-list', 'tags', () => of(data.tags)),
+          this.cache.get('dashboard-stats', 'dashboard-stats', () => of(data.stats))
         ];
 
-        Promise.all(cachePromises).then(() => {
-          console.log('[WorkspacePreloader] All data cached successfully');
-        });
-
-        // Émettre la progression
+        return forkJoin(cacheObservables).pipe(
+          tap(() => console.log('[WorkspacePreloader] All data cached successfully')),
+          map(() => data) // Retourner les données originales
+        );
+      }),
+      tap(() => {
+        // ✅ Émettre la progression finale APRÈS que le cache soit complet
         this.progressSubject.next({
-          current: 5,
-          total: 5,
+          current: 6,
+          total: 6,
           percentage: 100,
           currentTask: 'Préchargement terminé',
           completed: true
@@ -204,23 +226,36 @@ export class WorkspacePreloaderService {
    * Précharge avec stratégie intelligente (bulk endpoint ou individuel)
    */
   smartPreload(workspaceId: string): Observable<PreloadProgress> {
-    // Essayer d'abord l'endpoint bulk
     return new Observable(observer => {
+      // ✅ S'abonner au progressSubject AVANT de démarrer le préchargement
+      const progressSub = this.progressSubject.subscribe(
+        progress => observer.next(progress)
+      );
+
+      // Essayer d'abord l'endpoint bulk
       this.preloadFromBulkEndpoint(workspaceId).subscribe({
         next: () => {
           // Succès avec l'endpoint bulk
-          this.progressSubject.subscribe(progress => observer.next(progress));
+          console.log('[WorkspacePreloader] Bulk endpoint completed successfully');
         },
-        error: () => {
+        error: (err) => {
           // Fallback vers le préchargement individuel
           console.log('[WorkspacePreloader] Using fallback individual loading');
+          progressSub.unsubscribe(); // Nettoyer l'ancien abonnement
+          
           this.preloadWorkspace(workspaceId).subscribe(
             progress => observer.next(progress),
-            error => observer.error(error),
+            error => {
+              observer.error(error);
+            },
             () => observer.complete()
           );
         },
-        complete: () => observer.complete()
+        complete: () => {
+          // ✅ Nettoyer et compléter l'observable
+          progressSub.unsubscribe();
+          observer.complete();
+        }
       });
     });
   }

@@ -29,7 +29,61 @@
 
 ## 🔧 TOUTES LES CORRECTIONS APPLIQUÉES
 
-### 1. DashboardComponent ✅ (2 corrections)
+### 1. WorkspacePreloaderService ✅ (Bug popup bloqué à 0%)
+
+**Fichier** : `frontend/src/app/core/services/workspace-preloader.service.ts`
+
+**Problème** : Le popup de préchargement restait bloqué à 0% car `preloadFromBulkEndpoint()` n'émettait jamais la progression pendant le chargement.
+
+**Correction** :
+```typescript
+preloadFromBulkEndpoint(workspaceId: string): Observable<WorkspaceData> {
+  // ✅ Émettre immédiatement la progression de démarrage
+  this.progressSubject.next({
+    current: 0,
+    total: 6,
+    percentage: 0,
+    currentTask: 'Démarrage du préchargement...',
+    completed: false
+  });
+  
+  return this.http.get<WorkspaceData>(`${environment.apiUrl}/workspaces/${workspaceId}/preload`).pipe(
+    tap(data => {
+      // ✅ Émettre progression pendant le chargement (50%)
+      this.progressSubject.next({
+        current: 3,
+        total: 6,
+        percentage: 50,
+        currentTask: 'Sauvegarde des données en cache...',
+        completed: false
+      });
+
+      // Sauvegarder 6 types de données (incluant dashboard-stats)
+      const cachePromises = [
+        this.cache.get('exercices-list', 'exercices', () => of(data.exercices)),
+        this.cache.get('entrainements-list', 'entrainements', () => of(data.entrainements)),
+        this.cache.get('echauffements-list', 'echauffements', () => of(data.echauffements)),
+        this.cache.get('situations-list', 'situations', () => of(data.situations)),
+        this.cache.get('tags-list', 'tags', () => of(data.tags)),
+        this.cache.get('dashboard-stats', 'dashboard-stats', () => of(data.stats))
+      ];
+
+      // ✅ Émettre la progression finale (100%)
+      this.progressSubject.next({
+        current: 6,
+        total: 6,
+        percentage: 100,
+        currentTask: 'Préchargement terminé',
+        completed: true
+      });
+    })
+  );
+}
+```
+
+---
+
+### 2. DashboardComponent ✅ (2 corrections)
 
 **Fichier** : `frontend/src/app/features/dashboard/dashboard.component.ts`
 
@@ -162,11 +216,11 @@ getAllContent(): Observable<AllContentResponse> {
 
 ---
 
-## 📁 FICHIERS MODIFIÉS (4)
+## 📁 FICHIERS MODIFIÉS (5)
 
 1. ✅ `frontend/src/app/features/dashboard/dashboard.component.ts`
 2. ✅ `frontend/src/app/core/services/dashboard.service.ts`
-3. ✅ `frontend/src/app/core/services/workspace-preloader.service.ts`
+3. ✅ `frontend/src/app/core/services/workspace-preloader.service.ts` ⭐ **2 corrections**
 4. ✅ `frontend/src/app/core/services/admin.service.ts`
 
 ---
@@ -226,6 +280,17 @@ getAllContent(): Observable<AllContentResponse> {
 
 ## 🧪 TESTS À EFFECTUER
 
+### 0. Popup de Préchargement
+```
+✅ Connexion → Sélection workspace : Popup s'affiche
+✅ Progression démarre immédiatement (0% → 50% → 100%)
+✅ Message "Démarrage du préchargement..." visible
+✅ Message "Sauvegarde des données en cache..." à 50%
+✅ Message "Préchargement terminé" à 100%
+✅ Popup se ferme automatiquement
+✅ Navigation vers dashboard instantanée
+```
+
 ### 1. Navigation Principale
 ```
 ✅ Connexion → Dashboard : Stats instantanées
@@ -279,21 +344,22 @@ getAllContent(): Observable<AllContentResponse> {
 ## 🎉 MESSAGE DE COMMIT FINAL
 
 ```
-fix: Optimisation complète du cache pour navigation instantanée
+fix: Optimisation complète du cache + correction popup préchargement
 
-🐛 Problèmes Corrigés (4 fichiers)
+🐛 Problèmes Corrigés (5 fichiers)
 
-1. DashboardComponent
+1. WorkspacePreloaderService (2 corrections)
+   - Corriger popup bloqué à 0% (émettre progression immédiatement)
+   - Ajouter préchargement des stats dashboard
+   - Gérer correctement les 6 types de données
+
+2. DashboardComponent
    - Supprimer clear('dashboard-stats') qui forçait rechargement
    - Supprimer clearAll() qui vidait le cache multi-workspace
 
-2. DashboardService
+3. DashboardService
    - Utiliser DataCacheService au lieu de http.get() direct
    - TTL 2 minutes pour les stats
-
-3. WorkspacePreloaderService
-   - Ajouter préchargement des stats dashboard
-   - 6 types de données préchargées automatiquement
 
 4. AdminService
    - Ajouter DataCacheService pour getOverview() (TTL 2min)
@@ -327,7 +393,7 @@ Cache:
 📁 Fichiers modifiés:
 - frontend/src/app/features/dashboard/dashboard.component.ts
 - frontend/src/app/core/services/dashboard.service.ts
-- frontend/src/app/core/services/workspace-preloader.service.ts
+- frontend/src/app/core/services/workspace-preloader.service.ts (2 corrections)
 - frontend/src/app/core/services/admin.service.ts
 
 📚 Documentation:
