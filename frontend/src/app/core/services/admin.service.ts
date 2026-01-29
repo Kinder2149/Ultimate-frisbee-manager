@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ApiUrlService } from './api-url.service';
+import { DataCacheService } from './data-cache.service';
 
 export interface AdminOverviewCounts {
   exercices: number;
@@ -75,17 +76,35 @@ export interface AdminOverviewResponse {
 
 @Injectable({ providedIn: 'root' })
 export class AdminService {
-  constructor(private http: HttpClient, private api: ApiUrlService) {}
+  constructor(
+    private http: HttpClient, 
+    private api: ApiUrlService,
+    private cache: DataCacheService
+  ) {}
 
   getOverview(): Observable<AdminOverviewResponse> {
-    const url = this.api.getUrl('admin/overview');
-    return this.http.get<AdminOverviewResponse>(url);
+    return this.cache.get<AdminOverviewResponse>(
+      'admin-overview',
+      'admin',
+      () => {
+        const url = this.api.getUrl('admin/overview');
+        return this.http.get<AdminOverviewResponse>(url);
+      },
+      { ttl: 2 * 60 * 1000 } // 2 minutes
+    );
   }
 
   // Gestion des utilisateurs (admin)
   getUsers(): Observable<{ users: Array<{ id: string; email: string; nom?: string; prenom?: string; role: string; isActive: boolean; iconUrl?: string | null; createdAt: string }> }> {
-    const url = this.api.getUrl('admin/users');
-    return this.http.get<{ users: Array<{ id: string; email: string; nom?: string; prenom?: string; role: string; isActive: boolean; iconUrl?: string | null; createdAt: string }> }>(url);
+    return this.cache.get<{ users: Array<{ id: string; email: string; nom?: string; prenom?: string; role: string; isActive: boolean; iconUrl?: string | null; createdAt: string }> }>(
+      'admin-users',
+      'admin',
+      () => {
+        const url = this.api.getUrl('admin/users');
+        return this.http.get<{ users: Array<{ id: string; email: string; nom?: string; prenom?: string; role: string; isActive: boolean; iconUrl?: string | null; createdAt: string }> }>(url);
+      },
+      { ttl: 5 * 60 * 1000 } // 5 minutes
+    );
   }
 
   updateUser(id: string, payload: { role?: string; isActive?: boolean }): Observable<{ user: any }> {
@@ -99,8 +118,15 @@ export class AdminService {
   }
 
   getAllContent(): Observable<AllContentResponse> {
-    const url = this.api.getUrl('admin/all-content');
-    return this.http.get<AllContentResponse>(url);
+    return this.cache.get<AllContentResponse>(
+      'admin-all-content',
+      'admin',
+      () => {
+        const url = this.api.getUrl('admin/all-content');
+        return this.http.get<AllContentResponse>(url);
+      },
+      { ttl: 5 * 60 * 1000 } // 5 minutes
+    );
   }
 
   getAllTags(): Observable<{ tags: any[] }> {

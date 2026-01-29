@@ -101,10 +101,11 @@ export class WorkspacePreloaderService {
       { name: 'Exercices', key: 'exercices-list', store: 'exercices', url: `${environment.apiUrl}/exercises` },
       { name: 'Entrainements', key: 'entrainements-list', store: 'entrainements', url: `${environment.apiUrl}/trainings` },
       { name: 'Échauffements', key: 'echauffements-list', store: 'echauffements', url: `${environment.apiUrl}/warmups` },
-      { name: 'Situations', key: 'situations-list', store: 'situations', url: `${environment.apiUrl}/matches` }
+      { name: 'Situations', key: 'situations-list', store: 'situations', url: `${environment.apiUrl}/matches` },
+      { name: 'Stats Dashboard', key: 'dashboard-stats', store: 'dashboard-stats', url: `${environment.apiUrl}/dashboard/stats` }
     ];
 
-    const total = tasks.length;
+    const total = tasks.length; // 6 tâches maintenant (avec stats dashboard)
     let current = 0;
 
     // Créer les observables pour chaque tâche

@@ -518,7 +518,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         }),
         filter((ws) => !!ws),
         switchMap(() => {
-          // ✅ Utiliser le cache au lieu de le vider
+          // ✅ Utiliser le cache - pas de clear() pour affichage instantané
           // Le TTL de 2min + SWR garantit la fraîcheur des données
           return this.loadDashboardStats$();
         })
@@ -579,9 +579,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   navigateToWorkspaceSelection(): void {
-    // Invalider le cache avant de changer de workspace
-    this.dataCache.clearAll();
-    // Naviguer vers la page de sélection avec forceSelection pour afficher tous les workspaces
+    // ✅ Ne PAS vider le cache pour conserver le cache multi-workspace
+    // Permet un retour instantané au workspace précédent
     this.router.navigate(['/select-workspace'], {
       queryParams: { forceSelection: 'true' }
     });
