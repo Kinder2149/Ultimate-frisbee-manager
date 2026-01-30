@@ -2,8 +2,7 @@
  * Controller pour la gestion des situations et matchs
  * Gère : type (Match/Situation), description, tags, temps
  */
-const { prisma } = require('../services/prisma');
-const { validateTagsInWorkspace } = require('../utils/workspace-validation');
+const situationMatchService = require('../services/business/situationmatch.service');
 
 /**
  * Récupère toutes les situations/matchs (avec pagination)
@@ -14,34 +13,11 @@ const { validateTagsInWorkspace } = require('../utils/workspace-validation');
 exports.getAllSituationsMatchs = async (req, res, next) => {
   try {
     const workspaceId = req.workspaceId;
-    
-    // Paramètres de pagination
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 50;
-    const skip = (page - 1) * limit;
+    const { page, limit } = req.query;
 
-    // Compter le total de situations/matchs
-    const total = await prisma.situationMatch.count({
-      where: { workspaceId }
-    });
-
-    // Récupérer les situations/matchs paginés
-    const situationsMatchs = await prisma.situationMatch.findMany({
-      where: { workspaceId },
-      include: { tags: true },
-      orderBy: { createdAt: 'desc' },
-      skip,
-      take: limit
-    });
+    const result = await situationMatchService.getAllSituationsMatchs(workspaceId, { page, limit });
     
-    // Réponse paginée standardisée
-    res.json({
-      data: situationsMatchs,
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit)
-    });
+    res.json(result);
   } catch (error) {
     next(error);
   }
@@ -56,10 +32,7 @@ exports.getSituationMatchById = async (req, res, next) => {
     const { id } = req.params;
     const workspaceId = req.workspaceId;
 
-    const situationMatch = await prisma.situationMatch.findFirst({
-      where: { id, workspaceId },
-      include: { tags: true }
-    });
+    const situationMatch = await situationMatchService.getSituationMatchById(id, workspaceId);
     
     if (!situationMatch) {
       const error = new Error('Situation/match non trouvée');
@@ -80,35 +53,20 @@ exports.getSituationMatchById = async (req, res, next) => {
 exports.createSituationMatch = async (req, res, next) => {
   try {
     const workspaceId = req.workspaceId;
-    const { nom, type, description, temps, tagIds } = req.body;
-    
-    // SÉCURITÉ: Valider que tous les tags appartiennent au workspace
-    if (tagIds && tagIds.length > 0) {
-      const tagValidation = await validateTagsInWorkspace(tagIds, workspaceId);
-      if (!tagValidation.valid) {
-        return res.status(400).json({
-          error: 'Certains tags n\'appartiennent pas à ce workspace',
-          code: 'INVALID_TAGS',
-          invalidIds: tagValidation.invalidIds
-        });
-      }
-    }
-    
-    const nouvelleSituationMatch = await prisma.situationMatch.create({
-      data: {
-        nom,
-        type,
-        description,
-        temps,
-        imageUrl: req.file ? req.file.cloudinaryUrl : (req.body.imageUrl || null),
-        workspaceId,
-        tags: { connect: (tagIds || []).map(id => ({ id })) }
-      },
-      include: { tags: true }
-    });
+    const data = req.body;
+    const file = req.file;
+
+    const nouvelleSituationMatch = await situationMatchService.createSituationMatch(data, workspaceId, file);
     
     res.status(201).json(nouvelleSituationMatch);
   } catch (error) {
+    if (error.code === 'INVALID_TAGS') {
+      return res.status(error.statusCode || 400).json({
+        error: error.message,
+        code: error.code,
+        invalidIds: error.invalidIds
+      });
+    }
     next(error);
   }
 };
@@ -121,41 +79,20 @@ exports.updateSituationMatch = async (req, res, next) => {
   try {
     const { id } = req.params;
     const workspaceId = req.workspaceId;
-    const { nom, type, description, temps, tagIds } = req.body;
+    const data = req.body;
+    const file = req.file;
 
-    // SÉCURITÉ: Valider que tous les tags appartiennent au workspace
-    if (tagIds && tagIds.length > 0) {
-      const tagValidation = await validateTagsInWorkspace(tagIds, workspaceId);
-      if (!tagValidation.valid) {
-        return res.status(400).json({
-          error: 'Certains tags n\'appartiennent pas à ce workspace',
-          code: 'INVALID_TAGS',
-          invalidIds: tagValidation.invalidIds
-        });
-      }
-    }
-
-    const updateData = {
-      nom,
-      type,
-      description,
-      temps,
-      imageUrl: req.file
-        ? req.file.cloudinaryUrl
-        : (req.body.imageUrl !== undefined
-            ? (req.body.imageUrl === '' ? null : req.body.imageUrl)
-            : undefined),
-      tags: { set: (tagIds || []).map(id => ({ id })) }
-    };
-
-    const situationMatchMiseAJour = await prisma.situationMatch.update({
-      where: { id, workspaceId },
-      data: updateData,
-      include: { tags: true }
-    });
+    const situationMatchMiseAJour = await situationMatchService.updateSituationMatch(id, data, workspaceId, file);
     
     res.json(situationMatchMiseAJour);
   } catch (error) {
+    if (error.code === 'INVALID_TAGS') {
+      return res.status(error.statusCode || 400).json({
+        error: error.message,
+        code: error.code,
+        invalidIds: error.invalidIds
+      });
+    }
     next(error);
   }
 };
@@ -169,15 +106,8 @@ exports.deleteSituationMatch = async (req, res, next) => {
     const { id } = req.params;
     const workspaceId = req.workspaceId;
 
-    const situationMatch = await prisma.situationMatch.findFirst({ where: { id, workspaceId } });
-
-    if (!situationMatch) {
-      const error = new Error('Situation/match non trouvée');
-      error.statusCode = 404;
-      return next(error);
-    }
-
-    await prisma.situationMatch.delete({ where: { id, workspaceId } });
+    await situationMatchService.deleteSituationMatch(id, workspaceId);
+    
     res.status(204).send();
   } catch (error) {
     next(error);
@@ -193,29 +123,7 @@ exports.duplicateSituationMatch = async (req, res, next) => {
     const { id } = req.params;
     const workspaceId = req.workspaceId;
     
-    const situationMatchOriginale = await prisma.situationMatch.findFirst({
-      where: { id, workspaceId },
-      include: { tags: true }
-    });
-    
-    if (!situationMatchOriginale) {
-      const error = new Error('Situation/match non trouvée');
-      error.statusCode = 404;
-      return next(error);
-    }
-    
-    const situationMatchDupliquee = await prisma.situationMatch.create({
-      data: {
-        nom: situationMatchOriginale.nom ? `${situationMatchOriginale.nom} (Copie)` : `Copie de ${situationMatchOriginale.type}`,
-        type: situationMatchOriginale.type,
-        description: situationMatchOriginale.description,
-        temps: situationMatchOriginale.temps,
-        imageUrl: situationMatchOriginale.imageUrl,
-        workspaceId: situationMatchOriginale.workspaceId,
-        tags: { connect: situationMatchOriginale.tags.map(tag => ({ id: tag.id })) }
-      },
-      include: { tags: true }
-    });
+    const situationMatchDupliquee = await situationMatchService.duplicateSituationMatch(id, workspaceId);
     
     res.status(201).json(situationMatchDupliquee);
   } catch (error) {

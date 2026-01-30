@@ -53,6 +53,8 @@
     "pg": "^8.11.3",
     "pino-http": "^9.0.0",
     "streamifier": "^0.1.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "uuid": "^11.1.0",
     "zod": "^4.1.9"
   },

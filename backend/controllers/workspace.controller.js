@@ -1,104 +1,5 @@
 const { prisma } = require('../services/prisma');
-
-// Workspace par défaut pour les nouveaux utilisateurs sans base de travail explicite
-const DEFAULT_WORKSPACE_NAME = 'BASE';
-// Workspace réservé aux administrateurs
-const ADMIN_WORKSPACE_NAME = 'TEST';
-
-/**
- * Assure qu'un utilisateur est lié aux workspaces appropriés :
- * - BASE : tous les utilisateurs (modèle de référence)
- * - TEST : uniquement les administrateurs
- * 
- * @param {string} userId - ID de l'utilisateur
- * @returns {Array} Liste des workspaces accessibles avec leurs infos
- */
-async function ensureDefaultWorkspaceAndLink(userId) {
-  if (!userId) {
-    return null;
-  }
-
-  // Vérifier que l'utilisateur existe réellement en base (évite FK violation pour 'dev-user' fictif)
-  const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user) {
-    console.warn(`[Workspace] User ${userId} not found in database, skipping workspace link creation`);
-    return [];
-  }
-
-  const isAdmin = String(user.role).toUpperCase() === 'ADMIN';
-
-  // Récupérer les liens existants
-  const existingLinks = await prisma.workspaceUser.findMany({
-    where: { userId },
-    include: { workspace: true },
-    orderBy: { createdAt: 'asc' },
-  });
-
-  // Vérifier si l'utilisateur est déjà lié à BASE
-  const hasBaseLink = existingLinks.some((l) => l.workspace.name === DEFAULT_WORKSPACE_NAME);
-  // Vérifier si l'admin est déjà lié à TEST
-  const hasTestLink = existingLinks.some((l) => l.workspace.name === ADMIN_WORKSPACE_NAME);
-
-  // Lier à BASE si pas encore lié
-  if (!hasBaseLink) {
-    let baseWorkspace = await prisma.workspace.findFirst({
-      where: { name: DEFAULT_WORKSPACE_NAME },
-    });
-
-    if (!baseWorkspace) {
-      baseWorkspace = await prisma.workspace.create({
-        data: { name: DEFAULT_WORKSPACE_NAME },
-      });
-    }
-
-    await prisma.workspaceUser.create({
-      data: {
-        workspaceId: baseWorkspace.id,
-        userId,
-        role: 'USER',
-      },
-    });
-
-    existingLinks.push({
-      workspace: baseWorkspace,
-      role: 'USER',
-    });
-  }
-
-  // Lier à TEST si admin et pas encore lié
-  if (isAdmin && !hasTestLink) {
-    let testWorkspace = await prisma.workspace.findFirst({
-      where: { name: ADMIN_WORKSPACE_NAME },
-    });
-
-    if (!testWorkspace) {
-      testWorkspace = await prisma.workspace.create({
-        data: { name: ADMIN_WORKSPACE_NAME },
-      });
-    }
-
-    await prisma.workspaceUser.create({
-      data: {
-        workspaceId: testWorkspace.id,
-        userId,
-        role: 'OWNER',
-      },
-    });
-
-    existingLinks.push({
-      workspace: testWorkspace,
-      role: 'OWNER',
-    });
-  }
-
-  // Retourner tous les workspaces accessibles
-  return existingLinks.map((l) => ({
-    id: l.workspace.id,
-    name: l.workspace.name,
-    createdAt: l.workspace.createdAt,
-    role: l.role,
-  }));
-}
+const workspaceService = require('../services/business/workspace.service');
 
 /**
  * Retourne les workspaces accessibles à l'utilisateur courant
@@ -111,7 +12,7 @@ exports.getMyWorkspaces = async (req, res, next) => {
       return res.status(401).json({ error: 'Utilisateur non authentifié', code: 'NO_USER' });
     }
 
-    const workspaces = await ensureDefaultWorkspaceAndLink(userId);
+    const workspaces = await workspaceService.ensureDefaultWorkspaceAndLink(userId);
 
     res.json(workspaces || []);
   } catch (error) {

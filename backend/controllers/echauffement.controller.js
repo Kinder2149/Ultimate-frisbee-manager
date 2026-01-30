@@ -1,4 +1,4 @@
-const { prisma } = require('../services/prisma');
+const echauffementService = require('../services/business/echauffement.service');
 
 /**
  * Récupère tous les échauffements avec leurs blocs (avec pagination)
@@ -10,38 +10,11 @@ const { prisma } = require('../services/prisma');
 exports.getAllEchauffements = async (req, res, next) => {
   try {
     const workspaceId = req.workspaceId;
-    
-    // Paramètres de pagination
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 50;
-    const skip = (page - 1) * limit;
+    const { page, limit } = req.query;
 
-    // Compter le total d'échauffements
-    const total = await prisma.echauffement.count({
-      where: { workspaceId }
-    });
-
-    // Récupérer les échauffements paginés
-    const echauffements = await prisma.echauffement.findMany({
-      where: { workspaceId },
-      include: {
-        blocs: {
-          orderBy: { ordre: 'asc' }
-        }
-      },
-      orderBy: { createdAt: 'desc' },
-      skip,
-      take: limit
-    });
+    const result = await echauffementService.getAllEchauffements(workspaceId, { page, limit });
     
-    // Réponse paginée standardisée
-    res.json({
-      data: echauffements,
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit)
-    });
+    res.json(result);
   } catch (error) {
     next(error);
   }
@@ -57,14 +30,7 @@ exports.getEchauffementById = async (req, res, next) => {
     const { id } = req.params;
     const workspaceId = req.workspaceId;
     
-    const echauffement = await prisma.echauffement.findFirst({
-      where: { id, workspaceId },
-      include: {
-        blocs: {
-          orderBy: { ordre: 'asc' }
-        }
-      }
-    });
+    const echauffement = await echauffementService.getEchauffementById(id, workspaceId);
     
     if (!echauffement) {
       const error = new Error('Échauffement non trouvé');
@@ -86,20 +52,10 @@ exports.getEchauffementById = async (req, res, next) => {
 exports.createEchauffement = async (req, res, next) => {
   try {
     const workspaceId = req.workspaceId;
-    const { nom, description, blocs } = req.body;
+    const data = req.body;
+    const file = req.file;
     
-    const nouvelEchauffement = await prisma.echauffement.create({
-      data: {
-        nom,
-        description,
-        imageUrl: req.file ? req.file.cloudinaryUrl : (req.body.imageUrl || null),
-        workspaceId,
-        blocs: {
-          create: (blocs || []).map((bloc, index) => ({ ...bloc, ordre: bloc.ordre || index + 1 }))
-        }
-      },
-      include: { blocs: { orderBy: { ordre: 'asc' } } }
-    });
+    const nouvelEchauffement = await echauffementService.createEchauffement(data, workspaceId, file);
     
     res.status(201).json(nouvelEchauffement);
   } catch (error) {
@@ -116,32 +72,10 @@ exports.updateEchauffement = async (req, res, next) => {
   try {
     const { id } = req.params;
     const workspaceId = req.workspaceId;
-    const { nom, description, blocs } = req.body;
+    const data = req.body;
+    const file = req.file;
 
-    const echauffementMisAJour = await prisma.$transaction(async (tx) => {
-      // 1. Supprimer les anciens blocs
-      await tx.blocEchauffement.deleteMany({ where: { echauffementId: id } });
-
-      // 2. Mettre à jour l'échauffement et recréer les blocs
-      const updated = await tx.echauffement.update({
-        where: { id, workspaceId },
-        data: {
-          nom,
-          description,
-          imageUrl: req.file
-            ? req.file.cloudinaryUrl
-            : (req.body.imageUrl !== undefined
-                ? (req.body.imageUrl === '' ? null : req.body.imageUrl)
-                : undefined),
-          blocs: {
-            create: (blocs || []).map((bloc, index) => ({ ...bloc, ordre: bloc.ordre || index + 1 }))
-          }
-        },
-        include: { blocs: { orderBy: { ordre: 'asc' } } }
-      });
-
-      return updated;
-    });
+    const echauffementMisAJour = await echauffementService.updateEchauffement(id, data, workspaceId, file);
 
     res.json(echauffementMisAJour);
   } catch (error) {
@@ -159,15 +93,7 @@ exports.deleteEchauffement = async (req, res, next) => {
     const { id } = req.params;
     const workspaceId = req.workspaceId;
 
-    const echauffement = await prisma.echauffement.findFirst({ where: { id, workspaceId } });
-
-    if (!echauffement) {
-      const error = new Error('Échauffement non trouvé');
-      error.statusCode = 404;
-      return next(error);
-    }
-
-    await prisma.echauffement.delete({ where: { id, workspaceId } });
+    await echauffementService.deleteEchauffement(id, workspaceId);
     
     res.status(204).send();
   } catch (error) {
@@ -185,37 +111,7 @@ exports.duplicateEchauffement = async (req, res, next) => {
     const { id } = req.params;
     const workspaceId = req.workspaceId;
     
-    const echauffementOriginal = await prisma.echauffement.findFirst({
-      where: { id, workspaceId },
-      include: { blocs: { orderBy: { ordre: 'asc' } } }
-    });
-    
-    if (!echauffementOriginal) {
-      const error = new Error('Échauffement non trouvé');
-      error.statusCode = 404;
-      return next(error);
-    }
-    
-    const echauffementDuplique = await prisma.echauffement.create({
-      data: {
-        nom: `${echauffementOriginal.nom} (Copie)`,
-        description: echauffementOriginal.description,
-        imageUrl: echauffementOriginal.imageUrl,
-        workspaceId: echauffementOriginal.workspaceId,
-        blocs: {
-          create: echauffementOriginal.blocs.map(bloc => ({
-            ordre: bloc.ordre,
-            titre: bloc.titre,
-            repetitions: bloc.repetitions,
-            temps: bloc.temps,
-            informations: bloc.informations,
-            fonctionnement: bloc.fonctionnement,
-            notes: bloc.notes
-          }))
-        }
-      },
-      include: { blocs: { orderBy: { ordre: 'asc' } } }
-    });
+    const echauffementDuplique = await echauffementService.duplicateEchauffement(id, workspaceId);
     
     res.status(201).json(echauffementDuplique);
   } catch (error) {

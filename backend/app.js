@@ -2,16 +2,35 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const pinoHttp = require('pino-http');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./config/swagger');
 const errorHandler = require('./middleware/errorHandler.middleware');
-const { writeMethodsRateLimit } = require('./middleware/rateLimit.middleware');
+const { writeMethodsRateLimit, readMethodsRateLimit } = require('./middleware/rateLimit.middleware');
 const app = express();
 
 // Behind Vercel/Cloudflare: trust proxy to let Express use X-Forwarded-* correctly
 // This prevents express-rate-limit from warning about unexpected X-Forwarded-For
 app.set('trust proxy', 1);
 
-// Middlewares de sécurité
-app.use(helmet());
+// Middlewares de sécurité avec CSP renforcée
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"], // unsafe-inline nécessaire pour Angular Material
+      imgSrc: ["'self'", "data:", "https:", "blob:"], // Cloudinary + data URLs
+      connectSrc: ["'self'", "https://supabase.co", "https://*.supabase.co"], // API Supabase
+      fontSrc: ["'self'", "data:"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"],
+      upgradeInsecureRequests: []
+    }
+  },
+  crossOriginEmbedderPolicy: false, // Désactivé pour compatibilité Cloudinary
+  crossOriginResourcePolicy: { policy: "cross-origin" } // Permet ressources cross-origin
+}));
 // Logging HTTP (non intrusif) avec redaction des en-têtes sensibles
 app.use(pinoHttp({
   level: process.env.LOG_LEVEL || 'info',
@@ -81,18 +100,20 @@ app.use(cors({
   credentials: true
 }));
 
-// Rate limiting sur méthodes d'écriture
+// Rate limiting sur méthodes d'écriture (POST, PUT, PATCH, DELETE)
 app.use(writeMethodsRateLimit);
+
+// Rate limiting sur méthodes de lecture (GET) - 1000 req/15min
+app.use(readMethodsRateLimit);
 
 // Middleware pour parser le JSON
 app.use(express.json());
 
-// Désactiver explicitement les routes de debug en production (temporairement désactivé pour diagnostiquer)
-// if (String(process.env.NODE_ENV || '').toLowerCase() === 'production') {
-//   app.use('/api/debug', (req, res) => {
-//     return res.status(404).json({ error: 'Not found' });
-//   });
-// }
+// Documentation API Swagger
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'Ultimate Frisbee Manager API'
+}));
 
 // Initialisation des routes
 require('./routes')(app);
