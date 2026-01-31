@@ -1,0 +1,48 @@
+<header class="mobile-header">
+  <div class="mobile-header__brand">
+    <mat-icon class="mobile-header__icon">sports</mat-icon>
+    <h1 class="mobile-header__title">UFM</h1>
+  </div>
+
+  <div class="mobile-header__actions">
+    <button 
+      mat-icon-button 
+      class="mobile-header__action-btn"
+      (click)="onSearchClick()"
+      aria-label="Rechercher">
+      <mat-icon>search</mat-icon>
+    </button>
+
+    <button 
+      mat-icon-button 
+      class="mobile-header__action-btn mobile-header__avatar"
+      [matMenuTriggerFor]="userMenu"
+      aria-label="Menu utilisateur">
+      <span class="avatar-initials">{{ userInitials }}</span>
+    </button>
+  </div>
+</header>
+
+<mat-menu #userMenu="matMenu" class="mobile-header__menu">
+  <button mat-menu-item (click)="onProfileClick()">
+    <mat-icon>person</mat-icon>
+    <span>Profil</span>
+  </button>
+
+  <button mat-menu-item (click)="onTagsClick()">
+    <mat-icon>label</mat-icon>
+    <span>Tags</span>
+  </button>
+
+  <button mat-menu-item *ngIf="isAdmin" (click)="onAdminClick()">
+    <mat-icon>admin_panel_settings</mat-icon>
+    <span>Administration</span>
+  </button>
+
+  <mat-divider></mat-divider>
+
+  <button mat-menu-item (click)="onLogoutClick()">
+    <mat-icon>logout</mat-icon>
+    <span>Déconnexion</span>
+  </button>
+</mat-menu>

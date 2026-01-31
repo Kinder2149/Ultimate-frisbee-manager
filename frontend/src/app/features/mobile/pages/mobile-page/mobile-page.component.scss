@@ -1,0 +1,13 @@
+@import '../../../../shared/styles/global-theme.scss';
+
+.mobile-page {
+  min-height: 100vh;
+  background-color: var(--background-color);
+  padding-top: 104px;
+}
+
+@media (max-width: 768px) {
+  .mobile-page {
+    padding-top: 104px;
+  }
+}

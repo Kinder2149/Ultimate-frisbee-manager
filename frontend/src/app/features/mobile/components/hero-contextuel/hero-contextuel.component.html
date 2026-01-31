@@ -1,0 +1,56 @@
+<div class="hero-contextuel" *ngIf="item" [style.--hero-color]="categoryColor">
+  <div class="hero-contextuel__header">
+    <mat-icon class="hero-contextuel__star">star</mat-icon>
+    <h2 class="hero-contextuel__title">{{ categoryLabel }}</h2>
+  </div>
+
+  <mat-card class="hero-card" (click)="onItemClick()">
+    <div class="hero-card__badge">
+      <mat-icon>{{ typeIcon }}</mat-icon>
+      <span>{{ typeLabel }}</span>
+    </div>
+
+    <mat-card-header class="hero-card__header">
+      <mat-card-title class="hero-card__title">{{ item.title }}</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content class="hero-card__content">
+      <p class="hero-card__description" *ngIf="item.description">
+        {{ truncateText(item.description, 120) }}
+      </p>
+
+      <div class="hero-card__meta">
+        <div class="meta-item" *ngIf="item.duree">
+          <mat-icon>schedule</mat-icon>
+          <span>{{ item.duree }} min</span>
+        </div>
+
+        <div class="meta-item" *ngIf="item.nombreBlocs">
+          <mat-icon>view_module</mat-icon>
+          <span>{{ item.nombreBlocs }} blocs</span>
+        </div>
+
+        <div class="meta-item">
+          <mat-icon>calendar_today</mat-icon>
+          <span>{{ item.createdAt | date:'dd/MM/yyyy' }}</span>
+        </div>
+      </div>
+
+      <div class="hero-card__tags" *ngIf="item.tags && item.tags.length > 0">
+        <span 
+          *ngFor="let tag of item.tags.slice(0, 3)" 
+          class="tag"
+          [style.background-color]="tag.color">
+          {{ tag.label }}
+        </span>
+        <span *ngIf="item.tags.length > 3" class="tag tag--more">
+          +{{ item.tags.length - 3 }}
+        </span>
+      </div>
+    </mat-card-content>
+
+    <div class="hero-card__action">
+      <mat-icon>arrow_forward</mat-icon>
+    </div>
+  </mat-card>
+</div>

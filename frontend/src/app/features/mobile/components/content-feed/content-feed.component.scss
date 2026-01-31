@@ -1,0 +1,146 @@
+@import '../../../../shared/styles/global-theme.scss';
+
+.content-feed {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 80px;
+
+  &__items {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  &__loading,
+  &__error,
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-xl);
+    text-align: center;
+    color: var(--text-muted);
+    min-height: 200px;
+
+    mat-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      margin-bottom: var(--spacing-md);
+    }
+
+    p {
+      margin: 0;
+      font-size: 14px;
+    }
+  }
+
+  &__error {
+    color: var(--error-color);
+
+    mat-icon {
+      color: var(--error-color);
+    }
+  }
+}
+
+.entity-card {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-left: 4px solid var(--category-color);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  .entity-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 16px;
+
+    mat-card-title {
+      flex: 1;
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text-primary);
+    }
+  }
+
+  .entity-card-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+
+    button {
+      width: 36px;
+      height: 36px;
+
+      mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
+
+  .entity-card-body {
+    padding: 0 16px 16px 16px;
+
+    .info-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 14px;
+
+      .label {
+        font-weight: 500;
+        color: var(--text-secondary);
+      }
+
+      .value {
+        color: var(--text-primary);
+
+        &.duration {
+          font-weight: 600;
+          color: var(--category-color);
+        }
+      }
+    }
+
+    .tags-display {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+
+      .tag {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 500;
+        color: white;
+
+        &--more {
+          background-color: var(--text-muted);
+        }
+      }
+    }
+
+    .created-at {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+  }
+}

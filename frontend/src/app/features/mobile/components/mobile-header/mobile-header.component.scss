@@ -1,0 +1,75 @@
+@import '../../../../shared/styles/global-theme.scss';
+
+.mobile-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  z-index: 1000;
+  
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  
+  background: linear-gradient(135deg, var(--primary-color) 0%, #2980b9 100%);
+  color: white;
+  box-shadow: var(--shadow-md);
+  
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  &__icon {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+  }
+  
+  &__title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  &__action-btn {
+    color: white;
+    
+    mat-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+    }
+  }
+  
+  &__avatar {
+    .avatar-initials {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.2);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+  }
+  
+  &__menu {
+    mat-icon {
+      margin-right: 12px;
+    }
+  }
+}

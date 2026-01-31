@@ -1,0 +1,118 @@
+@import '../../../../shared/styles/global-theme.scss';
+
+.mobile-filter-bar {
+  position: sticky;
+  top: 56px;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  
+  background-color: var(--background-color);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  
+  &__categories {
+    flex: 1;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+  
+  &__sort {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 4px 8px;
+    min-width: 60px;
+    
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+    
+    .sort-label {
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+  }
+}
+
+.category-bubble {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  
+  background-color: white;
+  border: 2px solid var(--category-color);
+  border-radius: 16px;
+  
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &__icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    color: var(--category-color);
+  }
+  
+  &__label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap;
+  }
+  
+  &__count {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--category-color);
+    background-color: rgba(0, 0, 0, 0.05);
+    padding: 2px 6px;
+    border-radius: 8px;
+    min-width: 20px;
+    text-align: center;
+  }
+  
+  &--active {
+    background-color: var(--category-color);
+    
+    .category-bubble__icon,
+    .category-bubble__label {
+      color: white;
+    }
+    
+    .category-bubble__count {
+      background-color: rgba(255, 255, 255, 0.3);
+      color: white;
+    }
+  }
+  
+  &:hover:not(&--active) {
+    background-color: rgba(0, 0, 0, 0.02);
+    transform: translateY(-2px);
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+}

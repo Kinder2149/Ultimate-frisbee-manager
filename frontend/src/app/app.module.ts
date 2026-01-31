@@ -62,6 +62,13 @@ const routes: Routes = [
     canActivate: [AuthGuard, WorkspaceSelectedGuard]
   },
   
+  // Route mobile (protégée)
+  {
+    path: 'mobile',
+    loadComponent: () => import('./features/mobile/pages/mobile-page/mobile-page.component').then(c => c.MobilePageComponent),
+    canActivate: [AuthGuard, WorkspaceSelectedGuard]
+  },
+  
   // Route directe vers le dashboard (protégée)
   { 
     path: '', 

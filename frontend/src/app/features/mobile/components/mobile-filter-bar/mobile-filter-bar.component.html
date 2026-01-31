@@ -1,0 +1,23 @@
+<div class="mobile-filter-bar">
+  <div class="mobile-filter-bar__categories">
+    <button
+      *ngFor="let category of categories"
+      class="category-bubble"
+      [class.category-bubble--active]="activeCategory === category.type"
+      [style.--category-color]="category.color"
+      (click)="onCategoryClick(category.type)">
+      <mat-icon class="category-bubble__icon">{{ category.icon }}</mat-icon>
+      <span class="category-bubble__label">{{ category.label }}</span>
+      <span class="category-bubble__count">{{ getCategoryCount(category.type) }}</span>
+    </button>
+  </div>
+
+  <button 
+    class="mobile-filter-bar__sort"
+    mat-icon-button
+    (click)="onSortClick()"
+    [attr.aria-label]="'Trier par ' + sortLabel">
+    <mat-icon>{{ sortIcon }}</mat-icon>
+    <span class="sort-label">{{ sortLabel }}</span>
+  </button>
+</div>

@@ -4264,3 +4264,910 @@ Le projet a satisfait tous les prérequis critiques (P0/P1). La mission P2 repor
 ---
 
 *Ce document est la base documentaire unique du projet. Il sera enrichi progressivement au fil des phases d'audit.*
+
+---
+
+"## 14. AUDIT DU CYCLE DE VIE DES DONNÉES ET DU CACHE APPLICATIF
+
+**Date de l'audit** : 31 janvier 2026  
+**Auditeur** : IA Cascade (Windsurf) — Analyse du parcours utilisateur réel  
+**Objectif** : Comprendre pourquoi certaines données ne sont pas persistantes, pourquoi certains écrans déclenchent des chargements inutiles, et pourquoi l'utilisateur doit visiter des pages spécifiques pour que les données apparaissent ailleurs.
+
+---
+
+### 14.1 PARCOURS UTILISATEUR COMPLET - DEPUIS LA CONNEXION
+
+#### 14.1.1 Étape 1 : Connexion utilisateur
+
+**Fichier** : `frontend/src/app/core/services/auth.service.ts`
+
+**Séquence d'initialisation** :
+
+1. **Démarrage de l'application** (`constructor` du AuthService, ligne 32)
+   - Appel de `initializeAuth()` automatiquement
+   - Écoute des changements d'état Supabase via `listenToAuthStateChanges()`
+
+2. **Vérification session existante** (ligne 43)
+   ```typescript
+   const { data: { session } } = await this.supabaseService.supabase.auth.getSession();
+   ```
+   - Si session trouvée → chargement du profil
+
+3. **Chargement du profil utilisateur** (ligne 49-53)
+   - **CACHE INDEXEDDB** : Tentative de chargement depuis `loadCachedProfile()`
+   - Clé : `'auth'` store, `'user-profile'` key
+   - TTL : **24 heures** (ligne 372 de `auth.service.ts`)
+   - Si cache trouvé → affichage immédiat du profil
+   - Sinon → attente de la synchronisation backend
+
+4. **Synchronisation backend** (ligne 56-63)
+   - Appel API : `GET /api/auth/profile`
+   - **RETRY** : 2 tentatives avec délai de 1000ms (ligne 334-340)
+   - Mise à jour du `currentUserSubject` (BehaviorSubject)
+   - Sauvegarde dans IndexedDB pour la prochaine fois
+
+5. **Sélection automatique du workspace** (ligne 57)
+   - Chaînage via `switchMap(() => this.ensureWorkspaceSelected())`
+   - Appel API : `GET /api/workspaces/me`
+   - **RETRY** : 2 tentatives avec délai de 1000ms (ligne 414-420)
+   - Sélection automatique du workspace "BASE" ou du premier disponible
+   - Stockage dans **localStorage** : clé `'ufm.currentWorkspace'`
+
+**Données chargées à cette étape** :
+- ✅ Profil utilisateur (en cache IndexedDB)
+- ✅ Liste des workspaces disponibles (non cachée)
+- ✅ Workspace actif sélectionné (localStorage)
+
+**Données NON chargées** :
+- ❌ Exercices
+- ❌ Entraînements
+- ❌ Tags
+- ❌ Échauffements
+- ❌ Situations de match
+
+---
+
+#### 14.1.2 Étape 2 : Initialisation de l'application
+
+**Fichier** : `frontend/src/app/app.component.ts`
+
+**Séquence au démarrage** (ligne 50-67) :
+
+1. **Initialisation du GlobalPreloaderService** (ligne 65)
+   ```typescript
+   this.globalPreloader.initialize();
+   ```
+
+2. **Abonnement aux changements** (`global-preloader.service.ts`, ligne 37-62)
+   - Écoute `combineLatest([isAuthenticated$, currentWorkspace$])`
+   - **Condition de déclenchement** :
+     - Utilisateur authentifié
+     - Workspace sélectionné
+     - Workspace pas déjà préchargé
+     - Pas de préchargement en cours
+
+3. **Vérification de la complétude du cache** (ligne 79)
+   - Appel `getCacheCompleteness(workspaceId)`
+   - Vérifie 5 stores IndexedDB :
+     - `exercices-list`
+     - `entrainements-list`
+     - `echauffements-list`
+     - `situations-list`
+     - `tags-list`
+   - Retourne un pourcentage (0-100%)
+
+4. **Stratégie de préchargement** (ligne 82-113)
+   - **Si cache ≥ 80%** : Refresh en arrière-plan (stale-while-revalidate)
+   - **Si cache < 80%** : Préchargement complet
+
+**⚠️ PROBLÈME IDENTIFIÉ #1 : Préchargement conditionnel invisible**
+
+Le préchargement se fait automatiquement en arrière-plan SANS indicateur visible pour l'utilisateur. Si l'utilisateur navigue vers `/exercices` avant la fin du préchargement, il verra un écran vide ou un loader, créant une perception de lenteur.
+
+---
+
+#### 14.1.3 Étape 3 : Préchargement des données
+
+**Fichier** : `frontend/src/app/core/services/workspace-preloader.service.ts`
+
+**Méthode utilisée** : `smartPreload(workspaceId)` (ligne 228-261)
+
+**Séquence** :
+
+1. **Tentative endpoint bulk** (ligne 236)
+   - Appel API : `GET /api/workspaces/:id/preload`
+   - **Charge TOUTES les données en une seule requête** :
+     - Exercices
+     - Entraînements
+     - Échauffements
+     - Situations
+     - Tags
+     - Stats dashboard
+
+2. **Sauvegarde dans le cache** (ligne 192-204)
+   - Utilise `DataCacheService.get()` pour chaque type de donnée
+   - Sauvegarde dans **2 niveaux de cache** :
+     - Cache mémoire (Map JavaScript)
+     - Cache IndexedDB (persistant)
+
+3. **Fallback si échec** (ligne 241-252)
+   - Si l'endpoint bulk échoue → chargement individuel
+   - 6 requêtes API parallèles (forkJoin)
+   - Même logique de cache
+
+**⚠️ PROBLÈME IDENTIFIÉ #2 : Endpoint bulk charge TOUT sans pagination**
+
+L'endpoint `/api/workspaces/:id/preload` charge **toutes** les données du workspace en une seule fois. Si un workspace contient 500 exercices, 200 entraînements, etc., cela peut causer :
+- Timeout de la requête
+- Surcharge mémoire navigateur
+- Temps de chargement très long
+
+**Référence dans AUDIT_GLOBAL_COMPLET.md** : Section 3.4.3, ligne 433-436
+> Route `/api/workspaces/:id/preload` : Précharge données d'un workspace
+> ⚠️ **Charge TOUTES les données d'un coup, risque de surcharge**
+
+---
+
+### 14.2 CYCLE DE VIE DES DONNÉES PAR TYPE
+
+#### 14.2.1 Données : UTILISATEUR (User)
+
+**Où chargée** :
+- `AuthService.syncUserProfile()` (ligne 332-364)
+- API : `GET /api/auth/profile`
+
+**Quand chargée** :
+1. À la connexion (événement `SIGNED_IN`)
+2. À l'initialisation si session existe
+3. Sur événement `USER_UPDATED` de Supabase
+
+**Combien de fois** :
+- **1 fois** au démarrage
+- **Retry** : 2 tentatives si échec
+- **Refresh** : Sur événement Supabase uniquement
+
+**Où stockée** :
+- **BehaviorSubject** : `currentUserSubject` (mémoire volatile)
+- **IndexedDB** : Store `'auth'`, clé `'user-profile'`
+- **TTL** : 24 heures
+
+**Réutilisation** :
+- ✅ Chargement depuis cache IndexedDB au démarrage
+- ✅ Affichage immédiat si cache valide
+- ✅ Synchronisation backend en arrière-plan
+
+**Comportement** : ✅ **COHÉRENT**
+
+---
+
+#### 14.2.2 Données : WORKSPACE
+
+**Où chargée** :
+- `AuthService.ensureWorkspaceSelected()` (ligne 405-441)
+- API : `GET /api/workspaces/me`
+
+**Quand chargée** :
+1. Après connexion réussie
+2. À l'initialisation si session existe
+
+**Combien de fois** :
+- **1 fois** au démarrage
+- **Retry** : 2 tentatives si échec
+- **Pas de refresh automatique**
+
+**Où stockée** :
+- **BehaviorSubject** : `currentWorkspaceSubject` (WorkspaceService)
+- **localStorage** : Clé `'ufm.currentWorkspace'`
+- **Pas de cache IndexedDB**
+
+**Réutilisation** :
+- ✅ Chargement depuis localStorage au démarrage
+- ❌ **Pas de vérification si le workspace existe toujours**
+- ❌ **Pas de synchronisation automatique**
+
+**⚠️ PROBLÈME IDENTIFIÉ #3 : Workspace supprimé non détecté**
+
+Si un workspace est supprimé côté serveur, le frontend garde l'ID en localStorage. L'utilisateur verra des erreurs 403 sur toutes les requêtes API sans comprendre pourquoi.
+
+**Référence dans AUDIT_GLOBAL_COMPLET.md** : Section 9.5, ligne 1471
+> **Workspace supprimé** : Désynchronisation frontend ↔ backend
+
+---
+
+#### 14.2.3 Données : EXERCICES
+
+**Où chargée** :
+- `ExerciceService.getExercices()` (ligne 35-48)
+- API : `GET /api/exercises`
+
+**Quand chargée** :
+1. **Préchargement automatique** : Via GlobalPreloaderService après connexion
+2. **Navigation vers `/exercices`** : Au `ngOnInit()` du composant (ligne 113)
+3. **Après mutation** : Sur événement `exercicesUpdated$` (ligne 116-120)
+
+**Combien de fois** :
+- **Minimum 2 fois** : Préchargement + affichage page
+- **Potentiellement 3 fois** si l'utilisateur navigue avant la fin du préchargement
+
+**Où stockée** :
+- **Cache mémoire** : Map dans `DataCacheService` (clé : `{workspaceId}_exercices-list`)
+- **Cache IndexedDB** : Store `'exercices'`, clé `'exercices-list'`
+- **TTL mémoire** : 5 minutes (ligne 28 de `data-cache.service.ts`)
+- **TTL IndexedDB** : 24 heures (par défaut)
+
+**Réutilisation** :
+- ✅ **Niveau 1** : Cache mémoire (si < 5 min)
+- ✅ **Niveau 2** : Cache IndexedDB (si < 24h)
+- ✅ **Stale-while-revalidate** : Affichage cache + refresh arrière-plan (ligne 137-141)
+
+**Invalidation** :
+- ✅ Sur création d'exercice (ligne 65)
+- ✅ Sur modification d'exercice (ligne 87-88)
+- ✅ Sur suppression d'exercice (ligne 108-109)
+- ✅ Sur duplication d'exercice (ligne 129)
+- ✅ Sur notification d'un autre onglet (SyncService)
+
+**Comportement** : ⚠️ **PARTIELLEMENT INCOHÉRENT**
+
+**⚠️ PROBLÈME IDENTIFIÉ #4 : Chargements redondants**
+
+Scénario typique :
+1. **T+0s** : Connexion → GlobalPreloader démarre le préchargement
+2. **T+1s** : Utilisateur clique sur "Exercices"
+3. **T+1s** : Composant ExerciceList appelle `getExercices()`
+4. **T+1s** : Cache vide (préchargement pas terminé) → **Requête API #1**
+5. **T+2s** : Préchargement termine → **Requête API #2** (même données)
+
+Résultat : **2 requêtes identiques** pour les mêmes données.
+
+---
+
+#### 14.2.4 Données : TAGS
+
+**Où chargée** :
+- `TagService.getTags()` (ligne 26-38)
+- API : `GET /api/tags`
+
+**Quand chargée** :
+1. **Préchargement automatique** : Via GlobalPreloaderService
+2. **Navigation vers `/exercices`** : Chargé avec les exercices (forkJoin, ligne 126-129)
+3. **Navigation vers autres pages** : Rechargé à chaque fois
+
+**Combien de fois** :
+- **Minimum 2 fois** : Préchargement + page exercices
+- **Potentiellement 5-6 fois** si l'utilisateur visite plusieurs pages
+
+**Où stockée** :
+- **Cache mémoire** : TTL 30 minutes (ligne 34 de `data-cache.service.ts`)
+- **Cache IndexedDB** : TTL 24 heures
+- **Clés multiples** :
+  - `'tags-list'` : Tous les tags
+  - `'tags-list-{category}'` : Tags par catégorie
+  - `'tags-grouped'` : Tags groupés
+
+**Réutilisation** :
+- ✅ Cache mémoire efficace (30 min)
+- ✅ Cache IndexedDB
+- ✅ Stale-while-revalidate
+
+**Invalidation** :
+- ✅ Sur création de tag (ligne 62-64)
+- ✅ Sur modification de tag (ligne 80-83)
+- ✅ Sur suppression de tag (ligne 103-106)
+- ✅ **Invalidation pattern** : `invalidatePattern('tags-list-')` pour nettoyer toutes les variantes
+
+**Comportement** : ✅ **COHÉRENT**
+
+Les tags sont bien cachés et réutilisés. Le système d'invalidation par pattern est intelligent.
+
+---
+
+#### 14.2.5 Données : ENTRAÎNEMENTS
+
+**Cycle de vie identique aux Exercices** (voir 14.2.3)
+
+**Particularités** :
+- TTL mémoire : 5 minutes
+- Clé cache : `'entrainements-list'`
+- Service : `EntrainementService`
+
+**Comportement** : ⚠️ **PARTIELLEMENT INCOHÉRENT** (mêmes problèmes que les exercices)
+
+---
+
+#### 14.2.6 Données : ÉCHAUFFEMENTS et SITUATIONS DE MATCH
+
+**Cycle de vie identique aux Exercices** (voir 14.2.3)
+
+**Comportement** : ⚠️ **PARTIELLEMENT INCOHÉRENT** (mêmes problèmes que les exercices)
+
+---
+
+### 14.3 SYSTÈMES DE CACHE EXISTANTS - ANALYSE DÉTAILLÉE
+
+#### 14.3.1 Cache Niveau 1 : Mémoire (DataCacheService)
+
+**Fichier** : `frontend/src/app/core/services/data-cache.service.ts`
+
+**Implémentation** :
+- **Structure** : `Map<string, CacheEntry>` (ligne 18)
+- **Clé** : `{workspaceId}_{cacheKey}` (ligne 185)
+- **Contenu** : Observable partagé (`shareReplay(1)`)
+
+**TTL par type de donnée** (ligne 22-41) :
+- Auth : 24 heures
+- Workspaces : 1 heure
+- Exercices/Entraînements/Échauffements/Situations : **5 minutes**
+- Tags : 30 minutes
+- Dashboard stats : 2 minutes
+
+**Stratégie de récupération** (ligne 95-150) :
+1. Vérifier cache mémoire (ligne 120-124)
+2. Si absent → vérifier IndexedDB (ligne 127-150)
+3. Si absent → fetch API (ligne 148)
+
+**Stale-while-revalidate** (ligne 136-141) :
+- Activé par défaut
+- Retourne données du cache immédiatement
+- Rafraîchit en arrière-plan
+- **Problème** : L'utilisateur peut voir des données obsolètes
+
+**Invalidation** (ligne 233-248) :
+- Par clé exacte : `invalidate('exercices-list')`
+- Par pattern : `invalidatePattern('tags-list-')`
+- Nettoie mémoire ET IndexedDB
+
+**Nettoyage automatique** (ligne 61-75) :
+- ✅ Vide cache mémoire au changement de workspace
+- ✅ **CONSERVE** cache IndexedDB (pour retour rapide)
+- ✅ Vide tout à la déconnexion
+
+**Comportement** : ✅ **BIEN CONÇU** mais avec des effets de bord
+
+---
+
+#### 14.3.2 Cache Niveau 2 : IndexedDB (IndexedDbService)
+
+**Fichier** : `frontend/src/app/core/services/indexed-db.service.ts`
+
+**Implémentation** :
+- **Base de données** : `'ufm-cache'` (ligne 13)
+- **Version** : 1
+- **Stores** : 7 stores (auth, workspaces, exercices, entrainements, tags, echauffements, situations)
+
+**Structure des données** (ligne 160-166) :
+```typescript
+{
+  id: string,           // Clé primaire
+  workspaceId: string,  // Isolation par workspace
+  data: T,              // Données réelles
+  timestamp: number,    // Date de création
+  expiresAt: number     // Date d'expiration
+}
+```
+
+**Index** (ligne 18-78) :
+- `timestamp` : Pour nettoyage par date
+- `workspaceId` : Pour isolation
+- `workspaceTimestamp` : Index composite
+
+**TTL** (ligne 153) :
+- Par défaut : **24 heures**
+- Configurable par appel
+
+**Vérification expiration** (ligne 224-230) :
+- À chaque lecture
+- Suppression automatique si expiré
+
+**Nettoyage périodique** (ligne 84-89 de `data-cache.service.ts`) :
+- Toutes les 5 minutes
+- Supprime entrées expirées
+
+**Isolation workspace** (ligne 216-221) :
+- Vérifie `workspaceId` à chaque lecture
+- Retourne `null` si workspace différent
+
+**⚠️ PROBLÈME IDENTIFIÉ #5 : Pas de nettoyage LRU**
+
+IndexedDB peut grossir indéfiniment. Si un utilisateur a accès à 10 workspaces et visite chacun, le cache contiendra les données des 10 workspaces sans limite de taille.
+
+**Référence dans AUDIT_GLOBAL_COMPLET.md** : Section 4.4.2, ligne 1014-1018
+> Services de cache multiples :
+> - `indexed-db.service.ts` (15.7 KB)
+> - `data-cache.service.ts` (10 KB)
+> - `sync.service.ts` (11.3 KB)
+> Logique dispersée, difficile à maintenir
+
+---
+
+#### 14.3.3 Synchronisation multi-onglets (SyncService)
+
+**Fichier** : `frontend/src/app/core/services/sync.service.ts`
+
+**Mécanisme** : BroadcastChannel API (ligne 60)
+- Canal : `'ufm-sync'`
+- Communication entre onglets du même domaine
+
+**Messages échangés** (ligne 74-90) :
+```typescript
+{
+  type: 'exercice' | 'entrainement' | 'tag' | ...,
+  action: 'create' | 'update' | 'delete' | 'refresh',
+  id: string,
+  workspaceId: string,
+  timestamp: number
+}
+```
+
+**Invalidation automatique** (ligne 96-143) :
+- Onglet A crée un exercice → notifie les autres onglets
+- Onglet B reçoit le message → invalide son cache
+- Onglet B recharge les données à la prochaine consultation
+
+**Polling adaptatif** (ligne 165-201) :
+- **Utilisateur actif** : Vérification toutes les 10 secondes
+- **Utilisateur inactif** : Vérification toutes les 60 secondes
+- Détection activité : mousedown, keydown, scroll, touchstart, click
+
+**Vérification serveur** (ligne 217-302) :
+- Appel API : `GET /api/sync/versions`
+- Compare versions avec cache local
+- Invalide cache si version différente
+
+**⚠️ PROBLÈME IDENTIFIÉ #6 : Endpoint /api/sync/versions n'existe pas**
+
+Le code appelle `GET /api/sync/versions` (ligne 224) mais cette route n'est **pas implémentée** dans le backend. Le polling échoue silencieusement.
+
+**Vérification dans le backend** :
+- Recherche dans `backend/routes/` : **AUCUNE route `/sync/versions`**
+- Recherche dans `backend/controllers/` : **AUCUN controller sync**
+
+**Conséquence** : Le système de synchronisation automatique **NE FONCTIONNE PAS**.
+
+---
+
+### 14.4 INCOHÉRENCES ET COMPORTEMENTS PROBLÉMATIQUES
+
+#### 14.4.1 Chargements redondants
+
+**Scénario 1 : Préchargement + Navigation rapide**
+
+```
+T+0s  : Connexion → GlobalPreloader.initialize()
+T+0s  : Préchargement démarre (smartPreload)
+T+1s  : Utilisateur clique "Exercices"
+T+1s  : ExerciceListComponent.ngOnInit() → getExercices()
+T+1s  : Cache vide → Requête API #1 (GET /api/exercises)
+T+2s  : Préchargement termine → Requête API #2 (GET /api/exercises)
+```
+
+**Résultat** : 2 requêtes identiques, gaspillage de bande passante.
+
+**Cause racine** : Préchargement et chargement composant ne sont pas coordonnés.
+
+---
+
+**Scénario 2 : Navigation entre pages**
+
+```
+T+0s  : Utilisateur sur /exercices
+T+0s  : ExerciceListComponent charge exercices + tags
+T+10s : Utilisateur navigue vers /entrainements
+T+10s : EntrainementListComponent charge entrainements + tags
+T+10s : Tags déjà en cache (TTL 30min) → Cache HIT ✅
+T+20s : Utilisateur retourne sur /exercices
+T+20s : Exercices en cache (TTL 5min) → Cache HIT ✅
+```
+
+**Résultat** : Comportement optimal grâce au cache.
+
+---
+
+**Scénario 3 : Changement de workspace**
+
+```
+T+0s  : Utilisateur sur workspace "BASE"
+T+0s  : Cache contient exercices de "BASE"
+T+10s : Utilisateur change pour workspace "TEST"
+T+10s : WorkspaceService.setCurrentWorkspace()
+T+10s : DataCacheService.clearMemoryCache() → Vide cache mémoire
+T+10s : IndexedDB conservé (ligne 68 de data-cache.service.ts)
+T+11s : GlobalPreloader détecte changement → smartPreload("TEST")
+T+11s : Vérifie cache IndexedDB pour "TEST"
+T+11s : Si cache existe → Affichage immédiat ✅
+T+11s : Sinon → Préchargement complet
+```
+
+**Résultat** : Comportement optimal pour multi-workspace.
+
+---
+
+#### 14.4.2 Cache jamais réutilisé
+
+**Cas identifié : Liste des workspaces**
+
+**Fichier** : `auth.service.ts`, ligne 413
+```typescript
+return this.http.get<any[]>(`${environment.apiUrl}/workspaces/me`)
+```
+
+**Observation** :
+- ❌ Pas de cache
+- ❌ Rechargé à chaque connexion
+- ❌ Pas de réutilisation entre sessions
+
+**Impact** : Faible (données légères, rarement modifiées)
+
+---
+
+**Cas identifié : Profil utilisateur après modification**
+
+**Fichier** : `auth.service.ts`, ligne 332-364
+
+**Observation** :
+- ✅ Cache IndexedDB (TTL 24h)
+- ✅ Synchronisation backend
+- ⚠️ **Mais** : Pas d'invalidation automatique si un admin modifie le rôle
+
+**Scénario problématique** :
+```
+T+0s  : Utilisateur connecté, role="USER" (en cache)
+T+10s : Admin change le rôle → role="ADMIN"
+T+11s : Utilisateur rafraîchit la page
+T+11s : Cache valide (< 24h) → Affiche role="USER" ❌
+T+11s : Synchronisation backend → Récupère role="ADMIN" ✅
+T+11s : Mais pendant 1-2 secondes, l'UI affiche l'ancien rôle
+```
+
+**Référence dans AUDIT_GLOBAL_COMPLET.md** : Section 9.2, ligne 1412-1413
+> **Cache utilisateur non invalidé** : Garde ancien rôle pendant 15 min
+
+**Note** : L'audit mentionne 15 min, mais c'est le cache **backend** (ligne 52-53 de `auth.middleware.js`). Le cache frontend est de 24h.
+
+---
+
+#### 14.4.3 Dépendance au parcours utilisateur
+
+**Cas identifié : Tags non disponibles sans visite de /exercices**
+
+**Observation** : **FAUX** - Les tags sont préchargés automatiquement
+
+Vérification dans `workspace-preloader.service.ts`, ligne 100 :
+```typescript
+{ name: 'Tags', key: 'tags-list', store: 'tags', url: `${environment.apiUrl}/tags` }
+```
+
+Les tags sont chargés lors du préchargement automatique, **indépendamment** de la visite de la page exercices.
+
+---
+
+**Cas identifié : Dashboard stats**
+
+**Fichier** : `workspace-preloader.service.ts`, ligne 105
+```typescript
+{ name: 'Stats Dashboard', key: 'dashboard-stats', store: 'dashboard-stats', url: `${environment.apiUrl}/dashboard/stats` }
+```
+
+**Observation** :
+- ✅ Préchargé automatiquement
+- ✅ Cache mémoire (TTL 2 min)
+- ✅ Cache IndexedDB (TTL 24h)
+
+**Comportement** : ✅ **COHÉRENT**
+
+---
+
+#### 14.4.4 Effets de bord invisibles
+
+**Effet #1 : Stale-while-revalidate peut afficher des données obsolètes**
+
+**Fichier** : `data-cache.service.ts`, ligne 136-141
+
+**Scénario** :
+```
+T+0s  : Utilisateur sur /exercices
+T+0s  : Cache contient 10 exercices (données de hier)
+T+0s  : Affichage immédiat des 10 exercices ✅
+T+0s  : Refresh en arrière-plan démarre
+T+2s  : API retourne 12 exercices (2 nouveaux)
+T+2s  : Cache mis à jour
+T+2s  : Mais l'UI affiche toujours 10 exercices ❌
+```
+
+**Cause** : Le composant ne s'abonne pas aux mises à jour du cache.
+
+**Solution existante** : Le service émet `exercicesUpdated$` (ligne 18 de `exercice.service.ts`), et le composant s'y abonne (ligne 116-120 de `exercice-list.component.ts`).
+
+**Résultat** : ✅ **GÉRÉ CORRECTEMENT**
+
+---
+
+**Effet #2 : Préchargement bloque la navigation**
+
+**Fichier** : `global-preloader.service.ts`, ligne 69-73
+
+**Observation** :
+```typescript
+if (this.isPreloading) {
+  console.log('[GlobalPreloader] Preload already in progress, skipping');
+  return;
+}
+```
+
+Si un préchargement est en cours et que l'utilisateur change de workspace, le nouveau préchargement est **ignoré**.
+
+**Scénario** :
+```
+T+0s  : Workspace "BASE" sélectionné → Préchargement démarre
+T+1s  : Utilisateur change pour "TEST"
+T+1s  : Préchargement "BASE" toujours en cours
+T+1s  : Préchargement "TEST" ignoré ❌
+T+5s  : Préchargement "BASE" termine
+T+5s  : Utilisateur sur "TEST" mais pas de données
+```
+
+**Impact** : Faible (cas rare)
+
+---
+
+### 14.5 SYNTHÈSE DES OBSERVATIONS
+
+#### 14.5.1 Pourquoi l'utilisateur perçoit un mauvais cache
+
+**Raisons identifiées** :
+
+1. **Chargements redondants** (Préchargement + Navigation rapide)
+   - L'utilisateur voit un loader alors que les données sont en train d'être préchargées
+   - Perception : "L'application est lente"
+
+2. **Stale-while-revalidate invisible**
+   - Les données sont rafraîchies en arrière-plan sans feedback
+   - Perception : "Je ne sais pas si mes données sont à jour"
+
+3. **Workspace supprimé non géré**
+   - Erreurs 403 sans explication
+   - Perception : "L'application est cassée"
+
+4. **Synchronisation multi-onglets non fonctionnelle**
+   - L'endpoint `/api/sync/versions` n'existe pas
+   - Perception : "Mes modifications n'apparaissent pas dans l'autre onglet"
+
+---
+
+#### 14.5.2 État du système de cache
+
+**Évaluation** : ⚠️ **PARTIELLEMENT IMPLÉMENTÉ**
+
+**Points forts** ✅ :
+- Architecture multi-niveaux bien pensée (mémoire + IndexedDB)
+- TTL configurables par type de donnée
+- Stale-while-revalidate pour affichage rapide
+- Invalidation intelligente (par clé + pattern)
+- Conservation cache multi-workspace
+- Nettoyage automatique des données expirées
+
+**Points faibles** ❌ :
+- Préchargement non coordonné avec navigation
+- Endpoint de synchronisation manquant (`/api/sync/versions`)
+- Pas de nettoyage LRU (IndexedDB peut grossir indéfiniment)
+- Workspace supprimé non détecté
+- Pas de feedback visuel sur le préchargement
+
+**Diagnostic** : Le système est **bien conçu** mais **mal orchestré**.
+
+---
+
+#### 14.5.3 Refonte nécessaire ou non ?
+
+**Réponse** : ❌ **NON, pas de refonte nécessaire**
+
+**Justification** :
+- L'architecture de cache est solide
+- Les mécanismes sont en place
+- Les problèmes sont des **bugs d'orchestration**, pas de conception
+
+**Actions correctives recommandées** :
+
+**P0 (Critique)** :
+1. Implémenter endpoint `/api/sync/versions` backend
+2. Gérer workspace supprimé (intercepteur 403 → redirection)
+3. Coordonner préchargement + navigation (attendre fin ou annuler)
+
+**P1 (Important)** :
+4. Ajouter feedback visuel préchargement (barre de progression)
+5. Implémenter nettoyage LRU IndexedDB (limite 100 MB par exemple)
+6. Invalider cache utilisateur sur changement de rôle
+
+**P2 (Souhaitable)** :
+7. Optimiser TTL (5 min → 15 min pour exercices)
+8. Ajouter métriques cache (hit rate, miss rate)
+9. Documenter stratégie de cache
+
+---
+
+### 14.6 CARTOGRAPHIE COMPLÈTE DU CYCLE DE VIE
+
+#### Tableau récapitulatif par type de donnée
+
+| Type de donnée | Chargement initial | Rechargement | Cache mémoire | Cache IndexedDB | Invalidation | Comportement |
+|----------------|-------------------|--------------|---------------|-----------------|--------------|--------------|
+| **User** | Connexion | Sur événement Supabase | BehaviorSubject | 24h | Sur déconnexion | ✅ Cohérent |
+| **Workspace** | Connexion | Jamais | BehaviorSubject + localStorage | Non | Sur déconnexion | ⚠️ Pas de sync |
+| **Exercices** | Préchargement + Page | Sur mutation | 5 min | 24h | Sur CRUD + sync | ⚠️ Redondant |
+| **Entraînements** | Préchargement + Page | Sur mutation | 5 min | 24h | Sur CRUD + sync | ⚠️ Redondant |
+| **Tags** | Préchargement + Page | Sur mutation | 30 min | 24h | Sur CRUD + pattern | ✅ Cohérent |
+| **Échauffements** | Préchargement + Page | Sur mutation | 5 min | 24h | Sur CRUD + sync | ⚠️ Redondant |
+| **Situations** | Préchargement + Page | Sur mutation | 5 min | 24h | Sur CRUD + sync | ⚠️ Redondant |
+| **Dashboard stats** | Préchargement | Jamais | 2 min | 24h | Jamais | ⚠️ Peut être obsolète |
+
+---
+
+#### Diagramme de séquence : Connexion → Affichage exercices
+
+```
+Utilisateur          AuthService         WorkspaceService    GlobalPreloader     ExerciceService     Backend
+    |                     |                      |                   |                   |              |
+    |--login()----------->|                      |                   |                   |              |
+    |                     |--getSession()--------|-------------------|-------------------|------------->|
+    |                     |<--session------------|-------------------|-------------------|--------------|
+    |                     |--loadCachedProfile()->|                   |                   |              |
+    |                     |<--user (cache)-------|                   |                   |              |
+    |                     |--syncUserProfile()---|-------------------|-------------------|------------->|
+    |                     |<--user (API)---------|-------------------|-------------------|--------------|
+    |                     |--ensureWorkspace()-->|                   |                   |              |
+    |                     |                      |--GET /workspaces/me----------------->|------------->|
+    |                     |                      |<--workspaces-----------------------|--------------|
+    |                     |                      |--setCurrentWorkspace()              |              |
+    |                     |<--done---------------|                   |                   |              |
+    |<--authenticated-----|                      |                   |                   |              |
+    |                     |                      |                   |                   |              |
+    |                     |                      |<--initialize()-----|                   |              |
+    |                     |                      |                   |--smartPreload()-->|              |
+    |                     |                      |                   |                   |--GET /preload->|
+    |                     |                      |                   |                   |<--data--------|
+    |                     |                      |                   |--cache.set()----->|              |
+    |                     |                      |                   |<--done------------|              |
+    |                     |                      |                   |                   |              |
+    |--navigate(/exercices)------------------>|                   |                   |              |
+    |                     |                      |                   |                   |              |
+    |                     |                      |                   |<--getExercices()--|              |
+    |                     |                      |                   |                   |--cache.get()->|
+    |                     |                      |                   |                   |<--HIT (cache)|
+    |<--exercices affichés--------------------|-------------------|-------------------|              |
+```
+
+**Observation** : Si l'utilisateur navigue **avant** la fin du préchargement, `cache.get()` retourne un MISS et déclenche une requête API redondante.
+
+---
+
+### 14.7 RISQUES UX ET TECHNIQUES
+
+#### Risques UX
+
+| Risque | Probabilité | Impact | Sévérité |
+|--------|-------------|--------|----------|
+| Workspace supprimé → Utilisateur bloqué | Moyenne | Critique | 🔴 P0 |
+| Chargements redondants → Perception lenteur | Haute | Moyen | 🟠 P1 |
+| Données obsolètes affichées (stale) | Moyenne | Faible | 🟡 P2 |
+| Synchronisation multi-onglets non fonctionnelle | Haute | Moyen | 🟠 P1 |
+| Préchargement invisible → Confusion | Haute | Faible | 🟡 P2 |
+
+#### Risques techniques
+
+| Risque | Probabilité | Impact | Sévérité |
+|--------|-------------|--------|----------|
+| IndexedDB sans limite → Saturation stockage | Faible | Moyen | 🟡 P2 |
+| Endpoint bulk → Timeout si gros workspace | Moyenne | Critique | 🔴 P0 |
+| Cache backend 15min → Rôle obsolète | Moyenne | Critique | 🔴 P0 |
+| Préchargement bloque changement workspace | Faible | Faible | 🟡 P2 |
+
+---
+
+### 14.8 ÉCARTS ENTRE COMPORTEMENT ATTENDU VS RÉEL
+
+#### Comportement attendu
+
+**Connexion** :
+1. Utilisateur se connecte
+2. Profil chargé instantanément (cache)
+3. Workspace sélectionné automatiquement
+4. Données préchargées en arrière-plan
+5. Navigation fluide vers n'importe quelle page
+
+**Réalité** :
+1. ✅ Utilisateur se connecte
+2. ✅ Profil chargé instantanément (cache)
+3. ✅ Workspace sélectionné automatiquement
+4. ⚠️ Données préchargées MAIS sans feedback
+5. ❌ Navigation rapide → Chargement redondant
+
+---
+
+**Changement de workspace** :
+
+**Attendu** :
+1. Utilisateur change de workspace
+2. Cache vidé pour l'ancien workspace
+3. Données du nouveau workspace chargées
+4. Affichage immédiat si déjà visité
+
+**Réalité** :
+1. ✅ Utilisateur change de workspace
+2. ⚠️ Cache mémoire vidé, IndexedDB conservé
+3. ✅ Données du nouveau workspace chargées
+4. ✅ Affichage immédiat si déjà visité
+
+---
+
+**Synchronisation multi-onglets** :
+
+**Attendu** :
+1. Onglet A crée un exercice
+2. Onglet B détecte le changement
+3. Onglet B invalide son cache
+4. Onglet B affiche le nouvel exercice
+
+**Réalité** :
+1. ✅ Onglet A crée un exercice
+2. ✅ Onglet B reçoit notification BroadcastChannel
+3. ✅ Onglet B invalide son cache
+4. ✅ Onglet B affiche le nouvel exercice **à la prochaine consultation**
+5. ❌ Polling serveur ne fonctionne pas (endpoint manquant)
+
+---
+
+### 14.9 CONCLUSION DE L'AUDIT
+
+#### État du système de cache
+
+**Diagnostic final** : ⚠️ **BIEN CONÇU MAIS MAL ORCHESTRÉ**
+
+Le système de cache est architecturalement solide avec :
+- Multi-niveaux (mémoire + IndexedDB)
+- TTL configurables
+- Invalidation intelligente
+- Support multi-workspace
+- Stale-while-revalidate
+
+**Mais** souffre de problèmes d'orchestration :
+- Préchargement non coordonné
+- Endpoint de synchronisation manquant
+- Workspace supprimé non géré
+- Pas de feedback visuel
+
+#### Recommandations finales
+
+**Refonte nécessaire ?** ❌ **NON**
+
+**Actions correctives** :
+
+**P0 - Critique (1 semaine)** :
+1. Implémenter `/api/sync/versions` backend
+2. Gérer workspace supprimé (intercepteur 403)
+3. Paginer endpoint `/api/workspaces/:id/preload`
+
+**P1 - Important (2 semaines)** :
+4. Coordonner préchargement + navigation
+5. Ajouter feedback visuel préchargement
+6. Implémenter nettoyage LRU IndexedDB
+
+**P2 - Souhaitable (1 semaine)** :
+7. Optimiser TTL
+8. Ajouter métriques cache
+9. Documenter stratégie
+
+**Après corrections** :
+- ✅ Cache performant et fiable
+- ✅ UX fluide sans chargements redondants
+- ✅ Synchronisation multi-onglets fonctionnelle
+- ✅ Gestion robuste des cas d'erreur
+
+---
+
+**Date de fin d'audit** : 31 janvier 2026  
+**Auditeur** : IA Cascade (Windsurf)  
+**Statut** : ✅ Audit complet terminé
+"
+
+
+
