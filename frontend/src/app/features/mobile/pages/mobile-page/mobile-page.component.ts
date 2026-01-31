@@ -204,7 +204,7 @@ export class MobilePageComponent implements OnInit, OnDestroy {
       items.push({
         id: situation.id,
         type: 'situation',
-        title: situation.nom,
+        title: situation.nom || 'Sans titre',
         description: situation.description,
         createdAt: new Date(situation.createdAt!),
         tags: situation.tags,
