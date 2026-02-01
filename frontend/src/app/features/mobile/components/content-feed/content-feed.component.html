@@ -146,8 +146,7 @@
         <mat-card-content class="entity-card-body">
           <app-rich-text-view 
             *ngIf="item.description" 
-            [content]="item.description"
-            [maxLength]="150">
+            [html]="item.description">
           </app-rich-text-view>
 
           <div class="tags-display" *ngIf="item.tags && item.tags.length > 0">
