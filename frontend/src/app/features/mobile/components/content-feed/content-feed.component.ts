@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDividerModule } from '@angular/material/divider';
 import { ContentItem } from '../../models/content-item.model';
 import { ExerciceCardComponent } from '../../../exercices/components/exercice-card.component';
 import { DuplicateButtonComponent } from '../../../../shared/components/duplicate-button/duplicate-button.component';
@@ -20,6 +21,7 @@ import { RichTextViewComponent } from '../../../../shared/components/rich-text-v
     MatButtonModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
+    MatDividerModule,
     ExerciceCardComponent,
     DuplicateButtonComponent,
     RichTextViewComponent
@@ -55,6 +57,11 @@ export class ContentFeedComponent {
     if (event) {
       event.stopPropagation();
     }
+    this.duplicatingIds.add(item.id);
+    this.itemDuplicate.emit(item);
+  }
+
+  onDuplicateById(entityId: string, item: ContentItem): void {
     this.duplicatingIds.add(item.id);
     this.itemDuplicate.emit(item);
   }
