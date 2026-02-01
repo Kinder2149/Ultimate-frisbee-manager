@@ -4,7 +4,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
+import { Router } from '@angular/router';
 import { User } from '../../../../core/models/user.model';
+import { MobileDetectorService } from '../../../../core/services/mobile-detector.service';
 
 @Component({
   selector: 'app-mobile-header',
@@ -21,12 +23,18 @@ import { User } from '../../../../core/models/user.model';
 })
 export class MobileHeaderComponent {
   @Input() currentUser: User | null = null;
+  @Input() returnUrl?: string; // URL de retour optionnelle
   @Output() searchClick = new EventEmitter<void>();
   @Output() settingsClick = new EventEmitter<void>();
   @Output() profileClick = new EventEmitter<void>();
   @Output() tagsClick = new EventEmitter<void>();
   @Output() adminClick = new EventEmitter<void>();
   @Output() logoutClick = new EventEmitter<void>();
+
+  constructor(
+    private router: Router,
+    private mobileDetector: MobileDetectorService
+  ) {}
 
   onSearchClick(): void {
     this.searchClick.emit();
@@ -50,6 +58,15 @@ export class MobileHeaderComponent {
 
   onLogoutClick(): void {
     this.logoutClick.emit();
+  }
+
+  onDesktopViewClick(): void {
+    // Forcer la vue desktop
+    this.mobileDetector.forceDesktop();
+    
+    // Rediriger vers la page demandée ou le dashboard
+    const targetUrl = this.returnUrl || '/';
+    this.router.navigate([targetUrl]);
   }
 
   get userInitials(): string {

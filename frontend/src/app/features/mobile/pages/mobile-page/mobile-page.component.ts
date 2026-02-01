@@ -1,10 +1,10 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
-import { forkJoin, Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { forkJoin, Subject, fromEvent } from 'rxjs';
+import { takeUntil, filter } from 'rxjs/operators';
 
 import { MobileHeaderComponent } from '../../components/mobile-header/mobile-header.component';
 import { MobileFilterBarComponent } from '../../components/mobile-filter-bar/mobile-filter-bar.component';
@@ -25,6 +25,7 @@ import { SituationMatchService } from '../../../../core/services/situationmatch.
 import { AuthService } from '../../../../core/services/auth.service';
 import { ExerciceDialogService } from '../../../exercices/services/exercice-dialog.service';
 import { DialogService } from '../../../../shared/components/dialog/dialog.service';
+import { MobileDetectorService } from '../../../../core/services/mobile-detector.service';
 
 @Component({
   selector: 'app-mobile-page',
@@ -57,12 +58,14 @@ export class MobilePageComponent implements OnInit, OnDestroy {
   error: string | null = null;
   
   currentUser: User | null = null;
+  returnUrl: string | undefined;
   
   private _allItemsCache: ContentItem[] | null = null;
   private _lastDataHash = '';
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
     private exerciceService: ExerciceService,
@@ -71,12 +74,44 @@ export class MobilePageComponent implements OnInit, OnDestroy {
     private situationMatchService: SituationMatchService,
     private authService: AuthService,
     private exerciceDialogService: ExerciceDialogService,
-    private dialogService: DialogService
+    private dialogService: DialogService,
+    private mobileDetector: MobileDetectorService
   ) {}
 
   ngOnInit(): void {
     this.loadCurrentUser();
+    this.loadReturnUrl();
     this.loadAllData();
+    this.setupResizeListener();
+  }
+
+  private setupResizeListener(): void {
+    fromEvent(window, 'resize')
+      .pipe(
+        takeUntil(this.destroy$),
+        filter(() => !this.mobileDetector.shouldShowMobileView && window.innerWidth >= 768)
+      )
+      .subscribe(() => {
+        this.showDesktopSuggestion();
+      });
+  }
+
+  private showDesktopSuggestion(): void {
+    const snackBarRef = this.snackBar.open(
+      'Votre écran est maintenant assez grand pour la version desktop',
+      'Passer en desktop',
+      { duration: 8000 }
+    );
+
+    snackBarRef.onAction().subscribe(() => {
+      this.mobileDetector.forceDesktop();
+      const targetUrl = this.returnUrl || '/';
+      this.router.navigate([targetUrl]);
+    });
+  }
+
+  private loadReturnUrl(): void {
+    this.returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || undefined;
   }
 
   ngOnDestroy(): void {

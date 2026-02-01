@@ -2,9 +2,75 @@
 
 **Date** : 1er février 2026  
 **Mission** : Résoudre définitivement les problèmes de rechargement et de fluidité  
-**Statut** : 🔍 EN ANALYSE - AUCUN CODE MODIFIÉ
+**Statut** : ✅ MISSION CLÔTURÉE (docs nettoyés, document de référence unique)
 
 ---
+
+## Table des matières
+
+- [PHASE 1 — Cartographie des appels backend](#phase-1-cartographie-des-appels-backend)
+  - [1.1 Données Workspace](#11-donnees-workspace)
+  - [1.2 Données Exercices](#12-donnees-exercices)
+  - [1.3 Données Entrainements](#13-donnees-entrainements)
+  - [1.4 Données Échauffements](#14-donnees-echauffements)
+  - [1.5 Données Situations/Matchs](#15-donnees-situationsmatchs)
+  - [1.6 Données Tags](#16-donnees-tags)
+  - [1.7 Dashboard Stats](#17-dashboard-stats)
+- [Synthèse des problèmes](#synthese-des-problemes)
+  - [Problèmes critiques](#problemes-critiques)
+  - [Problèmes modérés](#problemes-moderes)
+  - [Points positifs](#points-positifs)
+- [Stratégie TTL + revalidation (SWR)](#strategie-ttl-par-type--revalidation-controlee-swr)
+  - [Objectifs](#objectifs)
+  - [Source de vérité (code)](#source-de-verite-code)
+  - [Définitions](#definitions)
+  - [Configuration : TTL et revalidation (par store)](#configuration--ttl-et-revalidation-par-store)
+  - [Règles d’exécution (DataCacheService.get)](#regles-dexecution-datacacheserviceget)
+  - [Cas limites (documentés)](#cas-limites-documentes)
+- [Flux actuel (problématique)](#flux-actuel-problematique)
+- [Notes d’analyse](#notes-danalyse)
+  - [Architecture actuelle](#architecture-actuelle)
+  - [Comportement utilisateur observé](#comportement-utilisateur-observe)
+- [PHASE 2 — Cycle de vie des données](#phase-2--cycle-de-vie-des-donnees)
+  - [2.1 Stratégie TTL détaillée](#21-strategie-ttl-detaillee-par-type-de-donnee)
+  - [2.2 Justification des choix](#22-justification-des-choix)
+  - [2.3 Moments de chargement](#23-moments-de-chargement)
+  - [2.4 Stratégies de rafraîchissement](#24-strategies-de-rafraichissement)
+- [PHASE 3 — Architecture cible](#phase-3--architecture-cible)
+  - [3.1 Principe fondamental](#31-principe-fondamental)
+  - [3.2 Architecture proposée : WorkspaceDataStore](#32-architecture-proposee--workspacedatastore)
+  - [3.3 Flux de données centralisé](#33-flux-de-donnees-centralise)
+  - [3.4 Suppression des initiatives isolées](#34-suppression-des-initiatives-isolees)
+  - [3.5 Gestion des mutations](#35-gestion-des-mutations)
+- [PHASE 4 — Stratégie cache UX](#phase-4--strategie-cache-ux)
+  - [4.1 Principe UX-First](#41-principe-ux-first)
+  - [4.2 États d'affichage](#42-etats-daffichage)
+  - [4.3 Implémentation visuelle](#43-implementation-visuelle)
+  - [4.4 Comportement par scénario](#44-comportement-par-scenario)
+  - [4.5 Indicateurs visuels](#45-indicateurs-visuels)
+  - [4.6 Métriques de performance cibles](#46-metriques-de-performance-cibles)
+- [PHASE 5 — Livrables](#phase-5--livrables)
+  - [5.1 Schéma de flux de données (architecture cible)](#51-schema-de-flux-de-donnees-architecture-cible)
+  - [5.2 Tableau récapitulatif des changements](#52-tableau-recapitulatif-des-changements)
+  - [5.3 Plan d'implémentation étape par étape](#53-plan-dimplementation-etape-par-etape)
+  - [5.4 Estimation totale](#54-estimation-totale)
+  - [5.5 Critères de validation](#55-criteres-de-validation)
+- [Conclusion](#conclusion)
+- [Changements apportés au document](#changements-apportes-au-document-relecture-architecte-senior)
+- [Workspace Data Store — implémentation](#workspace-data-store---implementation)
+- [ÉTAPE 2 : Preloader connecté au Store](#etape-2--preloader-connecte-au-store)
+- [ÉTAPE 3 : Dashboard migré vers le Store](#etape-3--dashboard-migre-vers-le-store)
+- [ÉTAPE 4a : Exercice List migré vers le Store](#etape-4a--exercice-list-migre-vers-le-store)
+- [ÉTAPE 4b : Entrainement List migré vers le Store](#etape-4b--entrainement-list-migre-vers-le-store)
+- [ÉTAPE 4c : Échauffement List migré vers le Store](#etape-4c--echauffement-list-migre-vers-le-store)
+- [ÉTAPE 4d : Situation/Match List migré vers le Store](#etape-4d--situationmatch-list-migre-vers-le-store-store-driven)
+- [Synchronisation des mutations avec le Store (anti-refetch)](#synchronisation-des-mutations-avec-le-store-anti-refetch)
+  - [Objectif](#objectif)
+  - [Règle d'or](#regle-dor)
+  - [Flux standard](#flux-standard)
+  - [Mapping des mutations → patch Store](#mapping-des-mutations--patch-store)
+  - [Statut](#statut)
+- [MISSION DATA & CACHE — CLÔTURE](#mission-data--cache--cloture)
 
 ## 📋 PHASE 1 — CARTOGRAPHIE DES APPELS BACKEND
 
@@ -1460,12 +1526,13 @@ tap(() => {
 9. Navigation vers dashboard
 ```
 
-### Garanties respectées
+### Garanties (bulk) et limites connues (audit)
 
-- ✅ **1 seul chargement initial** : `GET /workspaces/{id}/preload` appelé une seule fois
-- ✅ **Gestion d'erreur centralisée** : `workspaceDataStore.setError()` + `loading$` + `error$`
-- ✅ **Logging clair** : 5 nouveaux logs structurés avec préfixe `[WorkspacePreloader]`
-- ✅ **Aucun composant ne consomme le Store** : Dashboard et listes non modifiés
+- ✅ **Bulk endpoint** : `preloadFromBulkEndpoint()` alimente le Store après mise en cache.
+- ✅ **Erreur bulk** : `workspaceDataStore.setError(...)` et `workspaceDataStore.setLoading(false)`.
+- ✅ **Logging** : logs structurés `[WorkspacePreloader]`.
+- ⚠️ **Unicité / doublons** : dépend des déclencheurs (voir section "Audit factuel (code réel)").
+- ⚠️ **Fallback individuel** : alimente le cache mais pas le Store (voir section "Audit factuel (code réel)").
 
 ### Mapping des données
 
@@ -1488,14 +1555,9 @@ tap(() => {
 - [x] Dashboard non touché
 - [x] Composants de liste non touchés
 
-### Documentation créée
+### Documentation fusionnée
 
-**Fichier** : `docs/PRELOADER_STORE_INTEGRATION.md`
-- Analyse complète des appels bulk
-- Mapping précis des données
-- Diagramme de flux détaillé
-- Tests de validation
-- Prochaines étapes
+ Le contenu de `docs/PRELOADER_STORE_INTEGRATION.md` est fusionné dans ce document (section "🔗 ÉTAPE 2 : PRELOADER CONNECTÉ AU STORE") afin d'éviter la divergence doc↔code.
 
 ### Validation technique
 
@@ -1505,7 +1567,31 @@ tap(() => {
 - [x] Un seul appel backend par préchargement
 - [x] Gestion d'erreur centralisée
 - [x] Logging clair (5 nouveaux logs)
-- [x] Aucun composant ne consomme encore le Store
+- [x] Les composants peuvent consommer le Store (consommation déjà présente dans l'existant)
+
+**Audit factuel (code réel)**
+
+#### Moment exact du preload (déclencheurs)
+
+- `AppComponent.ngOnInit()` → `GlobalPreloaderService.initialize()`
+- `SelectWorkspaceComponent` → déclenche un `WorkspacePreloaderService.smartPreload(ws.id)` en arrière-plan
+- `PreloadDialogComponent` → déclenche `WorkspacePreloaderService.smartPreload(workspaceId)`
+
+#### Unicité du chargement initial / absence de doublon
+
+- ✅ `GlobalPreloaderService` tente de dédupliquer (flags `isPreloading` + `preloadedWorkspaces`).
+- ⚠️ Déduplication non globale : les autres déclencheurs peuvent lancer un `smartPreload()` indépendamment.
+- ⚠️ `GlobalPreloaderService` consomme `smartPreload(...).pipe(take(1))` : comme `smartPreload()` émet une suite de progressions, `take(1)` peut capturer un événement précoce (ex: 0%) et marquer le workspace comme préchargé trop tôt.
+
+#### Gestion d'erreur et fallback
+
+- ✅ Erreur bulk : `workspaceDataStore.setError(...)` et `workspaceDataStore.setLoading(false)`.
+- ⚠️ Fallback individuel : le cache est alimenté, mais le Store n'est pas alimenté (pas de `loadWorkspaceData(...)` dans ce chemin).
+
+#### Statut architectural
+
+- ✅ Intégration bulk → cache → store : en place.
+- ⚠️ Garanties “unicité / pas de doublons / cohérence store en fallback” : dette technique résiduelle.
 
 **Statut** : ✅ **ÉTAPE 2 COMPLÉTÉE** - Preloader → Store connecté
 
@@ -1523,6 +1609,12 @@ tap(() => {
 ### Objectif
 
 Faire consommer le Dashboard **uniquement** depuis le `WorkspaceDataStore`, en supprimant tous les appels API directs et en calculant les stats localement.
+
+### Audit factuel (code réel)
+
+- ✅ **Stats** : le Dashboard est **store-driven** pour les compteurs (abonnement à `workspaceDataStore.stats$`).
+- ✅ **Aucun appel API stats** : aucune référence à `dashboardService.getStats()`, aucune lecture `dataCache.get('dashboard-stats')`.
+- ⚠️ **Pas 100% sans HTTP** : le Dashboard effectue encore un appel direct `GET /workspaces/me` via `HttpClient` (chargement de la liste des workspaces).
 
 ### Modifications apportées
 
@@ -1619,19 +1711,14 @@ private recalculateStats(): void {
 - [x] Aucun spinner supplémentaire
 - [x] Code plus simple et maintenable
 
-### Documentation créée
+### Documentation fusionnée
 
-**Fichier** : `docs/DASHBOARD_MIGRATION_REPORT.md`
-- Comparatif détaillé Avant/Après
-- Analyse des modifications
-- Métriques de performance
-- Tests de validation
-- Garanties respectées
+Le contenu de `docs/DASHBOARD_MIGRATION_REPORT.md` est fusionné dans ce document (section "📊 ÉTAPE 3 : DASHBOARD MIGRÉ VERS LE STORE") afin d'éviter la divergence doc↔code.
 
 ### Validation technique
 
 **Critères validés** :
-- [x] Tous les appels API directs supprimés
+- [x] Les appels API directs liés aux stats (`GET /dashboard/stats`) sont supprimés
 - [x] Stats calculées localement dans WorkspaceDataStore
 - [x] Mise à jour automatique (architecture prête)
 - [x] Aucun changement visuel
@@ -1747,7 +1834,7 @@ this.workspaceDataStore.loading$.subscribe(loading => {
 - [x] DataCacheService non modifié
 - [x] Mutations non modifiées (delete, duplicate, update)
 - [x] HTML non modifié
-- [x] Lecture seule uniquement
+- [x] Lecture store-driven (pas de chargement autonome) ; les handlers (delete/duplicate/update) patchent uniquement les listes locales
 
 ### Tests de validation
 
@@ -1767,13 +1854,9 @@ this.workspaceDataStore.loading$.subscribe(loading => {
 **Test 4 : Network tab**
 - ✅ Aucun `GET /exercises` déclenché
 
-### Documentation créée
+### Documentation fusionnée
 
-**Fichier** : `docs/EXERCICE_LIST_MIGRATION_REPORT.md`
-- Diff détaillé Avant/Après
-- Métriques de performance
-- Tests de validation
-- Garanties et contraintes respectées
+Le contenu de `docs/EXERCICE_LIST_MIGRATION_REPORT.md` est fusionné dans ce document (section "📋 ÉTAPE 4a : EXERCICE LIST MIGRÉ VERS LE STORE") afin d'éviter la divergence doc↔code.
 
 ### Validation technique
 
@@ -1980,3 +2063,34 @@ UI (form / action) → Service métier (POST/PUT/DELETE) → (success)
 
 - ✅ Services métier patchent désormais le `WorkspaceDataStore` après succès API
 - ✅ Les composants Store-driven ne font plus de refetch complet pour se resynchroniser
+
+---
+
+## ✅ MISSION DATA & CACHE — CLÔTURE
+
+**Objectif** : laisser un dossier `docs/` propre avec **1 document de référence** et une traçabilité claire des décisions.
+
+### Décisions (traçabilité)
+
+- **[fusion + suppression]** `docs/PRELOADER_STORE_INTEGRATION.md` → fusionné dans ce document (section "🔗 ÉTAPE 2") puis supprimé.
+- **[fusion + suppression]** `docs/DASHBOARD_MIGRATION_REPORT.md` → fusionné dans ce document (section "📊 ÉTAPE 3") puis supprimé.
+- **[fusion + suppression]** `docs/EXERCICE_LIST_MIGRATION_REPORT.md` → fusionné dans ce document (section "📋 ÉTAPE 4a") puis supprimé.
+- **[suppression]** `docs/WORKSPACE_DATA_STORE_SCHEMA.md` → supprimé (redondant avec le code + infos devenues obsolètes ; la synthèse utile est conservée ici).
+
+### État final du dossier `docs/`
+
+- **Document de référence** : `docs/ARCHITECTURE_DATA_CACHE_AUDIT.md`
+- **Docs socle** : `docs/BASE/`
+- **Archives** : `docs/archive/`
+
+### Rappel de périmètre (prod)
+
+- Ce document décrit à la fois :
+  - un **état prod factuel** (sections "Audit factuel (code réel)")
+  - et des **objectifs/intentions** (architecture cible, UX cible)
+
+### Dettes techniques notables (à conserver visibles)
+
+- `GlobalPreloaderService` consomme `smartPreload(...).pipe(take(1))` (risque de marquage "préchargé" trop tôt).
+- Fallback individuel (`preloadWorkspace`) alimente le cache mais pas le Store.
+- TTL actuels du cache (exercices/entrainements/echauffements/situations à 5min, tags 30min, dashboard-stats 2min) : reflètent le code actuel.
