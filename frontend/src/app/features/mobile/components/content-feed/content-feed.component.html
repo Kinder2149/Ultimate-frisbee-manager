@@ -17,8 +17,8 @@
         *ngIf="item.type === 'exercice'"
         [exercice]="item.originalData"
         [mode]="'default'"
-        (exerciceDeleted)="onDelete(item, $event)"
-        (exerciceDuplicated)="onDuplicate(item)">
+        (exerciceDeleted)="onDeleteExercice($event)"
+        (exerciceDuplicated)="onDuplicateExercice($event)">
       </app-exercice-card>
 
       <!-- Entraînement: mat-card avec structure entity-card -->
@@ -106,8 +106,7 @@
 
           <app-rich-text-view 
             *ngIf="item.description" 
-            [content]="item.description"
-            [maxLength]="150">
+            [html]="item.description">
           </app-rich-text-view>
 
           <div class="created-at">

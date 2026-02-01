@@ -66,6 +66,21 @@ export class ContentFeedComponent {
     this.itemDuplicate.emit(item);
   }
 
+  onDeleteExercice(exerciceId: string): void {
+    const item = this.items.find(i => i.id === exerciceId);
+    if (item) {
+      this.itemDelete.emit(item);
+    }
+  }
+
+  onDuplicateExercice(exercice: any): void {
+    const item = this.items.find(i => i.id === exercice.id);
+    if (item) {
+      this.duplicatingIds.add(item.id);
+      this.itemDuplicate.emit(item);
+    }
+  }
+
   onDelete(item: ContentItem, event: Event): void {
     event.stopPropagation();
     this.itemDelete.emit(item);
