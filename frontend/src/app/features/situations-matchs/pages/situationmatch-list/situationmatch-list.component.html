@@ -19,7 +19,7 @@
   ></app-exercice-filters>
 
   <!-- Indicateur de chargement -->
-  <div *ngIf="loading" class="loading-container">
+  <div *ngIf="loading && situationsMatchs.length === 0" class="loading-container">
     <p>Chargement des situations/matchs...</p>
   </div>
 

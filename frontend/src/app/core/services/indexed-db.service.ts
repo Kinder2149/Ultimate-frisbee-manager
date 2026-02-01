@@ -135,6 +135,57 @@ export class IndexedDbService {
     });
   }
 
+  async getEntry<T>(
+    store: string,
+    key: string,
+    workspaceId: string | null = null
+  ): Promise<CachedData<T> | null> {
+    if (!this.isDbAvailable()) {
+      return null;
+    }
+
+    return new Promise((resolve) => {
+      try {
+        const transaction = this.db!.transaction([store], 'readonly');
+        const objectStore = transaction.objectStore(store);
+        const request = objectStore.get(key);
+
+        request.onsuccess = () => {
+          const result = request.result as CachedData<T> | undefined;
+
+          if (!result) {
+            resolve(null);
+            return;
+          }
+
+          if (workspaceId !== null && result.workspaceId !== workspaceId) {
+            console.log(`[IndexedDB] Workspace mismatch for ${key}`);
+            resolve(null);
+            return;
+          }
+
+          if (this.isExpired(result.expiresAt)) {
+            console.log(`[IndexedDB] Expired cache for ${key}`);
+            this.delete(store, key, workspaceId);
+            resolve(null);
+            return;
+          }
+
+          console.log(`[IndexedDB] Retrieved ${key} entry from ${store}`);
+          resolve(result);
+        };
+
+        request.onerror = () => {
+          console.error(`[IndexedDB] Error retrieving ${key}:`, request.error);
+          resolve(null);
+        };
+      } catch (error) {
+        console.error('[IndexedDB] Transaction error:', error);
+        resolve(null);
+      }
+    });
+  }
+
   /**
    * Vérifie si IndexedDB est disponible
    */

@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subscription, forkJoin, Subject } from 'rxjs';
+import { Subscription, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -11,7 +11,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 // Services
 import { ExerciceService } from '../../../core/services/exercice.service';
-import { TagService } from '../../../core/services/tag.service';
+import { WorkspaceDataStore } from '../../../core/services/workspace-data.store';
 import { ExerciceDialogService } from '../services/exercice-dialog.service';
 
 // Models
@@ -54,7 +54,7 @@ export class ExerciceListComponent implements OnInit, OnDestroy {
   
   constructor(
     private exerciceService: ExerciceService,
-    private tagService: TagService,
+    private workspaceDataStore: WorkspaceDataStore,
     private router: Router,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
@@ -110,50 +110,43 @@ export class ExerciceListComponent implements OnInit, OnDestroy {
 
 
   ngOnInit(): void {
-    this.reloadData();
+    console.log('[ExerciceList] Initialisation - Abonnement au Store');
+
+    // S'abonner aux exercices du Store
+    this.workspaceDataStore.exercices$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(exercices => {
+        console.log('[ExerciceList] Exercices reçus du Store:', exercices.length);
+        this.exercices = exercices;
+        this.enrichExercicesWithTags();
+        this.applyFilters();
+      });
+
+    // S'abonner aux tags du Store
+    this.workspaceDataStore.tags$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(tags => {
+        console.log('[ExerciceList] Tags reçus du Store:', tags.length);
+        this.allTags = tags;
+        this.processTagsByCategory(tags);
+        this.enrichExercicesWithTags();
+        this.applyFilters();
+      });
+
+    // S'abonner à l'état de chargement du Store
+    this.workspaceDataStore.loading$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(loading => {
+        // Afficher le spinner uniquement si aucune donnée n'est disponible
+        this.loading = loading && this.exercices.length === 0;
+      });
 
     // S'abonner aux mises à jour pour rafraîchir la liste
     this.exerciceService.exercicesUpdated$
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
-        this.reloadData();
+        console.log('[ExerciceList] Mutation détectée - Les données seront rafraîchies par le Store');
       });
-  }
-
-  reloadData(): void {
-    this.loading = true;
-    // Charger les tags et les exercices simultanément pour optimiser les performances
-    forkJoin({
-      tags: this.tagService.getTags(),
-      exercices: this.exerciceService.getExercices()
-    }).subscribe({
-      next: (result) => {
-        // Stocker tous les tags pour la recherche par ID
-        this.allTags = result.tags;
-        
-        // Traiter les tags par catégorie
-        this.processTagsByCategory(result.tags);
-        
-        // Traiter les exercices
-        this.exercices = result.exercices;
-        // Log de contrôle: vérifier imageUrl sur la liste
-        console.log('[ExerciceList] Exercices (échantillon) après fetch:', this.exercices.slice(0, 5).map((e: any) => ({ id: e?.id, nom: e?.nom, imageUrl: e?.imageUrl })));
-        
-        // Enrichir les exercices avec leurs tags
-        this.enrichExercicesWithTags();
-        
-        // Appliquer les filtres initiaux
-        this.applyFilters();
-
-        // Masquer le message de chargement
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Erreur lors du chargement des données:', err);
-        this.errorMessage = 'Erreur lors du chargement des exercices et tags. Veuillez réessayer plus tard.';
-        this.loading = false;
-      }
-    });
   }
 
   /**
@@ -204,40 +197,6 @@ export class ExerciceListComponent implements OnInit, OnDestroy {
         // Initialiser les tableaux si nécessaire
         exercice.tags = [];
         exercice.tagIds = [];
-      }
-    });
-  }
-
-  /**
-   * Charge tous les tags depuis l'API (méthode conservée pour compatibilité)
-   */
-  loadTags(): void {
-    this.tagService.getTags().subscribe({
-      next: (tags: Tag[]) => {
-        this.processTagsByCategory(tags);
-      },
-      error: (err) => {
-        console.error('Erreur lors du chargement des tags:', err);
-      }
-    });
-  }
-
-  /**
-   * Charge tous les exercices depuis l'API (méthode conservée pour compatibilité)
-   */
-  loadExercices(): void {
-    this.loading = true;
-    this.exerciceService.getExercices().subscribe({
-      next: (exercices: Exercice[]) => {
-        this.exercices = exercices;
-        this.enrichExercicesWithTags();
-        this.applyFilters();
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Erreur lors du chargement des exercices:', err);
-        this.errorMessage = 'Erreur lors du chargement des exercices. Veuillez réessayer plus tard.';
-        this.loading = false;
       }
     });
   }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -9,8 +9,12 @@ import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+
 import { EchauffementService } from '../../../../core/services/echauffement.service';
 import { Echauffement } from '../../../../core/models/echauffement.model';
+import { WorkspaceDataStore } from '../../../../core/services/workspace-data.store';
 import { ConfirmDialogComponent } from '../../../../shared/components/dialog/confirm-dialog.component';
 import { ExerciceFiltersComponent, ExerciceFiltersValue } from '../../../exercices/components/exercice-filters.component';
 import { EchauffementViewComponent } from '../../../../shared/components/echauffement-view/echauffement-view.component';
@@ -35,7 +39,9 @@ import { RichTextViewComponent } from '../../../../shared/components/rich-text-v
   templateUrl: './echauffement-list.component.html',
   styleUrls: ['./echauffement-list.component.scss']
 })
-export class EchauffementListComponent implements OnInit {
+export class EchauffementListComponent implements OnInit, OnDestroy {
+  private readonly destroy$ = new Subject<void>();
+
   echauffements: Echauffement[] = [];
   filteredEchauffements: Echauffement[] = [];
   isLoading = false;
@@ -43,6 +49,7 @@ export class EchauffementListComponent implements OnInit {
 
   constructor(
     private echauffementService: EchauffementService,
+    private workspaceDataStore: WorkspaceDataStore,
     private router: Router,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
@@ -50,23 +57,29 @@ export class EchauffementListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadEchauffements();
+    this.workspaceDataStore.echauffements$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((echauffements) => {
+        this.echauffements = echauffements;
+        this.applyFilters();
+      });
+
+    this.workspaceDataStore.loading$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((loading) => {
+        this.isLoading = loading && this.echauffements.length === 0;
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadEchauffements(): void {
-    this.isLoading = true;
-    this.echauffementService.getEchauffements().subscribe({
-      next: (echauffements) => {
-        this.echauffements = echauffements;
-        this.applyFilters();
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Erreur lors du chargement des échauffements:', error);
-        this.snackBar.open('Erreur lors du chargement des échauffements', 'Fermer', { duration: 3000 });
-        this.isLoading = false;
-      }
-    });
+    console.log('[EchauffementList] loadEchauffements() appelé - lecture seule via Store');
+    this.echauffements = this.workspaceDataStore.getEchauffements();
+    this.applyFilters();
   }
 
   // Filtres: recherche uniquement

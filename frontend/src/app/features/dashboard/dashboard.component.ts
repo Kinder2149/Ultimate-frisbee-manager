@@ -1,12 +1,10 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { DashboardService, DashboardStats } from '../../core/services/dashboard.service';
 import { AuthService } from '../../core/services/auth.service';
 import { WorkspaceService, WorkspaceSummary } from '../../core/services/workspace.service';
-import { DataCacheService } from '../../core/services/data-cache.service';
-import { filter, switchMap, take, retry, catchError, tap } from 'rxjs/operators';
-import { of, timer, Observable } from 'rxjs';
+import { WorkspaceDataStore, DashboardStats } from '../../core/services/workspace-data.store';
+import { filter, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 @Component({
@@ -495,10 +493,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   constructor(
-    private dashboardService: DashboardService,
     private authService: AuthService,
     private workspaceService: WorkspaceService,
-    private dataCache: DataCacheService,
+    private workspaceDataStore: WorkspaceDataStore,
     private router: Router,
     private http: HttpClient
   ) {
@@ -515,51 +512,34 @@ export class DashboardComponent implements OnInit, OnDestroy {
     // Charger la liste des workspaces disponibles
     this.loadAvailableWorkspaces();
 
-    // S'abonner au workspace actuel ET charger les stats
+    // S'abonner au workspace actuel
     this.workspaceService.currentWorkspace$
       .pipe(
         tap(ws => {
           this.currentWorkspace = ws;
         }),
-        filter((ws) => !!ws),
-        switchMap(() => {
-          // ✅ Utiliser le cache - pas de clear() pour affichage instantané
-          // Le TTL de 2min + SWR garantit la fraîcheur des données
-          return this.loadDashboardStats$();
-        })
+        filter((ws) => !!ws)
       )
       .subscribe();
+
+    // 🆕 S'abonner aux stats calculées localement par le Store
+    this.workspaceDataStore.stats$.subscribe(stats => {
+      console.log('[Dashboard] Stats received from Store:', stats);
+      this.exercicesCount = stats.exercicesCount;
+      this.entrainementsCount = stats.entrainementsCount;
+      this.echauffementsCount = stats.echauffementsCount;
+      this.situationsCount = stats.situationsCount;
+      this.tagsCount = stats.tagsCount;
+      this.tagsDetails = stats.tagsDetails || {};
+      this.recentActivity = stats.recentActivity;
+    });
+
+    // 🆕 S'abonner à l'état de chargement du Store
+    this.workspaceDataStore.loading$.subscribe(loading => {
+      this.isLoading = loading;
+    });
   }
 
-  private loadDashboardStats$(): Observable<DashboardStats | null> {
-    this.isLoading = true;
-    
-    // Utiliser le cache avec TTL centralisé (5min configuré dans DataCacheService)
-    return this.dataCache.get<DashboardStats>(
-      'dashboard-stats',
-      'dashboard-stats',
-      () => this.dashboardService.getStats().pipe(
-        retry({ count: 1, delay: () => timer(700) })
-      )
-    ).pipe(
-      tap((stats: DashboardStats) => {
-        this.exercicesCount = stats.exercicesCount;
-        this.entrainementsCount = stats.entrainementsCount;
-        this.echauffementsCount = stats.echauffementsCount;
-        this.situationsCount = stats.situationsCount;
-        this.tagsCount = stats.tagsCount;
-        this.tagsDetails = stats.tagsDetails || {};
-        this.recentActivity = stats.recentActivity;
-        this.isLoading = false;
-      }),
-      catchError(() => {
-        this.isLoading = false;
-        // Initialiser tagsDetails à un objet vide en cas d'erreur
-        this.tagsDetails = {};
-        return of(null);
-      })
-    );
-  }
 
   getRoleLabel(role: string): string {
     switch(role) {

@@ -6,6 +6,7 @@ import { Tag } from '../models/tag.model';
 import { environment } from '../../../environments/environment';
 import { DataCacheService } from './data-cache.service';
 import { SyncService } from './sync.service';
+import { WorkspaceDataStore } from './workspace-data.store';
 import { CacheOptions } from '../models/cache.model';
 
 @Injectable({
@@ -20,7 +21,8 @@ export class TagService {
   constructor(
     private http: HttpClient,
     private cache: DataCacheService,
-    private sync: SyncService
+    private sync: SyncService,
+    private workspaceDataStore: WorkspaceDataStore
   ) {}
 
   getTags(category?: string, options: CacheOptions = {}): Observable<Tag[]> {
@@ -59,9 +61,14 @@ export class TagService {
   createTag(data: Partial<Tag>): Observable<Tag> {
     return this.http.post<Tag>(this.apiUrl, data).pipe(
       tap((tag) => {
+        const current = this.workspaceDataStore.getTags();
+        this.workspaceDataStore.setTags([tag, ...current]);
+        console.log('[TagService] Store patched after create', { id: tag.id });
+
         this.cache.invalidate('tags-list', 'tags');
         this.cache.invalidatePattern('tags-list-');
         this.cache.invalidate('tags-grouped', 'tags');
+
         this.sync.notifyChange({
           type: 'tag',
           action: 'create',
@@ -77,9 +84,15 @@ export class TagService {
   updateTag(id: string, data: Partial<Tag>): Observable<Tag> {
     return this.http.put<Tag>(`${this.apiUrl}/${id}`, data).pipe(
       tap((tag) => {
+        const current = this.workspaceDataStore.getTags();
+        const updated = current.map(t => (t.id === id ? tag : t));
+        this.workspaceDataStore.setTags(updated);
+        console.log('[TagService] Store patched after update', { id });
+
         this.cache.invalidate('tags-list', 'tags');
         this.cache.invalidatePattern('tags-list-');
         this.cache.invalidate('tags-grouped', 'tags');
+
         this.cache.invalidate(`tag-${id}`, 'tags');
         this.sync.notifyChange({
           type: 'tag',
@@ -97,12 +110,17 @@ export class TagService {
     const deleteObs = force
       ? this.http.delete<void>(`${this.apiUrl}/${id}`, { params: { force: 'true' } })
       : this.http.delete<void>(`${this.apiUrl}/${id}`);
-    
+
     return deleteObs.pipe(
       tap(() => {
+        const current = this.workspaceDataStore.getTags();
+        this.workspaceDataStore.setTags(current.filter(t => t.id !== id));
+        console.log('[TagService] Store patched after delete', { id });
+
         this.cache.invalidate('tags-list', 'tags');
         this.cache.invalidatePattern('tags-list-');
         this.cache.invalidate('tags-grouped', 'tags');
+
         this.cache.invalidate(`tag-${id}`, 'tags');
         this.sync.notifyChange({
           type: 'tag',

@@ -6,6 +6,7 @@ import { Echauffement } from '../models/echauffement.model';
 import { environment } from '../../../environments/environment';
 import { DataCacheService } from './data-cache.service';
 import { SyncService } from './sync.service';
+import { WorkspaceDataStore } from './workspace-data.store';
 import { CacheOptions } from '../models/cache.model';
 
 @Injectable({
@@ -20,7 +21,8 @@ export class EchauffementService {
   constructor(
     private http: HttpClient,
     private cache: DataCacheService,
-    private sync: SyncService
+    private sync: SyncService,
+    private workspaceDataStore: WorkspaceDataStore
   ) {}
 
   getEchauffements(options: CacheOptions = {}): Observable<Echauffement[]> {
@@ -49,6 +51,10 @@ export class EchauffementService {
   createEchauffement(data: FormData | Partial<Echauffement>): Observable<Echauffement> {
     return this.http.post<Echauffement>(this.apiUrl, data).pipe(
       tap((echauffement) => {
+        const current = this.workspaceDataStore.getEchauffements();
+        this.workspaceDataStore.setEchauffements([echauffement, ...current]);
+        console.log('[EchauffementService] Store patched after create', { id: echauffement.id });
+
         this.cache.invalidate('echauffements-list', 'echauffements');
         this.sync.notifyChange({
           type: 'echauffement',
@@ -65,6 +71,11 @@ export class EchauffementService {
   updateEchauffement(id: string, data: FormData | Partial<Echauffement>): Observable<Echauffement> {
     return this.http.put<Echauffement>(`${this.apiUrl}/${id}`, data).pipe(
       tap(() => {
+        const current = this.workspaceDataStore.getEchauffements();
+        const updated = current.map(e => (e.id === id ? ({ ...(e as any), ...(data as any), id } as Echauffement) : e));
+        this.workspaceDataStore.setEchauffements(updated);
+        console.log('[EchauffementService] Store patched after update', { id });
+
         this.cache.invalidate('echauffements-list', 'echauffements');
         this.cache.invalidate(`echauffement-${id}`, 'echauffements');
         this.sync.notifyChange({
@@ -82,6 +93,10 @@ export class EchauffementService {
   deleteEchauffement(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
       tap(() => {
+        const current = this.workspaceDataStore.getEchauffements();
+        this.workspaceDataStore.setEchauffements(current.filter(e => e.id !== id));
+        console.log('[EchauffementService] Store patched after delete', { id });
+
         this.cache.invalidate('echauffements-list', 'echauffements');
         this.cache.invalidate(`echauffement-${id}`, 'echauffements');
         this.sync.notifyChange({
@@ -99,6 +114,10 @@ export class EchauffementService {
   duplicateEchauffement(id: string): Observable<Echauffement> {
     return this.http.post<Echauffement>(`${this.apiUrl}/${id}/duplicate`, {}).pipe(
       tap((echauffement) => {
+        const current = this.workspaceDataStore.getEchauffements();
+        this.workspaceDataStore.setEchauffements([echauffement, ...current]);
+        console.log('[EchauffementService] Store patched after duplicate', { sourceId: id, newId: echauffement.id });
+
         this.cache.invalidate('echauffements-list', 'echauffements');
         this.sync.notifyChange({
           type: 'echauffement',

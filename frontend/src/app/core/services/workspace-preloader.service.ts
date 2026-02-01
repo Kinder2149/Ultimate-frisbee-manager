@@ -5,6 +5,7 @@ import { map, tap, catchError, finalize, switchMap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { IndexedDbService } from './indexed-db.service';
 import { DataCacheService } from './data-cache.service';
+import { WorkspaceDataStore } from './workspace-data.store';
 import { Exercice } from '../models/exercice.model';
 import { Tag } from '../models/tag.model';
 
@@ -40,7 +41,8 @@ export class WorkspacePreloaderService {
   constructor(
     private http: HttpClient,
     private indexedDb: IndexedDbService,
-    private cache: DataCacheService
+    private cache: DataCacheService,
+    private workspaceDataStore: WorkspaceDataStore
   ) {}
 
   /**
@@ -163,9 +165,14 @@ export class WorkspacePreloaderService {
 
   /**
    * Précharge via l'endpoint optimisé (si disponible)
+   * NOUVEAU : Alimente également le WorkspaceDataStore
    */
   preloadFromBulkEndpoint(workspaceId: string): Observable<WorkspaceData> {
     console.log('[WorkspacePreloader] Using bulk endpoint for workspace:', workspaceId);
+    
+    // ✅ Marquer le Store comme en chargement
+    this.workspaceDataStore.setLoading(true);
+    this.workspaceDataStore.setError(null);
     
     // ✅ Émettre immédiatement la progression de démarrage
     this.progressSubject.next({
@@ -178,6 +185,14 @@ export class WorkspacePreloaderService {
     
     return this.http.get<WorkspaceData>(`${environment.apiUrl}/workspaces/${workspaceId}/preload`).pipe(
       tap(data => {
+        console.log('[WorkspacePreloader] Bulk data received from backend:', {
+          exercices: data.exercices?.length || 0,
+          entrainements: data.entrainements?.length || 0,
+          echauffements: data.echauffements?.length || 0,
+          situations: data.situations?.length || 0,
+          tags: data.tags?.length || 0
+        });
+        
         // ✅ Émettre progression pendant le chargement
         this.progressSubject.next({
           current: 3,
@@ -199,7 +214,20 @@ export class WorkspacePreloaderService {
         ];
 
         return forkJoin(cacheObservables).pipe(
-          tap(() => console.log('[WorkspacePreloader] All data cached successfully')),
+          tap(() => {
+            console.log('[WorkspacePreloader] All data cached successfully');
+            
+            // 🆕 NOUVEAU : Alimenter le WorkspaceDataStore
+            console.log('[WorkspacePreloader] Feeding WorkspaceDataStore...');
+            this.workspaceDataStore.loadWorkspaceData({
+              exercices: data.exercices || [],
+              entrainements: data.entrainements || [],
+              echauffements: data.echauffements || [],
+              situations: data.situations || [],
+              tags: data.tags || []
+            });
+            console.log('[WorkspacePreloader] WorkspaceDataStore updated successfully');
+          }),
           map(() => data) // Retourner les données originales
         );
       }),
@@ -212,9 +240,18 @@ export class WorkspacePreloaderService {
           currentTask: 'Préchargement terminé',
           completed: true
         });
+        
+        // ✅ Marquer le Store comme chargé
+        this.workspaceDataStore.setLoading(false);
       }),
       catchError(error => {
         console.error('[WorkspacePreloader] Error with bulk endpoint:', error);
+        
+        // 🆕 NOUVEAU : Gestion d'erreur centralisée dans le Store
+        const errorMessage = error?.error?.message || error?.message || 'Erreur lors du préchargement';
+        this.workspaceDataStore.setError(errorMessage);
+        this.workspaceDataStore.setLoading(false);
+        
         // Fallback vers le préchargement individuel
         console.log('[WorkspacePreloader] Falling back to individual loading');
         throw error;

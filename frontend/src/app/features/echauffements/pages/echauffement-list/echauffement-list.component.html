@@ -14,7 +14,7 @@
   ></app-exercice-filters>
 
   <!-- Indicateur de chargement -->
-  <div *ngIf="isLoading" class="loading-container">
+  <div *ngIf="isLoading && echauffements.length === 0" class="loading-container">
     <mat-spinner></mat-spinner>
     <p>Chargement des échauffements...</p>
   </div>

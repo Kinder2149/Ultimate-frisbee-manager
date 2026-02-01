@@ -1,14 +1,16 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { Entrainement } from '../../../../core/models/entrainement.model';
 import { EntrainementService } from '../../../../core/services/entrainement.service';
+import { WorkspaceDataStore } from '../../../../core/services/workspace-data.store';
 import { DialogService } from '../../../../shared/components/dialog/dialog.service';
 import { EntrainementDetailComponent } from '../entrainement-detail/entrainement-detail.component';
 import { DuplicateButtonComponent } from '../../../../shared/components/duplicate-button/duplicate-button.component';
 import { ExerciceFiltersComponent, ExerciceFiltersValue } from '../../../exercices/components/exercice-filters.component';
-import { TagService } from '../../../../core/services/tag.service';
-import { Tag, TagCategory } from '../../../../core/models/tag.model';
+import { Tag } from '../../../../core/models/tag.model';
 import { ApiUrlService } from '../../../../core/services/api-url.service';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
@@ -21,7 +23,9 @@ import { MatButtonModule } from '@angular/material/button';
   standalone: true,
   imports: [CommonModule, DuplicateButtonComponent, ExerciceFiltersComponent, MatIconModule, MatChipsModule, MatButtonModule]
 })
-export class EntrainementListComponent implements OnInit {
+export class EntrainementListComponent implements OnInit, OnDestroy {
+  private readonly destroy$ = new Subject<void>();
+
   entrainements: Entrainement[] = [];
   filteredEntrainements: Entrainement[] = [];
   loading: boolean = false;
@@ -36,7 +40,7 @@ export class EntrainementListComponent implements OnInit {
 
   constructor(
     private entrainementService: EntrainementService,
-    private tagService: TagService,
+    private workspaceDataStore: WorkspaceDataStore,
     private router: Router,
     private cdr: ChangeDetectorRef,
     private apiUrlService: ApiUrlService,
@@ -49,7 +53,24 @@ export class EntrainementListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadTags();
-    this.loadEntrainements();
+
+    this.workspaceDataStore.entrainements$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((entrainements) => {
+        this.entrainements = entrainements;
+        this.applyFilters();
+      });
+
+    this.workspaceDataStore.loading$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((loading) => {
+        this.loading = loading && this.entrainements.length === 0;
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private parseTempsToSeconds(temps: string | undefined): number {
@@ -95,16 +116,14 @@ export class EntrainementListComponent implements OnInit {
   }
 
   private loadTags(): void {
-        this.tagService.getTags('theme_entrainement').subscribe({
-      next: (tags: Tag[]) => {
-        this.themeEntrainementTags = [...tags].sort((a, b) => a.label.localeCompare(b.label));
+    this.workspaceDataStore.tags$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((tags: Tag[]) => {
         this.allTags = tags;
-      },
-      error: () => {
-        this.themeEntrainementTags = [];
-        this.allTags = [];
-      }
-    });
+        this.themeEntrainementTags = [...tags]
+          .filter(t => t.category === 'theme_entrainement')
+          .sort((a, b) => a.label.localeCompare(b.label));
+      });
   }
 
   onFiltersChange(value: ExerciceFiltersValue): void {
@@ -131,20 +150,10 @@ export class EntrainementListComponent implements OnInit {
   }
 
   loadEntrainements(): void {
-    this.loading = true;
+    console.log('[EntrainementList] loadEntrainements() appelé - lecture seule via Store');
     this.error = null;
-    this.entrainementService.getEntrainements().subscribe({
-      next: (entrainements) => {
-        this.entrainements = entrainements;
-        this.applyFilters();
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Erreur lors du chargement des entraînements:', err);
-        this.error = 'Erreur lors du chargement des entraînements';
-        this.loading = false;
-      }
-    });
+    this.entrainements = this.workspaceDataStore.getEntrainements();
+    this.applyFilters();
   }
 
   creerEntrainement(): void {

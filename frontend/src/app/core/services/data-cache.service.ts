@@ -17,6 +17,7 @@ interface CacheEntry<T = any> {
 export class DataCacheService {
   private memoryCache = new Map<string, CacheEntry<unknown>>();
   private defaultTTL = 5 * 60 * 1000; // 5 minutes par défaut
+  private inFlightBackgroundRefresh = new Map<string, Observable<unknown>>();
   
   // Configuration TTL par type de données (centralisée)
   private readonly TTL_CONFIG = {
@@ -38,6 +39,22 @@ export class DataCacheService {
     
     // Par défaut pour types non configurés
     default: 5 * 60 * 1000               // 5min
+  };
+
+  // Seuil de revalidation contrôlée (stale-while-revalidate)
+  // RÈGLE :
+  // - Si l'entrée cache est trop "vieille" (now - timestamp > revalidateAfter), on lance un refresh en arrière-plan
+  // - Sinon, navigation simple = aucun appel réseau
+  private readonly REVALIDATE_AFTER_CONFIG = {
+    auth: 12 * 60 * 60 * 1000,           // 12h
+    workspaces: 15 * 60 * 1000,          // 15min
+    exercices: 2 * 60 * 1000,            // 2min
+    entrainements: 2 * 60 * 1000,        // 2min
+    echauffements: 2 * 60 * 1000,        // 2min
+    situations: 2 * 60 * 1000,           // 2min
+    tags: 10 * 60 * 1000,                // 10min
+    'dashboard-stats': 30 * 1000,        // 30s
+    default: 2 * 60 * 1000               // 2min
   };
   
   // Statistiques de cache
@@ -117,32 +134,34 @@ export class DataCacheService {
     }
 
     // NIVEAU 1: Vérifier cache mémoire
-    const memoryData = this.getFromMemory<T>(key, workspaceId, ttl);
-    if (memoryData) {
+    const memoryEntry = this.getMemoryEntry(key, workspaceId, ttl);
+    if (memoryEntry) {
       this.stats.hits++;
-      return memoryData;
+
+      if (staleWhileRevalidate && this.shouldBackgroundRevalidate(store, memoryEntry.timestamp)) {
+        this.backgroundRefresh(key, store, workspaceId, fetchFn, ttl);
+      }
+
+      return memoryEntry.data$ as Observable<T>;
     }
 
     // NIVEAU 2: Vérifier IndexedDB
-    return from(this.indexedDb.get<T>(store, key, workspaceId)).pipe(
-      switchMap(cachedData => {
-        if (cachedData) {
+    return from(this.indexedDb.getEntry<T>(store, key, workspaceId)).pipe(
+      switchMap(entry => {
+        if (entry) {
           console.log(`[DataCache] IndexedDB HIT for ${key}`);
           this.stats.hits++;
-          
-          // Mettre en cache mémoire
-          this.setInMemory(key, workspaceId, of(cachedData), ttl);
-          
-          // Si stale-while-revalidate, rafraîchir en arrière-plan
-          if (staleWhileRevalidate) {
-            this.fetchAndCache(key, store, workspaceId, fetchFn, ttl).subscribe({
-              error: (err) => console.error(`[DataCache] Background refresh failed for ${key}:`, err)
-            });
+
+          // Mettre en cache mémoire en conservant l'âge réel de l'entrée (important pour revalidation contrôlée)
+          this.setInMemory(key, workspaceId, of(entry.data), ttl, entry.timestamp);
+
+          if (staleWhileRevalidate && this.shouldBackgroundRevalidate(store, entry.timestamp)) {
+            this.backgroundRefresh(key, store, workspaceId, fetchFn, ttl);
           }
-          
-          return of(cachedData);
+
+          return of(entry.data);
         }
-        
+
         // NIVEAU 3: Fetch depuis API
         this.stats.misses++;
         return this.fetchAndCache(key, store, workspaceId, fetchFn, ttl);
@@ -182,29 +201,94 @@ export class DataCacheService {
    * Récupère depuis le cache mémoire
    */
   private getFromMemory<T>(key: string, workspaceId: string | null, ttl: number): Observable<T> | null {
+    const entry = this.getMemoryEntry(key, workspaceId, ttl);
+    if (!entry) {
+      return null;
+    }
+    return entry.data$ as Observable<T>;
+  }
+
+  private getMemoryEntry(key: string, workspaceId: string | null, ttl: number): CacheEntry<unknown> | null {
     const cacheKey = `${workspaceId}_${key}`;
     const cached = this.memoryCache.get(cacheKey);
     const now = Date.now();
 
-    if (cached && 
-        cached.workspaceId === (workspaceId || '') &&
-        (now - cached.timestamp) < ttl) {
+    if (
+      cached &&
+      cached.workspaceId === (workspaceId || '') &&
+      (now - cached.timestamp) < ttl
+    ) {
       console.log(`[DataCache] Memory HIT for ${key}`);
-      return cached.data$ as Observable<T>;
+      return cached;
     }
-    
+
     return null;
   }
   
   /**
    * Sauvegarde dans le cache mémoire
    */
-  private setInMemory<T>(key: string, workspaceId: string | null, data$: Observable<T>, ttl: number): void {
+  private setInMemory<T>(key: string, workspaceId: string | null, data$: Observable<T>, ttl: number): void;
+  private setInMemory<T>(
+    key: string,
+    workspaceId: string | null,
+    data$: Observable<T>,
+    ttl: number,
+    timestampOverride?: number
+  ): void;
+  private setInMemory<T>(
+    key: string,
+    workspaceId: string | null,
+    data$: Observable<T>,
+    ttl: number,
+    timestampOverride?: number
+  ): void {
     const cacheKey = `${workspaceId}_${key}`;
     this.memoryCache.set(cacheKey, {
       data$,
-      timestamp: Date.now(),
+      timestamp: timestampOverride ?? Date.now(),
       workspaceId: workspaceId || ''
+    });
+  }
+
+  private shouldBackgroundRevalidate(store: string, entryTimestamp: number): boolean {
+    const now = Date.now();
+    const revalidateAfter = this.getRevalidateAfter(store);
+    return (now - entryTimestamp) > revalidateAfter;
+  }
+
+  private getRevalidateAfter(store: string): number {
+    const value = (this.REVALIDATE_AFTER_CONFIG as any)[store];
+    if (value !== undefined) {
+      return value;
+    }
+    return this.REVALIDATE_AFTER_CONFIG.default;
+  }
+
+  private backgroundRefresh<T>(
+    key: string,
+    store: string,
+    workspaceId: string | null,
+    fetchFn: () => Observable<T>,
+    ttl: number
+  ): void {
+    const inFlightKey = `${workspaceId}_${store}_${key}`;
+    if (this.inFlightBackgroundRefresh.has(inFlightKey)) {
+      return;
+    }
+
+    const refresh$ = this.fetchAndCache(key, store, workspaceId, fetchFn, ttl).pipe(
+      tap({
+        next: () => console.log(`[DataCache] Background refresh completed for ${key}`),
+        error: (err) => console.error(`[DataCache] Background refresh failed for ${key}:`, err)
+      }),
+      shareReplay(1)
+    );
+
+    this.inFlightBackgroundRefresh.set(inFlightKey, refresh$ as Observable<unknown>);
+    refresh$.subscribe({
+      complete: () => this.inFlightBackgroundRefresh.delete(inFlightKey),
+      error: () => this.inFlightBackgroundRefresh.delete(inFlightKey)
     });
   }
   

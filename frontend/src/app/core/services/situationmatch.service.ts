@@ -6,6 +6,7 @@ import { SituationMatch } from '../models/situationmatch.model';
 import { environment } from '../../../environments/environment';
 import { DataCacheService } from './data-cache.service';
 import { SyncService } from './sync.service';
+import { WorkspaceDataStore } from './workspace-data.store';
 import { CacheOptions } from '../models/cache.model';
 
 @Injectable({
@@ -20,7 +21,8 @@ export class SituationMatchService {
   constructor(
     private http: HttpClient,
     private cache: DataCacheService,
-    private sync: SyncService
+    private sync: SyncService,
+    private workspaceDataStore: WorkspaceDataStore
   ) {}
 
   getSituationsMatchs(options: CacheOptions = {}): Observable<SituationMatch[]> {
@@ -49,6 +51,10 @@ export class SituationMatchService {
   createSituationMatch(data: FormData | Partial<SituationMatch>): Observable<SituationMatch> {
     return this.http.post<SituationMatch>(this.apiUrl, data).pipe(
       tap((situation) => {
+        const current = this.workspaceDataStore.getSituations();
+        this.workspaceDataStore.setSituations([situation, ...current]);
+        console.log('[SituationMatchService] Store patched after create', { id: situation.id });
+
         this.cache.invalidate('situations-list', 'situations');
         this.sync.notifyChange({
           type: 'situation',
@@ -65,6 +71,11 @@ export class SituationMatchService {
   updateSituationMatch(id: string, data: FormData | Partial<SituationMatch>): Observable<SituationMatch> {
     return this.http.put<SituationMatch>(`${this.apiUrl}/${id}`, data).pipe(
       tap(() => {
+        const current = this.workspaceDataStore.getSituations();
+        const updated = current.map(s => (s.id === id ? ({ ...(s as any), ...(data as any), id } as SituationMatch) : s));
+        this.workspaceDataStore.setSituations(updated);
+        console.log('[SituationMatchService] Store patched after update', { id });
+
         this.cache.invalidate('situations-list', 'situations');
         this.cache.invalidate(`situation-${id}`, 'situations');
         this.sync.notifyChange({
@@ -82,6 +93,10 @@ export class SituationMatchService {
   deleteSituationMatch(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
       tap(() => {
+        const current = this.workspaceDataStore.getSituations();
+        this.workspaceDataStore.setSituations(current.filter(s => s.id !== id));
+        console.log('[SituationMatchService] Store patched after delete', { id });
+
         this.cache.invalidate('situations-list', 'situations');
         this.cache.invalidate(`situation-${id}`, 'situations');
         this.sync.notifyChange({
@@ -99,6 +114,10 @@ export class SituationMatchService {
   duplicateSituationMatch(id: string): Observable<SituationMatch> {
     return this.http.post<SituationMatch>(`${this.apiUrl}/${id}/duplicate`, {}).pipe(
       tap((situation) => {
+        const current = this.workspaceDataStore.getSituations();
+        this.workspaceDataStore.setSituations([situation, ...current]);
+        console.log('[SituationMatchService] Store patched after duplicate', { sourceId: id, newId: situation.id });
+
         this.cache.invalidate('situations-list', 'situations');
         this.sync.notifyChange({
           type: 'situation',

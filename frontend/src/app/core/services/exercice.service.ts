@@ -6,6 +6,7 @@ import { Exercice } from '../models/exercice.model';
 import { environment } from '../../../environments/environment';
 import { DataCacheService } from './data-cache.service';
 import { SyncService } from './sync.service';
+import { WorkspaceDataStore } from './workspace-data.store';
 import { CacheOptions } from '../models/cache.model';
 
 @Injectable({
@@ -20,7 +21,8 @@ export class ExerciceService {
   constructor(
     private http: HttpClient,
     private cache: DataCacheService,
-    private sync: SyncService
+    private sync: SyncService,
+    private workspaceDataStore: WorkspaceDataStore
   ) {}
 
   private normalizeExercice(ex: Exercice): Exercice {
@@ -61,6 +63,13 @@ export class ExerciceService {
   createExercice(data: FormData | Partial<Exercice>): Observable<Exercice> {
     return this.http.post<Exercice>(this.apiUrl, data).pipe(
       tap((exercice) => {
+        const normalized = this.normalizeExercice(exercice);
+
+        // Mettre à jour le Store (sans refetch)
+        const current = this.workspaceDataStore.getExercices();
+        this.workspaceDataStore.setExercices([normalized, ...current]);
+        console.log('[ExerciceService] Store patched after create', { id: normalized.id });
+
         // Invalider le cache
         this.cache.invalidate('exercices-list', 'exercices');
         
@@ -83,6 +92,12 @@ export class ExerciceService {
   updateExercice(id: string, data: FormData | Partial<Exercice>): Observable<Exercice> {
     return this.http.put<Exercice>(`${this.apiUrl}/${id}`, data).pipe(
       tap(() => {
+        // Mettre à jour le Store (sans refetch)
+        const current = this.workspaceDataStore.getExercices();
+        const updated = current.map(ex => (ex.id === id ? this.normalizeExercice({ ...(ex as any), ...(data as any), id } as Exercice) : ex));
+        this.workspaceDataStore.setExercices(updated);
+        console.log('[ExerciceService] Store patched after update', { id });
+
         // Invalider le cache
         this.cache.invalidate('exercices-list', 'exercices');
         this.cache.invalidate(`exercice-${id}`, 'exercices');
@@ -104,6 +119,11 @@ export class ExerciceService {
   deleteExercice(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
       tap(() => {
+        // Mettre à jour le Store (sans refetch)
+        const current = this.workspaceDataStore.getExercices();
+        this.workspaceDataStore.setExercices(current.filter(ex => ex.id !== id));
+        console.log('[ExerciceService] Store patched after delete', { id });
+
         // Invalider le cache
         this.cache.invalidate('exercices-list', 'exercices');
         this.cache.invalidate(`exercice-${id}`, 'exercices');
@@ -125,6 +145,13 @@ export class ExerciceService {
   duplicateExercice(id: string): Observable<Exercice> {
     return this.http.post<Exercice>(`${this.apiUrl}/${id}/duplicate`, {}).pipe(
       tap((exercice) => {
+        const normalized = this.normalizeExercice(exercice);
+
+        // Mettre à jour le Store (sans refetch)
+        const current = this.workspaceDataStore.getExercices();
+        this.workspaceDataStore.setExercices([normalized, ...current]);
+        console.log('[ExerciceService] Store patched after duplicate', { sourceId: id, newId: normalized.id });
+
         // Invalider le cache
         this.cache.invalidate('exercices-list', 'exercices');
         
