@@ -233,7 +233,7 @@ export class EchauffementFormComponent implements OnInit, OnChanges {
   }
 
   mediaUrl(path?: string | null): string | null {
-    return this.apiUrl.getMediaUrl(path ?? undefined);
+    return this.apiUrl.getMediaUrl(path ?? undefined, 'echauffements');
   }
 
 

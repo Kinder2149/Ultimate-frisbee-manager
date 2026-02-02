@@ -82,8 +82,8 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
   selectedObjectifTag: Tag | null = null;
   selectedTravailSpecifiqueTags: Tag[] = [];
   selectedNiveauTags: Tag[] = [];
-  selectedTempsTags: Tag[] = [];
-  selectedFormatTags: Tag[] = [];
+  selectedTempsTag: Tag | null = null;
+  selectedFormatTag: Tag | null = null;
   
   // --- Gestion des images ---
   selectedImageFile: File | null = null;
@@ -218,8 +218,8 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
       objectifTag: [null],
       travailSpecifiqueTags: [[]],
       niveauTags: [[]],
-      tempsTags: [[]],
-      formatTags: [[]]
+      tempsTags: [null],
+      formatTags: [null]
     });
   }
 
@@ -235,6 +235,21 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
   addPoint() {
     const fa = this.exerciceForm.get('points') as any;
     fa.push(new FormControl(''));
+  }
+
+  onPointEnter(event: KeyboardEvent, index: number): void {
+    // Empêcher Enter de déclencher la soumission du formulaire
+    event.preventDefault();
+    event.stopPropagation();
+
+    const fa = this.exerciceForm.get('points') as any;
+    const ctrl = this.pointsControls?.[index] as FormControl | undefined;
+    const value = (ctrl?.value ?? '').toString().trim();
+
+    // Comportement: si on est sur le dernier item et qu'il n'est pas vide, ajouter une nouvelle ligne
+    if (value && fa && index === (this.pointsControls.length - 1)) {
+      this.addPoint();
+    }
   }
 
   removePoint(index: number) {
@@ -261,8 +276,8 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
     const objectifTag = tagsToSelect.find(t => t.category === 'objectif') || null;
     const travailSpecifiqueTags = tagsToSelect.filter(t => t.category === 'travail_specifique');
     const niveauTags = tagsToSelect.filter(t => t.category === 'niveau');
-    const tempsTags = tagsToSelect.filter(t => t.category === 'temps');
-    const formatTags = tagsToSelect.filter(t => t.category === 'format');
+    const tempsTag = tagsToSelect.find(t => t.category === 'temps') || null;
+    const formatTag = tagsToSelect.find(t => t.category === 'format') || null;
 
     // Déterminer l'URL d'image principale à utiliser pour le formulaire et l'aperçu
     // À ce stade, imageUrl est déjà normalisé côté service (fallback éventuel sur anciens champs schéma).
@@ -282,8 +297,8 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
       objectifTag,
       travailSpecifiqueTags,
       niveauTags,
-      tempsTags,
-      formatTags
+      tempsTags: tempsTag,
+      formatTags: formatTag
     });
     console.log('[ExerciceForm] TRACE: 5. Form patched with data.');
 
@@ -346,6 +361,18 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
     Object.keys(formValue).forEach(key => {
       // Ne pas ajouter l'objet variables complet, car nous avons déjà extrait les tableaux
       if (key === 'variables') return;
+
+      // Ne pas envoyer les champs UI de sélection des tags.
+      // Le backend consomme `tagIds`.
+      if (
+        key === 'objectifTag' ||
+        key === 'travailSpecifiqueTags' ||
+        key === 'niveauTags' ||
+        key === 'tempsTags' ||
+        key === 'formatTags'
+      ) {
+        return;
+      }
       
       const value = formValue[key];
 
@@ -362,8 +389,8 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
       formValue.objectifTag,
       ...(formValue.travailSpecifiqueTags || []),
       ...(formValue.niveauTags || []),
-      ...(formValue.tempsTags || []),
-      ...(formValue.formatTags || [])
+      formValue.tempsTags,
+      formValue.formatTags
     ].filter((tag): tag is Tag => tag !== null && tag !== undefined);
 
     formData.append('tagIds', JSON.stringify(allSelectedTags.map(tag => tag.id).filter(id => id !== undefined)));

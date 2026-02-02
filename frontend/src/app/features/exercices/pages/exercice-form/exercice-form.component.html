@@ -63,7 +63,7 @@
       </div>
       <div class="points">
         <div class="point-item" *ngFor="let ctrl of pointsControls; let i = index">
-          <input class="input" [formControl]="ctrl" placeholder="Saisir un point clé...">
+          <input class="input" [formControl]="ctrl" placeholder="Saisir un point clé..." (keydown.enter)="onPointEnter($event, i)">
           <button type="button" class="icon-btn" (click)="removePoint(i)"><mat-icon>delete</mat-icon></button>
         </div>
         <div class="hint muted">Ces points sont visuels pour l’instant et ne modifient pas l’API.</div>
@@ -110,7 +110,8 @@
           <h3 class="group-title">Temps</h3>
           <mat-form-field appearance="fill" class="w-100">
             <mat-label>Temps</mat-label>
-            <mat-select formControlName="tempsTags" multiple [compareWith]="compareTags">
+            <mat-select formControlName="tempsTags" [compareWith]="compareTags">
+              <mat-option [value]="null">Aucun</mat-option>
               <mat-option *ngFor="let tag of tempsTags" [value]="tag">{{ tag.label }}</mat-option>
             </mat-select>
           </mat-form-field>
@@ -119,7 +120,8 @@
           <h3 class="group-title">Format</h3>
           <mat-form-field appearance="fill" class="w-100">
             <mat-label>Formats</mat-label>
-            <mat-select formControlName="formatTags" multiple [compareWith]="compareTags">
+            <mat-select formControlName="formatTags" [compareWith]="compareTags">
+              <mat-option [value]="null">Aucun</mat-option>
               <mat-option *ngFor="let tag of formatTags" [value]="tag">{{ tag.label }}</mat-option>
             </mat-select>
           </mat-form-field>

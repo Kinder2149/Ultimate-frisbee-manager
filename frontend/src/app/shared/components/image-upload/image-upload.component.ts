@@ -20,13 +20,24 @@ export class ImageUploadComponent {
 
   previewUrl: string | ArrayBuffer | null = null;
 
+  private lastResolvedKey: string | null = null;
+
   constructor(private apiUrlService: ApiUrlService) {}
 
   ngOnChanges(): void {
-    if (this.currentImageUrl && !this.previewUrl) {
-      this.previewUrl = this.apiUrlService.getMediaUrl(this.currentImageUrl, this.context);
-    } else if (!this.currentImageUrl) {
+    if (!this.currentImageUrl) {
       this.previewUrl = null;
+      this.lastResolvedKey = null;
+      return;
+    }
+
+    // Recalculer l'URL dès que currentImageUrl ou context change.
+    // Important: le contexte peut arriver après coup (ex: formulaire/patchValue),
+    // et previewUrl peut déjà être non-null.
+    const key = `${this.context ?? ''}::${this.currentImageUrl}`;
+    if (this.lastResolvedKey !== key) {
+      this.previewUrl = this.apiUrlService.getMediaUrl(this.currentImageUrl, this.context);
+      this.lastResolvedKey = key;
     }
   }
 

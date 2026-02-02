@@ -82,7 +82,10 @@ export class GlobalPreloaderService {
       if (completeness >= 80) {
         // Cache suffisant, juste un refresh en arrière-plan
         console.log('[GlobalPreloader] Cache sufficient, refreshing in background');
+        // smartPreload émet des événements de progression, pas un unique résultat.
+        // Il faut attendre le signal progress.completed === true.
         this.workspacePreloader.smartPreload(workspaceId).pipe(
+          filter(progress => !!progress && progress.completed === true),
           take(1)
         ).subscribe({
           next: () => {
@@ -98,6 +101,7 @@ export class GlobalPreloaderService {
         // Cache insuffisant, préchargement complet
         console.log('[GlobalPreloader] Cache insufficient, starting full preload');
         this.workspacePreloader.smartPreload(workspaceId).pipe(
+          filter(progress => !!progress && progress.completed === true),
           take(1)
         ).subscribe({
           next: () => {
