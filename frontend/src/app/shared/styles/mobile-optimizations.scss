@@ -109,7 +109,7 @@
     --mobile-appbar-height: 152px;
   }
 
-  .main-header {
+  .app-container:not(.mobile-route) .main-header {
     position: fixed;
     top: 0;
     left: 0;
@@ -119,23 +119,23 @@
     transform: translateZ(0);
   }
 
-  .main-header .container {
+  .app-container:not(.mobile-route) .main-header .container {
     padding: 8px var(--mobile-padding);
     display: block !important;
   }
 
-  .appbar {
+  .app-container:not(.mobile-route) .appbar {
     display: flex;
     flex-direction: column;
     gap: 8px;
     width: 100%;
   }
 
-  .appbar__row {
+  .app-container:not(.mobile-route) .appbar__row {
     width: 100%;
   }
 
-  .appbar__row--title h1 {
+  .app-container:not(.mobile-route) .appbar__row--title h1 {
     font-size: 1rem;
     margin: 0;
     text-align: left;
@@ -144,15 +144,15 @@
     text-overflow: ellipsis;
   }
 
-  .appbar__row--workspace {
+  .app-container:not(.mobile-route) .appbar__row--workspace {
     display: flex;
   }
 
-  .appbar__row--nav {
+  .app-container:not(.mobile-route) .appbar__row--nav {
     width: 100%;
   }
 
-  .main-nav {
+  .app-container:not(.mobile-route) .main-nav {
     width: 100%;
     min-height: var(--touch-target-min);
     display: block;
@@ -165,7 +165,7 @@
     padding-bottom: 2px;
   }
 
-  .main-nav::after {
+  .app-container:not(.mobile-route) .main-nav::after {
     content: '';
     position: absolute;
     top: 0;
@@ -176,16 +176,16 @@
     background: linear-gradient(to left, rgba(44, 62, 80, 0.95), rgba(44, 62, 80, 0));
   }
 
-  .main-content {
+  .app-container:not(.mobile-route) .main-content {
     padding-top: calc(var(--mobile-appbar-height) + 16px);
   }
 
-  .appbar__row--nav {
+  .app-container:not(.mobile-route) .appbar__row--nav {
     padding-top: 2px;
     padding-bottom: 4px;
   }
 
-  .main-nav ul {
+  .app-container:not(.mobile-route) .main-nav ul {
     display: inline-flex;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
@@ -199,15 +199,15 @@
     padding-right: 28px;
   }
   
-  .main-nav li {
+  .app-container:not(.mobile-route) .main-nav li {
     margin: 0;
     display: inline-block;
     float: none !important;
   }
   
   /* Vraies petites bulles - icônes uniquement */
-  .main-nav > ul > li > a:not(.dropdown-toggle),
-  .main-nav .dropdown-toggle {
+  .app-container:not(.mobile-route) .main-nav > ul > li > a:not(.dropdown-toggle),
+  .app-container:not(.mobile-route) .main-nav .dropdown-toggle {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -226,12 +226,12 @@
   }
   
   /* Masquer le texte sur mobile */
-  .main-nav .nav-text {
+  .app-container:not(.mobile-route) .main-nav .nav-text {
     display: none;
   }
   
   /* Icônes dans les bulles */
-  .main-nav mat-icon:not(.dropdown-icon) {
+  .app-container:not(.mobile-route) .main-nav mat-icon:not(.dropdown-icon) {
     font-size: 20px;
     width: 20px;
     height: 20px;
@@ -239,7 +239,7 @@
   }
   
   /* Icône dropdown repositionnée */
-  .main-nav .dropdown-icon {
+  .app-container:not(.mobile-route) .main-nav .dropdown-icon {
     position: absolute;
     bottom: -2px;
     right: -2px;
@@ -252,63 +252,63 @@
   }
   
   /* Couleurs spécifiques pour chaque bulle */
-  .main-nav .dropdown.add .dropdown-toggle {
+  .app-container:not(.mobile-route) .main-nav .dropdown.add .dropdown-toggle {
     background: linear-gradient(135deg, #27ae60, #2ecc71);
     color: white;
   }
   
-  .main-nav .dropdown.exercices .dropdown-toggle {
+  .app-container:not(.mobile-route) .main-nav .dropdown.exercices .dropdown-toggle {
     background: linear-gradient(135deg, #e74c3c, #ec7063);
     color: white;
   }
   
-  .main-nav .dropdown.entrainements .dropdown-toggle {
+  .app-container:not(.mobile-route) .main-nav .dropdown.entrainements .dropdown-toggle {
     background: linear-gradient(135deg, #3498db, #5dade2);
     color: white;
   }
   
-  .main-nav .dropdown.echauffements .dropdown-toggle {
+  .app-container:not(.mobile-route) .main-nav .dropdown.echauffements .dropdown-toggle {
     background: linear-gradient(135deg, #f39c12, #f8c471);
     color: white;
   }
   
-  .main-nav .dropdown.situations .dropdown-toggle {
+  .app-container:not(.mobile-route) .main-nav .dropdown.situations .dropdown-toggle {
     background: linear-gradient(135deg, #9b59b6, #bb8fce);
     color: white;
   }
   
   /* Lien tableau de bord */
-  .main-nav > ul > li > a[routerLink="/"] {
+  .app-container:not(.mobile-route) .main-nav > ul > li > a[routerLink="/"] {
     background: linear-gradient(135deg, #34495e, #5d6d7e);
     color: white;
   }
   
   /* États hover et active */
-  .main-nav a:hover,
-  .main-nav .dropdown-toggle:hover {
+  .app-container:not(.mobile-route) .main-nav a:hover,
+  .app-container:not(.mobile-route) .main-nav .dropdown-toggle:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
   }
   
-  .main-nav a.active {
+  .app-container:not(.mobile-route) .main-nav a.active {
     transform: scale(1.05);
     box-shadow: 0 4px 16px rgba(0,0,0,0.3);
   }
   
   /* Icône dropdown plus petite */
-  .dropdown-icon {
+  .app-container:not(.mobile-route) .dropdown-icon {
     font-size: 16px !important;
     margin-left: 4px;
     transition: transform 0.2s ease;
   }
   
-  .dropdown.open .dropdown-icon {
+  .app-container:not(.mobile-route) .dropdown.open .dropdown-icon {
     transform: rotate(180deg);
   }
   
   /* Dropdowns mobiles - menu contextuel compact */
-  .main-nav .dropdown-menu,
-  .dropdown-menu {
+  .app-container:not(.mobile-route) .main-nav .dropdown-menu,
+  .app-container:not(.mobile-route) .dropdown-menu {
     position: fixed !important;
     left: 0 !important;
     right: 0 !important;
@@ -334,20 +334,20 @@
     transform: translate3d(0, 0, 0) !important;
   }
 
-  .dropdown-menu::before {
+  .app-container:not(.mobile-route) .dropdown-menu::before {
     display: none;
   }
   
-  .dropdown-menu li {
+  .app-container:not(.mobile-route) .dropdown-menu li {
     margin: 0;
     border-bottom: 1px solid #f0f0f0;
   }
   
-  .dropdown-menu li:last-child {
+  .app-container:not(.mobile-route) .dropdown-menu li:last-child {
     border-bottom: none;
   }
   
-  .dropdown-menu a {
+  .app-container:not(.mobile-route) .dropdown-menu a {
     display: block !important;
     padding: 12px 16px !important;
     color: #2c3e50 !important;
@@ -359,7 +359,7 @@
     border-radius: 0 !important;
   }
   
-  .dropdown-menu a:hover {
+  .app-container:not(.mobile-route) .dropdown-menu a:hover {
     background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(52, 152, 219, 0.2)) !important;
     color: #2c3e50 !important;
     transform: none !important;
@@ -379,14 +379,14 @@
     }
   }
 
-  .workspace-switcher {
+  .app-container:not(.mobile-route) .workspace-switcher {
     margin-left: 0;
     width: 100%;
     position: relative;
     z-index: 1;
   }
 
-  .workspace-switcher__button {
+  .app-container:not(.mobile-route) .workspace-switcher__button {
     width: 100%;
     justify-content: space-between;
     padding: 10px 12px;
@@ -396,15 +396,15 @@
     align-items: center;
   }
   
-  .workspace-switcher .ws-chevron {
+  .app-container:not(.mobile-route) .workspace-switcher .ws-chevron {
     transition: transform 0.2s ease;
   }
   
-  .workspace-switcher.is-open .ws-chevron {
+  .app-container:not(.mobile-route) .workspace-switcher.is-open .ws-chevron {
     transform: rotate(180deg);
   }
 
-  .workspace-switcher__menu {
+  .app-container:not(.mobile-route) .workspace-switcher__menu {
     position: fixed !important;
     left: 0 !important;
     right: 0 !important;

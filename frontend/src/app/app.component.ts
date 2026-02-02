@@ -22,6 +22,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   currentWorkspace$!: Observable<WorkspaceSummary | null>;
   private routerSubscription!: Subscription;
 
+  isMobileRoute = false;
+
   @ViewChild('mainHeader', { static: false }) mainHeader?: ElementRef<HTMLElement>;
 
   isDropdownOpen = {
@@ -54,11 +56,15 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       distinctUntilChanged()
     );
 
+    this.isMobileRoute = this.router.url.startsWith('/mobile');
+
     // Fermer automatiquement tous les menus déroulants lors de la navigation
     this.routerSubscription = this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
-    ).subscribe(() => {
+    ).subscribe((event) => {
       this.closeAllDropdowns();
+      this.isMobileRoute = (event as NavigationEnd).urlAfterRedirects.startsWith('/mobile');
+      this.updateMobileAppBarHeight();
     });
     
     // ✅ Initialiser le préchargement automatique des données

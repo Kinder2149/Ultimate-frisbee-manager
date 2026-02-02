@@ -3,11 +3,11 @@
 .mobile-page {
   min-height: 100vh;
   background-color: var(--background-color);
-  padding-top: 104px;
+  padding-top: calc(56px + 48px);
 }
 
 @media (max-width: 768px) {
   .mobile-page {
-    padding-top: 104px;
+    padding-top: calc(56px + 48px);
   }
 }

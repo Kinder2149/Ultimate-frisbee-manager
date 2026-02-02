@@ -55,13 +55,13 @@
           </div>
 
           <div class="tags-display" *ngIf="item.tags && item.tags.length > 0">
-            <span *ngFor="let tag of item.tags.slice(0, 3)" 
+            <span *ngFor="let tag of item.tags.slice(0, 2)" 
                   class="tag" 
                   [style.background-color]="tag.color">
               {{ tag.label }}
             </span>
-            <span *ngIf="item.tags.length > 3" class="tag tag--more">
-              +{{ item.tags.length - 3 }}
+            <span *ngIf="item.tags.length > 2" class="tag tag--more">
+              +{{ item.tags.length - 2 }}
             </span>
           </div>
 
@@ -149,13 +149,13 @@
           </app-rich-text-view>
 
           <div class="tags-display" *ngIf="item.tags && item.tags.length > 0">
-            <span *ngFor="let tag of item.tags.slice(0, 3)" 
+            <span *ngFor="let tag of item.tags.slice(0, 2)" 
                   class="tag" 
                   [style.background-color]="tag.color">
               {{ tag.label }}
             </span>
-            <span *ngIf="item.tags.length > 3" class="tag tag--more">
-              +{{ item.tags.length - 3 }}
+            <span *ngIf="item.tags.length > 2" class="tag tag--more">
+              +{{ item.tags.length - 2 }}
             </span>
           </div>
 

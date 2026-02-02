@@ -366,6 +366,10 @@ body.body-scroll-locked {
   padding: 30px 0;
 }
 
+.app-container.mobile-route .main-content {
+  padding: 0;
+}
+
 .main-footer {
   background-color: #f5f5f5;
   padding: 15px 0;

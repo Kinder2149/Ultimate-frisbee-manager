@@ -1,6 +1,6 @@
-<div class="app-container" (click)="closeAllDropdowns()">
+<div class="app-container" [class.mobile-route]="isMobileRoute" (click)="closeAllDropdowns()">
   <div class="appbar-backdrop" *ngIf="isAnyMenuOpen" (click)="$event.stopPropagation(); closeAllDropdowns()"></div>
-  <header class="main-header" #mainHeader>
+  <header class="main-header" #mainHeader *ngIf="!isMobileRoute">
     <div class="container">
       <div class="appbar">
         <div class="appbar__left">

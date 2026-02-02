@@ -10,7 +10,8 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px 16px;
+  height: 48px;
+  padding: 0 12px;
   
   background-color: var(--background-color);
   border-bottom: 1px solid var(--border-color);
@@ -19,7 +20,7 @@
   &__categories {
     flex: 1;
     display: flex;
-    gap: 8px;
+    gap: 6px;
     overflow-x: auto;
     overflow-y: hidden;
     
@@ -32,20 +33,23 @@
   &__sort {
     flex-shrink: 0;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    gap: 2px;
-    padding: 4px 8px;
-    min-width: 60px;
+    gap: 6px;
+    padding: 6px 10px;
+    min-width: 0;
+    height: 36px;
+    border-radius: 9999px;
+    background-color: rgba(0, 0, 0, 0.04);
     
     mat-icon {
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
     }
     
     .sort-label {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 500;
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -56,45 +60,47 @@
 .category-bubble {
   flex-shrink: 0;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 4px;
-  padding: 8px 12px;
+  gap: 6px;
+  padding: 6px 10px;
+  height: 36px;
   
-  background-color: white;
-  border: 2px solid var(--category-color);
-  border-radius: 16px;
+  background-color: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 9999px;
   
   cursor: pointer;
   transition: all 0.2s ease;
   
   &__icon {
-    font-size: 24px;
-    width: 24px;
-    height: 24px;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
     color: var(--category-color);
   }
   
   &__label {
-    font-size: 11px;
-    font-weight: 500;
+    font-size: 12px;
+    font-weight: 600;
     color: var(--text-primary);
     white-space: nowrap;
   }
   
   &__count {
-    font-size: 10px;
-    font-weight: 600;
+    font-size: 11px;
+    font-weight: 700;
     color: var(--category-color);
-    background-color: rgba(0, 0, 0, 0.05);
-    padding: 2px 6px;
-    border-radius: 8px;
-    min-width: 20px;
+    background-color: rgba(0, 0, 0, 0.06);
+    padding: 2px 8px;
+    border-radius: 9999px;
+    min-width: 22px;
     text-align: center;
   }
   
   &--active {
     background-color: var(--category-color);
+    border-color: rgba(0, 0, 0, 0.08);
     
     .category-bubble__icon,
     .category-bubble__label {
@@ -102,17 +108,16 @@
     }
     
     .category-bubble__count {
-      background-color: rgba(255, 255, 255, 0.3);
+      background-color: rgba(255, 255, 255, 0.25);
       color: white;
     }
   }
   
   &:hover:not(&--active) {
-    background-color: rgba(0, 0, 0, 0.02);
-    transform: translateY(-2px);
+    background-color: rgba(0, 0, 0, 0.06);
   }
   
   &:active {
-    transform: scale(0.95);
+    transform: scale(0.98);
   }
 }
