@@ -22,6 +22,9 @@ export class AuthService {
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
+  private authReadySubject = new BehaviorSubject<boolean>(false);
+  public authReady$ = this.authReadySubject.asObservable();
+
   constructor(
     private http: HttpClient,
     private router: Router,
@@ -45,6 +48,7 @@ export class AuthService {
     if (session?.user) {
       console.log('[Auth] Session Supabase trouvée, chargement du profil');
       this.isAuthenticatedSubject.next(true);
+      this.authReadySubject.next(false);
       
       // Charger le profil depuis le cache d'abord
       const cachedUser = await this.loadCachedProfile();
@@ -54,16 +58,21 @@ export class AuthService {
       
       // Synchroniser avec le backend ET s'assurer qu'un workspace est sélectionné
       this.syncUserProfile().pipe(
-        switchMap(() => this.ensureWorkspaceSelected())
+        switchMap(() => this.ensureWorkspaceSelected()),
+        tap(() => this.authReadySubject.next(true))
       ).subscribe({
         next: () => {
           console.log('[Auth] Init complète : profil + workspace prêts');
         },
-        error: (err) => console.error('[Auth] Erreur init auth:', err)
+        error: (err) => {
+          this.authReadySubject.next(false);
+          console.error('[Auth] Erreur init auth:', err);
+        }
       });
     } else {
       console.log('[Auth] Aucune session active');
       this.isAuthenticatedSubject.next(false);
+      this.authReadySubject.next(false);
     }
   }
 
@@ -149,15 +158,18 @@ export class AuthService {
     
     console.log('[Auth] Connexion réussie:', session.user.email);
     this.isAuthenticatedSubject.next(true);
+    this.authReadySubject.next(false);
     
     // Chaîner syncUserProfile → ensureWorkspaceSelected
     this.syncUserProfile().pipe(
-      switchMap(() => this.ensureWorkspaceSelected())
+      switchMap(() => this.ensureWorkspaceSelected()),
+      tap(() => this.authReadySubject.next(true))
     ).subscribe({
       next: () => {
         console.log('[Auth] Profil et workspace prêts');
       },
       error: (err) => {
+        this.authReadySubject.next(false);
         console.error('[Auth] Erreur sync profil après connexion:', err);
         // Si l'utilisateur n'existe pas en backend, rediriger vers signup
         if (err.status === 403) {
@@ -178,6 +190,7 @@ export class AuthService {
     console.log('[Auth] Déconnexion');
     this.currentUserSubject.next(null);
     this.isAuthenticatedSubject.next(false);
+    this.authReadySubject.next(false);
     this.clearCachedProfile();
     this.workspaceService.clear();
     this.indexedDb.clearAll();
@@ -291,7 +304,7 @@ export class AuthService {
         });
         
         if (header.alg !== 'RS256') {
-          console.error('[Frontend Auth] ⚠️ PROBLÈME: Token n\'est pas RS256!', header);
+          console.warn('[Frontend Auth] Token alg différent de RS256:', header);
         } else {
           console.log('[Frontend Auth] ✅ Token RS256 correct');
         }
@@ -418,18 +431,18 @@ export class AuthService {
           return of(error).pipe(delay(1000));
         }
       }),
-      tap((workspaces) => {
+      switchMap((workspaces) => {
         if (workspaces.length === 0) {
           console.warn('[Auth] Aucun workspace disponible');
-          return;
+          return of(void 0);
         }
 
         const baseWorkspace = workspaces.find(w => w.name === 'BASE');
         const selectedWorkspace = baseWorkspace || workspaces[0];
-        
+
         console.log('[Auth] Sélection auto workspace:', selectedWorkspace.name);
         // skipReload=true pour éviter le rechargement page
-        this.workspaceService.setCurrentWorkspace(selectedWorkspace, true);
+        return from(this.workspaceService.setCurrentWorkspace(selectedWorkspace, true));
       }),
       map(() => void 0),
       catchError((err) => {

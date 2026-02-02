@@ -47,12 +47,12 @@ export class LoginComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Réagir aux changements d'état d'authentification globaux.
-    // Dès que l'utilisateur est considéré comme authentifié, on quitte la page de login.
-    this.authService.isAuthenticated$
+    // Réagir au moment où l'auth est réellement prête (profil + workspace).
+    // Évite les redirections trop tôt qui forcent refresh/clics multiples.
+    this.authService.authReady$
       .pipe(
         takeUntil(this.destroy$),
-        filter(isAuth => isAuth === true)
+        filter(isReady => isReady === true)
       )
       .subscribe(() => {
         this.router.navigate([this.returnUrl]);

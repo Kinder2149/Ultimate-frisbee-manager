@@ -11,7 +11,7 @@ import { CachedData, StoreConfig, StoreIndex } from '../models/cache.model';
 export class IndexedDbService {
   private db: IDBDatabase | null = null;
   private readonly DB_NAME = 'ufm-cache';
-  private readonly DB_VERSION = 1;
+  private readonly DB_VERSION = 2;
   private isAvailable = true;
   
   // Configuration des stores
