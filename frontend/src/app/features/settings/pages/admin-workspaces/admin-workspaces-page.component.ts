@@ -16,6 +16,8 @@ import { Router } from '@angular/router';
 import { AdminService, AdminWorkspaceSummary, AdminWorkspaceUser } from '../../../../core/services/admin.service';
 import { DialogService } from '../../../../shared/components/dialog/dialog.service';
 import { WorkspaceService } from '../../../../core/services/workspace.service';
+import { NamePromptDialogComponent } from '../../../../shared/components/dialog/name-prompt-dialog.component';
+import { DataCacheService } from '../../../../core/services/data-cache.service';
 
 @Component({
   selector: 'app-admin-workspaces-page',
@@ -72,6 +74,7 @@ export class AdminWorkspacesPageComponent implements OnInit {
     private snack: MatSnackBar,
     private dialogService: DialogService,
     private workspaceService: WorkspaceService,
+    private cache: DataCacheService,
     private router: Router
   ) {}
 
@@ -164,33 +167,41 @@ export class AdminWorkspacesPageComponent implements OnInit {
   }
 
   duplicateWorkspace(ws: AdminWorkspaceSummary): void {
-    const message =
-      `Vous allez dupliquer la base <strong>${ws.name}</strong>.<br>` +
-      'Tous les contenus (exercices, entraînements, échauffements, situations, tags) et les membres seront copiés dans une nouvelle base.';
-
     this.dialogService
-      .confirm(
-        'Confirmer la duplication de la base',
-        message,
-        'Dupliquer la base',
-        'Annuler'
-      )
-      .subscribe((confirmed) => {
-        if (!confirmed) {
-          return;
-        }
+      .open(NamePromptDialogComponent, {
+        title: 'Nom de la base dupliquée',
+        width: '520px',
+        disableClose: true,
+        submitButtonText: 'Dupliquer',
+        closeButtonText: 'Annuler',
+        customData: {
+          title: 'Nom de la base dupliquée',
+          label: 'Nom',
+          placeholder: 'Ex: Club U17 – Saison 2026',
+          initialValue: `${ws.name} - `,
+        },
+      })
+      .subscribe((result) => {
+        if (!result || result.action !== 'submit') return;
+        const name = String((result.data as any)?.value || '').trim();
+        if (!name) return;
 
         this.duplicatingWorkspaceId = ws.id;
-        this.adminService.duplicateWorkspace(ws.id).subscribe({
+        this.adminService.duplicateWorkspaceWithName(ws.id, { name }).subscribe({
           next: () => {
             this.duplicatingWorkspaceId = null;
+            this.cache.invalidate('workspaces-list', 'workspaces');
             this.loadWorkspaces();
             this.snack.open('Base dupliquée', 'Fermer', { duration: 2000 });
           },
           error: (err) => {
             this.duplicatingWorkspaceId = null;
             console.error('Erreur duplication workspace', err);
-            this.snack.open('Erreur lors de la duplication de la base', 'Fermer', { duration: 4000 });
+            if (err?.status === 409) {
+              this.snack.open('Ce nom est déjà utilisé. Choisis-en un autre.', 'Fermer', { duration: 4500 });
+            } else {
+              this.snack.open('Erreur lors de la duplication de la base', 'Fermer', { duration: 4000 });
+            }
           }
         });
       });

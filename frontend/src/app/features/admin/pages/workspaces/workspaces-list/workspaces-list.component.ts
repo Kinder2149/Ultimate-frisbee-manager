@@ -14,7 +14,11 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { DialogService } from '../../../../../shared/components/dialog/dialog.service';
+import { NamePromptDialogComponent } from '../../../../../shared/components/dialog/name-prompt-dialog.component';
 import { ApiUrlService } from '../../../../../core/services/api-url.service';
+import { AdminService } from '../../../../../core/services/admin.service';
+import { DataCacheService } from '../../../../../core/services/data-cache.service';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
@@ -68,6 +72,9 @@ export class WorkspacesListComponent implements OnInit {
   constructor(
     private http: HttpClient,
     private api: ApiUrlService,
+    private adminService: AdminService,
+    private dialogService: DialogService,
+    private cache: DataCacheService,
     private router: Router,
     private snackBar: MatSnackBar
   ) {}
@@ -150,6 +157,59 @@ export class WorkspacesListComponent implements OnInit {
   refresh(): void {
     this.loadWorkspaces();
     this.snackBar.open('Liste actualisée', '', { duration: 2000 });
+  }
+
+  duplicateBaseWorkspace(event?: Event): void {
+    event?.stopPropagation();
+
+    const base = this.workspaces.find(w => (w.name || '').trim().toUpperCase() === 'BASE');
+    if (!base?.id) {
+      this.snackBar.open('Workspace BASE introuvable', 'Fermer', { duration: 4000 });
+      return;
+    }
+
+    this.dialogService
+      .open(NamePromptDialogComponent, {
+        title: 'Nom du nouveau workspace',
+        width: '520px',
+        disableClose: true,
+        submitButtonText: 'Dupliquer',
+        closeButtonText: 'Annuler',
+        customData: {
+          title: 'Nom du nouveau workspace',
+          label: 'Nom',
+          placeholder: 'Ex: Club U17 – Saison 2026',
+          initialValue: `${base.name} - `,
+        },
+      })
+      .subscribe((result) => {
+        if (!result || result.action !== 'submit') return;
+        const name = String((result.data as any)?.value || '').trim();
+        if (!name) return;
+
+        this.loading = true;
+        this.adminService.duplicateWorkspaceWithName(base.id, { name }).subscribe({
+          next: (created) => {
+            this.snackBar.open('Workspace dupliqué', 'Fermer', { duration: 2500 });
+            this.cache.invalidate('workspaces-list', 'workspaces');
+            this.loadWorkspaces();
+            if (created?.id) {
+              this.router.navigate(['/admin/workspaces', created.id]);
+            }
+            this.loading = false;
+          },
+          error: (error: any) => {
+            console.error('Erreur duplication workspace BASE:', error);
+            const status = error?.status;
+            if (status === 409) {
+              this.snackBar.open('Ce nom est déjà utilisé. Choisis-en un autre.', 'Fermer', { duration: 4500 });
+            } else {
+              this.snackBar.open('Erreur lors de la duplication', 'Fermer', { duration: 4000 });
+            }
+            this.loading = false;
+          }
+        });
+      });
   }
 
   getRelativeTime(dateStr: string): string {

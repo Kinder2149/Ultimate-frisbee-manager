@@ -170,6 +170,11 @@ export class AdminService {
     return this.http.post<AdminWorkspaceSummary>(url, {});
   }
 
+  duplicateWorkspaceWithName(id: string, payload: { name: string }): Observable<AdminWorkspaceSummary> {
+    const url = this.api.getUrl(`workspaces/${id}/duplicate`);
+    return this.http.post<AdminWorkspaceSummary>(url, payload);
+  }
+
   getWorkspaceUsers(id: string): Observable<{ workspaceId: string; name: string; users: AdminWorkspaceUser[] }> {
     const url = this.api.getUrl(`workspaces/${id}/users`);
     return this.http.get<{ workspaceId: string; name: string; users: AdminWorkspaceUser[] }>(url);

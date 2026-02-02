@@ -12,7 +12,9 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ApiUrlService } from '../../../../../core/services/api-url.service';
+import { WorkspaceMembersDialogComponent } from '../workspace-members-dialog/workspace-members-dialog.component';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
@@ -68,6 +70,7 @@ interface ActivityItem {
     MatDividerModule,
     MatMenuModule,
     MatTooltipModule,
+    MatDialogModule,
     MatSnackBarModule
   ],
   templateUrl: './workspace-detail.component.html',
@@ -93,6 +96,7 @@ export class WorkspaceDetailComponent implements OnInit {
     private router: Router,
     private http: HttpClient,
     private api: ApiUrlService,
+    private dialog: MatDialog,
     private snackBar: MatSnackBar
   ) {}
 
@@ -107,9 +111,6 @@ export class WorkspaceDetailComponent implements OnInit {
     if (!this.workspaceId) return;
 
     this.loading = true;
-
-    // IMPORTANT: côté backend, il n'existe PAS de GET /api/workspaces/:id
-    // On récupère donc le workspace via la liste admin.
     const workspacesUrl = this.api.getUrl('workspaces');
     const membersUrl = this.api.getUrl(`workspaces/${this.workspaceId}/users`);
 
@@ -222,19 +223,39 @@ export class WorkspaceDetailComponent implements OnInit {
   }
 
   changeRole(member: WorkspaceMember): void {
-    this.snackBar.open('Fonctionnalité de changement de rôle à venir', '', { duration: 2000 });
+    this.openMembersDialog();
   }
 
   removeMember(member: WorkspaceMember): void {
-    this.snackBar.open('Fonctionnalité de retrait de membre à venir', '', { duration: 2000 });
+    this.openMembersDialog();
   }
 
   addMember(): void {
-    this.snackBar.open('Fonctionnalité d\'ajout de membre à venir', '', { duration: 2000 });
+    this.openMembersDialog();
   }
 
   viewUser(userId: string): void {
     this.router.navigate(['/admin/users', userId]);
+  }
+
+  private openMembersDialog(): void {
+    if (!this.workspaceId) return;
+
+    const ref = this.dialog.open(WorkspaceMembersDialogComponent, {
+      width: '720px',
+      disableClose: true,
+      data: {
+        workspaceId: this.workspaceId,
+        workspaceName: this.workspace?.name,
+      },
+    });
+
+    ref.afterClosed().subscribe((result: any) => {
+      if (result?.updated) {
+        this.loadWorkspaceData();
+        this.snackBar.open('Membres mis à jour', 'Fermer', { duration: 2000 });
+      }
+    });
   }
 
   getRelativeTime(date: Date): string {

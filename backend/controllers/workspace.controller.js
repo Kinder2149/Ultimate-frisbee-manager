@@ -45,7 +45,26 @@ exports.adminDuplicateWorkspace = async (req, res, next) => {
     }
 
     const baseName = original.name || 'Workspace';
-    const newName = `${baseName} (Copie)`;
+    const requestedName = req.body && typeof req.body.name === 'string' ? req.body.name.trim() : '';
+    if (req.body && Object.prototype.hasOwnProperty.call(req.body, 'name')) {
+      if (!requestedName) {
+        return res.status(400).json({ error: 'Le nom du workspace est requis', code: 'WORKSPACE_NAME_REQUIRED' });
+      }
+
+      const existing = await prisma.workspace.findFirst({ where: { name: requestedName } });
+      if (existing) {
+        return res.status(409).json({ error: 'Un workspace avec ce nom existe déjà', code: 'WORKSPACE_NAME_EXISTS' });
+      }
+    }
+
+    let newName = requestedName || `${baseName} (Copie)`;
+    if (!requestedName) {
+      let n = 2;
+      while (await prisma.workspace.findFirst({ where: { name: newName } })) {
+        newName = `${baseName} (Copie ${n})`;
+        n += 1;
+      }
+    }
 
     const result = await prisma.$transaction(async (tx) => {
       // 1. Nouveau workspace
