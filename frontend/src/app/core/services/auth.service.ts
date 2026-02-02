@@ -175,7 +175,7 @@ export class AuthService {
         if (err.status === 403) {
           console.error('[Auth] Profil utilisateur non trouvé en base');
           this.supabaseService.supabase.auth.signOut();
-          this.router.navigate(['/signup'], {
+          this.router.navigate(['/login/signup'], {
             queryParams: { reason: 'profile-not-found' }
           });
         }
@@ -278,116 +278,131 @@ export class AuthService {
    * Récupérer le token d'accès Supabase
    */
   async getAccessToken(): Promise<string | null> {
-    const { data, error } = await this.supabaseService.supabase.auth.getSession();
-    
-    if (error) {
-      console.error('[Frontend Auth] Erreur getSession:', error);
-      return null;
-    }
-    
-    if (!data.session) {
-      console.warn('[Frontend Auth] Pas de session active');
-      return null;
-    }
-    
-    const token = data.session.access_token;
-    
-    // LOG DIAGNOSTIC - Décoder le header du token
-    try {
-      const parts = token.split('.');
-      if (parts.length === 3) {
-        const header = JSON.parse(atob(parts[0]));
-        console.log('[Frontend Auth] Token header:', { 
-          alg: header.alg, 
-          typ: header.typ,
-          kid: header.kid 
-        });
-        
-        if (header.alg !== 'RS256') {
-          console.warn('[Frontend Auth] Token alg différent de RS256:', header);
-        } else {
-          console.log('[Frontend Auth] ✅ Token RS256 correct');
-        }
+    // Juste après SIGNED_IN, il peut y avoir une courte fenêtre où getSession()
+    // renvoie encore null selon le navigateur / le timing (mobile notamment).
+    // Cela déclenche des appels backend sans token (401), et peut bloquer la redirection.
+    const delaysMs = [0, 150, 350, 800];
+    let lastError: any = null;
+
+    for (const delayMs of delaysMs) {
+      if (delayMs > 0) {
+        await new Promise(resolve => setTimeout(resolve, delayMs));
       }
-    } catch (e) {
-      console.error('[Frontend Auth] Erreur décodage token:', e);
-    }
-    
-    return token;
-  }
 
+      const { data, error } = await this.supabaseService.supabase.auth.getSession();
 
-  /**
-   * Vérifier si l'utilisateur est authentifié
-   */
-  isAuthenticated(): boolean {
-    return this.isAuthenticatedSubject.value;
-  }
+      if (error) {
+        lastError = error;
+        continue;
+      }
 
-  /**
-   * Vérifier si l'utilisateur est admin
-   */
-  isAdmin(): boolean {
-    const user = this.currentUserSubject.value;
-    return !!user && user.role === 'ADMIN';
-  }
+      if (data.session?.access_token) {
+        const token = data.session.access_token;
 
-  /**
-   * Rafraîchir le profil utilisateur
-   */
-  refreshUserProfile(): Observable<User> {
-    return this.syncUserProfile();
-  }
+        // LOG DIAGNOSTIC - Décoder le header du token
+        try {
+          const parts = token.split('.');
+          if (parts.length === 3) {
+            const header = JSON.parse(atob(parts[0]));
+            console.log('[Frontend Auth] Token header:', {
+              alg: header.alg,
+              typ: header.typ,
+              kid: header.kid
+            });
 
-  /**
-   * Synchroniser le profil utilisateur avec le backend
-   */
-  private syncUserProfile(): Observable<User> {
-    return this.http.get<{ user: User }>(`${this.apiUrl}/profile`).pipe(
-      retry({
-        count: 2,
-        delay: (error, retryCount) => {
-          console.log(`[Auth] Retry ${retryCount}/2 pour syncUserProfile`);
-          return of(error).pipe(delay(1000));
+            if (header.alg !== 'RS256') {
+              console.warn('[Frontend Auth] Token alg différent de RS256:', header);
+            } else {
+              console.log('[Frontend Auth] ✅ Token RS256 correct');
+            }
+          }
+        } catch (e) {
+          console.error('[Frontend Auth] Erreur décodage token:', e);
         }
-      }),
-      tap(response => {
-        this.currentUserSubject.next(response.user);
-        this.cacheUserProfile(response.user);
-        console.log('[Auth] Profil synchronisé:', response.user.email);
-      }),
-      map(response => response.user),
-      catchError(error => {
-        console.error('[Auth] Erreur sync profil:', error);
-        
-        // Si l'utilisateur n'existe pas en base (403), rediriger vers signup
-        if (error.status === 403) {
-          console.error('[Auth] Profil utilisateur non trouvé en base');
-          // Déconnecter de Supabase
-          this.supabaseService.supabase.auth.signOut();
-          // Rediriger vers signup avec message
-          this.router.navigate(['/signup'], {
-            queryParams: { reason: 'profile-not-found' }
-          });
-        }
-        
-        return throwError(() => error);
-      })
-    );
-  }
 
-
-  /**
-   * Mettre en cache le profil utilisateur
-   */
-  private async cacheUserProfile(user: User): Promise<void> {
-    try {
-      await this.indexedDb.set('auth', 'user-profile', user, null, 24 * 60 * 60 * 1000);
-    } catch (error) {
-      console.error('[Auth] Erreur cache profil:', error);
+        return token;
+      }
     }
+
+    if (lastError) {
+      console.error('[Frontend Auth] Erreur getSession:', lastError);
+    } else {
+      console.warn('[Frontend Auth] Pas de session active');
+    }
+
+    return null;
   }
 
+/**
+ * Vérifier si l'utilisateur est authentifié
+ */
+isAuthenticated(): boolean {
+  return this.isAuthenticatedSubject.value;
+}
+
+/**
+ * Vérifier si l'utilisateur est admin
+ */
+isAdmin(): boolean {
+  const user = this.currentUserSubject.value;
+  return !!user && user.role === 'ADMIN';
+}
+
+/**
+ * Rafraîchir le profil utilisateur
+ */
+refreshUserProfile(): Observable<User> {
+  return this.syncUserProfile();
+}
+
+/**
+ * Synchroniser le profil utilisateur avec le backend
+ */
+private syncUserProfile(): Observable<User> {
+  return this.http.get<{ user: User }>(`${this.apiUrl}/profile`).pipe(
+    retry({
+      count: 2,
+      delay: (error, retryCount) => {
+        console.log(`[Auth] Retry ${retryCount}/2 pour syncUserProfile`);
+        return of(error).pipe(delay(1000));
+      }
+    }),
+    tap(response => {
+      this.currentUserSubject.next(response.user);
+      this.cacheUserProfile(response.user);
+      console.log('[Auth] Profil synchronisé:', response.user.email);
+    }),
+    map(response => response.user),
+    catchError(error => {
+      console.error('[Auth] Erreur sync profil:', error);
+      
+      // Si l'utilisateur n'existe pas en base (403), rediriger vers signup
+      if (error.status === 403) {
+        console.error('[Auth] Profil utilisateur non trouvé en base');
+        // Déconnecter de Supabase
+        this.supabaseService.supabase.auth.signOut();
+        // Rediriger vers signup avec message
+        this.router.navigate(['/login/signup'], {
+          queryParams: { reason: 'profile-not-found' }
+        });
+      }
+      
+      return throwError(() => error);
+    })
+  );
+}
+
+
+/**
+ * Mettre en cache le profil utilisateur
+ */
+private async cacheUserProfile(user: User): Promise<void> {
+  try {
+    await this.indexedDb.set('auth', 'user-profile', user, null, 24 * 60 * 60 * 1000);
+  } catch (error) {
+    console.error('[Auth] Erreur cache profil:', error);
+  }
+}
   /**
    * Charger le profil depuis le cache
    */

@@ -364,7 +364,7 @@ export class MobilePageComponent implements OnInit, OnDestroy {
   }
 
   onLogoutClick(): void {
-    this.authService.logout();
+    this.authService.logout().subscribe();
     this.router.navigate(['/login']);
   }
 
