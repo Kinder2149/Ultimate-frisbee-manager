@@ -69,7 +69,7 @@ export interface WorkspaceMembersDialogResult {
             >
               <span class="who">
                 <span class="email">{{ u.email }}</span>
-                <span class="name" *ngIf="(u.prenom || u.nom)">({{ [u.prenom, u.nom].filter(Boolean).join(' ') }})</span>
+                <span class="name" *ngIf="(u.prenom || u.nom)">({{ formatUserName(u.prenom, u.nom) }})</span>
               </span>
             </mat-checkbox>
 
@@ -129,6 +129,10 @@ export class WorkspaceMembersDialogComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: WorkspaceMembersDialogData,
     private snackBar: MatSnackBar
   ) {}
+
+  formatUserName(prenom?: string, nom?: string): string {
+    return [prenom, nom].filter((v) => !!v).join(' ');
+  }
 
   ngOnInit(): void {
     this.loading = true;
