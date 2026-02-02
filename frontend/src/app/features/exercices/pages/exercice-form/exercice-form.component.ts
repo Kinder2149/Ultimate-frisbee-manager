@@ -94,7 +94,7 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
   
   // --- Gestion des images ---
   selectedImageFile: File | null = null;
-  imagePreview: string | ArrayBuffer | null = null;
+  imagePreview: string | null = null;
   
   // --- États pour l'UI ---
   readonlyMode = false;
@@ -417,7 +417,8 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {
-        this.imagePreview = reader.result as string;
+        const result = reader.result;
+        this.imagePreview = typeof result === 'string' ? result : null;
       };
       reader.readAsDataURL(file);
     } else {
