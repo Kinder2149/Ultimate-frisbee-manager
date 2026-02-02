@@ -78,13 +78,13 @@
         <span class="muted">Aucune image ajoutée pour le moment si la grille est vide.</span>
       </div>
       <div class="image-grid">
-        <div class="image-card" *ngIf="imagePreviewString">
-          <img [src]="imagePreviewString" alt="Illustration">
+        <div class="image-card" *ngIf="imagePreview">
+          <img [src]="imagePreview" alt="Illustration">
           <span class="caption">Illustration</span>
         </div>
       </div>
       <div class="upload-row">
-        <app-image-upload [currentImageUrl]="imagePreviewString" [context]="'exercices'" (imageSelected)="onImageSelected($event)"></app-image-upload>
+        <app-image-upload [currentImageUrl]="imagePreview" [context]="'exercices'" (imageSelected)="onImageSelected($event)"></app-image-upload>
       </div>
     </section>
 
