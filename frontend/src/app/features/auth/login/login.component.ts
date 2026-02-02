@@ -6,7 +6,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
-import { filter, takeUntil, finalize } from 'rxjs/operators';
+import { filter, takeUntil } from 'rxjs/operators';
 
 import { AuthService } from '../../../core/services/auth.service';
 import { LoginCredentials } from '../../../core/models/user.model';
@@ -19,6 +19,7 @@ import { LoginCredentials } from '../../../core/models/user.model';
 export class LoginComponent implements OnInit, OnDestroy {
   loginForm: FormGroup;
   isLoading = false;
+  loadingMessage = 'Connexion en cours...';
   hidePassword = true;
   returnUrl = '/';
   errorMessage: string = '';
@@ -52,9 +53,10 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.authService.authReady$
       .pipe(
         takeUntil(this.destroy$),
-        filter(isReady => isReady === true)
+        filter((isReady: boolean) => isReady === true)
       )
       .subscribe(() => {
+        this.isLoading = false;
         this.router.navigate([this.returnUrl]);
       });
   }
@@ -73,6 +75,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
 
     this.isLoading = true;
+    this.loadingMessage = 'Connexion en cours...';
     
     const credentials: LoginCredentials = {
       email: this.loginForm.value.email.trim().toLowerCase(),
@@ -81,21 +84,20 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     this.errorMessage = '';
 
-    this.authService.login(credentials).pipe(
-      finalize(() => {
-        this.isLoading = false;
-      })
-    ).subscribe({
+    this.authService.login(credentials).subscribe({
       next: () => {
         this.snackBar.open('Connexion réussie !', 'Fermer', {
           duration: 2000,
           panelClass: ['success-snackbar']
         });
 
+        this.loadingMessage = 'Connexion réussie, chargement...';
+
         // La redirection sera gérée automatiquement par l'observable isAuthenticated$ (ligne 53-61)
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('[Login] Erreur de connexion:', error);
+        this.isLoading = false;
         
         // Message d'erreur plus spécifique selon le type d'erreur
         if (error?.message?.includes('Invalid login credentials')) {

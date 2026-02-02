@@ -10,7 +10,7 @@
     <!-- Loader -->
     <app-auth-loader 
       *ngIf="isLoading" 
-      message="Connexion en cours..."
+      [message]="loadingMessage"
       [size]="40">
     </app-auth-loader>
 
@@ -63,7 +63,7 @@
         color="primary"
         type="submit"
         class="btn-primary full-width"
-        [disabled]="loginForm.invalid">
+        [disabled]="loginForm.invalid || isLoading">
         <mat-icon>login</mat-icon>
         <span>Se connecter</span>
       </button>

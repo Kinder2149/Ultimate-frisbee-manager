@@ -23,18 +23,18 @@
    Appliqués aux listes: entraînements, échauffements, situations/matchs, exercices
    =========================================== */
 
-.entity-card {
+ .app-container:not(.mobile-route) .entity-card {
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   overflow: hidden;
   transition: transform 0.2s, box-shadow 0.2s;
 }
-.entity-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+ .app-container:not(.mobile-route) .entity-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
 
-.entity-card-header,
-.entity-card .card-header,
-.entity-card mat-card-header {
+ .app-container:not(.mobile-route) .entity-card-header,
+ .app-container:not(.mobile-route) .entity-card .card-header,
+ .app-container:not(.mobile-route) .entity-card mat-card-header {
   padding: 20px;
   background-color: #f8f9fa;
   border-bottom: 1px solid #e9ecef;
@@ -42,38 +42,38 @@
   justify-content: space-between;
   align-items: center;
 }
-.entity-card-header h3,
-.entity-card .card-header h3,
-.entity-card mat-card-title { margin: 0; color: #333; font-size: 18px; }
+ .app-container:not(.mobile-route) .entity-card-header h3,
+ .app-container:not(.mobile-route) .entity-card .card-header h3,
+ .app-container:not(.mobile-route) .entity-card mat-card-title { margin: 0; color: #333; font-size: 18px; }
 
-.entity-card-actions,
-.entity-card .actions,
-.entity-card .card-actions,
-.entity-card mat-card-actions { display: flex; gap: 8px; align-items: center; padding: 8px 16px; }
+ .app-container:not(.mobile-route) .entity-card-actions,
+ .app-container:not(.mobile-route) .entity-card .actions,
+ .app-container:not(.mobile-route) .entity-card .card-actions,
+ .app-container:not(.mobile-route) .entity-card mat-card-actions { display: flex; gap: 8px; align-items: center; padding: 8px 16px; }
 
-.entity-card-body,
-.entity-card .card-body,
-.entity-card .card-content,
-.entity-card mat-card-content { padding: 20px; }
+ .app-container:not(.mobile-route) .entity-card-body,
+ .app-container:not(.mobile-route) .entity-card .card-body,
+ .app-container:not(.mobile-route) .entity-card .card-content,
+ .app-container:not(.mobile-route) .entity-card mat-card-content { padding: 20px; }
 
 /* Lignes info réutilisables */
-.entity-card .info-row { display: flex; align-items: center; margin-bottom: 12px; }
-.entity-card .info-row:last-child { margin-bottom: 0; }
-.entity-card .label { font-weight: 600; color: #555; min-width: 80px; margin-right: 10px; }
-.entity-card .value { font-weight: 500; color: #333; flex: 1; }
-.entity-card .value.duration { color: #2196F3; font-weight: 600; background: #E3F2FD; padding: 2px 8px; border-radius: 12px; font-size: 0.9em; }
+ .app-container:not(.mobile-route) .entity-card .info-row { display: flex; align-items: center; margin-bottom: 12px; }
+ .app-container:not(.mobile-route) .entity-card .info-row:last-child { margin-bottom: 0; }
+ .app-container:not(.mobile-route) .entity-card .label { font-weight: 600; color: #555; min-width: 80px; margin-right: 10px; }
+ .app-container:not(.mobile-route) .entity-card .value { font-weight: 500; color: #333; flex: 1; }
+ .app-container:not(.mobile-route) .entity-card .value.duration { color: #2196F3; font-weight: 600; background: #E3F2FD; padding: 2px 8px; border-radius: 12px; font-size: 0.9em; }
 
 /* Tags (pastilles) */
-.entity-card .tags-display, .entity-card .tags-container { display: flex; flex-wrap: wrap; gap: 8px; }
-.entity-card .tag { display: inline-block; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 500; color: #fff; background-color: #e0e0e0; }
+ .app-container:not(.mobile-route) .entity-card .tags-display, .app-container:not(.mobile-route) .entity-card .tags-container { display: flex; flex-wrap: wrap; gap: 8px; }
+ .app-container:not(.mobile-route) .entity-card .tag { display: inline-block; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 500; color: #fff; background-color: #e0e0e0; }
 
-.entity-card .created-at, .entity-card .meta-info { margin-top: 10px; padding-top: 10px; border-top: 1px solid #e9ecef; font-size: 12px; color: #666; }
+ .app-container:not(.mobile-route) .entity-card .created-at, .app-container:not(.mobile-route) .entity-card .meta-info { margin-top: 10px; padding-top: 10px; border-top: 1px solid #e9ecef; font-size: 12px; color: #666; }
 
 /* Boutons icônes unifiés */
-.entity-card .btn-icon,
-.entity-card button.mat-mdc-button,
-.entity-card button[mat-button],
-.entity-card button[mat-icon-button] {
+ .app-container:not(.mobile-route) .entity-card .btn-icon,
+ .app-container:not(.mobile-route) .entity-card button.mat-mdc-button,
+ .app-container:not(.mobile-route) .entity-card button[mat-button],
+ .app-container:not(.mobile-route) .entity-card button[mat-icon-button] {
   background: none;
   border: none;
   padding: 8px;
@@ -84,20 +84,20 @@
   justify-content: center;
   transition: background-color 0.2s;
 }
-.entity-card .btn-icon:hover,
-.entity-card button[mat-icon-button]:hover,
-.entity-card button[mat-button]:hover { background-color: rgba(0,0,0,0.06); }
-.entity-card .btn-icon.danger:hover { background-color: rgba(220,53,69,0.1); color: #dc3545; }
+ .app-container:not(.mobile-route) .entity-card .btn-icon:hover,
+ .app-container:not(.mobile-route) .entity-card button[mat-icon-button]:hover,
+ .app-container:not(.mobile-route) .entity-card button[mat-button]:hover { background-color: rgba(0,0,0,0.06); }
+ .app-container:not(.mobile-route) .entity-card .btn-icon.danger:hover { background-color: rgba(220,53,69,0.1); color: #dc3545; }
 
 /* Responsive: pile sur mobile */
 @media (max-width: 768px) {
-  .entity-card-header,
-  .entity-card .card-header,
-  .entity-card mat-card-header { flex-direction: column; gap: 12px; align-items: stretch; }
-  .entity-card .entity-card-actions,
-  .entity-card .actions,
-  .entity-card .card-actions,
-  .entity-card mat-card-actions { justify-content: center; }
+  .app-container:not(.mobile-route) .entity-card-header,
+  .app-container:not(.mobile-route) .entity-card .card-header,
+  .app-container:not(.mobile-route) .entity-card mat-card-header { flex-direction: column; gap: 12px; align-items: stretch; }
+  .app-container:not(.mobile-route) .entity-card .entity-card-actions,
+  .app-container:not(.mobile-route) .entity-card .actions,
+  .app-container:not(.mobile-route) .entity-card .card-actions,
+  .app-container:not(.mobile-route) .entity-card mat-card-actions { justify-content: center; }
 }
 
 /* ===========================================
@@ -107,6 +107,11 @@
 @media (max-width: 768px) {
   :root {
     --mobile-appbar-height: 152px;
+  }
+
+  .app-container:not(.mobile-route) app-content-categories,
+  .app-container:not(.mobile-route) .categories-bar {
+    display: none !important;
   }
 
   .app-container:not(.mobile-route) .main-header {
