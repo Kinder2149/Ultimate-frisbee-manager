@@ -7,6 +7,7 @@ import { isPlatformBrowser } from '@angular/common';
 })
 export class MobileDetectorService {
   private readonly MOBILE_BREAKPOINT = 768;
+  private readonly DESKTOP_FORCE_STORAGE_KEY = 'ufm.forceDesktop';
   private isMobileSubject = new BehaviorSubject<boolean>(false);
   private isDesktopForcedSubject = new BehaviorSubject<boolean>(false);
 
@@ -15,8 +16,21 @@ export class MobileDetectorService {
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
     if (isPlatformBrowser(this.platformId)) {
+      this.restoreDesktopForce();
       this.updateMobileStatus();
       this.setupResizeListener();
+    }
+  }
+
+  private restoreDesktopForce(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    try {
+      const storedValue = window.localStorage.getItem(this.DESKTOP_FORCE_STORAGE_KEY);
+      this.isDesktopForcedSubject.next(storedValue === 'true');
+    } catch {
+      // Ignore storage errors (private mode, blocked storage, etc.)
+      this.isDesktopForcedSubject.next(false);
     }
   }
 
@@ -39,11 +53,25 @@ export class MobileDetectorService {
   // Forcer la vue desktop (utilisé par le bouton "Version desktop")
   forceDesktop(): void {
     this.isDesktopForcedSubject.next(true);
+
+    if (!isPlatformBrowser(this.platformId)) return;
+    try {
+      window.localStorage.setItem(this.DESKTOP_FORCE_STORAGE_KEY, 'true');
+    } catch {
+      // ignore
+    }
   }
 
   // Réinitialiser le forçage desktop (quand on revient en auto)
   resetDesktopForce(): void {
     this.isDesktopForcedSubject.next(false);
+
+    if (!isPlatformBrowser(this.platformId)) return;
+    try {
+      window.localStorage.setItem(this.DESKTOP_FORCE_STORAGE_KEY, 'false');
+    } catch {
+      // ignore
+    }
   }
 
   // Getter synchrone (utile dans les guards)

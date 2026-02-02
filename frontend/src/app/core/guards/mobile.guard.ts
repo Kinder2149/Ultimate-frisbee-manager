@@ -17,6 +17,12 @@ export class MobileGuard implements CanActivate {
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): Observable<boolean> {
+    const url = state.url || '';
+    if (url.includes('forceDesktop=1')) {
+      this.mobileDetector.forceDesktop();
+      return of(true);
+    }
+
     const shouldShowMobile = this.mobileDetector.shouldShowMobileView;
     
     if (shouldShowMobile) {

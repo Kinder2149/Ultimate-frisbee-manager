@@ -26,6 +26,9 @@ import { AuthService } from '../../../../core/services/auth.service';
 import { ExerciceDialogService } from '../../../exercices/services/exercice-dialog.service';
 import { DialogService } from '../../../../shared/components/dialog/dialog.service';
 import { MobileDetectorService } from '../../../../core/services/mobile-detector.service';
+import { EntrainementDetailComponent } from '../../../entrainements/pages/entrainement-detail/entrainement-detail.component';
+import { EchauffementViewComponent } from '../../../../shared/components/echauffement-view/echauffement-view.component';
+import { SituationMatchViewComponent } from '../../../../shared/components/situationmatch-view/situationmatch-view.component';
 
 @Component({
   selector: 'app-mobile-page',
@@ -137,7 +140,12 @@ export class MobilePageComponent implements OnInit, OnDestroy {
       echauffements: this.echauffementService.getEchauffements(),
       situationsMatchs: this.situationMatchService.getSituationsMatchs()
     }).subscribe({
-      next: (data) => {
+      next: (data: {
+        exercices: Exercice[];
+        entrainements: Entrainement[];
+        echauffements: Echauffement[];
+        situationsMatchs: SituationMatch[];
+      }) => {
         this.exercices = data.exercices;
         this.entrainements = data.entrainements;
         this.echauffements = data.echauffements;
@@ -154,7 +162,7 @@ export class MobilePageComponent implements OnInit, OnDestroy {
           total: this.allItems.length
         });
       },
-      error: (err) => {
+      error: (err: unknown) => {
         console.error('[MobilePage] Erreur chargement:', err);
         this.error = 'Erreur lors du chargement des données';
         this.loading = false;
@@ -312,7 +320,23 @@ export class MobilePageComponent implements OnInit, OnDestroy {
   }
 
   onCategoryChange(category: CategoryType): void {
-    this.activeCategory = category;
+    if (category === 'all') {
+      this.activeCategory = category;
+      return;
+    }
+
+    const desktopRouteByCategory: Record<Exclude<CategoryType, 'all'>, string> = {
+      exercice: '/exercices',
+      entrainement: '/entrainements',
+      echauffement: '/echauffements',
+      situation: '/situations-matchs'
+    };
+
+    const target = desktopRouteByCategory[category];
+    this.mobileDetector.forceDesktop();
+    this.router.navigate([target], {
+      queryParams: { forceDesktop: '1' }
+    });
   }
 
   onSortChange(order: SortOrder): void {
@@ -350,13 +374,58 @@ export class MobilePageComponent implements OnInit, OnDestroy {
         this.exerciceDialogService.openViewDialog(item.originalData as Exercice).subscribe();
         break;
       case 'entrainement':
-        this.router.navigate(['/entrainements/voir', item.id]);
+        this.entrainementService.getEntrainementById(item.id).subscribe({
+          next: (entrainement: Entrainement) => {
+            this.dialogService.open(EntrainementDetailComponent, {
+              title: entrainement.titre,
+              width: '1100px',
+              maxWidth: '95vw',
+              disableClose: false,
+              panelClass: 'entity-view-dialog',
+              customData: { entrainementId: item.id }
+            }).subscribe();
+          },
+          error: (err: unknown) => {
+            console.error('[MobilePage] Erreur chargement entraînement:', err);
+            this.snackBar.open('Erreur lors du chargement de l\'entraînement', 'Fermer', { duration: 3000 });
+          }
+        });
         break;
       case 'echauffement':
-        this.router.navigate(['/echauffements/voir', item.id]);
+        this.echauffementService.getEchauffementById(item.id).subscribe({
+          next: (echauffement: Echauffement) => {
+            this.dialogService.open(EchauffementViewComponent, {
+              title: echauffement.nom || 'Échauffement',
+              width: '720px',
+              maxWidth: '90vw',
+              disableClose: false,
+              panelClass: 'entity-view-dialog',
+              customData: { echauffement }
+            }).subscribe();
+          },
+          error: (err: unknown) => {
+            console.error('[MobilePage] Erreur chargement échauffement:', err);
+            this.snackBar.open('Erreur lors du chargement de l\'échauffement', 'Fermer', { duration: 3000 });
+          }
+        });
         break;
       case 'situation':
-        this.router.navigate(['/situations-matchs/voir', item.id]);
+        this.situationMatchService.getSituationMatchById(item.id).subscribe({
+          next: (situationMatch: SituationMatch) => {
+            this.dialogService.open(SituationMatchViewComponent, {
+              title: situationMatch.nom || situationMatch.type || 'Situation/Match',
+              width: '720px',
+              maxWidth: '90vw',
+              disableClose: false,
+              panelClass: 'entity-view-dialog',
+              customData: { situationMatch }
+            }).subscribe();
+          },
+          error: (err: unknown) => {
+            console.error('[MobilePage] Erreur chargement situation/match:', err);
+            this.snackBar.open('Erreur lors du chargement de la situation', 'Fermer', { duration: 3000 });
+          }
+        });
         break;
     }
   }
