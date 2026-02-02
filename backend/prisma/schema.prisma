@@ -51,7 +51,7 @@ model Tag {
   workspaceId String?
   workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
-  @@unique([label, category])
+  @@unique([workspaceId, label, category])
   @@index([createdAt])
   @@index([workspaceId])
 }
