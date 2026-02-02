@@ -26,22 +26,21 @@
         <div class="row row--objectif-travail">
           <div class="col col-6">
             <label class="label">Objectif</label>
-            <mat-form-field appearance="fill" class="w-100">
-              <mat-label>Objectif principal</mat-label>
-              <mat-select formControlName="objectifTag" [compareWith]="compareTags">
-                <mat-option [value]="null">Aucun</mat-option>
-                <mat-option *ngFor="let tag of objectifTags" [value]="tag">{{ tag.label }}</mat-option>
-              </mat-select>
-            </mat-form-field>
+            <app-tag-select-single
+              formControlName="objectifTag"
+              [label]="'Objectif principal'"
+              [tags]="objectifTags"
+              [allowNone]="true"
+              [noneLabel]="'Aucun'"
+            ></app-tag-select-single>
           </div>
           <div class="col col-6">
             <label class="label">Travail spécifique</label>
-            <mat-form-field appearance="fill" class="w-100">
-              <mat-label>Travaux spécifiques</mat-label>
-              <mat-select formControlName="travailSpecifiqueTags" multiple [compareWith]="compareTags">
-                <mat-option *ngFor="let tag of travailSpecifiqueTags" [value]="tag">{{ tag.label }}</mat-option>
-              </mat-select>
-            </mat-form-field>
+            <app-tag-select-multi
+              formControlName="travailSpecifiqueTags"
+              [label]="'Travaux spécifiques'"
+              [tags]="travailSpecifiqueTags"
+            ></app-tag-select-multi>
           </div>
         </div>
         <!-- Ligne 3: Durée + Nombre de joueurs (déplacés dans la section Tags) -->
@@ -57,17 +56,13 @@
 
     <!-- D — Points importants -->
     <section class="card section">
-      <div class="section-header">
-        <h2 class="section-title">Points importants</h2>
-        <button type="button" class="btn btn-small" (click)="addPoint()"><mat-icon>add</mat-icon>Ajouter un point</button>
-      </div>
-      <div class="points">
-        <div class="point-item" *ngFor="let ctrl of pointsControls; let i = index">
-          <input class="input" [formControl]="ctrl" placeholder="Saisir un point clé..." (keydown.enter)="onPointEnter($event, i)">
-          <button type="button" class="icon-btn" (click)="removePoint(i)"><mat-icon>delete</mat-icon></button>
-        </div>
-        <div class="hint muted">Ces points sont visuels pour l’instant et ne modifient pas l’API.</div>
-      </div>
+      <h2 class="section-title">Points importants</h2>
+      <app-text-chips-field
+        formControlName="points"
+        [label]="''"
+        [placeholder]="'Ajouter un point puis Entrée…'"
+        [hint]="'Ces points sont visuels pour l’instant et ne modifient pas l’API.'"
+      ></app-text-chips-field>
     </section>
 
     <!-- E — Variables (+ / -) -->
@@ -99,32 +94,31 @@
       <div class="grid">
         <div class="col col-6">
           <h3 class="group-title">Niveau</h3>
-          <mat-form-field appearance="fill" class="w-100">
-            <mat-label>Niveaux</mat-label>
-            <mat-select formControlName="niveauTags" multiple [compareWith]="compareTags">
-              <mat-option *ngFor="let tag of niveauTags" [value]="tag">{{ tag.label }}</mat-option>
-            </mat-select>
-          </mat-form-field>
+          <app-tag-select-multi
+            formControlName="niveauTags"
+            [label]="'Niveaux'"
+            [tags]="niveauTags"
+          ></app-tag-select-multi>
         </div>
         <div class="col col-6">
           <h3 class="group-title">Temps</h3>
-          <mat-form-field appearance="fill" class="w-100">
-            <mat-label>Temps</mat-label>
-            <mat-select formControlName="tempsTags" [compareWith]="compareTags">
-              <mat-option [value]="null">Aucun</mat-option>
-              <mat-option *ngFor="let tag of tempsTags" [value]="tag">{{ tag.label }}</mat-option>
-            </mat-select>
-          </mat-form-field>
+          <app-tag-select-single
+            formControlName="tempsTags"
+            [label]="'Temps'"
+            [tags]="tempsTags"
+            [allowNone]="true"
+            [noneLabel]="'Aucun'"
+          ></app-tag-select-single>
         </div>
         <div class="col col-6">
           <h3 class="group-title">Format</h3>
-          <mat-form-field appearance="fill" class="w-100">
-            <mat-label>Formats</mat-label>
-            <mat-select formControlName="formatTags" [compareWith]="compareTags">
-              <mat-option [value]="null">Aucun</mat-option>
-              <mat-option *ngFor="let tag of formatTags" [value]="tag">{{ tag.label }}</mat-option>
-            </mat-select>
-          </mat-form-field>
+          <app-tag-select-single
+            formControlName="formatTags"
+            [label]="'Format'"
+            [tags]="formatTags"
+            [allowNone]="true"
+            [noneLabel]="'Aucun'"
+          ></app-tag-select-single>
         </div>
       </div>
     </section>

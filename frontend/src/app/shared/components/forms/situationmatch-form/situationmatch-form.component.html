@@ -63,88 +63,28 @@
       <!-- Sélection des tags -->
       <div class="tags-section">
         <h3>Tags (Format, Temps moyen, Niveau)</h3>
-        
-        <!-- Tags disponibles groupés par catégorie -->
-        <div class="available-tags" *ngIf="availableTags.length > 0">
-          <h4>Tags disponibles :</h4>
 
-          <!-- Format -->
-          <div *ngIf="formatTags.length > 0" class="tag-category">
-            <h5>Format</h5>
-            <div class="tags-grid">
-              <mat-chip-listbox>
-                <mat-chip
-                  *ngFor="let tag of formatTags"
-                  (click)="onTagSelect(tag)"
-                  [style.background-color]="tag.color || '#e0e0e0'"
-                  [style.color]="tag.color ? '#fff' : '#333'"
-                  class="selectable-tag">
-                  {{ tag.label }}
-                  <mat-icon>add</mat-icon>
-                </mat-chip>
-              </mat-chip-listbox>
-            </div>
-          </div>
+        <app-tag-select-single
+          formControlName="formatTag"
+          [label]="'Format'"
+          [tags]="formatTags"
+          [allowNone]="true"
+          [noneLabel]="'Aucun'"
+        ></app-tag-select-single>
 
-          <!-- Temps moyen -->
-          <div *ngIf="tempsTags.length > 0" class="tag-category">
-            <h5>Temps moyen</h5>
-            <div class="tags-grid">
-              <mat-chip-listbox>
-                <mat-chip
-                  *ngFor="let tag of tempsTags"
-                  (click)="onTagSelect(tag)"
-                  [style.background-color]="tag.color || '#e0e0e0'"
-                  [style.color]="tag.color ? '#fff' : '#333'"
-                  class="selectable-tag">
-                  {{ tag.label }}
-                  <mat-icon>add</mat-icon>
-                </mat-chip>
-              </mat-chip-listbox>
-            </div>
-          </div>
+        <app-tag-select-single
+          formControlName="tempsTag"
+          [label]="'Temps moyen'"
+          [tags]="tempsTags"
+          [allowNone]="true"
+          [noneLabel]="'Aucun'"
+        ></app-tag-select-single>
 
-          <!-- Niveau -->
-          <div *ngIf="niveauTags.length > 0" class="tag-category">
-            <h5>Niveau</h5>
-            <div class="tags-grid">
-              <mat-chip-listbox>
-                <mat-chip
-                  *ngFor="let tag of niveauTags"
-                  (click)="onTagSelect(tag)"
-                  [style.background-color]="tag.color || '#e0e0e0'"
-                  [style.color]="tag.color ? '#fff' : '#333'"
-                  class="selectable-tag">
-                  {{ tag.label }}
-                  <mat-icon>add</mat-icon>
-                </mat-chip>
-              </mat-chip-listbox>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tags sélectionnés -->
-        <div class="selected-tags" *ngIf="selectedTags.length > 0">
-          <h4>Tags sélectionnés :</h4>
-          <div class="tags-grid">
-            <mat-chip-listbox>
-              <mat-chip 
-                *ngFor="let tag of selectedTags" 
-                (removed)="removeTag(tag)"
-                [style.background-color]="tag.color || '#e0e0e0'"
-                [style.color]="tag.color ? '#fff' : '#333'"
-                class="selected-tag">
-                {{ tag.label }}
-                <mat-icon matChipRemove>cancel</mat-icon>
-              </mat-chip>
-            </mat-chip-listbox>
-          </div>
-        </div>
-
-        <!-- Message si aucun tag sélectionné -->
-        <div class="no-tags" *ngIf="selectedTags.length === 0">
-          <p>Aucun tag sélectionné. Vous pouvez ajouter des tags pour catégoriser votre situation/match.</p>
-        </div>
+        <app-tag-select-multi
+          formControlName="niveauTags"
+          [label]="'Niveau'"
+          [tags]="niveauTags"
+        ></app-tag-select-multi>
       </div>
 
       <!-- Boutons d'action -->

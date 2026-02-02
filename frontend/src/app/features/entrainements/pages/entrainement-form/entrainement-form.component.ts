@@ -18,14 +18,15 @@ import { ExerciceSelectorComponent } from '../../../../shared/components/exercic
 import { ExerciceFormModalComponent } from '../../../../shared/components/exercice-form-modal/exercice-form-modal.component';
 import { EchauffementModalComponent } from '../../../../shared/components/echauffement-modal/echauffement-modal.component';
 import { SituationMatchModalComponent } from '../../../../shared/components/situationmatch-modal/situationmatch-modal.component';
-import { ImageUploadComponent } from '../../../../shared/components/image-upload/image-upload.component';
+import { ImagePickerFieldComponent } from '../../../../shared/components/form-fields/image-picker-field/image-picker-field.component';
+import { TagSelectMultiComponent } from '../../../../shared/components/form-fields/tag-select-multi/tag-select-multi.component';
 
 @Component({
   selector: 'app-entrainement-form',
   templateUrl: './entrainement-form.component.html',
   styleUrls: ['./entrainement-form.component.css'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ExerciceSelectorComponent, ExerciceFormModalComponent, ImageUploadComponent]
+  imports: [CommonModule, ReactiveFormsModule, ExerciceSelectorComponent, ExerciceFormModalComponent, ImagePickerFieldComponent, TagSelectMultiComponent]
 })
 export class EntrainementFormComponent implements OnInit {
   entrainementForm!: FormGroup;
@@ -43,10 +44,6 @@ export class EntrainementFormComponent implements OnInit {
 
   // Gestion des tags thème
   availableThemeTags: Tag[] = [];
-  selectedThemeTags: Tag[] = [];
-  selectedTags: string[] = [];
-  showThemeDropdown = false;
-  filteredThemeTags: Tag[] = [];
 
   // Gestion des nouvelles relations
   selectedEchauffement: Echauffement | null = null;
@@ -80,7 +77,10 @@ export class EntrainementFormComponent implements OnInit {
       titre: ['', [Validators.required, Validators.minLength(3)]],
       date: [''],
       exercices: this.fb.array([]),
-      imageUrl: ['']
+      imageUrl: [''],
+
+      // Tags thème (standardisé)
+      themeTags: [[]]
     });
   }
 
@@ -160,9 +160,11 @@ export class EntrainementFormComponent implements OnInit {
       this.selectedSituationMatch = entrainement.situationMatch;
     }
     
-    // Charger les tags existants
+    // Tags thème: patcher la sélection si les tags sont déjà fournis
     if (entrainement.tags && entrainement.tags.length > 0) {
-      this.selectedTags = entrainement.tags.map(tag => tag.id).filter((id): id is string => id !== undefined);
+      this.entrainementForm.patchValue({
+        themeTags: entrainement.tags
+      });
     }
     
     // Charger les exercices de l'entraînement
@@ -225,7 +227,8 @@ export class EntrainementFormComponent implements OnInit {
       }
 
       // Tags (ids)
-      const tagIds = this.selectedThemeTags.map(tag => tag.id).filter((id): id is string => !!id);
+      const themeTags = (formValue.themeTags || []) as Tag[];
+      const tagIds = themeTags.map(tag => tag.id).filter((id): id is string => !!id);
       fd.append('tagIds', JSON.stringify(tagIds));
 
       // Gestion suppression image (édition uniquement): forcer imageUrl vide si supprimée
@@ -507,46 +510,11 @@ export class EntrainementFormComponent implements OnInit {
     this.tagService.getTags('theme_entrainement').subscribe({
       next: (tags: Tag[]) => {
         this.availableThemeTags = tags;
-        this.filteredThemeTags = [...tags];
       },
       error: (err: any) => {
         console.error('Erreur lors du chargement des tags thème entraînement:', err);
       }
     });
-  }
-
-  /**
-   * Gestion des tags thème entraînement
-   */
-  toggleThemeTag(tag: Tag): void {
-    const isSelected = this.selectedThemeTags.some(t => t.id === tag.id);
-    if (isSelected) {
-      this.selectedThemeTags = this.selectedThemeTags.filter(t => t.id !== tag.id);
-    } else {
-      this.selectedThemeTags.push(tag);
-    }
-  }
-
-  isThemeTagSelected(tag: Tag): boolean {
-    return this.selectedThemeTags.some(t => t.id === tag.id);
-  }
-
-  /**
-   * UI dropdown tags thème (pattern Niveau)
-   */
-  toggleThemeDropdown(): void {
-    this.showThemeDropdown = !this.showThemeDropdown;
-  }
-
-  selectThemeTag(tag: Tag): void {
-    if (!this.selectedThemeTags.some(t => t.id === tag.id)) {
-      this.selectedThemeTags.push(tag);
-    }
-    this.showThemeDropdown = false;
-  }
-
-  removeThemeTag(index: number): void {
-    this.selectedThemeTags.splice(index, 1);
   }
 
   /**

@@ -36,6 +36,10 @@ import { ExerciceVariablesComponent } from '../../../../shared/components/exerci
 import { RichTextEditorComponent } from '../../../../shared/components/rich-text-editor/rich-text-editor.component';
 import { ImageUploadComponent } from '../../../../shared/components/image-upload/image-upload.component';
 import { ExerciceViewComponent } from '../../../../shared/components/exercice-view/exercice-view.component';
+import { TextChipsFieldComponent } from '../../../../shared/components/form-fields/text-chips-field/text-chips-field.component';
+import { TagSelectSingleComponent } from '../../../../shared/components/form-fields/tag-select-single/tag-select-single.component';
+import { TagSelectMultiComponent } from '../../../../shared/components/form-fields/tag-select-multi/tag-select-multi.component';
+import { normalizeStringList } from '../../../../shared/components/form-fields/utils/form-field-utils';
 
 @Component({
   selector: 'app-exercice-form',
@@ -44,7 +48,10 @@ import { ExerciceViewComponent } from '../../../../shared/components/exercice-vi
     CommonModule, ReactiveFormsModule, RouterModule,
     MatButtonModule, MatCardModule, MatChipsModule, MatDialogModule, MatFormFieldModule,
     MatIconModule, MatInputModule, MatProgressSpinnerModule, MatSelectModule, MatTooltipModule,
-    ExerciceVariablesComponent, ImageUploadComponent, RichTextEditorComponent, ExerciceViewComponent
+    ExerciceVariablesComponent, ImageUploadComponent, RichTextEditorComponent, ExerciceViewComponent,
+    TextChipsFieldComponent,
+    TagSelectSingleComponent,
+    TagSelectMultiComponent
   ],
   templateUrl: './exercice-form.component.html',
   styleUrls: ['./exercice-form.component.scss'],
@@ -213,7 +220,7 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
       critereReussite: [''],
       variables: new FormControl({ variablesPlus: [], variablesMinus: [] }),
       // UI only: points importants (non persisté côté backend pour l'instant)
-      points: this.fb.array<string>([]),
+      points: new FormControl<string[]>([]),
       // Ajout des FormControls pour les tags
       objectifTag: [null],
       travailSpecifiqueTags: [[]],
@@ -221,48 +228,6 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
       tempsTags: [null],
       formatTags: [null]
     });
-  }
-
-  // --- Helpers UI ---
-  get pointsArray() {
-    return this.exerciceForm.get('points') as any;
-  }
-
-  get pointsControls() {
-    return (this.exerciceForm.get('points') as any)?.controls || [];
-  }
-
-  addPoint() {
-    const fa = this.exerciceForm.get('points') as any;
-    fa.push(new FormControl(''));
-  }
-
-  onPointEnter(event: KeyboardEvent, index: number): void {
-    // Empêcher Enter de déclencher la soumission du formulaire
-    event.preventDefault();
-    event.stopPropagation();
-
-    const fa = this.exerciceForm.get('points') as any;
-    const ctrl = this.pointsControls?.[index] as FormControl | undefined;
-    const value = (ctrl?.value ?? '').toString().trim();
-
-    // Comportement: si on est sur le dernier item et qu'il n'est pas vide, ajouter une nouvelle ligne
-    if (value && fa && index === (this.pointsControls.length - 1)) {
-      this.addPoint();
-    }
-  }
-
-  removePoint(index: number) {
-    const fa = this.exerciceForm.get('points') as any;
-    fa.removeAt(index);
-  }
-
-  onDescriptionInput(html: string) {
-    this.exerciceForm.get('description')?.setValue(html);
-  }
-
-  get imagePreviewString(): string | null {
-    return typeof this.imagePreview === 'string' ? this.imagePreview : null;
   }
 
   private updateFormWithExercice(exercice: Exercice): void {
@@ -304,25 +269,8 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
 
     // Éditeur Quill: plus de synchronisation DOM manuelle
 
-    // Pré-remplir le FormArray 'points' si présent sur l'exercice
-    try {
-      const raw: any = (exercice as any).points;
-      let pts: string[] = [];
-      if (Array.isArray(raw)) pts = raw;
-      else if (typeof raw === 'string' && raw.trim().length) {
-        try {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed)) pts = parsed;
-          else pts = [raw];
-        } catch { pts = [raw]; }
-      }
-      const clean = pts.map(p => (p || '').trim()).filter(p => p.length > 0);
-      const fa = this.exerciceForm.get('points') as any;
-      if (fa && typeof fa.clear === 'function') {
-        fa.clear();
-        clean.forEach(p => fa.push(new FormControl(p)));
-      }
-    } catch {}
+    // Pré-remplir les points importants (rétrocompat: string JSON / string / string[])
+    this.exerciceForm.patchValue({ points: normalizeStringList((exercice as any).points) });
 
     if (effectiveImageUrl) {
       this.imagePreview = this.apiUrlService.getMediaUrl(effectiveImageUrl, 'exercices');

@@ -13,7 +13,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Echauffement, BlocEchauffement } from '../../../../core/models/echauffement.model';
 import { EchauffementService } from '../../../../core/services/echauffement.service';
 import { ApiUrlService } from '../../../../core/services/api-url.service';
-import { ImageUploadComponent } from '../../image-upload/image-upload.component';
+import { ImagePickerFieldComponent } from '../../form-fields/image-picker-field/image-picker-field.component';
 import { RichTextEditorComponent } from '../../../components/rich-text-editor/rich-text-editor.component';
 
 export interface EchauffementFormData {
@@ -38,7 +38,7 @@ export interface EchauffementFormData {
     MatDividerModule,
     MatSelectModule,
     MatProgressSpinnerModule,
-    ImageUploadComponent,
+    ImagePickerFieldComponent,
     RichTextEditorComponent
   ],
   templateUrl: './echauffement-form.component.html',

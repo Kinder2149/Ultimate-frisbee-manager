@@ -10,6 +10,7 @@ import { TagService } from '../../../core/services/tag.service';
 import { ApiUrlService } from '../../../core/services/api-url.service';
 import { ImageViewerComponent, ImageViewerData } from '../image-viewer/image-viewer.component';
 import { RichTextViewComponent } from '../rich-text-view/rich-text-view.component';
+import { normalizeStringList } from '../form-fields/utils/form-field-utils';
 
 export interface ExerciceViewData {
   exercice: {
@@ -101,23 +102,15 @@ export class ExerciceViewComponent implements OnInit {
   }
 
   get variablesPlusList(): string[] {
-    const fromNested = this.variables?.variablesPlus as string[] | undefined;
-    const fromTop = this.exercice.variablesPlus;
-    if (Array.isArray(fromNested)) return fromNested;
-    if (typeof fromNested === 'string') return [fromNested];
-    if (Array.isArray(fromTop)) return fromTop;
-    if (typeof fromTop === 'string') return [fromTop];
-    return [];
+    const fromNested = normalizeStringList((this.variables as any)?.variablesPlus);
+    if (fromNested.length > 0) return fromNested;
+    return normalizeStringList((this.exercice as any).variablesPlus);
   }
 
   get variablesMinusList(): string[] {
-    const fromNested = this.variables?.variablesMinus as string[] | undefined;
-    const fromTop = this.exercice.variablesMinus;
-    if (Array.isArray(fromNested)) return fromNested;
-    if (typeof fromNested === 'string') return [fromNested];
-    if (Array.isArray(fromTop)) return fromTop;
-    if (typeof fromTop === 'string') return [fromTop];
-    return [];
+    const fromNested = normalizeStringList((this.variables as any)?.variablesMinus);
+    if (fromNested.length > 0) return fromNested;
+    return normalizeStringList((this.exercice as any).variablesMinus);
   }
 
   get duree(): string | null {
@@ -138,17 +131,7 @@ export class ExerciceViewComponent implements OnInit {
   }
 
   get pointsList(): string[] {
-    const raw = (this.exercice as any).points;
-    if (Array.isArray(raw)) return raw.filter(p => !!p);
-    if (typeof raw === 'string') {
-      try {
-        const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) ? parsed.filter((p: any) => !!p) : (raw ? [raw] : []);
-      } catch {
-        return raw ? [raw] : [];
-      }
-    }
-    return [];
+    return normalizeStringList((this.exercice as any).points);
   }
 
   openImageViewer(imageUrl: string): void {

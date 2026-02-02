@@ -7,8 +7,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatChipsModule } from '@angular/material/chips';
 import { ImageUploadComponent } from '../../image-upload/image-upload.component';
+
+import { TagSelectMultiComponent } from '../../form-fields/tag-select-multi/tag-select-multi.component';
+import { TagSelectSingleComponent } from '../../form-fields/tag-select-single/tag-select-single.component';
 
 import { SituationMatch } from '../../../../core/models/situationmatch.model';
 import { Tag } from '../../../../core/models/tag.model';
@@ -40,8 +42,9 @@ export interface SituationMatchFormData {
     MatSelectModule,
     MatButtonModule,
     MatIconModule,
-    MatChipsModule,
-    ImageUploadComponent
+    ImageUploadComponent,
+    TagSelectSingleComponent,
+    TagSelectMultiComponent
   ],
   templateUrl: './situationmatch-form.component.html',
   styleUrls: ['./situationmatch-form.component.scss']
@@ -56,7 +59,6 @@ export class SituationMatchFormComponent implements OnInit, OnChanges {
   @Output() formCancel = new EventEmitter<void>();
 
   form: FormGroup;
-  selectedTags: Tag[] = [];
   selectedImageFile: File | null = null;
   imagePreview: string | null = null;
   
@@ -121,7 +123,12 @@ export class SituationMatchFormComponent implements OnInit, OnChanges {
       // UI controls for time
       tempsValeur: [null, [Validators.min(0)]],
       tempsUnite: ['min'],
-      imageUrl: ['']
+      imageUrl: [''],
+
+      // Tags standardisés
+      formatTag: [null],
+      tempsTag: [null],
+      niveauTags: [[]]
     });
   }
 
@@ -139,19 +146,16 @@ export class SituationMatchFormComponent implements OnInit, OnChanges {
       this.imagePreview = situationMatch.imageUrl;
     }
     
-    // Charger les tags sélectionnés
-    this.selectedTags = situationMatch.tags || [];
-  }
-
-  // Méthodes pour la gestion des tags
-  onTagSelect(tag: Tag): void {
-    if (!this.selectedTags.find(t => t.id === tag.id)) {
-      this.selectedTags.push(tag);
-    }
-  }
-
-  removeTag(tag: Tag): void {
-    this.selectedTags = this.selectedTags.filter(t => t.id !== tag.id);
+    // Tags: patcher les contrôles à partir de la liste tags (ou vide)
+    const tagsToSelect = situationMatch.tags || [];
+    const formatTag = tagsToSelect.find(t => t.category === 'format') || null;
+    const tempsTag = tagsToSelect.find(t => t.category === 'temps') || null;
+    const niveauTags = tagsToSelect.filter(t => t.category === 'niveau');
+    this.form.patchValue({
+      formatTag,
+      tempsTag,
+      niveauTags
+    });
   }
 
   // Getters pour le template
@@ -171,13 +175,19 @@ export class SituationMatchFormComponent implements OnInit, OnChanges {
     const unite = formData.tempsUnite as ('min'|'sec');
     const temps = (valeur === null || valeur === undefined || valeur === '') ? undefined : `${valeur} ${unite}`;
 
+    const tags: Tag[] = [
+      formData.formatTag,
+      formData.tempsTag,
+      ...(formData.niveauTags || [])
+    ].filter((t: any) => t !== null && t !== undefined);
+
     const situationMatchData: SituationMatchFormData = {
       type: formData.type,
       description: formData.description || undefined,
       temps,
       imageUrl: formData.imageUrl || undefined,
       image: this.selectedImageFile || undefined, // Attach the file for upload
-      tagIds: this.selectedTags.map(tag => tag.id).filter(id => id !== undefined) as string[]
+      tagIds: tags.map(tag => tag.id).filter((id: any) => id !== undefined) as string[]
     };
 
     this.formSubmit.emit(situationMatchData);

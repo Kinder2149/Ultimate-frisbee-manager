@@ -31,10 +31,12 @@
         <mat-divider></mat-divider>
         <div class="section">
           <h3>Illustration</h3>
-          <app-image-upload 
+          <app-image-picker-field
+            [title]="'Illustration'"
             [currentImageUrl]="imagePreview"
-            (imageSelected)="onImageSelected($event)">
-          </app-image-upload>
+            [context]="'echauffements'"
+            (imageSelected)="onImageSelected($event)"
+          ></app-image-picker-field>
           <div class="form-group" style="margin-top:10px;">
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>URL de l'image</mat-label>

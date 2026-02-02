@@ -14,6 +14,9 @@ export interface Exercice {
   /** URL vers l'image illustrant l'exercice */
   imageUrl?: string;
 
+  /** Points importants - peut être une chaîne JSON (ancien format) ou un tableau */
+  points?: string | string[];
+
   /** Matériel requis pour l'exercice */
   materiel?: string;
   /** Notes générales associées à l'exercice */

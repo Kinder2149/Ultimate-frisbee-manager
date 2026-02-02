@@ -1,0 +1,9 @@
+<div class="image-picker">
+  <div class="title" *ngIf="title">{{ title }}</div>
+
+  <app-image-upload
+    [currentImageUrl]="currentImageUrl"
+    [context]="context"
+    (imageSelected)="onImageSelected($event)">
+  </app-image-upload>
+</div>
