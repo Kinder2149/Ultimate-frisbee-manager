@@ -26,6 +26,8 @@ interface Workspace {
   membersCount?: number;
   exercicesCount?: number;
   entrainementsCount?: number;
+  echauffementsCount?: number;
+  situationsCount?: number;
 }
 
 @Component({
@@ -76,17 +78,12 @@ export class WorkspacesListComponent implements OnInit {
 
   loadWorkspaces(): void {
     this.loading = true;
-    const url = this.api.getUrl('workspaces/me');
+    const url = this.api.getUrl('workspaces');
     
     this.http.get<Workspace[]>(url).subscribe({
       next: (workspaces: Workspace[]) => {
-        // Enrichir avec des stats mockées (à remplacer par vraies données si API disponible)
-        this.workspaces = workspaces.map(ws => ({
-          ...ws,
-          membersCount: Math.floor(Math.random() * 15) + 1,
-          exercicesCount: Math.floor(Math.random() * 30),
-          entrainementsCount: Math.floor(Math.random() * 20)
-        }));
+        // Admin API renvoie déjà des compteurs réels
+        this.workspaces = workspaces;
         
         this.filteredWorkspaces = [...this.workspaces];
         this.calculateStats();
@@ -104,8 +101,14 @@ export class WorkspacesListComponent implements OnInit {
   calculateStats(): void {
     this.totalWorkspaces = this.workspaces.length;
     this.totalMembers = this.workspaces.reduce((sum, ws) => sum + (ws.membersCount || 0), 0);
-    this.totalContent = this.workspaces.reduce((sum, ws) => 
-      sum + (ws.exercicesCount || 0) + (ws.entrainementsCount || 0), 0
+    this.totalContent = this.workspaces.reduce(
+      (sum, ws) =>
+        sum +
+        (ws.exercicesCount || 0) +
+        (ws.entrainementsCount || 0) +
+        (ws.echauffementsCount || 0) +
+        (ws.situationsCount || 0),
+      0
     );
   }
 

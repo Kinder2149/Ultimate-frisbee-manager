@@ -106,6 +106,14 @@
           <mat-icon>event</mat-icon>
           <span>{{ workspace.entrainementsCount || 0 }} entraînement{{ (workspace.entrainementsCount || 0) > 1 ? 's' : '' }}</span>
         </div>
+        <div class="stat-item">
+          <mat-icon>local_fire_department</mat-icon>
+          <span>{{ workspace.echauffementsCount || 0 }} échauffement{{ (workspace.echauffementsCount || 0) > 1 ? 's' : '' }}</span>
+        </div>
+        <div class="stat-item">
+          <mat-icon>sports</mat-icon>
+          <span>{{ workspace.situationsCount || 0 }} situation{{ (workspace.situationsCount || 0) > 1 ? 's' : '' }}</span>
+        </div>
       </div>
 
       <mat-divider></mat-divider>

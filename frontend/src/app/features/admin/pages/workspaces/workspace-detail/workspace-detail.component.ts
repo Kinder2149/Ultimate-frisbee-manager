@@ -21,6 +21,11 @@ interface WorkspaceDetail {
   name: string;
   description?: string;
   createdAt: string;
+  membersCount?: number;
+  exercicesCount?: number;
+  entrainementsCount?: number;
+  echauffementsCount?: number;
+  situationsCount?: number;
 }
 
 interface WorkspaceMember {
@@ -103,23 +108,38 @@ export class WorkspaceDetailComponent implements OnInit {
 
     this.loading = true;
 
-    const workspaceUrl = this.api.getUrl(`workspaces/${this.workspaceId}`);
+    // IMPORTANT: côté backend, il n'existe PAS de GET /api/workspaces/:id
+    // On récupère donc le workspace via la liste admin.
+    const workspacesUrl = this.api.getUrl('workspaces');
     const membersUrl = this.api.getUrl(`workspaces/${this.workspaceId}/users`);
 
     forkJoin({
-      workspace: this.http.get<WorkspaceDetail>(workspaceUrl).pipe(catchError(() => of(null))),
-      members: this.http.get<WorkspaceMember[]>(membersUrl).pipe(catchError(() => of([])))
+      workspaces: this.http.get<WorkspaceDetail[]>(workspacesUrl).pipe(catchError(() => of([]))),
+      members: this.http.get<{ workspaceId: string; name: string; users: WorkspaceMember[] }>(membersUrl).pipe(
+        catchError(() => of({ workspaceId: this.workspaceId as string, name: '', users: [] }))
+      )
     }).subscribe({
       next: (result) => {
-        if (result.workspace) {
-          this.workspace = result.workspace;
-          this.members = result.members;
-          this.generateMockStats();
-          this.generateMockActivity();
-        } else {
+        const ws = (result.workspaces || []).find(w => w.id === this.workspaceId) || null;
+        if (!ws) {
           this.snackBar.open('Workspace introuvable', 'Fermer', { duration: 4000 });
           this.goBack();
+          this.loading = false;
+          return;
         }
+
+        this.workspace = ws;
+        this.members = result.members?.users || [];
+
+        // Stats réelles (issues de l'API admin)
+        this.stats.membersCount = ws.membersCount ?? this.members.length;
+        this.stats.exercicesCount = ws.exercicesCount ?? 0;
+        this.stats.entrainementsCount = ws.entrainementsCount ?? 0;
+        this.stats.echauffementsCount = ws.echauffementsCount ?? 0;
+        this.stats.situationsCount = ws.situationsCount ?? 0;
+
+        // Activity: encore mock pour l'instant
+        this.generateMockActivity();
         this.loading = false;
       },
       error: (error) => {
@@ -128,14 +148,6 @@ export class WorkspaceDetailComponent implements OnInit {
         this.loading = false;
       }
     });
-  }
-
-  generateMockStats(): void {
-    this.stats.membersCount = this.members.length;
-    this.stats.exercicesCount = Math.floor(Math.random() * 30);
-    this.stats.entrainementsCount = Math.floor(Math.random() * 20);
-    this.stats.echauffementsCount = Math.floor(Math.random() * 15);
-    this.stats.situationsCount = Math.floor(Math.random() * 10);
   }
 
   generateMockActivity(): void {

@@ -11,13 +11,27 @@ import { CachedData, StoreConfig, StoreIndex } from '../models/cache.model';
 export class IndexedDbService {
   private db: IDBDatabase | null = null;
   private readonly DB_NAME = 'ufm-cache';
-  private readonly DB_VERSION = 2;
+  private readonly DB_VERSION = 3;
   private isAvailable = true;
   
   // Configuration des stores
   private readonly STORES: StoreConfig[] = [
     {
+      name: 'admin',
+      keyPath: 'id',
+      indexes: [
+        { name: 'timestamp', keyPath: 'timestamp', unique: false }
+      ]
+    },
+    {
       name: 'auth',
+      keyPath: 'id',
+      indexes: [
+        { name: 'timestamp', keyPath: 'timestamp', unique: false }
+      ]
+    },
+    {
+      name: 'dashboard-stats',
       keyPath: 'id',
       indexes: [
         { name: 'timestamp', keyPath: 'timestamp', unique: false }
