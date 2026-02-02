@@ -27,7 +27,7 @@ export interface ExerciceViewData {
     variablesPlus?: string | string[];
     variablesMinus?: string | string[];
     // Nouveau: points importants
-    points?: string[];
+    points?: string | string[];
     [key: string]: unknown; // pour accéder à un éventuel champ 'variables' imbriqué
   };
 }
