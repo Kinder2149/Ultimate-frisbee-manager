@@ -1,0 +1,32 @@
+# Dépendances
+**/node_modules
+
+# Builds locaux
+**/dist
+**/.angular
+frontend/.angular
+frontend/.angular/**
+frontend/.angular/cache
+frontend/.angular/cache/**
+**/.cache
+
+# Outputs / artefacts
+**/coverage
+backend/exports
+backend/uploads
+
+# Caches
+frontend/.angular/cache/**
+
+# Logs
+**/*.log
+
+# Vercel local
+.vercel
+
+# Git
+.git
+
+# OS
+.DS_Store
+Thumbs.db
