@@ -19,6 +19,17 @@
           <mat-icon>person_add</mat-icon>
           Ajouter un membre
         </button>
+
+        <button
+          mat-stroked-button
+          color="warn"
+          (click)="deleteWorkspace()"
+          *ngIf="!isBaseWorkspace()"
+          matTooltip="Supprimer le workspace"
+        >
+          <mat-icon>delete</mat-icon>
+          Supprimer le workspace
+        </button>
       </div>
     </div>
 

@@ -15,6 +15,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ApiUrlService } from '../../../../../core/services/api-url.service';
 import { WorkspaceMembersDialogComponent } from '../workspace-members-dialog/workspace-members-dialog.component';
+import { DialogService } from '../../../../../shared/components/dialog/dialog.service';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
@@ -97,6 +98,7 @@ export class WorkspaceDetailComponent implements OnInit {
     private http: HttpClient,
     private api: ApiUrlService,
     private dialog: MatDialog,
+    private dialogService: DialogService,
     private snackBar: MatSnackBar
   ) {}
 
@@ -183,6 +185,49 @@ export class WorkspaceDetailComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/admin/workspaces']);
+  }
+
+  isBaseWorkspace(): boolean {
+    return String(this.workspace?.name || '').trim().toUpperCase() === 'BASE';
+  }
+
+  deleteWorkspace(): void {
+    if (!this.workspaceId || !this.workspace) return;
+    if (this.isBaseWorkspace()) {
+      this.snackBar.open('Le workspace BASE ne peut pas être supprimé', 'Fermer', { duration: 4000 });
+      return;
+    }
+
+    const message =
+      `Vous allez supprimer définitivement la base <strong>${this.workspace.name}</strong> et toutes les données associées (contenus, membres, etc.).<br>` +
+      '<strong>Cette action est irréversible.</strong>';
+
+    this.dialogService
+      .confirm('Confirmer la suppression', message, 'Supprimer', 'Annuler', true)
+      .subscribe((confirmed) => {
+        if (!confirmed || !this.workspaceId) return;
+
+        this.loading = true;
+        const url = this.api.getUrl(`workspaces/${this.workspaceId}`);
+        this.http.delete<void>(url).subscribe({
+          next: () => {
+            this.loading = false;
+            this.snackBar.open('Workspace supprimé', 'Fermer', { duration: 2500 });
+            this.goBack();
+          },
+          error: (error: any) => {
+            this.loading = false;
+            console.error('Erreur suppression workspace:', error);
+            if (error?.status === 403) {
+              this.snackBar.open('Suppression interdite (BASE protégé ou droits insuffisants)', 'Fermer', { duration: 4500 });
+            } else if (error?.status === 404) {
+              this.snackBar.open('Workspace introuvable', 'Fermer', { duration: 4000 });
+            } else {
+              this.snackBar.open('Erreur lors de la suppression du workspace', 'Fermer', { duration: 4500 });
+            }
+          },
+        });
+      });
   }
 
   getFullName(member: WorkspaceMember): string {

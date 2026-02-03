@@ -129,6 +129,7 @@
             color="warn"
             class="toolbar-button toolbar-button--danger"
             (click)="deleteWorkspace(ws)"
+            *ngIf="(ws.name || '').trim().toUpperCase() !== 'BASE'"
             [disabled]="deletingWorkspaceId === ws.id || savingWorkspace || duplicatingWorkspaceId === ws.id || loading"
           >
             <mat-icon>delete</mat-icon>
@@ -238,6 +239,7 @@
                   <button
                     mat-menu-item
                     (click)="deleteWorkspace(ws)"
+                    *ngIf="(ws.name || '').trim().toUpperCase() !== 'BASE'"
                     [disabled]="deletingWorkspaceId === ws.id || savingWorkspace || duplicatingWorkspaceId === ws.id || loading"
                   >
                     <mat-icon>delete</mat-icon>

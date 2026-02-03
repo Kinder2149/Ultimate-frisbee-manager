@@ -392,6 +392,22 @@ exports.adminDeleteWorkspace = async (req, res, next) => {
   try {
     const { id } = req.params;
 
+    const ws = await prisma.workspace.findUnique({
+      where: { id },
+      select: { id: true, name: true },
+    });
+
+    if (!ws) {
+      return res.status(404).json({ error: 'Workspace non trouvé', code: 'WORKSPACE_NOT_FOUND' });
+    }
+
+    if (String(ws.name || '').trim().toUpperCase() === DEFAULT_WORKSPACE_NAME) {
+      return res.status(403).json({
+        error: 'Le workspace BASE ne peut pas être supprimé',
+        code: 'WORKSPACE_BASE_PROTECTED',
+      });
+    }
+
     // On laisse Prisma gérer les cascades via le schéma
     await prisma.workspace.delete({ where: { id } });
 
