@@ -2,3 +2,7 @@
 GET {{API}}/api/dashboard/stats
 Authorization: Bearer {{TOKEN}}
 X-Workspace-Id: {{WS}}
+
+### Dashboard stats (WORKSPACE_ID_REQUIRED)
+GET {{API}}/api/dashboard/stats
+Authorization: Bearer {{TOKEN}}

@@ -8,22 +8,69 @@ import {
 } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
 import { ErrorService } from './error.service';
+import { Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
 
 @Injectable()
 export class HttpErrorInterceptor implements HttpInterceptor {
-  constructor(private errorService: ErrorService) {}
+  constructor(
+    private errorService: ErrorService,
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     return next.handle(req).pipe(
       catchError((error: HttpErrorResponse) => {
         let userMessage = 'Une erreur est survenue';
 
+        const errorCode = error?.error?.code;
+
+        // Gestion centralisée des erreurs d'authentification basées sur les codes backend
+        if (errorCode === 'NO_TOKEN' || errorCode === 'INVALID_TOKEN' || errorCode === 'USER_INACTIVE') {
+          // Éviter les boucles si on est déjà sur /login
+          if (!this.router.url.startsWith('/login')) {
+            this.authService.logout().subscribe({
+              complete: () => {
+                this.router.navigate(['/login']).catch(() => {});
+              },
+              error: () => {
+                this.router.navigate(['/login']).catch(() => {});
+              }
+            });
+          }
+
+          userMessage = errorCode === 'USER_INACTIVE'
+            ? 'Votre compte est désactivé. Contactez un administrateur.'
+            : 'Votre session a expiré. Veuillez vous reconnecter.';
+        } else if (errorCode === 'USER_NOT_FOUND') {
+          if (!this.router.url.startsWith('/login')) {
+            this.authService.logout().subscribe({
+              complete: () => {
+                this.router.navigate(['/login/signup'], {
+                  queryParams: { reason: 'profile-not-found' }
+                }).catch(() => {});
+              },
+              error: () => {
+                this.router.navigate(['/login/signup'], {
+                  queryParams: { reason: 'profile-not-found' }
+                }).catch(() => {});
+              }
+            });
+          }
+
+          userMessage = 'Compte non trouvé. Veuillez vous inscrire.';
+        }
+
         if (error.error instanceof ErrorEvent) {
           // Erreur côté client (réseau, etc.)
           userMessage = 'Impossible de se connecter au serveur. Vérifiez votre connexion internet.';
         } else {
           // Erreur côté serveur - mapper vers messages utilisateur
-          userMessage = this.getErrorMessage(error.status);
+          // Si on a déjà défini un message plus précis (codes auth), on le conserve.
+          if (userMessage === 'Une erreur est survenue') {
+            userMessage = this.getErrorMessage(error.status);
+          }
         }
 
         // Afficher le message utilisateur (logs techniques conservés dans ErrorService)

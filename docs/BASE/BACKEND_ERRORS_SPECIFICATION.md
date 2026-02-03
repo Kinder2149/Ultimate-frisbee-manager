@@ -157,7 +157,8 @@ Ce document formalise **de manière exhaustive et non ambiguë** les erreurs ren
 |------|---------|----------|
 | `NO_TOKEN` | Token d'authentification requis | Aucun token fourni |
 | `INVALID_TOKEN` | Token invalide ou expiré | Token malformé, expiré ou signature invalide |
-| `NO_USER` | Utilisateur non authentifié | Token valide mais utilisateur introuvable |
+| `USER_INACTIVE` | Utilisateur inactif | Utilisateur présent en base mais désactivé |
+| `NO_USER` | Utilisateur non authentifié | Contexte utilisateur manquant (cas génériques) |
 
 **Intention** : Rediriger vers login, rafraîchir token
 
@@ -169,6 +170,7 @@ Ce document formalise **de manière exhaustive et non ambiguë** les erreurs ren
 |------|---------|----------|
 | `FORBIDDEN` | Accès réservé aux administrateurs | Utilisateur non-admin tente d'accéder à route admin |
 | `WORKSPACE_FORBIDDEN` | Accès refusé à ce workspace | Utilisateur n'appartient pas au workspace |
+| `USER_NOT_FOUND` | Compte non trouvé. Veuillez vous inscrire. | Token valide mais profil utilisateur absent en base |
 
 **Intention** : Afficher message d'accès refusé, ne pas réessayer
 

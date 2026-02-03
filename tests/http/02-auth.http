@@ -2,6 +2,13 @@
 GET {{API}}/api/auth/profile
 Authorization: Bearer {{TOKEN}}
 
+### Profile (NO_TOKEN)
+GET {{API}}/api/auth/profile
+
+### Profile (INVALID_TOKEN)
+GET {{API}}/api/auth/profile
+Authorization: Bearer invalid.token.value
+
 ### Logout (symbolic)
 POST {{API}}/api/auth/logout
 Authorization: Bearer {{TOKEN}}

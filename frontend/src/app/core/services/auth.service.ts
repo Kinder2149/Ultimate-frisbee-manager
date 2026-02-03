@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, from, throwError, of } from 'rxjs';
 import { map, catchError, tap, switchMap, retry, delay } from 'rxjs/operators';
@@ -30,7 +30,8 @@ export class AuthService {
     private router: Router,
     private supabaseService: SupabaseService,
     private workspaceService: WorkspaceService,
-    private indexedDb: IndexedDbService
+    private indexedDb: IndexedDbService,
+    private ngZone: NgZone
   ) {
     this.initializeAuth();
   }
@@ -119,33 +120,37 @@ export class AuthService {
   private listenToAuthStateChanges(): void {
     this.supabaseService.supabase.auth.onAuthStateChange(
       (event: AuthChangeEvent, session: Session | null) => {
-        console.log('[Auth] Event:', event, session?.user?.email || 'no user');
-        
-        switch (event) {
-          case 'SIGNED_IN':
-            this.handleSignedIn(session);
-            break;
-            
-          case 'SIGNED_OUT':
-            this.handleSignedOut();
-            break;
-            
-          case 'TOKEN_REFRESHED':
-            console.log('[Auth] Token rafraîchi');
-            break;
-            
-          case 'PASSWORD_RECOVERY':
-            console.log('[Auth] Récupération mot de passe');
-            this.router.navigate(['/reset-password']);
-            break;
-            
-          case 'USER_UPDATED':
-            console.log('[Auth] Utilisateur mis à jour');
-            if (session?.user) {
-              this.syncUserProfile().subscribe();
-            }
-            break;
-        }
+        // Les callbacks Supabase peuvent se produire hors zone Angular.
+        // On force l'exécution dans NgZone pour que Router + ChangeDetection réagissent immédiatement.
+        this.ngZone.run(() => {
+          console.log('[Auth] Event:', event, session?.user?.email || 'no user');
+
+          switch (event) {
+            case 'SIGNED_IN':
+              this.handleSignedIn(session);
+              break;
+
+            case 'SIGNED_OUT':
+              this.handleSignedOut();
+              break;
+
+            case 'TOKEN_REFRESHED':
+              console.log('[Auth] Token rafraîchi');
+              break;
+
+            case 'PASSWORD_RECOVERY':
+              console.log('[Auth] Récupération mot de passe');
+              this.router.navigate(['/reset-password']);
+              break;
+
+            case 'USER_UPDATED':
+              console.log('[Auth] Utilisateur mis à jour');
+              if (session?.user) {
+                this.syncUserProfile().subscribe();
+              }
+              break;
+          }
+        });
       }
     );
   }

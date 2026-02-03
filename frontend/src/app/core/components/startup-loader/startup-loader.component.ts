@@ -34,7 +34,7 @@ export class StartupLoaderComponent implements OnInit, OnDestroy {
         this.didNavigate = true;
         this.notify.showSuccess('Connexion au serveur rétablie');
         // Naviguer vers le tableau de bord si l'utilisateur n'y est pas déjà
-        this.router.navigate(['/dashboard']).catch(() => {});
+        this.router.navigate(['/']).catch(() => {});
       }
     });
   }
