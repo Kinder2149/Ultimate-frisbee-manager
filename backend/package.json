@@ -15,6 +15,7 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
+    "db:migrate:vercel": "node scripts/migrate-vercel.js",
     "db:seed": "prisma db seed",
     "db:seed:destructive": "cross-env SEED_DESTRUCTIVE=true prisma db seed",
     "db:studio": "prisma studio",

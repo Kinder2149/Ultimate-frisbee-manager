@@ -22,8 +22,8 @@ const options = {
         description: 'Développement local'
       },
       {
-        url: 'https://ultimate-frisbee-manager-api.onrender.com',
-        description: 'Production'
+        url: 'https://ultimate-frisbee-manager.vercel.app/api',
+        description: 'Production (Vercel)'
       }
     ],
     components: {

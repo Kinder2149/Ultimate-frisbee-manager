@@ -88,55 +88,103 @@ module.exports = {
 
       // Créer l'utilisateur en base
       // L'authentification est entièrement gérée par Supabase
-      const user = await prisma.user.create({
-        data: {
-          id: supabaseUserId,
-          email: normalizedEmail,
-          nom: nom || '',
-          prenom: prenom || normalizedEmail.split('@')[0],
-          role: 'USER',
-          isActive: true,
-        },
-      });
+      const userData = {
+        id: supabaseUserId,
+        email: normalizedEmail,
+        nom: nom || '',
+        prenom: prenom || normalizedEmail.split('@')[0],
+        role: 'USER',
+        isActive: true,
+      };
 
-      if (process.env.NODE_ENV !== 'production') {
-        console.log('[register] Nouvel utilisateur créé:', user.id, user.email);
-      }
-
-      // Créer le workspace BASE pour le nouvel utilisateur
+      // TEMPORAIRE: Support de l'ancienne structure avec passwordHash
+      // À supprimer après application de la migration 20260129_remove_password_hash
       try {
-        const baseWorkspace = await prisma.workspace.findFirst({
-          where: { name: 'BASE' }
-        });
+        const user = await prisma.user.create({ data: userData });
+        
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('[register] Nouvel utilisateur créé:', user.id, user.email);
+        }
 
-        if (baseWorkspace) {
-          await prisma.workspaceUser.create({
-            data: {
-              workspaceId: baseWorkspace.id,
-              userId: user.id,
-              role: 'VIEWER'
+        // Créer le workspace BASE pour le nouvel utilisateur
+        try {
+          const baseWorkspace = await prisma.workspace.findFirst({
+            where: { name: 'BASE' }
+          });
+
+          if (baseWorkspace) {
+            await prisma.workspaceUser.create({
+              data: {
+                workspaceId: baseWorkspace.id,
+                userId: user.id,
+                role: 'VIEWER'
+              }
+            });
+            if (process.env.NODE_ENV !== 'production') {
+              console.log('[register] Utilisateur ajouté au workspace BASE');
+            }
+          }
+        } catch (workspaceError) {
+          console.error('[register] Erreur ajout workspace BASE:', workspaceError);
+          // Ne pas bloquer l'inscription si l'ajout au workspace échoue
+        }
+
+        return res.status(201).json({
+          user: {
+            id: user.id,
+            email: user.email,
+            nom: user.nom,
+            prenom: user.prenom,
+            role: user.role,
+            isActive: user.isActive,
+            iconUrl: user.iconUrl
+          }
+        });
+      } catch (createError) {
+        // Si erreur de contrainte passwordHash, réessayer avec un hash vide
+        if (createError.code === 'P2011' && createError.meta?.constraint?.includes('passwordHash')) {
+          console.warn('[register] Ancienne structure détectée, ajout passwordHash temporaire');
+          userData.passwordHash = ''; // Valeur temporaire pour compatibilité
+          
+          const user = await prisma.user.create({ data: userData });
+          
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('[register] Nouvel utilisateur créé (mode compatibilité):', user.id, user.email);
+          }
+
+          // Créer le workspace BASE
+          try {
+            const baseWorkspace = await prisma.workspace.findFirst({
+              where: { name: 'BASE' }
+            });
+
+            if (baseWorkspace) {
+              await prisma.workspaceUser.create({
+                data: {
+                  workspaceId: baseWorkspace.id,
+                  userId: user.id,
+                  role: 'VIEWER'
+                }
+              });
+            }
+          } catch (workspaceError) {
+            console.error('[register] Erreur ajout workspace BASE:', workspaceError);
+          }
+
+          return res.status(201).json({
+            user: {
+              id: user.id,
+              email: user.email,
+              nom: user.nom,
+              prenom: user.prenom,
+              role: user.role,
+              isActive: user.isActive,
+              iconUrl: user.iconUrl
             }
           });
-          if (process.env.NODE_ENV !== 'production') {
-            console.log('[register] Utilisateur ajouté au workspace BASE');
-          }
         }
-      } catch (workspaceError) {
-        console.error('[register] Erreur ajout workspace BASE:', workspaceError);
-        // Ne pas bloquer l'inscription si l'ajout au workspace échoue
+        throw createError;
       }
-
-      return res.status(201).json({
-        user: {
-          id: user.id,
-          email: user.email,
-          nom: user.nom,
-          prenom: user.prenom,
-          role: user.role,
-          isActive: user.isActive,
-          iconUrl: user.iconUrl
-        }
-      });
     } catch (error) {
       console.error('[register] Erreur:', error);
       return res.status(500).json({ 
