@@ -180,16 +180,25 @@ export class WorkspacesListComponent implements OnInit {
           label: 'Nom',
           placeholder: 'Ex: Club U17 – Saison 2026',
           initialValue: `${base.name} - `,
+          options: [
+            { key: 'copyTags', label: 'Conserver les tags', checked: true },
+            { key: 'copyExercices', label: 'Conserver les exercices', checked: true },
+            { key: 'copyEntrainements', label: 'Conserver les entraînements', checked: true },
+            { key: 'copyEchauffements', label: 'Conserver les échauffements', checked: true },
+            { key: 'copySituations', label: 'Conserver les situations/matchs', checked: true },
+            { key: 'copyMembers', label: 'Conserver les membres', checked: true },
+          ],
         },
       })
-      .subscribe((result) => {
+      .subscribe((result: any) => {
         if (!result || result.action !== 'submit') return;
         const name = String((result.data as any)?.value || '').trim();
+        const options = (result.data as any)?.options || undefined;
         if (!name) return;
 
         this.loading = true;
-        this.adminService.duplicateWorkspaceWithName(base.id, { name }).subscribe({
-          next: (created) => {
+        this.adminService.duplicateWorkspaceWithName(base.id, { name, options }).subscribe({
+          next: (created: any) => {
             this.snackBar.open('Workspace dupliqué', 'Fermer', { duration: 2500 });
             this.cache.invalidate('workspaces-list', 'workspaces');
             this.loadWorkspaces();
