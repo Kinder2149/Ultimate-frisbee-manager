@@ -62,6 +62,15 @@ export interface AdminWorkspaceUser {
   linkId: string;
 }
 
+export interface DuplicateWorkspaceOptions {
+  copyTags?: boolean;
+  copyExercices?: boolean;
+  copyEntrainements?: boolean;
+  copyEchauffements?: boolean;
+  copySituations?: boolean;
+  copyMembers?: boolean;
+}
+
 export interface AdminOverviewResponse {
   counts: AdminOverviewCounts;
   recent: {
@@ -170,7 +179,7 @@ export class AdminService {
     return this.http.post<AdminWorkspaceSummary>(url, {});
   }
 
-  duplicateWorkspaceWithName(id: string, payload: { name: string }): Observable<AdminWorkspaceSummary> {
+  duplicateWorkspaceWithName(id: string, payload: { name: string; options?: DuplicateWorkspaceOptions }): Observable<AdminWorkspaceSummary> {
     const url = this.api.getUrl(`workspaces/${id}/duplicate`);
     return this.http.post<AdminWorkspaceSummary>(url, payload);
   }

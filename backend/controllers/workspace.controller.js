@@ -1,6 +1,8 @@
 const { prisma } = require('../services/prisma');
 const workspaceService = require('../services/business/workspace.service');
 
+const DEFAULT_WORKSPACE_NAME = 'BASE';
+
 /**
  * Retourne les workspaces accessibles à l'utilisateur courant
  * GET /api/workspaces/me
@@ -28,6 +30,16 @@ exports.adminDuplicateWorkspace = async (req, res, next) => {
   try {
     const { id } = req.params;
 
+    const body = req.body && typeof req.body === 'object' ? req.body : {};
+    const options = body && typeof body.options === 'object' && body.options !== null ? body.options : body;
+
+    const copyTags = options.copyTags !== undefined ? !!options.copyTags : true;
+    const copyExercices = options.copyExercices !== undefined ? !!options.copyExercices : true;
+    const copyEntrainements = options.copyEntrainements !== undefined ? !!options.copyEntrainements : true;
+    const copyEchauffements = options.copyEchauffements !== undefined ? !!options.copyEchauffements : true;
+    const copySituations = options.copySituations !== undefined ? !!options.copySituations : true;
+    const copyMembers = options.copyMembers !== undefined ? !!options.copyMembers : true;
+
     const original = await prisma.workspace.findUnique({
       where: { id },
       include: {
@@ -45,8 +57,8 @@ exports.adminDuplicateWorkspace = async (req, res, next) => {
     }
 
     const baseName = original.name || 'Workspace';
-    const requestedName = req.body && typeof req.body.name === 'string' ? req.body.name.trim() : '';
-    if (req.body && Object.prototype.hasOwnProperty.call(req.body, 'name')) {
+    const requestedName = body && typeof body.name === 'string' ? body.name.trim() : '';
+    if (body && Object.prototype.hasOwnProperty.call(body, 'name')) {
       if (!requestedName) {
         return res.status(400).json({ error: 'Le nom du workspace est requis', code: 'WORKSPACE_NAME_REQUIRED' });
       }
@@ -78,120 +90,143 @@ exports.adminDuplicateWorkspace = async (req, res, next) => {
 
       // 2. Dupliquer les tags
       const tagIdMap = new Map();
-      for (const tag of original.tags) {
-        const { id: oldId, createdAt, ...rest } = tag;
-        const created = await tx.tag.create({
-          data: {
-            ...rest,
-            workspaceId: newWorkspaceId,
-          },
-        });
-        tagIdMap.set(oldId, created.id);
+      if (copyTags) {
+        for (const tag of original.tags) {
+          const { id: oldId, createdAt, ...rest } = tag;
+          const created = await tx.tag.create({
+            data: {
+              ...rest,
+              workspaceId: newWorkspaceId,
+            },
+          });
+          tagIdMap.set(oldId, created.id);
+        }
       }
 
       // 3. Dupliquer les exercices
       const exerciceIdMap = new Map();
-      for (const ex of original.exercices) {
-        const { id: oldId, createdAt, workspaceId, entrainements, tags, ...rest } = ex;
-        const created = await tx.exercice.create({
-          data: {
-            ...rest,
-            workspaceId: newWorkspaceId,
-            tags: {
-              connect: (tags || []).map((t) => ({ id: tagIdMap.get(t.id) || undefined })).filter((t) => !!t.id),
+      if (copyExercices) {
+        for (const ex of original.exercices) {
+          const { id: oldId, createdAt, workspaceId, entrainements, tags, ...rest } = ex;
+          const created = await tx.exercice.create({
+            data: {
+              ...rest,
+              workspaceId: newWorkspaceId,
+              tags: {
+                connect: copyTags
+                  ? (tags || []).map((t) => ({ id: tagIdMap.get(t.id) || undefined })).filter((t) => !!t.id)
+                  : [],
+              },
             },
-          },
-        });
-        exerciceIdMap.set(oldId, created.id);
+          });
+          exerciceIdMap.set(oldId, created.id);
+        }
       }
 
       // 4. Dupliquer les situations de match
       const situationIdMap = new Map();
-      for (const s of original.situationsMatch) {
-        const { id: oldId, createdAt, workspaceId, entrainements, tags, ...rest } = s;
-        const created = await tx.situationMatch.create({
-          data: {
-            ...rest,
-            workspaceId: newWorkspaceId,
-            tags: {
-              connect: (tags || []).map((t) => ({ id: tagIdMap.get(t.id) || undefined })).filter((t) => !!t.id),
+      if (copySituations) {
+        for (const s of original.situationsMatch) {
+          const { id: oldId, createdAt, workspaceId, entrainements, tags, ...rest } = s;
+          const created = await tx.situationMatch.create({
+            data: {
+              ...rest,
+              workspaceId: newWorkspaceId,
+              tags: {
+                connect: copyTags
+                  ? (tags || []).map((t) => ({ id: tagIdMap.get(t.id) || undefined })).filter((t) => !!t.id)
+                  : [],
+              },
             },
-          },
-        });
-        situationIdMap.set(oldId, created.id);
+          });
+          situationIdMap.set(oldId, created.id);
+        }
       }
 
       // 5. Dupliquer les échauffements + blocs
       const echauffementIdMap = new Map();
-      for (const e of original.echauffements) {
-        const { id: oldId, createdAt, workspaceId, blocs, entrainements, ...rest } = e;
-        const created = await tx.echauffement.create({
-          data: {
-            ...rest,
-            workspaceId: newWorkspaceId,
-          },
-        });
-        echauffementIdMap.set(oldId, created.id);
-
-        for (const b of blocs || []) {
-          const { id: oldBlocId, createdAt: blocCreatedAt, workspaceId: blocWsId, echauffementId, ...blocRest } = b;
-          await tx.blocEchauffement.create({
+      if (copyEchauffements) {
+        for (const e of original.echauffements) {
+          const { id: oldId, createdAt, workspaceId, blocs, entrainements, ...rest } = e;
+          const created = await tx.echauffement.create({
             data: {
-              ...blocRest,
-              echauffementId: created.id,
+              ...rest,
               workspaceId: newWorkspaceId,
             },
           });
+          echauffementIdMap.set(oldId, created.id);
+
+          for (const b of blocs || []) {
+            const { id: oldBlocId, createdAt: blocCreatedAt, workspaceId: blocWsId, echauffementId, ...blocRest } = b;
+            await tx.blocEchauffement.create({
+              data: {
+                ...blocRest,
+                echauffementId: created.id,
+                workspaceId: newWorkspaceId,
+              },
+            });
+          }
         }
       }
 
       // 6. Dupliquer les entrainements + liens exercices
       const entrainementIdMap = new Map();
-      for (const en of original.entrainements) {
-        const { id: oldId, createdAt, workspaceId, echauffementId, situationMatchId, tags, exercices, ...rest } = en;
+      if (copyEntrainements) {
+        for (const en of original.entrainements) {
+          const { id: oldId, createdAt, workspaceId, echauffementId, situationMatchId, tags, exercices, ...rest } = en;
 
-        const created = await tx.entrainement.create({
-          data: {
-            ...rest,
-            workspaceId: newWorkspaceId,
-            echauffementId: echauffementId ? echauffementIdMap.get(echauffementId) || null : null,
-            situationMatchId: situationMatchId ? situationIdMap.get(situationMatchId) || null : null,
-            tags: {
-              connect: (tags || []).map((t) => ({ id: tagIdMap.get(t.id) || undefined })).filter((t) => !!t.id),
-            },
-          },
-        });
-
-        entrainementIdMap.set(oldId, created.id);
-
-        // Dupliquer les liaisons EntrainementExercice
-        for (const ee of exercices || []) {
-          const { id: oldEeId, createdAt: eeCreatedAt, workspaceId: eeWsId, entrainementId: oldEnId, exerciceId: oldExId, ...eeRest } = ee;
-          const newExId = exerciceIdMap.get(oldExId);
-          if (!newExId) continue;
-          await tx.entrainementExercice.create({
+          const created = await tx.entrainement.create({
             data: {
-              ...eeRest,
-              entrainementId: created.id,
-              exerciceId: newExId,
+              ...rest,
+              workspaceId: newWorkspaceId,
+              echauffementId: copyEchauffements && echauffementId ? echauffementIdMap.get(echauffementId) || null : null,
+              situationMatchId: copySituations && situationMatchId ? situationIdMap.get(situationMatchId) || null : null,
+              tags: {
+                connect: copyTags
+                  ? (tags || []).map((t) => ({ id: tagIdMap.get(t.id) || undefined })).filter((t) => !!t.id)
+                  : [],
+              },
+            },
+          });
+
+          entrainementIdMap.set(oldId, created.id);
+
+          // Dupliquer les liaisons EntrainementExercice
+          if (copyExercices) {
+            for (const ee of exercices || []) {
+              const { id: oldEeId, createdAt: eeCreatedAt, workspaceId: eeWsId, entrainementId: oldEnId, exerciceId: oldExId, ...eeRest } = ee;
+              const newExId = exerciceIdMap.get(oldExId);
+              if (!newExId) continue;
+              await tx.entrainementExercice.create({
+                data: {
+                  ...eeRest,
+                  entrainementId: created.id,
+                  exerciceId: newExId,
+                  workspaceId: newWorkspaceId,
+                },
+              });
+            }
+          }
+        }
+      }
+
+      // 7. Dupliquer les membres du workspace
+      if (copyMembers) {
+        for (const m of original.members) {
+          const { id: oldLinkId, createdAt, workspaceId, ...rest } = m;
+          await tx.workspaceUser.create({
+            data: {
+              ...rest,
               workspaceId: newWorkspaceId,
             },
           });
         }
       }
 
-      // 7. Dupliquer les membres du workspace
-      for (const m of original.members) {
-        const { id: oldLinkId, createdAt, workspaceId, ...rest } = m;
-        await tx.workspaceUser.create({
-          data: {
-            ...rest,
-            workspaceId: newWorkspaceId,
-          },
-        });
-      }
-
       return newWorkspace;
+    }, {
+      maxWait: 10000,
+      timeout: 120000,
     });
 
     res.status(201).json({

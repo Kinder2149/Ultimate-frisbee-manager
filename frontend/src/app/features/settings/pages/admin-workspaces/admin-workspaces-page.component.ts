@@ -179,15 +179,24 @@ export class AdminWorkspacesPageComponent implements OnInit {
           label: 'Nom',
           placeholder: 'Ex: Club U17 – Saison 2026',
           initialValue: `${ws.name} - `,
+          options: [
+            { key: 'copyTags', label: 'Conserver les tags', checked: true },
+            { key: 'copyExercices', label: 'Conserver les exercices', checked: true },
+            { key: 'copyEntrainements', label: 'Conserver les entraînements', checked: true },
+            { key: 'copyEchauffements', label: 'Conserver les échauffements', checked: true },
+            { key: 'copySituations', label: 'Conserver les situations/matchs', checked: true },
+            { key: 'copyMembers', label: 'Conserver les membres', checked: true },
+          ],
         },
       })
       .subscribe((result) => {
         if (!result || result.action !== 'submit') return;
         const name = String((result.data as any)?.value || '').trim();
+        const options = (result.data as any)?.options || undefined;
         if (!name) return;
 
         this.duplicatingWorkspaceId = ws.id;
-        this.adminService.duplicateWorkspaceWithName(ws.id, { name }).subscribe({
+        this.adminService.duplicateWorkspaceWithName(ws.id, { name, options }).subscribe({
           next: () => {
             this.duplicatingWorkspaceId = null;
             this.cache.invalidate('workspaces-list', 'workspaces');
