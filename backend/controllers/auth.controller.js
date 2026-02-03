@@ -97,94 +97,46 @@ module.exports = {
         isActive: true,
       };
 
-      // TEMPORAIRE: Support de l'ancienne structure avec passwordHash
-      // À supprimer après application de la migration 20260129_remove_password_hash
-      try {
-        const user = await prisma.user.create({ data: userData });
-        
-        if (process.env.NODE_ENV !== 'production') {
-          console.log('[register] Nouvel utilisateur créé:', user.id, user.email);
-        }
+      const user = await prisma.user.create({ data: userData });
 
-        // Créer le workspace BASE pour le nouvel utilisateur
-        try {
-          const baseWorkspace = await prisma.workspace.findFirst({
-            where: { name: 'BASE' }
-          });
-
-          if (baseWorkspace) {
-            await prisma.workspaceUser.create({
-              data: {
-                workspaceId: baseWorkspace.id,
-                userId: user.id,
-                role: 'VIEWER'
-              }
-            });
-            if (process.env.NODE_ENV !== 'production') {
-              console.log('[register] Utilisateur ajouté au workspace BASE');
-            }
-          }
-        } catch (workspaceError) {
-          console.error('[register] Erreur ajout workspace BASE:', workspaceError);
-          // Ne pas bloquer l'inscription si l'ajout au workspace échoue
-        }
-
-        return res.status(201).json({
-          user: {
-            id: user.id,
-            email: user.email,
-            nom: user.nom,
-            prenom: user.prenom,
-            role: user.role,
-            isActive: user.isActive,
-            iconUrl: user.iconUrl
-          }
-        });
-      } catch (createError) {
-        // Si erreur de contrainte passwordHash, réessayer avec un hash vide
-        if (createError.code === 'P2011' && createError.meta?.constraint?.includes('passwordHash')) {
-          console.warn('[register] Ancienne structure détectée, ajout passwordHash temporaire');
-          userData.passwordHash = ''; // Valeur temporaire pour compatibilité
-          
-          const user = await prisma.user.create({ data: userData });
-          
-          if (process.env.NODE_ENV !== 'production') {
-            console.log('[register] Nouvel utilisateur créé (mode compatibilité):', user.id, user.email);
-          }
-
-          // Créer le workspace BASE
-          try {
-            const baseWorkspace = await prisma.workspace.findFirst({
-              where: { name: 'BASE' }
-            });
-
-            if (baseWorkspace) {
-              await prisma.workspaceUser.create({
-                data: {
-                  workspaceId: baseWorkspace.id,
-                  userId: user.id,
-                  role: 'VIEWER'
-                }
-              });
-            }
-          } catch (workspaceError) {
-            console.error('[register] Erreur ajout workspace BASE:', workspaceError);
-          }
-
-          return res.status(201).json({
-            user: {
-              id: user.id,
-              email: user.email,
-              nom: user.nom,
-              prenom: user.prenom,
-              role: user.role,
-              isActive: user.isActive,
-              iconUrl: user.iconUrl
-            }
-          });
-        }
-        throw createError;
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('[register] Nouvel utilisateur créé:', user.id, user.email);
       }
+
+      // Créer le workspace BASE pour le nouvel utilisateur
+      try {
+        const baseWorkspace = await prisma.workspace.findFirst({
+          where: { name: 'BASE' }
+        });
+
+        if (baseWorkspace) {
+          await prisma.workspaceUser.create({
+            data: {
+              workspaceId: baseWorkspace.id,
+              userId: user.id,
+              role: 'VIEWER'
+            }
+          });
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('[register] Utilisateur ajouté au workspace BASE');
+          }
+        }
+      } catch (workspaceError) {
+        console.error('[register] Erreur ajout workspace BASE:', workspaceError);
+        // Ne pas bloquer l'inscription si l'ajout au workspace échoue
+      }
+
+      return res.status(201).json({
+        user: {
+          id: user.id,
+          email: user.email,
+          nom: user.nom,
+          prenom: user.prenom,
+          role: user.role,
+          isActive: user.isActive,
+          iconUrl: user.iconUrl
+        }
+      });
     } catch (error) {
       console.error('[register] Erreur:', error);
       return res.status(500).json({ 
