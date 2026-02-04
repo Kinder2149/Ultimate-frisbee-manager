@@ -9,7 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../../../core/services/auth.service';
-import { passwordMatchValidator } from '../../../settings/pages/profile/profile-page.component';
+import { passwordMatchValidator } from '../../../../shared/validators/password-validators';
 import { AuthLayoutComponent } from '../../shared/auth-layout/auth-layout.component';
 import { AuthErrorComponent } from '../../shared/auth-error/auth-error.component';
 import { AuthLoaderComponent } from '../../shared/auth-loader/auth-loader.component';
