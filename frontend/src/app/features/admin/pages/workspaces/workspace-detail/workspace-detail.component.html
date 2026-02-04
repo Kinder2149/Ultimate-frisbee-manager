@@ -22,6 +22,17 @@
 
         <button
           mat-stroked-button
+          color="primary"
+          (click)="editWorkspaceName()"
+          *ngIf="!isBaseWorkspace()"
+          matTooltip="Modifier le nom du workspace"
+        >
+          <mat-icon>edit</mat-icon>
+          Modifier le nom
+        </button>
+
+        <button
+          mat-stroked-button
           color="warn"
           (click)="deleteWorkspace()"
           *ngIf="!isBaseWorkspace()"

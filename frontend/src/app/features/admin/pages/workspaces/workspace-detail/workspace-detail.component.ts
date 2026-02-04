@@ -316,4 +316,56 @@ export class WorkspaceDetailComponent implements OnInit {
     if (diffDays < 7) return `Il y a ${diffDays}j`;
     return date.toLocaleDateString('fr-FR');
   }
+
+  editWorkspaceName(): void {
+    if (!this.workspaceId || !this.workspace) return;
+    if (this.isBaseWorkspace()) {
+      this.snackBar.open('Le workspace BASE ne peut pas être modifié', 'Fermer', { duration: 4000 });
+      return;
+    }
+
+    const currentName = this.workspace.name;
+    const message = `Entrez le nouveau nom pour le workspace <strong>${currentName}</strong> :`;
+
+    this.dialogService
+      .prompt('Modifier le nom du workspace', message, currentName, 'Enregistrer', 'Annuler')
+      .subscribe((newName) => {
+        if (!newName || !this.workspaceId) return;
+
+        const trimmedName = newName.trim();
+        if (!trimmedName) {
+          this.snackBar.open('Le nom ne peut pas être vide', 'Fermer', { duration: 3000 });
+          return;
+        }
+
+        if (trimmedName === currentName) {
+          return;
+        }
+
+        this.loading = true;
+        const url = this.api.getUrl(`workspaces/${this.workspaceId}`);
+        this.http.put<any>(url, { name: trimmedName }).subscribe({
+          next: (updated) => {
+            this.loading = false;
+            if (this.workspace) {
+              this.workspace.name = updated.name;
+            }
+            this.snackBar.open('Nom du workspace modifié avec succès', 'Fermer', { duration: 2500 });
+          },
+          error: (error: any) => {
+            this.loading = false;
+            console.error('Erreur modification nom workspace:', error);
+            if (error?.status === 400) {
+              this.snackBar.open('Nom invalide', 'Fermer', { duration: 4000 });
+            } else if (error?.status === 404) {
+              this.snackBar.open('Workspace introuvable', 'Fermer', { duration: 4000 });
+            } else if (error?.status === 409) {
+              this.snackBar.open('Un workspace avec ce nom existe déjà', 'Fermer', { duration: 4500 });
+            } else {
+              this.snackBar.open('Erreur lors de la modification du nom', 'Fermer', { duration: 4500 });
+            }
+          },
+        });
+      });
+  }
 }

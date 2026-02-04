@@ -5,6 +5,7 @@ import { Observable, map } from 'rxjs';
 
 import { DialogConfig, DialogResult } from './dialog-config.model';
 import { ConfirmDialogComponent, ConfirmDialogData } from './confirm-dialog.component';
+import { NamePromptDialogComponent, NamePromptDialogData, NamePromptDialogResult } from './name-prompt-dialog.component';
 
 /**
  * Service pour la gestion des dialogues
@@ -76,6 +77,50 @@ export class DialogService {
     return this.open(ConfirmDialogComponent, dialogConfig)
       .pipe(
         map(result => result && result.action === 'submit')
+      );
+  }
+
+  /**
+   * Ouvre un dialogue de saisie de texte
+   * 
+   * @param title Titre du dialogue
+   * @param message Message à afficher (peut contenir du HTML)
+   * @param initialValue Valeur initiale du champ
+   * @param confirmText Texte du bouton de confirmation
+   * @param cancelText Texte du bouton d'annulation
+   * @param label Label du champ de saisie
+   * @returns Une observable qui émet la valeur saisie si l'utilisateur confirme, null sinon
+   */
+  prompt(
+    title: string,
+    message: string,
+    initialValue: string = '',
+    confirmText: string = 'Valider',
+    cancelText: string = 'Annuler',
+    label: string = 'Nom'
+  ): Observable<string | null> {
+    const dialogConfig: DialogConfig = {
+      title,
+      width: '500px',
+      disableClose: true,
+      submitButtonText: confirmText,
+      closeButtonText: cancelText,
+      customData: {
+        title,
+        label,
+        initialValue,
+        placeholder: ''
+      } as NamePromptDialogData
+    };
+
+    return this.open<NamePromptDialogComponent, NamePromptDialogResult>(NamePromptDialogComponent, dialogConfig)
+      .pipe(
+        map(result => {
+          if (result && result.action === 'submit' && result.data) {
+            return result.data.value;
+          }
+          return null;
+        })
       );
   }
 }
