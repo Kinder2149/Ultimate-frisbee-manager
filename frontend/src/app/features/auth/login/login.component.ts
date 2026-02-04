@@ -23,6 +23,16 @@ export class LoginComponent implements OnInit, OnDestroy {
   hidePassword = true;
   returnUrl = '/';
   errorMessage: string = '';
+  
+  // Étapes de chargement pour feedback utilisateur
+  loadingSteps = {
+    connecting: false,
+    connected: false,
+    loadingProfile: false,
+    loadingWorkspace: false,
+    ready: false
+  };
+  
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -56,8 +66,15 @@ export class LoginComponent implements OnInit, OnDestroy {
         filter((isReady: boolean) => isReady === true)
       )
       .subscribe(() => {
-        this.isLoading = false;
-        this.router.navigate([this.returnUrl]);
+        console.log('[Login] Auth prête, navigation vers', this.returnUrl);
+        this.loadingSteps.ready = true;
+        this.loadingMessage = 'Redirection...';
+        
+        // Navigation automatique après un court délai pour que l'utilisateur voie le succès
+        setTimeout(() => {
+          this.isLoading = false;
+          this.router.navigate([this.returnUrl]);
+        }, 500);
       });
   }
 
@@ -76,6 +93,8 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     this.isLoading = true;
     this.loadingMessage = 'Connexion en cours...';
+    this.resetLoadingSteps();
+    this.loadingSteps.connecting = true;
     
     const credentials: LoginCredentials = {
       email: this.loginForm.value.email.trim().toLowerCase(),
@@ -86,14 +105,20 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     this.authService.login(credentials).subscribe({
       next: () => {
+        console.log('[Login] Connexion Supabase réussie');
+        this.loadingSteps.connected = true;
+        this.loadingSteps.loadingProfile = true;
+        this.loadingMessage = 'Chargement de votre profil...';
+        
         this.snackBar.open('Connexion réussie !', 'Fermer', {
           duration: 2000,
           panelClass: ['success-snackbar']
         });
 
-        this.loadingMessage = 'Connexion réussie, chargement...';
+        // Suivre la progression du chargement
+        this.trackAuthProgress();
 
-        // La redirection sera gérée automatiquement par l'observable isAuthenticated$ (ligne 53-61)
+        // La redirection sera gérée automatiquement par authReady$ (ligne 53-68)
       },
       error: (error: any) => {
         console.error('[Login] Erreur de connexion:', error);
@@ -139,5 +164,32 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
     
     return '';
+  }
+
+  /**
+   * Réinitialiser les étapes de chargement
+   */
+  private resetLoadingSteps(): void {
+    this.loadingSteps = {
+      connecting: false,
+      connected: false,
+      loadingProfile: false,
+      loadingWorkspace: false,
+      ready: false
+    };
+  }
+
+  /**
+   * Suivre la progression du chargement après connexion
+   */
+  private trackAuthProgress(): void {
+    // Simuler la progression basée sur le temps estimé
+    // En réalité, authReady$ nous dira quand c'est vraiment prêt
+    setTimeout(() => {
+      if (!this.loadingSteps.ready) {
+        this.loadingSteps.loadingWorkspace = true;
+        this.loadingMessage = 'Chargement de votre espace de travail...';
+      }
+    }, 1000);
   }
 }

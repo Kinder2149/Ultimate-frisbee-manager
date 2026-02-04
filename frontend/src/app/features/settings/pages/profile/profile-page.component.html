@@ -1,154 +1,276 @@
-<mat-card>
-  <mat-card-header>
-    <mat-icon>account_circle</mat-icon>
-    <div class="title">Mon profil</div>
-  </mat-card-header>
-  <mat-card-content>
-    <div *ngIf="loading" class="loading-indicator">
-      <mat-progress-spinner diameter="32" mode="indeterminate"></mat-progress-spinner>
-      <span>Chargement du profil...</span>
+<div class="profile-container">
+  <!-- Loader global -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-progress-spinner diameter="40" mode="indeterminate"></mat-progress-spinner>
+    <span>Chargement du profil...</span>
+  </div>
+
+  <!-- Contenu du profil -->
+  <div *ngIf="!loading" class="profile-content">
+    
+    <!-- Header avec titre -->
+    <div class="profile-header">
+      <h1>
+        <mat-icon>account_circle</mat-icon>
+        Mon Profil
+      </h1>
     </div>
 
-    <div *ngIf="!loading" class="profile-container">
-
-      <!-- COLONNE GAUCHE: FORMULAIRE -->
-      <div class="profile-form-container">
-        <form [formGroup]="form" (ngSubmit)="submit()">
-          <mat-card class="profile-section-card">
-            <mat-card-header>
-              <mat-card-title>Informations personnelles</mat-card-title>
-              <mat-card-subtitle>Gérez vos informations publiques</mat-card-subtitle>
-            </mat-card-header>
-            <mat-card-content class="form-grid">
-              <mat-form-field appearance="outline">
-                <mat-label>Prénom</mat-label>
-                <input matInput formControlName="prenom" placeholder="Votre prénom">
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <mat-label>Nom</mat-label>
-                <input matInput formControlName="nom" placeholder="Votre nom">
-              </mat-form-field>
-
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Email</mat-label>
-                <input matInput formControlName="email" type="email" placeholder="nom@domaine.com">
-                <mat-error *ngIf="form.get('email')?.hasError('email')">Email invalide</mat-error>
-                <mat-error *ngIf="form.get('email')?.hasError('required')">Email requis</mat-error>
-              </mat-form-field>
-            </mat-card-content>
-            <mat-card-actions align="end">
-              <button mat-stroked-button type="button" (click)="resetForm()" [disabled]="loading">Réinitialiser</button>
-              <button mat-flat-button color="primary" type="submit" [disabled]="loading || form.invalid">
-                <mat-icon>save</mat-icon>
-                Enregistrer les informations
-              </button>
-            </mat-card-actions>
-          </mat-card>
-        </form>
-
-        <!-- FORMULAIRE QUESTION DE SECURITE -->
-        <form [formGroup]="securityForm" (ngSubmit)="setSecurityQuestion()">
-          <mat-card class="profile-section-card">
-            <mat-card-header>
-              <mat-card-title>Question de sécurité</mat-card-title>
-              <mat-card-subtitle>Utilisée pour réinitialiser votre mot de passe</mat-card-subtitle>
-            </mat-card-header>
-            <mat-card-content class="form-grid">
-
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Votre question secrète</mat-label>
-                <input matInput formControlName="securityQuestion" placeholder="Ex: Le nom de mon premier animal">
-                <mat-error *ngIf="securityForm.get('securityQuestion')?.hasError('required')">La question est requise</mat-error>
-              </mat-form-field>
-
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Réponse secrète</mat-label>
-                <input matInput formControlName="securityAnswer" placeholder="La réponse est sensible à la casse">
-                <mat-hint>La réponse sera stockée de manière sécurisée.</mat-hint>
-                <mat-error *ngIf="securityForm.get('securityAnswer')?.hasError('required')">La réponse est requise</mat-error>
-              </mat-form-field>
-
-            </mat-card-content>
-            <mat-card-actions align="end">
-              <button mat-flat-button color="primary" type="submit" [disabled]="loading || securityForm.invalid">
-                <mat-icon>save</mat-icon>
-                Enregistrer la question
-              </button>
-            </mat-card-actions>
-          </mat-card>
-        </form>
-
-        <!-- FORMULAIRE CHANGEMENT DE MOT DE PASSE -->
-        <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
-          <mat-card class="profile-section-card">
-            <mat-card-header>
-              <mat-card-title>Sécurité</mat-card-title>
-              <mat-card-subtitle>Changer votre mot de passe</mat-card-subtitle>
-            </mat-card-header>
-            <mat-card-content class="form-grid">
-
-
-              <mat-form-field appearance="outline">
-                <mat-label>Nouveau mot de passe</mat-label>
-                <input matInput [type]="hideNewPassword ? 'password' : 'text'" formControlName="newPassword">
-                <button mat-icon-button matSuffix (click)="hideNewPassword = !hideNewPassword" type="button">
-                  <mat-icon>{{hideNewPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
-                </button>
-                <mat-error *ngIf="passwordForm.get('newPassword')?.hasError('required')">Nouveau mot de passe requis</mat-error>
-                <mat-error *ngIf="passwordForm.get('newPassword')?.hasError('minlength')">Au moins 6 caractères</mat-error>
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <mat-label>Confirmer le mot de passe</mat-label>
-                <input matInput [type]="hideConfirmPassword ? 'password' : 'text'" formControlName="confirmPassword">
-                <button mat-icon-button matSuffix (click)="hideConfirmPassword = !hideConfirmPassword" type="button">
-                  <mat-icon>{{hideConfirmPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
-                </button>
-                <mat-error *ngIf="passwordForm.get('confirmPassword')?.hasError('required')">Confirmation requise</mat-error>
-                <mat-error *ngIf="passwordForm.hasError('passwordMismatch') && passwordForm.get('confirmPassword')?.touched">
-                  Les mots de passe ne correspondent pas
-                </mat-error>
-              </mat-form-field>
-
-            </mat-card-content>
-            <mat-card-actions align="end">
-              <button mat-flat-button color="primary" type="submit" [disabled]="loading || passwordForm.invalid">
-                <mat-icon>lock_reset</mat-icon>
-                Changer le mot de passe
-              </button>
-            </mat-card-actions>
-          </mat-card>
-        </form>
-      </div>
-
-      <!-- COLONNE DROITE: AVATAR -->
-      <div class="profile-avatar-container">
-        <mat-card class="profile-section-card">
-          <mat-card-header>
-            <mat-card-title>Avatar</mat-card-title>
-            <mat-card-subtitle>Personnalisez votre photo de profil</mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-content class="avatar-content">
-            <img [src]="getAvatarUrl((user$ | async)?.iconUrl)" alt="Avatar actuel" class="avatar-preview" *ngIf="(user$ | async)?.iconUrl">
-            <div class="avatar-placeholder" *ngIf="!(user$ | async)?.iconUrl">
+    <!-- Section Avatar -->
+    <mat-card class="profile-card avatar-card">
+      <mat-card-header>
+        <mat-card-title>Photo de profil</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="avatar-section">
+          <!-- Avatar actuel ou preview -->
+          <div class="avatar-wrapper">
+            <img 
+              *ngIf="getAvatarUrl()" 
+              [src]="getAvatarUrl()" 
+              alt="Avatar" 
+              class="avatar-preview">
+            <div *ngIf="!getAvatarUrl()" class="avatar-placeholder">
               <mat-icon>person</mat-icon>
             </div>
+            
+            <!-- Loader upload -->
+            <div *ngIf="isUploadingAvatar" class="avatar-loader">
+              <mat-progress-spinner diameter="30" mode="indeterminate"></mat-progress-spinner>
+            </div>
+          </div>
 
-            <div class="upload-actions">
-              <input type="file" accept="image/*" (change)="onFileSelected($event)" #fileInput hidden>
-              <button mat-stroked-button type="button" (click)="fileInput.click()">
-                <mat-icon>attach_file</mat-icon>
-                Choisir un fichier
+          <!-- Actions upload -->
+          <div class="avatar-actions">
+            <input 
+              type="file" 
+              accept="image/*" 
+              (change)="onFileSelected($event)" 
+              #fileInput 
+              hidden>
+            
+            <button 
+              mat-raised-button 
+              color="primary" 
+              (click)="fileInput.click()"
+              [disabled]="isUploadingAvatar"
+              *ngIf="!selectedFile">
+              <mat-icon>upload</mat-icon>
+              Choisir une image
+            </button>
+
+            <!-- Actions après sélection -->
+            <div *ngIf="selectedFile" class="upload-controls">
+              <span class="file-name">{{ selectedFile.name }}</span>
+              <button 
+                mat-raised-button 
+                color="primary" 
+                (click)="uploadAvatar()"
+                [disabled]="isUploadingAvatar">
+                <mat-icon>check</mat-icon>
+                Enregistrer
               </button>
-              <span *ngIf="selectedFile" class="selected-file-name">{{ selectedFile.name }}</span>
+              <button 
+                mat-stroked-button 
+                (click)="cancelAvatarSelection()"
+                [disabled]="isUploadingAvatar">
+                <mat-icon>close</mat-icon>
+                Annuler
+              </button>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Section Informations Personnelles -->
+    <mat-card class="profile-card">
+      <mat-card-header>
+        <mat-card-title>Informations personnelles</mat-card-title>
+        <mat-card-subtitle>Cliquez sur l'icône crayon pour modifier</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="fields-list">
+          
+          <!-- Champ Prénom -->
+          <div class="profile-field" [class.editing]="getField('prenom')?.isEditing">
+            <span class="field-label">Prénom</span>
+            
+            <!-- Mode lecture -->
+            <div *ngIf="!getField('prenom')?.isEditing && !getField('prenom')?.isLoading" class="field-display">
+              <span class="field-value">{{ getField('prenom')?.value || 'Non renseigné' }}</span>
+              <button 
+                mat-icon-button 
+                class="btn-edit" 
+                (click)="editField('prenom')"
+                matTooltip="Modifier">
+                <mat-icon>edit</mat-icon>
+              </button>
             </div>
 
-          </mat-card-content>
+            <!-- Mode édition -->
+            <div *ngIf="getField('prenom')?.isEditing" class="field-edit">
+              <mat-form-field appearance="outline">
+                <input 
+                  matInput 
+                  [(ngModel)]="getField('prenom')!.value"
+                  (keyup.enter)="saveField('prenom')"
+                  (keyup.escape)="cancelEdit('prenom')">
+              </mat-form-field>
+              <button 
+                mat-icon-button 
+                color="primary" 
+                class="btn-save" 
+                (click)="saveField('prenom')"
+                matTooltip="Enregistrer">
+                <mat-icon>check</mat-icon>
+              </button>
+              <button 
+                mat-icon-button 
+                class="btn-cancel" 
+                (click)="cancelEdit('prenom')"
+                matTooltip="Annuler">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
 
-        </mat-card>
-      </div>
+            <!-- Mode chargement -->
+            <div *ngIf="getField('prenom')?.isLoading" class="field-loading">
+              <span class="field-value">{{ getField('prenom')?.value }}</span>
+              <mat-progress-spinner diameter="20" mode="indeterminate"></mat-progress-spinner>
+            </div>
+          </div>
 
-    </div>
-  </mat-card-content>
-</mat-card>
+          <!-- Champ Nom -->
+          <div class="profile-field" [class.editing]="getField('nom')?.isEditing">
+            <span class="field-label">Nom</span>
+            
+            <div *ngIf="!getField('nom')?.isEditing && !getField('nom')?.isLoading" class="field-display">
+              <span class="field-value">{{ getField('nom')?.value || 'Non renseigné' }}</span>
+              <button 
+                mat-icon-button 
+                class="btn-edit" 
+                (click)="editField('nom')"
+                matTooltip="Modifier">
+                <mat-icon>edit</mat-icon>
+              </button>
+            </div>
+
+            <div *ngIf="getField('nom')?.isEditing" class="field-edit">
+              <mat-form-field appearance="outline">
+                <input 
+                  matInput 
+                  [(ngModel)]="getField('nom')!.value"
+                  (keyup.enter)="saveField('nom')"
+                  (keyup.escape)="cancelEdit('nom')">
+              </mat-form-field>
+              <button 
+                mat-icon-button 
+                color="primary" 
+                class="btn-save" 
+                (click)="saveField('nom')"
+                matTooltip="Enregistrer">
+                <mat-icon>check</mat-icon>
+              </button>
+              <button 
+                mat-icon-button 
+                class="btn-cancel" 
+                (click)="cancelEdit('nom')"
+                matTooltip="Annuler">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+
+            <div *ngIf="getField('nom')?.isLoading" class="field-loading">
+              <span class="field-value">{{ getField('nom')?.value }}</span>
+              <mat-progress-spinner diameter="20" mode="indeterminate"></mat-progress-spinner>
+            </div>
+          </div>
+
+          <!-- Champ Email -->
+          <div class="profile-field" [class.editing]="getField('email')?.isEditing">
+            <span class="field-label">Email</span>
+            
+            <div *ngIf="!getField('email')?.isEditing && !getField('email')?.isLoading" class="field-display">
+              <span class="field-value">{{ getField('email')?.value }}</span>
+              <button 
+                mat-icon-button 
+                class="btn-edit" 
+                (click)="editField('email')"
+                matTooltip="Modifier">
+                <mat-icon>edit</mat-icon>
+              </button>
+            </div>
+
+            <div *ngIf="getField('email')?.isEditing" class="field-edit">
+              <mat-form-field appearance="outline">
+                <input 
+                  matInput 
+                  type="email"
+                  [(ngModel)]="getField('email')!.value"
+                  (keyup.enter)="saveField('email')"
+                  (keyup.escape)="cancelEdit('email')">
+              </mat-form-field>
+              <button 
+                mat-icon-button 
+                color="primary" 
+                class="btn-save" 
+                (click)="saveField('email')"
+                matTooltip="Enregistrer">
+                <mat-icon>check</mat-icon>
+              </button>
+              <button 
+                mat-icon-button 
+                class="btn-cancel" 
+                (click)="cancelEdit('email')"
+                matTooltip="Annuler">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+
+            <div *ngIf="getField('email')?.isLoading" class="field-loading">
+              <span class="field-value">{{ getField('email')?.value }}</span>
+              <mat-progress-spinner diameter="20" mode="indeterminate"></mat-progress-spinner>
+            </div>
+          </div>
+
+          <!-- Champs en lecture seule -->
+          <div class="profile-field readonly">
+            <span class="field-label">Rôle</span>
+            <span class="field-value">{{ getRoleLabel(currentUser?.role) }}</span>
+          </div>
+
+          <div class="profile-field readonly">
+            <span class="field-label">Membre depuis</span>
+            <span class="field-value">{{ formatDate(currentUser?.createdAt) }}</span>
+          </div>
+
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Section Sécurité -->
+    <mat-card class="profile-card">
+      <mat-card-header>
+        <mat-card-title>Sécurité</mat-card-title>
+        <mat-card-subtitle>Gérez votre mot de passe</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="security-section">
+          <div class="profile-field readonly">
+            <span class="field-label">Mot de passe</span>
+            <span class="field-value">••••••••</span>
+            <button 
+              mat-raised-button 
+              color="primary" 
+              (click)="openPasswordModal()">
+              <mat-icon>lock_reset</mat-icon>
+              Modifier
+            </button>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+  </div>
+</div>

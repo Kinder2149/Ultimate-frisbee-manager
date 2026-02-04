@@ -4,7 +4,7 @@
  */
 const express = require('express');
 const rateLimit = require('express-rate-limit');
-const { getProfile, logout, updateProfile, register } = require('../controllers/auth.controller');
+const { getProfile, logout, updateProfile, register, updatePassword } = require('../controllers/auth.controller');
 const { authenticateToken } = require('../middleware/auth.middleware');
 const { createUploader } = require('../middleware/upload.middleware');
 
@@ -127,6 +127,40 @@ router.get('/profile', authenticateToken, getProfile);
  *         $ref: '#/components/responses/ServerError'
  */
 router.put('/profile', authenticateToken, createUploader('icon', 'avatars'), updateProfile);
+
+/**
+ * @swagger
+ * /api/auth/update-password:
+ *   post:
+ *     summary: Mettre à jour le mot de passe
+ *     description: Change le mot de passe de l'utilisateur via Supabase Auth (côté client)
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - newPassword
+ *             properties:
+ *               newPassword:
+ *                 type: string
+ *                 minLength: 6
+ *                 example: nouveauMotDePasse123
+ *     responses:
+ *       200:
+ *         description: Instructions pour changement de mot de passe
+ *       400:
+ *         $ref: '#/components/responses/ValidationError'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
+ */
+router.post('/update-password', authenticateToken, express.json({ limit: '1mb' }), updatePassword);
 
 /**
  * @swagger

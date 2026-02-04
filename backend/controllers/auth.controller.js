@@ -11,8 +11,19 @@ const { clearUserCache } = require('../middleware/auth.middleware');
 const getProfile = async (req, res) => {
   try {
     // L'utilisateur est déjà disponible via le middleware auth
+    const user = req.user;
     res.json({
-      user: req.user
+      user: {
+        id: user.id,
+        email: user.email,
+        nom: user.nom,
+        prenom: user.prenom,
+        role: user.role,
+        iconUrl: user.iconUrl,
+        isActive: user.isActive,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+      }
     });
   } catch (error) {
     console.error('Erreur getProfile:', error);
@@ -81,7 +92,9 @@ module.exports = {
             prenom: existing.prenom,
             role: existing.role,
             isActive: existing.isActive,
-            iconUrl: existing.iconUrl
+            iconUrl: existing.iconUrl,
+            createdAt: existing.createdAt,
+            updatedAt: existing.updatedAt
           }
         });
       }
@@ -134,7 +147,9 @@ module.exports = {
           prenom: user.prenom,
           role: user.role,
           isActive: user.isActive,
-          iconUrl: user.iconUrl
+          iconUrl: user.iconUrl,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt
         }
       });
     } catch (error) {
@@ -209,12 +224,53 @@ module.exports = {
           prenom: updated.prenom,
           role: updated.role,
           iconUrl: updated.iconUrl,
-          isActive: updated.isActive
+          isActive: updated.isActive,
+          createdAt: updated.createdAt,
+          updatedAt: updated.updatedAt
         }
       });
     } catch (error) {
       console.error('Erreur updateProfile:', error);
       return res.status(500).json({ error: 'Erreur serveur lors de la mise à jour du profil', code: 'PROFILE_UPDATE_ERROR' });
+    }
+  },
+
+  /**
+   * Mise à jour du mot de passe via Supabase Auth
+   * POST /api/auth/update-password
+   * Body: { newPassword }
+   */
+  async updatePassword(req, res) {
+    try {
+      const { newPassword } = req.body || {};
+
+      if (!newPassword || typeof newPassword !== 'string') {
+        return res.status(400).json({ 
+          error: 'Le nouveau mot de passe est requis', 
+          code: 'MISSING_PASSWORD' 
+        });
+      }
+
+      if (newPassword.length < 6) {
+        return res.status(400).json({ 
+          error: 'Le mot de passe doit contenir au moins 6 caractères', 
+          code: 'PASSWORD_TOO_SHORT' 
+        });
+      }
+
+      // Le mot de passe est géré par Supabase Auth
+      // Le frontend doit appeler directement supabase.auth.updateUser()
+      // Cette route est conservée pour la cohérence de l'API mais redirige vers le client
+      return res.json({
+        message: 'Le changement de mot de passe doit être effectué via Supabase Auth côté client',
+        code: 'USE_CLIENT_AUTH'
+      });
+    } catch (error) {
+      console.error('Erreur updatePassword:', error);
+      return res.status(500).json({ 
+        error: 'Erreur serveur lors de la mise à jour du mot de passe', 
+        code: 'PASSWORD_UPDATE_ERROR' 
+      });
     }
   }
 };

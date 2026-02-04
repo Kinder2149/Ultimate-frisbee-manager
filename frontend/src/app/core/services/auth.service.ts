@@ -472,6 +472,49 @@ private async cacheUserProfile(user: User): Promise<void> {
       })
     );
   }
+
+  /**
+   * Mettre à jour un champ spécifique du profil utilisateur
+   * Utilisé pour l'édition inline
+   */
+  updateUserField(fieldName: string, value: any): Observable<User> {
+    const formData = new FormData();
+    formData.append(fieldName, value);
+
+    return this.http.put<{ user: User }>(`${this.apiUrl}/profile`, formData).pipe(
+      tap(response => {
+        this.currentUserSubject.next(response.user);
+        this.cacheUserProfile(response.user);
+        console.log(`[Auth] Champ ${fieldName} mis à jour:`, value);
+      }),
+      map(response => response.user),
+      catchError(error => {
+        console.error(`[Auth] Erreur mise à jour ${fieldName}:`, error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Mettre à jour l'avatar de l'utilisateur
+   */
+  updateAvatar(file: File): Observable<User> {
+    const formData = new FormData();
+    formData.append('icon', file, file.name);
+
+    return this.http.put<{ user: User }>(`${this.apiUrl}/profile`, formData).pipe(
+      tap(response => {
+        this.currentUserSubject.next(response.user);
+        this.cacheUserProfile(response.user);
+        console.log('[Auth] Avatar mis à jour');
+      }),
+      map(response => response.user),
+      catchError(error => {
+        console.error('[Auth] Erreur mise à jour avatar:', error);
+        return throwError(() => error);
+      })
+    );
+  }
 }
 
 

@@ -7,12 +7,29 @@
     <!-- Erreur globale -->
     <app-auth-error [message]="errorMessage" *ngIf="errorMessage"></app-auth-error>
     
-    <!-- Loader -->
-    <app-auth-loader 
-      *ngIf="isLoading" 
-      [message]="loadingMessage"
-      [size]="40">
-    </app-auth-loader>
+    <!-- Loader avec étapes de progression -->
+    <div *ngIf="isLoading" class="loading-container">
+      <app-auth-loader 
+        [message]="loadingMessage"
+        [size]="40">
+      </app-auth-loader>
+      
+      <!-- Étapes de chargement -->
+      <div class="loading-steps">
+        <div class="loading-step" [class.completed]="loadingSteps.connected" [class.active]="loadingSteps.connecting">
+          <mat-icon>{{ loadingSteps.connected ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+          <span>Connexion</span>
+        </div>
+        <div class="loading-step" [class.completed]="loadingSteps.loadingProfile && !loadingSteps.loadingWorkspace" [class.active]="loadingSteps.loadingProfile">
+          <mat-icon>{{ loadingSteps.loadingWorkspace ? 'check_circle' : (loadingSteps.loadingProfile ? 'radio_button_checked' : 'radio_button_unchecked') }}</mat-icon>
+          <span>Profil</span>
+        </div>
+        <div class="loading-step" [class.completed]="loadingSteps.ready" [class.active]="loadingSteps.loadingWorkspace">
+          <mat-icon>{{ loadingSteps.ready ? 'check_circle' : (loadingSteps.loadingWorkspace ? 'radio_button_checked' : 'radio_button_unchecked') }}</mat-icon>
+          <span>Workspace</span>
+        </div>
+      </div>
+    </div>
 
     <div *ngIf="!isLoading">
       <!-- Champ Email -->
