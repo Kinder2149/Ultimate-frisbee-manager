@@ -79,21 +79,8 @@ export class DialogService {
         map(result => result && result.action === 'submit')
       );
   }
-
-  /**
-   * Ouvre un dialogue de saisie de texte
-   * 
-   * @param title Titre du dialogue
-   * @param message Message à afficher (peut contenir du HTML)
-   * @param initialValue Valeur initiale du champ
-   * @param confirmText Texte du bouton de confirmation
-   * @param cancelText Texte du bouton d'annulation
-   * @param label Label du champ de saisie
-   * @returns Une observable qui émet la valeur saisie si l'utilisateur confirme, null sinon
-   */
   prompt(
     title: string,
-    message: string,
     initialValue: string = '',
     confirmText: string = 'Valider',
     cancelText: string = 'Annuler',

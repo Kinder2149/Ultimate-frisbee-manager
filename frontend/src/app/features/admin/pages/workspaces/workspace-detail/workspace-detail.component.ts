@@ -325,10 +325,9 @@ export class WorkspaceDetailComponent implements OnInit {
     }
 
     const currentName = this.workspace.name;
-    const message = `Entrez le nouveau nom pour le workspace <strong>${currentName}</strong> :`;
 
     this.dialogService
-      .prompt('Modifier le nom du workspace', message, currentName, 'Enregistrer', 'Annuler')
+      .prompt('Modifier le nom du workspace', currentName, 'Enregistrer', 'Annuler')
       .subscribe((newName) => {
         if (!newName || !this.workspaceId) return;
 

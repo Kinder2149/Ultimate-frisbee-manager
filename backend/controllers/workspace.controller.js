@@ -362,12 +362,45 @@ exports.adminUpdateWorkspace = async (req, res, next) => {
     const { id } = req.params;
     const { name } = req.body;
 
+    const existingWorkspace = await prisma.workspace.findUnique({
+      where: { id },
+      select: { id: true, name: true },
+    });
+
+    if (!existingWorkspace) {
+      return res.status(404).json({ error: 'Workspace non trouvé', code: 'WORKSPACE_NOT_FOUND' });
+    }
+
     const data = {};
     if (name !== undefined) {
       if (!String(name).trim()) {
         return res.status(400).json({ error: 'Le nom du workspace ne peut pas être vide', code: 'WORKSPACE_NAME_EMPTY' });
       }
-      data.name = String(name).trim();
+
+      const nextName = String(name).trim();
+
+      if (String(existingWorkspace.name || '').trim().toUpperCase() === DEFAULT_WORKSPACE_NAME) {
+        if (nextName.toUpperCase() !== DEFAULT_WORKSPACE_NAME) {
+          return res.status(403).json({
+            error: 'Le workspace BASE ne peut pas être renommé',
+            code: 'WORKSPACE_BASE_PROTECTED',
+          });
+        }
+      }
+
+      const conflict = await prisma.workspace.findFirst({
+        where: {
+          name: nextName,
+          NOT: { id },
+        },
+        select: { id: true },
+      });
+
+      if (conflict) {
+        return res.status(409).json({ error: 'Un workspace avec ce nom existe déjà', code: 'WORKSPACE_NAME_EXISTS' });
+      }
+
+      data.name = nextName;
     }
 
     const updated = await prisma.workspace.update({
