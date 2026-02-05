@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { WorkspaceService, WorkspaceSummary } from './workspace.service';
+import { WorkspaceService } from './workspace.service';
 import { AuthService } from './auth.service';
+import { User } from '../models/user.model';
 
 export type WorkspaceRole = 'MANAGER' | 'MEMBER' | 'VIEWER' | 'OWNER' | 'USER' | null;
 
@@ -9,10 +10,16 @@ export type WorkspaceRole = 'MANAGER' | 'MEMBER' | 'VIEWER' | 'OWNER' | 'USER' |
   providedIn: 'root'
 })
 export class PermissionsService {
+  private currentUser: User | null = null;
+
   constructor(
     private workspaceService: WorkspaceService,
     private authService: AuthService
-  ) {}
+  ) {
+    this.authService.currentUser$.subscribe((user) => {
+      this.currentUser = user;
+    });
+  }
 
   /**
    * Normalise les rôles legacy vers les nouveaux rôles
@@ -46,16 +53,14 @@ export class PermissionsService {
    * Vérifie si l'utilisateur est ADMIN plateforme
    */
   isAdmin(): boolean {
-    const user = this.authService.getCurrentUser();
-    return user?.role?.toUpperCase() === 'ADMIN';
+    return this.currentUser?.role?.toUpperCase() === 'ADMIN';
   }
 
   /**
    * Vérifie si l'utilisateur est Testeur
    */
   isTester(): boolean {
-    const user = this.authService.getCurrentUser();
-    return user?.isTester === true;
+    return this.currentUser?.isTester === true;
   }
 
   /**

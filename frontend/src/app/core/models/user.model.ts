@@ -9,6 +9,7 @@ export interface User {
   role: string;
   iconUrl?: string;
   isActive?: boolean;
+  isTester?: boolean;
   createdAt?: string;
   updatedAt?: string;
   securityQuestion?: string;
