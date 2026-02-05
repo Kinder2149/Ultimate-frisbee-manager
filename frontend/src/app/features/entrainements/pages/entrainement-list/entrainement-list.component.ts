@@ -17,6 +17,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatButtonModule } from '@angular/material/button';
 import { WorkspaceService } from '../../../../core/services/workspace.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { PermissionsService } from '../../../../core/services/permissions.service';
 import { User } from '../../../../core/models/user.model';
 
 @Component({
@@ -29,7 +30,8 @@ import { User } from '../../../../core/models/user.model';
 export class EntrainementListComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
 
-  canWrite = true;
+  canCreate = false;
+  canEdit = false;
 
   entrainements: Entrainement[] = [];
   filteredEntrainements: Entrainement[] = [];
@@ -51,7 +53,8 @@ export class EntrainementListComponent implements OnInit, OnDestroy {
     private apiUrlService: ApiUrlService,
     private dialogService: DialogService,
     private workspaceService: WorkspaceService,
-    private authService: AuthService
+    private authService: AuthService,
+    private permissionsService: PermissionsService
   ) {}
 
   getFullImageUrl(imageName?: string): string | null {
@@ -59,14 +62,13 @@ export class EntrainementListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    const ws = this.workspaceService.getCurrentWorkspace();
-    this.authService.currentUser$.pipe(take(1)).subscribe((user: User | null) => {
-      const wsRole = String(ws?.role || '').toUpperCase();
-      const isViewer = wsRole === 'VIEWER';
-      const isBase = ws?.isBase === true;
-      const isAdmin = String(user?.role || '').toUpperCase() === 'ADMIN';
-      this.canWrite = !isViewer && (!isBase || isAdmin);
-    });
+    this.updatePermissions();
+
+    this.workspaceService.currentWorkspace$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.updatePermissions();
+      });
 
     this.loadTags();
 
@@ -241,5 +243,10 @@ export class EntrainementListComponent implements OnInit, OnDestroy {
         alert('Erreur lors de la duplication de l\'entraînement. Veuillez réessayer.');
       }
     });
+  }
+
+  private updatePermissions(): void {
+    this.canCreate = this.permissionsService.canCreate();
+    this.canEdit = this.permissionsService.canEdit();
   }
 }

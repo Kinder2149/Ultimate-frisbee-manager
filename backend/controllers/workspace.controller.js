@@ -1,5 +1,6 @@
 const { prisma } = require('../services/prisma');
 const workspaceService = require('../services/business/workspace.service');
+const { setWorkspaceMembersSchema } = require('../validators/workspace.validator');
 
 const DEFAULT_WORKSPACE_NAME = 'BASE';
 
@@ -328,13 +329,13 @@ exports.adminCreateWorkspace = async (req, res, next) => {
 
       const newWorkspaceId = workspace.id;
 
-      // 2. Optionnel : créer un OWNER associé
+      // 2. Optionnel : créer un MANAGER associé
       if (ownerUserId) {
         await tx.workspaceUser.create({
           data: {
             workspaceId: newWorkspaceId,
             userId: ownerUserId,
-            role: 'OWNER',
+            role: 'MANAGER',
           },
         });
       }
@@ -386,7 +387,7 @@ exports.adminUpdateWorkspace = async (req, res, next) => {
 
     const existingWorkspace = await prisma.workspace.findUnique({
       where: { id },
-      select: { id: true, name: true },
+      select: { id: true, name: true, isBase: true },
     });
 
     if (!existingWorkspace) {
@@ -401,7 +402,7 @@ exports.adminUpdateWorkspace = async (req, res, next) => {
 
       const nextName = String(name).trim();
 
-      if (String(existingWorkspace.name || '').trim().toUpperCase() === DEFAULT_WORKSPACE_NAME) {
+      if (existingWorkspace.isBase === true) {
         if (nextName.toUpperCase() !== DEFAULT_WORKSPACE_NAME) {
           return res.status(403).json({
             error: 'Le workspace BASE ne peut pas être renommé',
@@ -449,14 +450,14 @@ exports.adminDeleteWorkspace = async (req, res, next) => {
 
     const ws = await prisma.workspace.findUnique({
       where: { id },
-      select: { id: true, name: true },
+      select: { id: true, name: true, isBase: true },
     });
 
     if (!ws) {
       return res.status(404).json({ error: 'Workspace non trouvé', code: 'WORKSPACE_NOT_FOUND' });
     }
 
-    if (String(ws.name || '').trim().toUpperCase() === DEFAULT_WORKSPACE_NAME) {
+    if (ws.isBase === true) {
       return res.status(403).json({
         error: 'Le workspace BASE ne peut pas être supprimé',
         code: 'WORKSPACE_BASE_PROTECTED',
@@ -526,6 +527,22 @@ exports.adminSetWorkspaceUsers = async (req, res, next) => {
       return res.status(400).json({ error: 'Format invalide: users doit être un tableau', code: 'USERS_ARRAY_REQUIRED' });
     }
 
+    // Normaliser les rôles legacy avant validation
+    const normalizedUsers = users.map(u => ({
+      userId: u.userId,
+      role: u.role === 'OWNER' ? 'MANAGER' : u.role === 'USER' ? 'MEMBER' : u.role
+    }));
+
+    // Valider avec Zod
+    const validation = setWorkspaceMembersSchema.safeParse({ users: normalizedUsers });
+    if (!validation.success) {
+      return res.status(400).json({
+        error: 'Données invalides',
+        code: 'VALIDATION_ERROR',
+        details: validation.error.errors
+      });
+    }
+
     // Vérifier que le workspace existe
     const workspace = await prisma.workspace.findUnique({ where: { id } });
     if (!workspace) {
@@ -536,17 +553,12 @@ exports.adminSetWorkspaceUsers = async (req, res, next) => {
     await prisma.$transaction(async (tx) => {
       await tx.workspaceUser.deleteMany({ where: { workspaceId: id } });
 
-      const cleaned = users
+      const cleaned = validation.data.users
         .map((u) => ({
           userId: String(u.userId),
-          role: u.role ? String(u.role).toUpperCase() : 'MEMBER',
+          role: String(u.role).toUpperCase(),
         }))
         .filter((u) => !!u.userId);
-
-      for (const u of cleaned) {
-        if (u.role === 'OWNER') u.role = 'MANAGER';
-        if (u.role === 'USER') u.role = 'MEMBER';
-      }
 
       if (cleaned.length > 0) {
         await tx.workspaceUser.createMany({
@@ -618,6 +630,22 @@ exports.ownerSetWorkspaceMembers = async (req, res, next) => {
       return res.status(400).json({ error: 'Format invalide: users doit être un tableau', code: 'USERS_ARRAY_REQUIRED' });
     }
 
+    // Normaliser les rôles legacy avant validation
+    const normalizedUsers = users.map(u => ({
+      userId: u.userId,
+      role: u.role === 'OWNER' ? 'MANAGER' : u.role === 'USER' ? 'MEMBER' : u.role
+    }));
+
+    // Valider avec Zod
+    const validation = setWorkspaceMembersSchema.safeParse({ users: normalizedUsers });
+    if (!validation.success) {
+      return res.status(400).json({
+        error: 'Données invalides',
+        code: 'VALIDATION_ERROR',
+        details: validation.error.errors
+      });
+    }
+
     // Vérifier que le workspace existe
     const workspace = await prisma.workspace.findUnique({ where: { id: workspaceId } });
     if (!workspace) {
@@ -627,10 +655,10 @@ exports.ownerSetWorkspaceMembers = async (req, res, next) => {
     await prisma.$transaction(async (tx) => {
       await tx.workspaceUser.deleteMany({ where: { workspaceId } });
 
-      const cleaned = users
+      const cleaned = validation.data.users
         .map((u) => ({
           userId: String(u.userId),
-          role: u.role ? String(u.role).toUpperCase() : 'USER',
+          role: String(u.role).toUpperCase(),
         }))
         .filter((u) => !!u.userId);
 
@@ -652,10 +680,10 @@ exports.ownerSetWorkspaceMembers = async (req, res, next) => {
 };
 
 /**
- * OWNER – mettre à jour les réglages de SON workspace courant
+ * MANAGER – mettre à jour les réglages de SON workspace courant
  * PUT /api/workspaces/settings
  * body: { name? }
- * Nécessite: authenticateToken, workspaceGuard, requireWorkspaceOwner
+ * Nécessite: authenticateToken, workspaceGuard, requireWorkspaceManager
  */
 exports.ownerUpdateWorkspaceSettings = async (req, res, next) => {
   try {

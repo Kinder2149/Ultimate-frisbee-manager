@@ -14,6 +14,7 @@ import { DuplicateButtonComponent } from '../../../shared/components/duplicate-b
 import { RichTextViewComponent } from '../../../shared/components/rich-text-view/rich-text-view.component';
 import { ExerciceDialogService } from '../services/exercice-dialog.service';
 import { ApiUrlService } from '../../../core/services/api-url.service';
+import { PermissionsService } from '../../../core/services/permissions.service';
 
 // Type d'entrée précis pour couvrir les champs utilisés dans le template
 // et éviter les erreurs strictes de template (TS4111, pipes, etc.).
@@ -42,7 +43,7 @@ export interface ExerciceInput {
 export class ExerciceCardComponent implements OnInit {
   @Input() exercice!: ExerciceInput;
   @Input() selected: boolean = false;
-  @Input() canWrite: boolean = true;
+  @Input() canEdit: boolean = true;
   // Optionnels pour l'usage dans la page d'entraînement
   @Input() index?: number;
   @Input() duree?: number | string; // minutes ou libellé

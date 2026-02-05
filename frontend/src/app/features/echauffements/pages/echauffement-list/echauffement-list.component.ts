@@ -20,6 +20,8 @@ import { ExerciceFiltersComponent, ExerciceFiltersValue } from '../../../exercic
 import { EchauffementViewComponent } from '../../../../shared/components/echauffement-view/echauffement-view.component';
 import { ApiUrlService } from '../../../../core/services/api-url.service';
 import { RichTextViewComponent } from '../../../../shared/components/rich-text-view/rich-text-view.component';
+import { PermissionsService } from '../../../../core/services/permissions.service';
+import { WorkspaceService } from '../../../../core/services/workspace.service';
 
 @Component({
   selector: 'app-echauffement-list',
@@ -42,6 +44,9 @@ import { RichTextViewComponent } from '../../../../shared/components/rich-text-v
 export class EchauffementListComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
 
+  canCreate = false;
+  canEdit = false;
+
   echauffements: Echauffement[] = [];
   filteredEchauffements: Echauffement[] = [];
   isLoading = false;
@@ -53,10 +58,20 @@ export class EchauffementListComponent implements OnInit, OnDestroy {
     private router: Router,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
-    private apiUrlService: ApiUrlService
+    private apiUrlService: ApiUrlService,
+    private permissionsService: PermissionsService,
+    private workspaceService: WorkspaceService
   ) {}
 
   ngOnInit(): void {
+    this.updatePermissions();
+
+    this.workspaceService.currentWorkspace$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.updatePermissions();
+      });
+
     this.workspaceDataStore.echauffements$
       .pipe(takeUntil(this.destroy$))
       .subscribe((echauffements) => {
@@ -221,6 +236,11 @@ export class EchauffementListComponent implements OnInit, OnDestroy {
     const seconds = totalSec % 60;
     if (seconds === 0) return `${minutes} min`;
     return `${minutes} min ${seconds}s`;
+  }
+
+  private updatePermissions(): void {
+    this.canCreate = this.permissionsService.canCreate();
+    this.canEdit = this.permissionsService.canEdit();
   }
 
   getFullImageUrl(relativeUrl: string | undefined): string | null {

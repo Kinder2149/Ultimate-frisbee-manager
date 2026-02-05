@@ -34,15 +34,15 @@
         </div>
         <div class="card-actions" (click)="$event.stopPropagation()" *ngIf="mode === 'default'">
             <button mat-icon-button (click)="viewExercice($event)" matTooltip="Voir"><mat-icon>visibility</mat-icon></button>
-            <button mat-icon-button (click)="editExercice($event)" matTooltip="Modifier" *ngIf="canWrite"><mat-icon>edit</mat-icon></button>
+            <button mat-icon-button (click)="editExercice($event)" matTooltip="Modifier" *ngIf="canEdit"><mat-icon>edit</mat-icon></button>
             <app-duplicate-button 
-              *ngIf="canWrite"
+              *ngIf="canEdit"
               [entityId]="exercice.id!" 
               entityType="exercice"
               [loading]="duplicating"
               (duplicate)="duplicateExercice($event)">
             </app-duplicate-button>
-            <button mat-icon-button (click)="deleteExercice($event)" matTooltip="Supprimer" class="delete-btn" *ngIf="canWrite"><mat-icon>delete</mat-icon></button>
+            <button mat-icon-button (click)="deleteExercice($event)" matTooltip="Supprimer" class="delete-btn" *ngIf="canEdit"><mat-icon>delete</mat-icon></button>
             <button mat-icon-button class="chevron" (click)="toggleExpanded($event)" [attr.aria-expanded]="expanded" [matTooltip]="expanded ? 'Replier' : 'Déplier'">
               <mat-icon [ngClass]="{ 'rotated': expanded }">expand_more</mat-icon>
             </button>

@@ -102,7 +102,7 @@ async function main() {
         data: {
           workspaceId: WORKSPACE_BASE_ID,
           userId: user.id,
-          role: 'MEMBER', // Rôle USER par défaut dans BASE
+          role: 'MEMBER', // Rôle MEMBER par défaut dans BASE
         },
       });
       console.log(`  ✅ ${user.email} lié à BASE`);

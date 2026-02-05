@@ -24,6 +24,7 @@ import { ImageViewerComponent, ImageViewerData } from '../../../../shared/compon
 import { RichTextViewComponent } from '../../../../shared/components/rich-text-view/rich-text-view.component';
 import { WorkspaceService } from '../../../../core/services/workspace.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { PermissionsService } from '../../../../core/services/permissions.service';
 import { User } from '../../../../core/models/user.model';
 
 /**
@@ -49,7 +50,8 @@ import { User } from '../../../../core/models/user.model';
 export class SituationMatchListComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
 
-  canWrite = true;
+  canCreate = false;
+  canEdit = false;
 
   situationsMatchs: SituationMatch[] = [];
   filteredSituationsMatchs: SituationMatch[] = [];
@@ -75,18 +77,18 @@ export class SituationMatchListComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private apiUrlService: ApiUrlService,
     private workspaceService: WorkspaceService,
-    private authService: AuthService
+    private authService: AuthService,
+    private permissionsService: PermissionsService
   ) {}
 
   ngOnInit(): void {
-    const ws = this.workspaceService.getCurrentWorkspace();
-    this.authService.currentUser$.pipe(take(1)).subscribe((user: User | null) => {
-      const wsRole = String(ws?.role || '').toUpperCase();
-      const isViewer = wsRole === 'VIEWER';
-      const isBase = ws?.isBase === true;
-      const isAdmin = String(user?.role || '').toUpperCase() === 'ADMIN';
-      this.canWrite = !isViewer && (!isBase || isAdmin);
-    });
+    this.updatePermissions();
+
+    this.workspaceService.currentWorkspace$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.updatePermissions();
+      });
 
     this.loadTags();
 
@@ -325,5 +327,10 @@ export class SituationMatchListComponent implements OnInit, OnDestroy {
       panelClass: 'entity-view-dialog',
       data: { situationMatch }
     });
+  }
+
+  private updatePermissions(): void {
+    this.canCreate = this.permissionsService.canCreate();
+    this.canEdit = this.permissionsService.canEdit();
   }
 }

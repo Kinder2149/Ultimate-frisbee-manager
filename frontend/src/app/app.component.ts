@@ -8,6 +8,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { filter, map, distinctUntilChanged } from 'rxjs/operators';
 import { WorkspaceService, WorkspaceSummary } from './core/services/workspace.service';
 import { GlobalPreloaderService } from './core/services/global-preloader.service';
+import { PermissionsService } from './core/services/permissions.service';
 
 @Component({
   selector: 'app-root',
@@ -43,7 +44,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     private el: ElementRef,
     private router: Router,
     public workspaceService: WorkspaceService, // Expose WorkspaceService as public
-    private globalPreloader: GlobalPreloaderService
+    private globalPreloader: GlobalPreloaderService,
+    public permissionsService: PermissionsService // public pour l'utiliser dans le template
   ) {
     this.currentUser$ = this.authService.currentUser$;
     this.currentWorkspace$ = this.workspaceService.currentWorkspace$;

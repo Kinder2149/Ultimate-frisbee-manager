@@ -134,10 +134,10 @@ async function main() {
       data: {
         workspaceId: WORKSPACE_BASE_ID,
         userId: adminUser.id,
-        role: 'OWNER'
+        role: 'MANAGER'
       }
     });
-    console.log('✅ Liaison créée avec rôle OWNER');
+    console.log('✅ Liaison créée avec rôle MANAGER');
   } else {
     console.log('✅ Liaison trouvée:', {
       workspaceId: workspaceLink.workspaceId,

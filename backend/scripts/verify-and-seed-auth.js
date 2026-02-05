@@ -93,7 +93,7 @@ async function main() {
         role: 'MANAGER'
       }
     });
-    console.log(`  ✅ Admin ajouté au workspace BASE avec rôle OWNER`);
+    console.log(`  ✅ Admin ajouté au workspace BASE avec rôle MANAGER`);
   } else {
     console.log(`  ✅ Compte admin existe (ID: ${adminUser.id})`);
     console.log(`     Email: ${adminUser.email}`);

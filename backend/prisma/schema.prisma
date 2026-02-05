@@ -165,6 +165,7 @@ model User {
   prenom    String?
   role      UserRole @default(USER)
   isActive  Boolean  @default(true)
+  isTester  Boolean  @default(false)
   iconUrl   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

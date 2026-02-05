@@ -6,6 +6,10 @@
         <div class="appbar__left">
           <div class="appbar__row appbar__row--title">
             <h1>{{ title }}</h1>
+            <span class="badge badge-base" *ngIf="permissionsService.isBaseWorkspace()" title="Workspace BASE - Réservé aux administrateurs">
+              <mat-icon>lock</mat-icon>
+              BASE
+            </span>
           </div>
         </div>
         <div class="appbar__row appbar__row--nav">

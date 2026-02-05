@@ -181,7 +181,7 @@ exports.createUser = async (req, res) => {
         passwordHash: hashed,
         nom: nom?.trim() || '',
         prenom: prenom?.trim() || null,
-        role: (role || 'USER').toUpperCase(),
+        role: (role || 'MEMBER').toUpperCase(),
         isActive: !!isActive,
         iconUrl: null
       }

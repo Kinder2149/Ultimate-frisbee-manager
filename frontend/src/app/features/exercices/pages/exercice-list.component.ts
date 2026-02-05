@@ -16,6 +16,7 @@ import { WorkspaceDataStore } from '../../../core/services/workspace-data.store'
 import { ExerciceDialogService } from '../services/exercice-dialog.service';
 import { WorkspaceService } from '../../../core/services/workspace.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { PermissionsService } from '../../../core/services/permissions.service';
 import { User } from '../../../core/models/user.model';
 
 // Models
@@ -56,7 +57,9 @@ export class ExerciceListComponent implements OnInit, OnDestroy {
   // Injecter les services nécessaires
   private routeSubscription?: Subscription;
 
-  canWrite = true;
+  canCreate = false;
+  canEdit = false;
+  isBaseWorkspace = false;
   
   constructor(
     private exerciceService: ExerciceService,
@@ -67,7 +70,8 @@ export class ExerciceListComponent implements OnInit, OnDestroy {
     private exerciceDialogService: ExerciceDialogService,
     private route: ActivatedRoute,
     private workspaceService: WorkspaceService,
-    private authService: AuthService
+    private authService: AuthService,
+    private permissionsService: PermissionsService
   ) { 
     console.log('ExerciceListComponent chargé');
     
@@ -120,14 +124,15 @@ export class ExerciceListComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     console.log('[ExerciceList] Initialisation - Abonnement au Store');
 
-    const ws = this.workspaceService.getCurrentWorkspace();
-    this.authService.currentUser$.pipe(take(1)).subscribe((user: User | null) => {
-      const wsRole = String(ws?.role || '').toUpperCase();
-      const isViewer = wsRole === 'VIEWER';
-      const isBase = ws?.isBase === true;
-      const isAdmin = String(user?.role || '').toUpperCase() === 'ADMIN';
-      this.canWrite = !isViewer && (!isBase || isAdmin);
-    });
+    // Initialiser les permissions
+    this.updatePermissions();
+
+    // S'abonner aux changements de workspace pour mettre à jour les permissions
+    this.workspaceService.currentWorkspace$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.updatePermissions();
+      });
 
     // S'abonner aux exercices du Store
     this.workspaceDataStore.exercices$
@@ -400,5 +405,14 @@ export class ExerciceListComponent implements OnInit, OnDestroy {
    */
   getTagById(id: string): Tag | undefined {
     return this.allTags.find(tag => tag.id === id);
+  }
+
+  /**
+   * Met à jour les permissions basées sur le rôle workspace actuel
+   */
+  private updatePermissions(): void {
+    this.canCreate = this.permissionsService.canCreate();
+    this.canEdit = this.permissionsService.canEdit();
+    this.isBaseWorkspace = this.permissionsService.isBaseWorkspace();
   }
 }

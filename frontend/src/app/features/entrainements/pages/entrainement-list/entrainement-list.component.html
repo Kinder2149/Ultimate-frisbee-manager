@@ -1,7 +1,7 @@
 <div class="container">
   <div class="header">
     <h1>Entraînements</h1>
-    <button class="btn btn-primary" (click)="creerEntrainement()" *ngIf="canWrite">
+    <button class="btn btn-primary" (click)="creerEntrainement()" *ngIf="canCreate">
       <i class="material-icons">add</i>
       Nouvel entraînement
     </button>
@@ -32,7 +32,7 @@
     <!-- Message si aucun entraînement -->
     <div *ngIf="filteredEntrainements.length === 0" class="no-entrainements">
       <p>Aucun entraînement trouvé.</p>
-      <button class="btn btn-primary" (click)="creerEntrainement()" *ngIf="canWrite">
+      <button class="btn btn-primary" (click)="creerEntrainement()" *ngIf="canCreate">
         Créer le premier entraînement
       </button>
     </div>
@@ -49,15 +49,15 @@
           </div>
           <div class="card-actions">
             <button mat-icon-button (click)="voirEntrainement(entrainement.id!); $event.stopPropagation()" title="Voir le détail"><mat-icon>visibility</mat-icon></button>
-            <button mat-icon-button (click)="$event.stopPropagation(); modifierEntrainement(entrainement.id!)" title="Modifier" *ngIf="canWrite"><mat-icon>edit</mat-icon></button>
+            <button mat-icon-button (click)="$event.stopPropagation(); modifierEntrainement(entrainement.id!)" title="Modifier" *ngIf="canEdit"><mat-icon>edit</mat-icon></button>
             <app-duplicate-button 
-              *ngIf="canWrite"
+              *ngIf="canEdit"
               [entityId]="entrainement.id!" 
               entityType="entraînement"
               [loading]="duplicatingIds.has(entrainement.id!)"
               (click)="$event.stopPropagation()" (duplicate)="dupliquerEntrainement($event)">
             </app-duplicate-button>
-            <button mat-icon-button class="delete-btn" (click)="$event.stopPropagation(); supprimerEntrainement(entrainement)" title="Supprimer" *ngIf="canWrite"><mat-icon>delete</mat-icon></button>
+            <button mat-icon-button class="delete-btn" (click)="$event.stopPropagation(); supprimerEntrainement(entrainement)" title="Supprimer" *ngIf="canEdit"><mat-icon>delete</mat-icon></button>
           </div>
         </div>
 

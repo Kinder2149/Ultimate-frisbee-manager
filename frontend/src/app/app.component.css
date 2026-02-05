@@ -48,7 +48,38 @@ body.body-scroll-locked {
   align-items: center;
   padding: 20px 30px;
   max-width: 1400px;
-  margin: 0 auto;
+}
+
+/* Badge BASE */
+.badge-base {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  margin-left: 16px;
+  background-color: #FFA726;
+  color: white;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  animation: pulse-badge 2s ease-in-out infinite;
+}
+
+.badge-base mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+@keyframes pulse-badge {
+  0%, 100% {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+  50% {
+    box-shadow: 0 2px 8px rgba(255, 167, 38, 0.5);
+  }
 }
 
 .main-header h1 {

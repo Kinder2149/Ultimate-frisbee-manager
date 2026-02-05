@@ -1,0 +1,181 @@
+import { Injectable } from '@angular/core';
+import { Observable, map } from 'rxjs';
+import { WorkspaceService, WorkspaceSummary } from './workspace.service';
+import { AuthService } from './auth.service';
+
+export type WorkspaceRole = 'MANAGER' | 'MEMBER' | 'VIEWER' | 'OWNER' | 'USER' | null;
+
+@Injectable({
+  providedIn: 'root'
+})
+export class PermissionsService {
+  constructor(
+    private workspaceService: WorkspaceService,
+    private authService: AuthService
+  ) {}
+
+  /**
+   * Normalise les rôles legacy vers les nouveaux rôles
+   */
+  private normalizeRole(role: string | undefined | null): WorkspaceRole {
+    if (!role) return null;
+    const normalized = role.toUpperCase();
+    if (normalized === 'OWNER') return 'MANAGER';
+    if (normalized === 'USER') return 'MEMBER';
+    return normalized as WorkspaceRole;
+  }
+
+  /**
+   * Récupère le rôle workspace actuel normalisé
+   */
+  getCurrentRole(): WorkspaceRole {
+    const workspace = this.workspaceService.getCurrentWorkspace();
+    return this.normalizeRole(workspace?.role);
+  }
+
+  /**
+   * Observable du rôle workspace actuel
+   */
+  getCurrentRole$(): Observable<WorkspaceRole> {
+    return this.workspaceService.currentWorkspace$.pipe(
+      map(workspace => this.normalizeRole(workspace?.role))
+    );
+  }
+
+  /**
+   * Vérifie si l'utilisateur est ADMIN plateforme
+   */
+  isAdmin(): boolean {
+    const user = this.authService.getCurrentUser();
+    return user?.role?.toUpperCase() === 'ADMIN';
+  }
+
+  /**
+   * Vérifie si l'utilisateur est Testeur
+   */
+  isTester(): boolean {
+    const user = this.authService.getCurrentUser();
+    return user?.isTester === true;
+  }
+
+  /**
+   * Vérifie si le workspace actuel est BASE
+   */
+  isBaseWorkspace(): boolean {
+    const workspace = this.workspaceService.getCurrentWorkspace();
+    return workspace?.isBase === true;
+  }
+
+  /**
+   * Vérifie si l'utilisateur peut créer du contenu
+   * MANAGER et MEMBER peuvent créer
+   */
+  canCreate(): boolean {
+    const role = this.getCurrentRole();
+    return role === 'MANAGER' || role === 'MEMBER';
+  }
+
+  /**
+   * Vérifie si l'utilisateur peut modifier du contenu
+   * MANAGER et MEMBER peuvent modifier
+   */
+  canEdit(): boolean {
+    const role = this.getCurrentRole();
+    return role === 'MANAGER' || role === 'MEMBER';
+  }
+
+  /**
+   * Vérifie si l'utilisateur peut supprimer du contenu
+   * MANAGER et MEMBER peuvent supprimer
+   */
+  canDelete(): boolean {
+    const role = this.getCurrentRole();
+    return role === 'MANAGER' || role === 'MEMBER';
+  }
+
+  /**
+   * Vérifie si l'utilisateur peut gérer les membres du workspace
+   * Seul MANAGER peut gérer les membres
+   */
+  canManageMembers(): boolean {
+    const role = this.getCurrentRole();
+    return role === 'MANAGER';
+  }
+
+  /**
+   * Vérifie si l'utilisateur peut modifier les réglages du workspace
+   * Seul MANAGER peut modifier les réglages
+   */
+  canManageSettings(): boolean {
+    const role = this.getCurrentRole();
+    return role === 'MANAGER';
+  }
+
+  /**
+   * Vérifie si l'utilisateur peut exporter
+   * Seul ADMIN peut exporter
+   */
+  canExport(): boolean {
+    return this.isAdmin();
+  }
+
+  /**
+   * Vérifie si l'utilisateur peut modifier la BASE
+   * Seul ADMIN peut modifier la BASE
+   */
+  canMutateBase(): boolean {
+    return this.isBaseWorkspace() ? this.isAdmin() : true;
+  }
+
+  /**
+   * Vérifie si l'utilisateur peut effectuer une action d'écriture
+   * Combine les vérifications de rôle et de BASE
+   */
+  canWrite(): boolean {
+    if (this.isBaseWorkspace() && !this.isAdmin()) {
+      return false;
+    }
+    return this.canEdit();
+  }
+
+  /**
+   * Retourne un message d'erreur approprié selon le contexte
+   */
+  getPermissionDeniedMessage(): string {
+    const role = this.getCurrentRole();
+    const isBase = this.isBaseWorkspace();
+
+    if (isBase && !this.isAdmin()) {
+      return 'Modification interdite : le workspace BASE est réservé aux administrateurs';
+    }
+
+    if (role === 'VIEWER') {
+      return 'Action non autorisée : vous avez un accès en lecture seule';
+    }
+
+    if (!role) {
+      return 'Action non autorisée : vous n\'avez pas de rôle dans ce workspace';
+    }
+
+    return 'Action non autorisée : permissions insuffisantes';
+  }
+
+  /**
+   * Retourne le libellé du rôle pour affichage
+   */
+  getRoleLabel(role?: WorkspaceRole): string {
+    const r = role || this.getCurrentRole();
+    switch (r) {
+      case 'MANAGER':
+        return 'Gestionnaire';
+      case 'MEMBER':
+        return 'Membre';
+      case 'VIEWER':
+        return 'Lecteur';
+      case null:
+        return 'Aucun rôle';
+      default:
+        return r;
+    }
+  }
+}

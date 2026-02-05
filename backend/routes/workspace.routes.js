@@ -8,7 +8,7 @@ const { workspaceGuard, baseMutationGuard, requireWorkspaceManager } = require('
 router.get('/me', workspaceController.getMyWorkspaces);
 router.get('/:id/preload', workspaceController.preloadWorkspace);
 
-// Routes OWNER pour la gestion de SON workspace courant (basées sur X-Workspace-Id)
+// Routes MANAGER pour la gestion de SON workspace courant (basées sur X-Workspace-Id)
 router.get('/members', workspaceGuard, requireWorkspaceManager, workspaceController.ownerGetWorkspaceMembers);
 router.put('/members', workspaceGuard, baseMutationGuard, requireWorkspaceManager, workspaceController.ownerSetWorkspaceMembers);
 router.put('/settings', workspaceGuard, baseMutationGuard, requireWorkspaceManager, workspaceController.ownerUpdateWorkspaceSettings);

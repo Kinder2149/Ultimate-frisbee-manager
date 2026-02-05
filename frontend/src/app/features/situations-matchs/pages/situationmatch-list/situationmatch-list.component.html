@@ -2,7 +2,7 @@
   <!-- En-tête avec bouton d'ajout -->
   <div class="header">
     <h1>Situations & Matchs</h1>
-    <button mat-raised-button color="primary" (click)="creerSituationMatch()" class="add-button" *ngIf="canWrite">
+    <button mat-raised-button color="primary" (click)="creerSituationMatch()" class="add-button" *ngIf="canCreate">
       <mat-icon>add</mat-icon>
       Nouvelle Situation/Match
     </button>
@@ -40,17 +40,17 @@
           <button class="btn-icon" (click)="ouvrirVueSituationMatch(situationMatch)" title="Voir">
             <i class="material-icons">visibility</i>
           </button>
-          <button class="btn-icon" (click)="modifierSituationMatch(situationMatch.id!)" title="Modifier" *ngIf="canWrite">
+          <button class="btn-icon" (click)="modifierSituationMatch(situationMatch.id!)" title="Modifier" *ngIf="canEdit">
             <i class="material-icons">edit</i>
           </button>
           <app-duplicate-button 
-            *ngIf="canWrite"
+            *ngIf="canEdit"
             [entityId]="situationMatch.id!" 
             entityType="situation/match"
             [loading]="duplicatingIds.has(situationMatch.id!)"
             (duplicate)="dupliquerSituationMatch($event)">
           </app-duplicate-button>
-          <button class="btn-icon danger" (click)="onDeleteSituationMatch(situationMatch)" title="Supprimer" *ngIf="canWrite">
+          <button class="btn-icon danger" (click)="onDeleteSituationMatch(situationMatch)" title="Supprimer" *ngIf="canEdit">
             <i class="material-icons">delete</i>
           </button>
           <button class="btn-icon chevron" (click)="toggleExpanded($event, situationMatch.id)" [attr.aria-expanded]="isExpanded(situationMatch.id)" title="Afficher/Masquer">

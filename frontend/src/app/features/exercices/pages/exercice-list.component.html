@@ -3,7 +3,7 @@
   <div class="header">
     <h1>Base de données d'exercices</h1>
     <div class="header-actions">
-      <button mat-flat-button color="primary" (click)="onAddExercice()" *ngIf="canWrite">
+      <button mat-flat-button color="primary" (click)="onAddExercice()" *ngIf="canCreate">
         <mat-icon>add</mat-icon>
         Ajouter un exercice
       </button>
@@ -42,7 +42,7 @@
     <app-exercice-card 
       *ngFor="let exercice of filteredExercices" 
       [exercice]="exercice"
-      [canWrite]="canWrite"
+      [canEdit]="canEdit"
       (exerciceDeleted)="onExerciceDeleted($event)"
       (exerciceDuplicated)="onExerciceDuplicated($event)"
       (exerciceUpdated)="onExerciceUpdated($event)"
