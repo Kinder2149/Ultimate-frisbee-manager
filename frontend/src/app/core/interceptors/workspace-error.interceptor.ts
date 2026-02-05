@@ -37,7 +37,8 @@ export class WorkspaceErrorInterceptor implements HttpInterceptor {
             errorCode === 'WORKSPACE_FORBIDDEN' ||
             errorCode === 'WORKSPACE_ID_REQUIRED' ||
             errorCode === 'WORKSPACE_NOT_FOUND' ||
-            errorCode === 'NO_USER_FOR_WORKSPACE';
+            errorCode === 'NO_USER_FOR_WORKSPACE' ||
+            errorCode === 'TESTER_BASE_FORBIDDEN';
 
           if (isWorkspaceError && (status === 403 || status === 400 || status === 404)) {
             const currentUrl = this.router.url || '/';

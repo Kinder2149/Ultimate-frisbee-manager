@@ -60,18 +60,19 @@ export class WorkspaceSwitcherComponent implements OnInit, OnDestroy {
   loadWorkspaces(): void {
     this.loading = true;
     const url = `${environment.apiUrl}/workspaces/me`;
-    this.http.get<Array<{ id: string; name: string; createdAt?: string; role?: string }>>(url).subscribe({
+    this.http.get<Array<{ id: string; name: string; createdAt?: string; isBase?: boolean; role?: string }>>(url).subscribe({
       next: (items) => {
         this.loading = false;
         this.workspaces = (items || []).map((w) => ({
           id: w.id,
           name: w.name,
           createdAt: w.createdAt,
+          isBase: w.isBase,
           role: w.role,
         }));
 
         // Si aucun workspace courant mais une seule base disponible, l'appliquer automatiquement
-        if (!this.currentWorkspace && this.workspaces.length === 1) {
+        if (!this.currentWorkspace && this.workspaces.length === 1 && this.workspaces[0]?.role) {
           const ws = this.workspaces[0];
           this.workspaceService.setCurrentWorkspace(ws);
           this.currentWorkspace = ws;
@@ -97,6 +98,9 @@ export class WorkspaceSwitcherComponent implements OnInit, OnDestroy {
 
   selectWorkspace(ws: WorkspaceSummary, event: MouseEvent): void {
     event.stopPropagation();
+    if (!ws.role) {
+      return;
+    }
     console.log('[WorkspaceSwitcher] Changing workspace to:', ws.id, ws.name);
     
     // Définir le nouveau workspace

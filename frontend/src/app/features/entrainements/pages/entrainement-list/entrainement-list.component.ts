@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, take } from 'rxjs/operators';
 import { Entrainement } from '../../../../core/models/entrainement.model';
 import { EntrainementService } from '../../../../core/services/entrainement.service';
 import { WorkspaceDataStore } from '../../../../core/services/workspace-data.store';
@@ -15,6 +15,9 @@ import { ApiUrlService } from '../../../../core/services/api-url.service';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatButtonModule } from '@angular/material/button';
+import { WorkspaceService } from '../../../../core/services/workspace.service';
+import { AuthService } from '../../../../core/services/auth.service';
+import { User } from '../../../../core/models/user.model';
 
 @Component({
   selector: 'app-entrainement-list',
@@ -25,6 +28,8 @@ import { MatButtonModule } from '@angular/material/button';
 })
 export class EntrainementListComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
+
+  canWrite = true;
 
   entrainements: Entrainement[] = [];
   filteredEntrainements: Entrainement[] = [];
@@ -44,7 +49,9 @@ export class EntrainementListComponent implements OnInit, OnDestroy {
     private router: Router,
     private cdr: ChangeDetectorRef,
     private apiUrlService: ApiUrlService,
-    private dialogService: DialogService
+    private dialogService: DialogService,
+    private workspaceService: WorkspaceService,
+    private authService: AuthService
   ) {}
 
   getFullImageUrl(imageName?: string): string | null {
@@ -52,6 +59,15 @@ export class EntrainementListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    const ws = this.workspaceService.getCurrentWorkspace();
+    this.authService.currentUser$.pipe(take(1)).subscribe((user: User | null) => {
+      const wsRole = String(ws?.role || '').toUpperCase();
+      const isViewer = wsRole === 'VIEWER';
+      const isBase = ws?.isBase === true;
+      const isAdmin = String(user?.role || '').toUpperCase() === 'ADMIN';
+      this.canWrite = !isViewer && (!isBase || isAdmin);
+    });
+
     this.loadTags();
 
     this.workspaceDataStore.entrainements$

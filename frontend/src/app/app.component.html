@@ -25,7 +25,7 @@
             </a>
             <ul class="dropdown-menu" *ngIf="isDropdownOpen.exercices">
               <li><a routerLink="/exercices" routerLinkActive="active">Tous les exercices</a></li>
-              <li><a routerLink="/exercices/ajouter" routerLinkActive="active">Ajouter un exercice</a></li>
+              <li *ngIf="((workspaceService.currentWorkspace$ | async)?.role && ((workspaceService.currentWorkspace$ | async)?.role || '').toUpperCase() !== 'VIEWER')"><a routerLink="/exercices/ajouter" routerLinkActive="active">Ajouter un exercice</a></li>
             </ul>
           </li>
 
@@ -38,7 +38,7 @@
             </a>
             <ul class="dropdown-menu" *ngIf="isDropdownOpen.entrainements">
               <li><a routerLink="/entrainements" routerLinkActive="active">Tous les entraînements</a></li>
-              <li><a routerLink="/entrainements/nouveau" routerLinkActive="active">Nouvel entraînement</a></li>
+              <li *ngIf="((workspaceService.currentWorkspace$ | async)?.role && ((workspaceService.currentWorkspace$ | async)?.role || '').toUpperCase() !== 'VIEWER')"><a routerLink="/entrainements/nouveau" routerLinkActive="active">Nouvel entraînement</a></li>
             </ul>
           </li>
 
@@ -51,7 +51,7 @@
             </a>
             <ul class="dropdown-menu" *ngIf="isDropdownOpen.echauffements">
               <li><a routerLink="/echauffements" routerLinkActive="active">Tous les échauffements</a></li>
-              <li><a routerLink="/echauffements/ajouter" routerLinkActive="active">Nouvel échauffement</a></li>
+              <li *ngIf="((workspaceService.currentWorkspace$ | async)?.role && ((workspaceService.currentWorkspace$ | async)?.role || '').toUpperCase() !== 'VIEWER')"><a routerLink="/echauffements/ajouter" routerLinkActive="active">Nouvel échauffement</a></li>
             </ul>
           </li>
 
@@ -64,7 +64,7 @@
             </a>
             <ul class="dropdown-menu" *ngIf="isDropdownOpen.situations">
               <li><a routerLink="/situations-matchs" routerLinkActive="active">Toutes les situations</a></li>
-              <li><a routerLink="/situations-matchs/ajouter" routerLinkActive="active">Nouvelle situation</a></li>
+              <li *ngIf="((workspaceService.currentWorkspace$ | async)?.role && ((workspaceService.currentWorkspace$ | async)?.role || '').toUpperCase() !== 'VIEWER')"><a routerLink="/situations-matchs/ajouter" routerLinkActive="active">Nouvelle situation</a></li>
             </ul>
           </li>
           

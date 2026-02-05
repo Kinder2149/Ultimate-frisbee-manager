@@ -177,6 +177,7 @@ model User {
 model Workspace {
   id        String           @id @default(uuid())
   name      String
+  isBase    Boolean          @default(false)
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
 
@@ -194,7 +195,7 @@ model WorkspaceUser {
   id          String    @id @default(uuid())
   workspaceId String
   userId      String
-  role        String    @default("OWNER")
+  role        String    @default("MEMBER")
   createdAt   DateTime  @default(now())
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)

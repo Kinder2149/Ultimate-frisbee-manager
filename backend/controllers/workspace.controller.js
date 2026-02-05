@@ -14,7 +14,29 @@ exports.getMyWorkspaces = async (req, res, next) => {
       return res.status(401).json({ error: 'Utilisateur non authentifié', code: 'NO_USER' });
     }
 
-    const workspaces = await workspaceService.ensureDefaultWorkspaceAndLink(userId);
+    const isTester = Boolean(req.user && req.user.isTester === true);
+    if (isTester) {
+      const workspaces = await prisma.workspace.findMany({
+        orderBy: { createdAt: 'asc' },
+        select: {
+          id: true,
+          name: true,
+          createdAt: true,
+          isBase: true,
+        },
+      });
+
+      return res.json(
+        (workspaces || []).map((ws) => ({
+          id: ws.id,
+          name: ws.name,
+          createdAt: ws.createdAt,
+          isBase: ws.isBase,
+        }))
+      );
+    }
+
+    const workspaces = await workspaceService.ensureDefaultWorkspaceAndLink(userId, { isTester });
 
     res.json(workspaces || []);
   } catch (error) {
@@ -517,9 +539,14 @@ exports.adminSetWorkspaceUsers = async (req, res, next) => {
       const cleaned = users
         .map((u) => ({
           userId: String(u.userId),
-          role: u.role ? String(u.role).toUpperCase() : 'USER',
+          role: u.role ? String(u.role).toUpperCase() : 'MEMBER',
         }))
         .filter((u) => !!u.userId);
+
+      for (const u of cleaned) {
+        if (u.role === 'OWNER') u.role = 'MANAGER';
+        if (u.role === 'USER') u.role = 'MEMBER';
+      }
 
       if (cleaned.length > 0) {
         await tx.workspaceUser.createMany({

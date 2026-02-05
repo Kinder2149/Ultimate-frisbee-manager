@@ -1,7 +1,7 @@
 <div class="echauffement-list-container">
   <div class="header">
     <h2>Échauffements</h2>
-    <button mat-raised-button color="primary" (click)="onCreateEchauffement()">
+    <button mat-raised-button color="primary" (click)="onCreateEchauffement()" *ngIf="canWrite">
       <mat-icon>add</mat-icon>
       Nouvel échauffement
     </button>
@@ -24,7 +24,7 @@
     <mat-icon class="empty-icon">fitness_center</mat-icon>
     <h3>Aucun échauffement trouvé</h3>
     <p>Commencez par créer votre premier échauffement</p>
-    <button mat-raised-button color="primary" (click)="onCreateEchauffement()">
+    <button mat-raised-button color="primary" (click)="onCreateEchauffement()" *ngIf="canWrite">
       <mat-icon>add</mat-icon>
       Créer un échauffement
     </button>
@@ -42,9 +42,9 @@
           </div>
           <div class="card-actions">
             <button mat-icon-button (click)="onViewEchauffement(echauffement)" matTooltip="Voir"><mat-icon>visibility</mat-icon></button>
-            <button mat-icon-button (click)="onEditEchauffement(echauffement)" matTooltip="Modifier"><mat-icon>edit</mat-icon></button>
-            <button mat-icon-button (click)="onDuplicateEchauffement(echauffement)" matTooltip="Dupliquer"><mat-icon>content_copy</mat-icon></button>
-            <button mat-icon-button class="delete-btn" (click)="onDeleteEchauffement(echauffement)" matTooltip="Supprimer"><mat-icon>delete</mat-icon></button>
+            <button mat-icon-button (click)="onEditEchauffement(echauffement)" matTooltip="Modifier" *ngIf="canWrite"><mat-icon>edit</mat-icon></button>
+            <button mat-icon-button (click)="onDuplicateEchauffement(echauffement)" matTooltip="Dupliquer" *ngIf="canWrite"><mat-icon>content_copy</mat-icon></button>
+            <button mat-icon-button class="delete-btn" (click)="onDeleteEchauffement(echauffement)" matTooltip="Supprimer" *ngIf="canWrite"><mat-icon>delete</mat-icon></button>
           </div>
         </div>
 

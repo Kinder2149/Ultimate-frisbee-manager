@@ -63,7 +63,7 @@ async function main() {
         data: {
           workspaceId,
           userId: user.id,
-          role: 'OWNER',
+          role: 'MANAGER',
         },
       });
       createdLinks += 1;

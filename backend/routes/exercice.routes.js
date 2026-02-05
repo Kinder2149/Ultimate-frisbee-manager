@@ -8,6 +8,7 @@ const { createUploader } = require('../middleware/upload.middleware');
 const { validate } = require('../middleware/validation.middleware');
 const { transformFormData } = require('../middleware/transform.middleware');
 const { createExerciceSchema, updateExerciceSchema } = require('../validators/exercice.validator');
+const { requireWorkspaceWrite } = require('../middleware/workspace.middleware');
 
 /**
  * @swagger
@@ -140,6 +141,7 @@ router.post('/',
   createUploader('image', 'exercices'), 
   transformFormData, 
   validate(createExerciceSchema),
+  requireWorkspaceWrite,
   exerciceController.createExercice
 );
 
@@ -197,7 +199,7 @@ router.post('/',
  *       422:
  *         $ref: '#/components/responses/ValidationError'
  */
-router.put('/:id', createUploader('image', 'exercices'), transformFormData, validate(updateExerciceSchema), exerciceController.updateExercice);
+router.put('/:id', createUploader('image', 'exercices'), transformFormData, validate(updateExerciceSchema), requireWorkspaceWrite, exerciceController.updateExercice);
 
 /**
  * @swagger
@@ -230,7 +232,7 @@ router.put('/:id', createUploader('image', 'exercices'), transformFormData, vali
  *       404:
  *         $ref: '#/components/responses/NotFound'
  */
-router.post('/:id/duplicate', exerciceController.duplicateExercice);
+router.post('/:id/duplicate', requireWorkspaceWrite, exerciceController.duplicateExercice);
 
 /**
  * @swagger
@@ -259,6 +261,6 @@ router.post('/:id/duplicate', exerciceController.duplicateExercice);
  *       404:
  *         $ref: '#/components/responses/NotFound'
  */
-router.delete('/:id', exerciceController.deleteExercice);
+router.delete('/:id', requireWorkspaceWrite, exerciceController.deleteExercice);
 
 module.exports = router;

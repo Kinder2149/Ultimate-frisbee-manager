@@ -78,6 +78,8 @@ export class SelectWorkspaceComponent implements OnInit {
           return;
         }
 
+        const hasAnyRole = workspaces.some((w) => !!w.role);
+
         // Si forceSelection=true, ne pas auto-sélectionner, laisser l'utilisateur choisir
         if (!this.shouldAutoSelect()) {
           console.log('[SelectWorkspace] Force selection mode, showing all workspaces');
@@ -93,16 +95,16 @@ export class SelectWorkspaceComponent implements OnInit {
           return;
         }
 
-        // Sélection automatique si 1 seul workspace
-        if (workspaces.length === 1) {
+        // Sélection automatique si 1 seul workspace (uniquement si rôle explicite)
+        if (workspaces.length === 1 && hasAnyRole) {
           console.log('[SelectWorkspace] Only one workspace, auto-selecting:', workspaces[0].name);
           this.selectWorkspace(workspaces[0]);
           return;
         }
 
-        // Si plusieurs workspaces, chercher BASE et le sélectionner par défaut
+        // Si plusieurs workspaces, chercher BASE et le sélectionner par défaut (uniquement si rôle explicite)
         const baseWorkspace = workspaces.find(w => w.name === 'BASE');
-        if (baseWorkspace) {
+        if (baseWorkspace && hasAnyRole) {
           console.log('[SelectWorkspace] Multiple workspaces, auto-selecting BASE');
           this.selectWorkspace(baseWorkspace);
           return;
@@ -115,6 +117,10 @@ export class SelectWorkspaceComponent implements OnInit {
   }
 
   async selectWorkspace(ws: WorkspaceSummary): Promise<void> {
+    if (!ws.role) {
+      this.error = 'Accès au contenu interdit : aucun rôle explicite sur ce workspace.';
+      return;
+    }
     // 1. Vérifier si le workspace est déjà en cache
     const completeness = await this.preloader.getCacheCompleteness(ws.id);
     

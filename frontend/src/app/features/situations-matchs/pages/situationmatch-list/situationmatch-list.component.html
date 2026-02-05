@@ -2,7 +2,7 @@
   <!-- En-tête avec bouton d'ajout -->
   <div class="header">
     <h1>Situations & Matchs</h1>
-    <button mat-raised-button color="primary" (click)="creerSituationMatch()" class="add-button">
+    <button mat-raised-button color="primary" (click)="creerSituationMatch()" class="add-button" *ngIf="canWrite">
       <mat-icon>add</mat-icon>
       Nouvelle Situation/Match
     </button>
@@ -40,16 +40,17 @@
           <button class="btn-icon" (click)="ouvrirVueSituationMatch(situationMatch)" title="Voir">
             <i class="material-icons">visibility</i>
           </button>
-          <button class="btn-icon" (click)="modifierSituationMatch(situationMatch.id!)" title="Modifier">
+          <button class="btn-icon" (click)="modifierSituationMatch(situationMatch.id!)" title="Modifier" *ngIf="canWrite">
             <i class="material-icons">edit</i>
           </button>
           <app-duplicate-button 
+            *ngIf="canWrite"
             [entityId]="situationMatch.id!" 
             entityType="situation/match"
             [loading]="duplicatingIds.has(situationMatch.id!)"
             (duplicate)="dupliquerSituationMatch($event)">
           </app-duplicate-button>
-          <button class="btn-icon danger" (click)="onDeleteSituationMatch(situationMatch)" title="Supprimer">
+          <button class="btn-icon danger" (click)="onDeleteSituationMatch(situationMatch)" title="Supprimer" *ngIf="canWrite">
             <i class="material-icons">delete</i>
           </button>
           <button class="btn-icon chevron" (click)="toggleExpanded($event, situationMatch.id)" [attr.aria-expanded]="isExpanded(situationMatch.id)" title="Afficher/Masquer">
@@ -105,7 +106,7 @@
     <mat-icon class="empty-icon">sports_soccer</mat-icon>
     <h2>Aucune situation ou match</h2>
     <p>Commencez par créer votre première situation ou match d'entraînement.</p>
-    <button mat-raised-button color="primary" (click)="creerSituationMatch()">
+    <button mat-raised-button color="primary" (click)="creerSituationMatch()" *ngIf="canWrite">
       <mat-icon>add</mat-icon>
       Créer une Situation/Match
     </button>

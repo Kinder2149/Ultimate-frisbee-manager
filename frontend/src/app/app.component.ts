@@ -42,7 +42,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     private renderer: Renderer2,
     private el: ElementRef,
     private router: Router,
-    private workspaceService: WorkspaceService,
+    public workspaceService: WorkspaceService, // Expose WorkspaceService as public
     private globalPreloader: GlobalPreloaderService
   ) {
     this.currentUser$ = this.authService.currentUser$;

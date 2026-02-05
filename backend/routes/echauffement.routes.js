@@ -5,6 +5,7 @@ const { createUploader } = require('../middleware/upload.middleware');
 const { validate } = require('../middleware/validation.middleware');
 const { createEchauffementSchema, updateEchauffementSchema } = require('../validators/echauffement.validator');
 const { transformFormData } = require('../middleware/transform.middleware');
+const { requireWorkspaceWrite } = require('../middleware/workspace.middleware');
 
 // Routes pour les échauffements
 router.get('/', echauffementController.getAllEchauffements);
@@ -14,6 +15,7 @@ router.post('/',
   createUploader('image', 'echauffements'), 
   transformFormData, 
   validate(createEchauffementSchema), 
+  requireWorkspaceWrite,
   echauffementController.createEchauffement
 );
 
@@ -21,9 +23,10 @@ router.put('/:id',
   createUploader('image', 'echauffements'), 
   transformFormData, 
   validate(updateEchauffementSchema), 
+  requireWorkspaceWrite,
   echauffementController.updateEchauffement
 );
-router.delete('/:id', echauffementController.deleteEchauffement);
-router.post('/:id/duplicate', echauffementController.duplicateEchauffement);
+router.delete('/:id', requireWorkspaceWrite, echauffementController.deleteEchauffement);
+router.post('/:id/duplicate', requireWorkspaceWrite, echauffementController.duplicateEchauffement);
 
 module.exports = router;

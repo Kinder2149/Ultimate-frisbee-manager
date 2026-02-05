@@ -1,5 +1,36 @@
 const { prisma } = require('../services/prisma');
 
+const normalizeWorkspaceRole = (role) => {
+  const r = String(role || '').trim().toUpperCase();
+  if (r === 'OWNER') return 'MANAGER';
+  if (r === 'USER') return 'MEMBER';
+  return r;
+};
+
+const baseMutationGuard = (req, res, next) => {
+  const method = String(req.method || '').toUpperCase();
+  const isMutating = method === 'POST' || method === 'PUT' || method === 'PATCH' || method === 'DELETE';
+
+  if (!isMutating) {
+    return next();
+  }
+
+  const isBase = Boolean(req.workspace && req.workspace.isBase === true);
+  if (!isBase) {
+    return next();
+  }
+
+  const userRole = String(req.user && req.user.role ? req.user.role : '').toUpperCase();
+  if (userRole !== 'ADMIN') {
+    return res.status(403).json({
+      error: 'Modification interdite sur la BASE (réservée aux administrateurs plateforme)',
+      code: 'BASE_MUTATION_FORBIDDEN',
+    });
+  }
+
+  return next();
+};
+
 /**
  * Middleware de résolution du workspace actif à partir du header X-Workspace-Id.
  * - Vérifie que l'utilisateur courant (req.user.id) est membre du workspace.
@@ -55,6 +86,16 @@ const workspaceGuard = async (req, res, next) => {
     req.workspace = link.workspace;
     req.workspaceLink = link;
     req.workspaceRole = link.role;
+    req.workspaceRoleNormalized = normalizeWorkspaceRole(link.role);
+
+    const isTester = Boolean(req.user && req.user.isTester === true);
+    const isBase = Boolean(req.workspace && req.workspace.isBase === true);
+    if (isTester && isBase) {
+      return res.status(403).json({
+        error: 'Accès interdit: le workspace BASE est visible en listing uniquement pour les testeurs',
+        code: 'TESTER_BASE_FORBIDDEN',
+      });
+    }
 
     return next();
   } catch (error) {
@@ -64,6 +105,28 @@ const workspaceGuard = async (req, res, next) => {
       code: 'WORKSPACE_ERROR',
     });
   }
+};
+
+const requireWorkspaceManager = (req, res, next) => {
+  const role = normalizeWorkspaceRole(req.workspaceRole);
+  if (role !== 'MANAGER') {
+    return res.status(403).json({
+      error: 'Action réservée aux responsables de ce workspace',
+      code: 'WORKSPACE_MANAGER_REQUIRED',
+    });
+  }
+  return next();
+};
+
+const requireWorkspaceWrite = (req, res, next) => {
+  const role = normalizeWorkspaceRole(req.workspaceRole);
+  if (role !== 'MANAGER' && role !== 'MEMBER') {
+    return res.status(403).json({
+      error: 'Action réservée aux membres du workspace',
+      code: 'WORKSPACE_WRITE_REQUIRED',
+    });
+  }
+  return next();
 };
 
 /**
@@ -104,11 +167,11 @@ const requireWorkspaceOwner = async (req, res, next) => {
       });
     }
 
-    const role = String(link.role || '').toUpperCase();
+    const role = normalizeWorkspaceRole(link.role);
 
     // Rôles autorisés pour administrer un workspace spécifique.
     // On part sur OWNER comme rôle intermédiaire principal.
-    if (role !== 'OWNER') {
+    if (role !== 'MANAGER') {
       return res.status(403).json({
         error: 'Action réservée aux responsables de ce workspace',
         code: 'WORKSPACE_OWNER_REQUIRED',
@@ -128,5 +191,8 @@ const requireWorkspaceOwner = async (req, res, next) => {
 
 module.exports = {
   workspaceGuard,
+  baseMutationGuard,
   requireWorkspaceOwner,
+  requireWorkspaceManager,
+  requireWorkspaceWrite,
 };

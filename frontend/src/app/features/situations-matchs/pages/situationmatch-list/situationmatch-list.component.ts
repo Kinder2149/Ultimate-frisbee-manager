@@ -9,7 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, take } from 'rxjs/operators';
 
 import { SituationMatch } from '../../../../core/models/situationmatch.model';
 import { ExerciceFiltersComponent, ExerciceFiltersValue } from '../../../exercices/components/exercice-filters.component';
@@ -22,6 +22,9 @@ import { SituationMatchViewComponent } from '../../../../shared/components/situa
 import { ApiUrlService } from '../../../../core/services/api-url.service';
 import { ImageViewerComponent, ImageViewerData } from '../../../../shared/components/image-viewer/image-viewer.component';
 import { RichTextViewComponent } from '../../../../shared/components/rich-text-view/rich-text-view.component';
+import { WorkspaceService } from '../../../../core/services/workspace.service';
+import { AuthService } from '../../../../core/services/auth.service';
+import { User } from '../../../../core/models/user.model';
 
 /**
  * Composant de liste des situations et matchs
@@ -46,6 +49,8 @@ import { RichTextViewComponent } from '../../../../shared/components/rich-text-v
 export class SituationMatchListComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
 
+  canWrite = true;
+
   situationsMatchs: SituationMatch[] = [];
   filteredSituationsMatchs: SituationMatch[] = [];
   loading = false;
@@ -68,10 +73,21 @@ export class SituationMatchListComponent implements OnInit, OnDestroy {
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private cdr: ChangeDetectorRef,
-    private apiUrlService: ApiUrlService
+    private apiUrlService: ApiUrlService,
+    private workspaceService: WorkspaceService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
+    const ws = this.workspaceService.getCurrentWorkspace();
+    this.authService.currentUser$.pipe(take(1)).subscribe((user: User | null) => {
+      const wsRole = String(ws?.role || '').toUpperCase();
+      const isViewer = wsRole === 'VIEWER';
+      const isBase = ws?.isBase === true;
+      const isAdmin = String(user?.role || '').toUpperCase() === 'ADMIN';
+      this.canWrite = !isViewer && (!isBase || isAdmin);
+    });
+
     this.loadTags();
 
     this.workspaceDataStore.situations$

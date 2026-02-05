@@ -1,9 +1,10 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription, Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, take } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -13,6 +14,9 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ExerciceService } from '../../../core/services/exercice.service';
 import { WorkspaceDataStore } from '../../../core/services/workspace-data.store';
 import { ExerciceDialogService } from '../services/exercice-dialog.service';
+import { WorkspaceService } from '../../../core/services/workspace.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { User } from '../../../core/models/user.model';
 
 // Models
 import { Exercice } from '../../../core/models/exercice.model';
@@ -51,6 +55,8 @@ export class ExerciceListComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   // Injecter les services nécessaires
   private routeSubscription?: Subscription;
+
+  canWrite = true;
   
   constructor(
     private exerciceService: ExerciceService,
@@ -59,7 +65,9 @@ export class ExerciceListComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
     private exerciceDialogService: ExerciceDialogService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private workspaceService: WorkspaceService,
+    private authService: AuthService
   ) { 
     console.log('ExerciceListComponent chargé');
     
@@ -111,6 +119,15 @@ export class ExerciceListComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     console.log('[ExerciceList] Initialisation - Abonnement au Store');
+
+    const ws = this.workspaceService.getCurrentWorkspace();
+    this.authService.currentUser$.pipe(take(1)).subscribe((user: User | null) => {
+      const wsRole = String(ws?.role || '').toUpperCase();
+      const isViewer = wsRole === 'VIEWER';
+      const isBase = ws?.isBase === true;
+      const isAdmin = String(user?.role || '').toUpperCase() === 'ADMIN';
+      this.canWrite = !isViewer && (!isBase || isAdmin);
+    });
 
     // S'abonner aux exercices du Store
     this.workspaceDataStore.exercices$

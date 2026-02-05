@@ -9,6 +9,7 @@ const { createUploader } = require('../middleware/upload.middleware');
 const { validate } = require('../middleware/validation.middleware');
 const { createSituationMatchSchema, updateSituationMatchSchema } = require('../validators/situationmatch.validator');
 const { transformFormData } = require('../middleware/transform.middleware');
+const { requireWorkspaceWrite } = require('../middleware/workspace.middleware');
 
 // Routes pour les situations/matchs
 router.get('/', situationMatchController.getAllSituationsMatchs);
@@ -18,6 +19,7 @@ router.post('/',
   createUploader('image', 'situations-matchs'), 
   transformFormData, 
   validate(createSituationMatchSchema), 
+  requireWorkspaceWrite,
   situationMatchController.createSituationMatch
 );
 
@@ -25,9 +27,10 @@ router.put('/:id',
   createUploader('image', 'situations-matchs'), 
   transformFormData, 
   validate(updateSituationMatchSchema), 
+  requireWorkspaceWrite,
   situationMatchController.updateSituationMatch
 );
-router.post('/:id/duplicate', situationMatchController.duplicateSituationMatch);
-router.delete('/:id', situationMatchController.deleteSituationMatch);
+router.post('/:id/duplicate', requireWorkspaceWrite, situationMatchController.duplicateSituationMatch);
+router.delete('/:id', requireWorkspaceWrite, situationMatchController.deleteSituationMatch);
 
 module.exports = router;

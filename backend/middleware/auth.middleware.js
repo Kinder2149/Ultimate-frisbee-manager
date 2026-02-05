@@ -16,6 +16,17 @@ try {
 
 const config = require('../config');
 
+function parseTesterEmails() {
+  const raw = String(process.env.TESTER_EMAILS || '').trim();
+  if (!raw) return new Set();
+  return new Set(
+    raw
+      .split(',')
+      .map((e) => String(e || '').trim().toLowerCase())
+      .filter((e) => e.length > 0)
+  );
+}
+
 // Détection d'erreurs DB transitoires (connexion/timeout)
 function isTransientDbError(e) {
   if (!e) return false;
@@ -238,12 +249,16 @@ const authenticateToken = async (req, res, next) => {
         // autoriser les requêtes GET non admin avec un utilisateur minimal issu du token.
         const isSafeRead = req.method === 'GET' && !String(req.path || '').startsWith('/api/admin');
         if (isSafeRead && isTransientDbError(dbError)) {
-          req.user = {
+          const transientUser = {
             id: decoded.sub || decoded.user_id || decoded.email || 'anon',
             email: decoded.email || 'unknown@token',
             role: (decoded.role && String(decoded.role).toUpperCase()) || 'USER',
             isActive: true,
           };
+          const testerEmails = parseTesterEmails();
+          const email = String(transientUser.email || '').toLowerCase();
+          transientUser.isTester = testerEmails.has(email);
+          req.user = transientUser;
           return next();
         }
         // Sinon, 503 explicite
@@ -279,6 +294,10 @@ const authenticateToken = async (req, res, next) => {
         code: 'USER_INACTIVE'
       });
     }
+
+    const testerEmails = parseTesterEmails();
+    const email = String(user.email || '').toLowerCase();
+    user.isTester = testerEmails.has(email);
 
     // Ajouter les infos utilisateur à la requête
     req.user = user;

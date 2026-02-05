@@ -11,10 +11,12 @@ const ADMIN_WORKSPACE_NAME = 'TEST';
 /**
  * Assure qu'un utilisateur est lié aux workspaces appropriés
  */
-async function ensureDefaultWorkspaceAndLink(userId) {
+async function ensureDefaultWorkspaceAndLink(userId, options = {}) {
   if (!userId) {
     return null;
   }
+
+  const isTester = Boolean(options && options.isTester === true);
 
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) {
@@ -33,14 +35,19 @@ async function ensureDefaultWorkspaceAndLink(userId) {
   const hasBaseLink = existingLinks.some((l) => l.workspace.name === DEFAULT_WORKSPACE_NAME);
   const hasTestLink = existingLinks.some((l) => l.workspace.name === ADMIN_WORKSPACE_NAME);
 
-  if (!hasBaseLink) {
+  if (!hasBaseLink && !isTester) {
     let baseWorkspace = await prisma.workspace.findFirst({
       where: { name: DEFAULT_WORKSPACE_NAME },
     });
 
     if (!baseWorkspace) {
       baseWorkspace = await prisma.workspace.create({
-        data: { name: DEFAULT_WORKSPACE_NAME },
+        data: { name: DEFAULT_WORKSPACE_NAME, isBase: true },
+      });
+    } else if (baseWorkspace.isBase !== true) {
+      baseWorkspace = await prisma.workspace.update({
+        where: { id: baseWorkspace.id },
+        data: { isBase: true },
       });
     }
 
@@ -48,13 +55,13 @@ async function ensureDefaultWorkspaceAndLink(userId) {
       data: {
         workspaceId: baseWorkspace.id,
         userId,
-        role: 'USER',
+        role: 'MEMBER',
       },
     });
 
     existingLinks.push({
       workspace: baseWorkspace,
-      role: 'USER',
+      role: 'MEMBER',
     });
   }
 
@@ -73,13 +80,13 @@ async function ensureDefaultWorkspaceAndLink(userId) {
       data: {
         workspaceId: testWorkspace.id,
         userId,
-        role: 'OWNER',
+        role: 'MANAGER',
       },
     });
 
     existingLinks.push({
       workspace: testWorkspace,
-      role: 'OWNER',
+      role: 'MANAGER',
     });
   }
 
@@ -87,6 +94,7 @@ async function ensureDefaultWorkspaceAndLink(userId) {
     id: l.workspace.id,
     name: l.workspace.name,
     createdAt: l.workspace.createdAt,
+    isBase: l.workspace.isBase,
     role: l.role,
   }));
 }
@@ -105,6 +113,7 @@ async function getUserWorkspaces(userId) {
     id: l.workspace.id,
     name: l.workspace.name,
     createdAt: l.workspace.createdAt,
+    isBase: l.workspace.isBase,
     role: l.role,
   }));
 }

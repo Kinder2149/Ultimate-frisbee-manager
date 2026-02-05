@@ -37,11 +37,17 @@ async function main() {
   if (!baseWs) {
     baseWs = await prisma.workspace.upsert({
       where: { id: WORKSPACE_BASE_ID },
-      update: {},
-      create: { id: WORKSPACE_BASE_ID, name: 'BASE' },
+      update: { isBase: true },
+      create: { id: WORKSPACE_BASE_ID, name: 'BASE', isBase: true },
     });
     console.log('✅ Workspace BASE créé');
   } else {
+    if (baseWs.isBase !== true) {
+      baseWs = await prisma.workspace.update({
+        where: { id: WORKSPACE_BASE_ID },
+        data: { isBase: true },
+      });
+    }
     console.log('✅ Workspace BASE existe déjà');
   }
 
@@ -96,7 +102,7 @@ async function main() {
         data: {
           workspaceId: WORKSPACE_BASE_ID,
           userId: user.id,
-          role: 'USER', // Rôle USER par défaut dans BASE
+          role: 'MEMBER', // Rôle USER par défaut dans BASE
         },
       });
       console.log(`  ✅ ${user.email} lié à BASE`);
@@ -115,7 +121,7 @@ async function main() {
           data: {
             workspaceId: WORKSPACE_TEST_ID,
             userId: user.id,
-            role: 'OWNER', // Les admins sont OWNER dans TEST
+            role: 'MANAGER', // Les admins sont OWNER dans TEST
           },
         });
         console.log(`  ✅ ${user.email} (ADMIN) lié à TEST`);

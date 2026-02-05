@@ -6,6 +6,7 @@ const router = express.Router();
 const tagController = require('../controllers/tag.controller');
 const { validate } = require('../middleware/validation.middleware');
 const { createTagSchema, updateTagSchema } = require('../validators/tag.validator');
+const { requireWorkspaceWrite } = require('../middleware/workspace.middleware');
 
 // GET /api/tags/grouped - Récupérer tous les tags groupés par catégorie
 router.get('/grouped', tagController.getGroupedTags);
@@ -17,12 +18,12 @@ router.get('/', tagController.getAllTags);
 router.get('/:id', tagController.getTagById);
 
 // POST /api/tags - Ajouter un nouveau tag
-router.post('/', validate(createTagSchema), tagController.createTag);
+router.post('/', validate(createTagSchema), requireWorkspaceWrite, tagController.createTag);
 
 // PUT /api/tags/:id - Mettre à jour un tag
-router.put('/:id', validate(updateTagSchema), tagController.updateTag);
+router.put('/:id', validate(updateTagSchema), requireWorkspaceWrite, tagController.updateTag);
 
 // DELETE /api/tags/:id - Supprimer un tag
-router.delete('/:id', tagController.deleteTag);
+router.delete('/:id', requireWorkspaceWrite, tagController.deleteTag);
 
 module.exports = router;

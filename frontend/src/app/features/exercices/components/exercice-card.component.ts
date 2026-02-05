@@ -42,6 +42,7 @@ export interface ExerciceInput {
 export class ExerciceCardComponent implements OnInit {
   @Input() exercice!: ExerciceInput;
   @Input() selected: boolean = false;
+  @Input() canWrite: boolean = true;
   // Optionnels pour l'usage dans la page d'entraînement
   @Input() index?: number;
   @Input() duree?: number | string; // minutes ou libellé

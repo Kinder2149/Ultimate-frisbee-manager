@@ -10,6 +10,7 @@ import { SituationMatchService } from '../../../../core/services/situationmatch.
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { MissingFieldsDialogComponent, MissingFieldItem } from './missing-fields-dialog.component';
+import { WorkspaceService } from '../../../../core/services/workspace.service';
 
 @Component({
   selector: 'app-import-export',
@@ -23,7 +24,7 @@ import { MissingFieldsDialogComponent, MissingFieldItem } from './missing-fields
 
       <mat-tab-group>
         <!-- EXPORT -->
-        <mat-tab label="Exporter">
+        <mat-tab label="Exporter" *ngIf="canExport">
           <div class="section">
             <p>Exporter un élément (placeholder jusqu'à activation API export).</p>
             <div class="row">
@@ -180,7 +181,7 @@ import { MissingFieldsDialogComponent, MissingFieldItem } from './missing-fields
         </mat-tab>
 
         <!-- LISTES EXPORTABLES -->
-        <mat-tab label="Exporter (par liste)">
+        <mat-tab label="Exporter (par liste)" *ngIf="canExport">
           <div class="section">
             <p>Sélectionnez des éléments à exporter sans saisir d'identifiant.</p>
 
@@ -286,6 +287,7 @@ import { MissingFieldsDialogComponent, MissingFieldItem } from './missing-fields
   `]
 })
 export class ImportExportComponent  {
+  canExport = true;
   exportTypes: Array<'exercice'|'entrainement'|'echauffement'|'situation'|'match'> = ['exercice','entrainement','echauffement','situation','match'];
   exportType: 'exercice'|'entrainement'|'echauffement'|'situation'|'match' | '' = '';
   exportId = '';
@@ -322,10 +324,14 @@ export class ImportExportComponent  {
     private exoSrv: ExerciceService,
     private entSrv: EntrainementService,
     private echSrv: EchauffementService,
-    private sitSrv: SituationMatchService
+    private sitSrv: SituationMatchService,
+    private workspaceService: WorkspaceService
   ) {}
 
   ngOnInit() {
+    const ws = this.workspaceService.getCurrentWorkspace();
+    const wsRole = String(ws?.role || '').toUpperCase();
+    this.canExport = wsRole !== 'VIEWER';
     this.loadLists();
   }
 

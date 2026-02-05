@@ -43,7 +43,8 @@ export class WorkspaceSelectedGuard implements CanActivate {
       { ttl: 60 * 60 * 1000 } // 1h
     ).pipe(
       map(workspaces => {
-        const isValid = workspaces.some(w => w.id === workspaceId);
+        const current = workspaces.find(w => w.id === workspaceId);
+        const isValid = Boolean(current);
         
         if (!isValid) {
           console.warn('[WorkspaceGuard] Workspace no longer accessible:', workspaceId);
@@ -52,6 +53,19 @@ export class WorkspaceSelectedGuard implements CanActivate {
             queryParams: { 
               returnUrl: state.url,
               reason: 'workspace-invalid'
+            }
+          });
+          return false;
+        }
+
+        // Doc 9.2: empêcher l'accès au contenu si aucun rôle workspace explicite
+        if (!current?.role) {
+          console.warn('[WorkspaceGuard] Workspace has no explicit role, access to content blocked:', workspaceId);
+          this.workspaceService.clear();
+          this.router.navigate(['/select-workspace'], {
+            queryParams: {
+              returnUrl: state.url,
+              reason: 'workspace-role-required'
             }
           });
           return false;

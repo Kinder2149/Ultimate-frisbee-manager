@@ -34,7 +34,7 @@ const syncRoutes = require('./sync.routes');
 
 // Middleware d'authentification
 const { authenticateToken } = require('../middleware/auth.middleware');
-const { workspaceGuard } = require('../middleware/workspace.middleware');
+const { workspaceGuard, baseMutationGuard } = require('../middleware/workspace.middleware');
 
 module.exports = (app) => {
   // Routes publiques (authentification)
@@ -47,13 +47,13 @@ module.exports = (app) => {
 
   // Routes protégées (nécessitent authentification et workspace actif)
   // Convention anglaise uniquement
-  app.use('/api/exercises', authenticateToken, workspaceGuard, exerciceRoutes);
-  app.use('/api/tags', authenticateToken, workspaceGuard, tagRoutes);
-  app.use('/api/trainings', authenticateToken, workspaceGuard, entrainementRoutes);
-  app.use('/api/warmups', authenticateToken, workspaceGuard, echauffementRoutes);
-  app.use('/api/matches', authenticateToken, workspaceGuard, situationMatchRoutes);
-  app.use('/api/dashboard', authenticateToken, workspaceGuard, dashboardRoutes);
-  app.use('/api/import', authenticateToken, workspaceGuard, importRoutes);
+  app.use('/api/exercises', authenticateToken, workspaceGuard, baseMutationGuard, exerciceRoutes);
+  app.use('/api/tags', authenticateToken, workspaceGuard, baseMutationGuard, tagRoutes);
+  app.use('/api/trainings', authenticateToken, workspaceGuard, baseMutationGuard, entrainementRoutes);
+  app.use('/api/warmups', authenticateToken, workspaceGuard, baseMutationGuard, echauffementRoutes);
+  app.use('/api/matches', authenticateToken, workspaceGuard, baseMutationGuard, situationMatchRoutes);
+  app.use('/api/dashboard', authenticateToken, workspaceGuard, baseMutationGuard, dashboardRoutes);
+  app.use('/api/import', authenticateToken, workspaceGuard, baseMutationGuard, importRoutes);
 
   app.use('/api/admin', adminRoutes);
 

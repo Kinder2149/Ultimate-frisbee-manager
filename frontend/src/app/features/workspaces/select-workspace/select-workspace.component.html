@@ -42,6 +42,7 @@
             <span class="role-badge" *ngIf="ws.role as role">
               {{ role | uppercase }}
             </span>
+            <span class="role-badge" *ngIf="ws.isBase === true">BASE</span>
           </mat-card-subtitle>
         </mat-card-header>
 

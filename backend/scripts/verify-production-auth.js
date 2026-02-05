@@ -99,11 +99,18 @@ async function main() {
     baseWorkspace = await prisma.workspace.create({
       data: {
         id: WORKSPACE_BASE_ID,
-        name: 'BASE'
+        name: 'BASE',
+        isBase: true,
       }
     });
     console.log('✅ Workspace BASE créé');
   } else {
+    if (baseWorkspace.isBase !== true) {
+      baseWorkspace = await prisma.workspace.update({
+        where: { id: baseWorkspace.id },
+        data: { isBase: true },
+      });
+    }
     console.log('✅ Workspace BASE trouvé:', {
       id: baseWorkspace.id,
       name: baseWorkspace.name

@@ -13,6 +13,9 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { WorkspaceService, WorkspaceSummary } from '../../../core/services/workspace.service';
 import { environment } from '../../../../environments/environment';
+import { AuthService } from '../../../core/services/auth.service';
+import { User } from '../../../core/models/user.model';
+import { take } from 'rxjs/operators';
 
 interface WorkspaceMemberDto {
   userId: string;
@@ -52,6 +55,9 @@ export class WorkspaceAdminComponent implements OnInit {
   workspace: WorkspaceSummary | null = null;
   members: WorkspaceMemberDto[] = [];
 
+  canManage = false;
+  canMutate = false;
+
   displayedColumns: string[] = ['email', 'nom', 'role', 'actions'];
 
   loading = false;
@@ -63,6 +69,7 @@ export class WorkspaceAdminComponent implements OnInit {
   constructor(
     private http: HttpClient,
     private workspaceService: WorkspaceService,
+    private authService: AuthService,
     private fb: FormBuilder,
     private snackBar: MatSnackBar
   ) {
@@ -78,7 +85,17 @@ export class WorkspaceAdminComponent implements OnInit {
 
   ngOnInit(): void {
     this.workspace = this.workspaceService.getCurrentWorkspace();
-    this.loadMembers();
+    this.authService.currentUser$.pipe(take(1)).subscribe((user: User | null) => {
+      const wsRole = String(this.workspace?.role || '').toUpperCase();
+      const isManager = wsRole === 'MANAGER' || wsRole === 'OWNER';
+      const isBase = this.workspace?.isBase === true;
+      const isAdmin = String(user?.role || '').toUpperCase() === 'ADMIN';
+      this.canManage = isManager;
+      this.canMutate = isManager && (!isBase || isAdmin);
+      if (this.canManage) {
+        this.loadMembers();
+      }
+    });
   }
 
   loadMembers(): void {

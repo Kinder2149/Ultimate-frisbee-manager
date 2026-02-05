@@ -7,6 +7,7 @@ export interface WorkspaceSummary {
   id: string;
   name: string;
   createdAt?: string;
+  isBase?: boolean;
   role?: string;
 }
 
