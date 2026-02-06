@@ -49,6 +49,10 @@ const routes: Routes = [
         loadComponent: () => import('./pages/activity/activity.component').then(m => m.ActivityComponent)
       },
       {
+        path: 'roles-rights',
+        loadComponent: () => import('./pages/roles-rights/roles-rights.component').then(m => m.RolesRightsComponent)
+      },
+      {
         path: 'settings',
         loadComponent: () => import('./pages/settings/settings.component').then(m => m.SettingsComponent)
       }

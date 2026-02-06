@@ -36,6 +36,7 @@ export class AdminShellComponent {
     { label: 'Workspaces', route: '/admin/workspaces', icon: 'workspaces' },
     { label: 'Statistiques', route: '/admin/stats', icon: 'bar_chart' },
     { label: 'Logs', route: '/admin/logs', icon: 'history' },
+    { label: 'Rôles & droits', route: '/admin/roles-rights', icon: 'security' },
     { label: 'Paramètres', route: '/admin/settings', icon: 'settings' }
   ];
 }

@@ -334,9 +334,11 @@ exports.bulkDelete = async (req, res) => {
         case 'exercice':
           model = prisma.exercice;
           break;
+        case 'entrainement':
         case 'entraînement':
           model = prisma.entrainement;
           break;
+        case 'echauffement':
         case 'échauffement':
           model = prisma.echauffement;
           break;
@@ -396,6 +398,7 @@ exports.bulkDuplicate = async (req, res) => {
           const { id, createdAt, updatedAt, ...dataToCopy } = original;
           return prisma.entrainement.create({ data: { ...dataToCopy, titre: `${original.titre} (Copie)` } });
         }
+        case 'echauffement':
         case 'échauffement': {
           const original = await prisma.echauffement.findUnique({ where: { id: item.id } });
           if (!original) return null;
