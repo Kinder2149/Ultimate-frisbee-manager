@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
 import { SharedModule } from '../../shared/shared.module';
 
+import { WriteGuard } from '../../core/guards/write.guard';
+
 // Imports des composants
 import { EchauffementListComponent } from './pages/echauffement-list/echauffement-list.component';
 import { EchauffementFormComponent } from './pages/echauffement-form/echauffement-form.component';
@@ -10,8 +12,8 @@ import { EchauffementFormComponent } from './pages/echauffement-form/echauffemen
 // Routes spécifiques à la feature "echauffements"
 const routes: Routes = [
   { path: '', component: EchauffementListComponent },
-  { path: 'ajouter', component: EchauffementFormComponent },
-  { path: 'modifier/:id', component: EchauffementFormComponent },
+  { path: 'ajouter', component: EchauffementFormComponent, canActivate: [WriteGuard] },
+  { path: 'modifier/:id', component: EchauffementFormComponent, canActivate: [WriteGuard] },
 ];
 
 /**

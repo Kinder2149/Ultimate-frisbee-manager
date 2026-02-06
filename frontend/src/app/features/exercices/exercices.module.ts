@@ -4,6 +4,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { SharedModule } from '../../shared/shared.module';
 import { ExerciceListComponent } from './pages/exercice-list.component';
 import { ExerciceFormComponent } from './pages/exercice-form/exercice-form.component';
+import { WriteGuard } from '../../core/guards/write.guard';
 
 // Routes spécifiques à la feature "exercices"
 const routes: Routes = [
@@ -14,11 +15,13 @@ const routes: Routes = [
   {
     path: 'ajouter',
     component: ExerciceFormComponent,
+    canActivate: [WriteGuard],
     data: { formMode: 'add' }
   },
   {
     path: 'modifier/:id',
     component: ExerciceFormComponent,
+    canActivate: [WriteGuard],
     data: { formMode: 'edit' }
   },
   {

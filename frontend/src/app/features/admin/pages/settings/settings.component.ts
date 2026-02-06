@@ -4,6 +4,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-settings',
@@ -56,10 +57,10 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
   `]
 })
 export class SettingsComponent {
-  constructor(private snackBar: MatSnackBar) {}
+  constructor(private snackBar: MatSnackBar, private router: Router) {}
 
   exportData(): void {
-    this.snackBar.open('Export en cours...', '', { duration: 2000 });
-    window.open('/api/admin/export-ufm', '_blank');
+    this.router.navigate(['/parametres/import-export']);
+    this.snackBar.open('Accédez à Import/Export pour sélectionner les éléments à exporter.', 'Fermer', { duration: 3500 });
   }
 }

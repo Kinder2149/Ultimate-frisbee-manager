@@ -74,14 +74,14 @@ export class EchauffementListComponent implements OnInit, OnDestroy {
 
     this.workspaceDataStore.echauffements$
       .pipe(takeUntil(this.destroy$))
-      .subscribe((echauffements) => {
+      .subscribe((echauffements: Echauffement[]) => {
         this.echauffements = echauffements;
         this.applyFilters();
       });
 
     this.workspaceDataStore.loading$
       .pipe(takeUntil(this.destroy$))
-      .subscribe((loading) => {
+      .subscribe((loading: boolean) => {
         this.isLoading = loading && this.echauffements.length === 0;
       });
   }
@@ -137,11 +137,11 @@ export class EchauffementListComponent implements OnInit, OnDestroy {
     if (!echauffement.id) return;
 
     this.echauffementService.duplicateEchauffement(echauffement.id).subscribe({
-      next: (duplicatedEchauffement) => {
+      next: (duplicatedEchauffement: Echauffement) => {
         this.snackBar.open('Échauffement dupliqué avec succès', 'Fermer', { duration: 3000 });
         this.loadEchauffements(); // Recharger la liste
       },
-      error: (error) => {
+      error: (error: unknown) => {
         console.error('Erreur lors de la duplication:', error);
         this.snackBar.open('Erreur lors de la duplication', 'Fermer', { duration: 3000 });
       }
@@ -176,7 +176,7 @@ export class EchauffementListComponent implements OnInit, OnDestroy {
             this.snackBar.open('Échauffement supprimé avec succès', 'Fermer', { duration: 3000 });
             this.loadEchauffements(); // Recharger la liste
           },
-          error: (error) => {
+          error: (error: unknown) => {
             console.error('Erreur lors de la suppression:', error);
             this.snackBar.open('Erreur lors de la suppression', 'Fermer', { duration: 3000 });
           }
@@ -239,8 +239,9 @@ export class EchauffementListComponent implements OnInit, OnDestroy {
   }
 
   private updatePermissions(): void {
-    this.canCreate = this.permissionsService.canCreate();
-    this.canEdit = this.permissionsService.canEdit();
+    const canWrite = this.permissionsService.canWrite();
+    this.canCreate = canWrite;
+    this.canEdit = canWrite;
   }
 
   getFullImageUrl(relativeUrl: string | undefined): string | null {

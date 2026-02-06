@@ -142,10 +142,10 @@
           <div class="workspace-info">
             <div class="workspace-name">{{ workspace.name }}</div>
             <div class="workspace-meta" *ngIf="workspace.role">
-              <mat-chip [style.background-color]="workspace.role === 'ADMIN' ? '#f59e0b' : '#3b82f6'" 
+              <mat-chip [style.background-color]="getWorkspaceRoleColor(workspace.role)" 
                         [style.color]="'white'"
                         class="role-chip-small">
-                {{ workspace.role === 'ADMIN' ? 'Admin' : 'Membre' }}
+                {{ getWorkspaceRoleLabel(workspace.role) }}
               </mat-chip>
             </div>
           </div>

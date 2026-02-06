@@ -12,7 +12,7 @@
       </p>
       <div class="page-badges" *ngIf="workspace as ws">
         <span class="badge badge--workspace">Workspace : {{ ws.name }}</span>
-        <span class="badge" *ngIf="ws.role">Rôle local : {{ ws.role | uppercase }}</span>
+        <span class="badge" *ngIf="ws.role">Rôle local : {{ normalizeWorkspaceRole(ws.role) }}</span>
       </div>
     </div>
   </header>
@@ -50,12 +50,12 @@
       </mat-card>
 
       <!-- Carte d'information OWNER uniquement -->
-      <mat-card class="owner-info-card" *ngIf="workspace?.role === 'OWNER'">
+      <mat-card class="owner-info-card" *ngIf="(workspace?.role || '').toUpperCase() === 'MANAGER'">
         <mat-card-header>
           <div mat-card-avatar class="owner-info-card__avatar">
             <mat-icon>security</mat-icon>
           </div>
-          <mat-card-title>Vous êtes OWNER de ce workspace</mat-card-title>
+          <mat-card-title>Vous êtes MANAGER de ce workspace</mat-card-title>
           <mat-card-subtitle>
             Vous pouvez gérer les membres et leurs rôles locaux pour ce workspace uniquement.
           </mat-card-subtitle>
@@ -75,7 +75,7 @@
         <mat-card-header>
           <mat-card-title>Membres du workspace</mat-card-title>
           <mat-card-subtitle>
-            Invitez des membres par email et définissez leur rôle local : OWNER (co-gestionnaire) ou USER.
+            Invitez des membres par email et définissez leur rôle local : MANAGER / MEMBER / VIEWER.
           </mat-card-subtitle>
         </mat-card-header>
 
@@ -89,8 +89,9 @@
             <mat-form-field appearance="outline" class="role-field">
               <mat-label>Rôle initial</mat-label>
               <mat-select formControlName="role" [disabled]="!canMutate">
-                <mat-option value="USER">Utilisateur</mat-option>
-                <mat-option value="OWNER">Owner (co-gestionnaire)</mat-option>
+                <mat-option value="VIEWER">Lecteur</mat-option>
+                <mat-option value="MEMBER">Membre</mat-option>
+                <mat-option value="MANAGER">Gestionnaire</mat-option>
               </mat-select>
             </mat-form-field>
 
@@ -123,14 +124,15 @@
               <th mat-header-cell *matHeaderCellDef>Rôle local</th>
               <td mat-cell *matCellDef="let m">
                 <div class="role-cell">
-                  <span class="role-badge" [class.role-badge--owner]="m.role === 'OWNER'">
-                    {{ m.role === 'OWNER' ? 'OWNER' : 'USER' }}
+                  <span class="role-badge" [class.role-badge--owner]="m.role === 'MANAGER'">
+                    {{ m.role }}
                   </span>
                   <mat-form-field appearance="outline" class="role-select">
                     <mat-label>Modifier le rôle</mat-label>
                     <mat-select [value]="m.role" (selectionChange)="changeRole(m, $event.value)" [disabled]="!canMutate">
-                      <mat-option value="USER">Utilisateur</mat-option>
-                      <mat-option value="OWNER">Owner (co-gestionnaire)</mat-option>
+                      <mat-option value="VIEWER">Lecteur</mat-option>
+                      <mat-option value="MEMBER">Membre</mat-option>
+                      <mat-option value="MANAGER">Gestionnaire</mat-option>
                     </mat-select>
                   </mat-form-field>
                 </div>

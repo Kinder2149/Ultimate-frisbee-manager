@@ -4,6 +4,7 @@
 const { prisma } = require('../services/prisma');
 const bcrypt = require('bcryptjs');
 const { clearUserCache } = require('../middleware/auth.middleware');
+const workspaceService = require('../services/business/workspace.service');
 
 /**
  * GET /api/admin/overview
@@ -66,6 +67,22 @@ exports.getOverview = async (req, res) => {
   } catch (error) {
     console.error('Erreur Admin Overview:', error);
     res.status(500).json({ error: 'Erreur serveur lors de la récupération de l\'aperçu admin' });
+  }
+};
+
+exports.getUserWorkspaces = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await prisma.user.findUnique({ where: { id }, select: { id: true } });
+    if (!user) {
+      return res.status(404).json({ error: 'Utilisateur introuvable', code: 'USER_NOT_FOUND' });
+    }
+
+    const workspaces = await workspaceService.getUserWorkspaces(id);
+    return res.json({ workspaces: workspaces || [] });
+  } catch (error) {
+    console.error('Erreur Admin getUserWorkspaces:', error);
+    return res.status(500).json({ error: "Erreur serveur lors de la récupération des workspaces de l'utilisateur" });
   }
 };
 

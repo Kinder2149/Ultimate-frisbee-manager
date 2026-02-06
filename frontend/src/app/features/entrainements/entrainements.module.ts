@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
 
+import { WriteGuard } from '../../core/guards/write.guard';
+
 // Composants
 import { EntrainementListComponent } from './pages/entrainement-list/entrainement-list.component';
 import { EntrainementFormComponent } from './pages/entrainement-form/entrainement-form.component';
@@ -16,11 +18,13 @@ const routes: Routes = [
   },
   {
     path: 'nouveau',
-    component: EntrainementFormComponent
+    component: EntrainementFormComponent,
+    canActivate: [WriteGuard]
   },
   {
     path: 'modifier/:id',
-    component: EntrainementFormComponent
+    component: EntrainementFormComponent,
+    canActivate: [WriteGuard]
   },
 
 ];

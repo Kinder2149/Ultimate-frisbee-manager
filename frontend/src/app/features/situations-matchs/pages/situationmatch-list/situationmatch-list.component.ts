@@ -94,14 +94,14 @@ export class SituationMatchListComponent implements OnInit, OnDestroy {
 
     this.workspaceDataStore.situations$
       .pipe(takeUntil(this.destroy$))
-      .subscribe((situations) => {
+      .subscribe((situations: SituationMatch[]) => {
         this.situationsMatchs = situations;
         this.applyFilters();
       });
 
     this.workspaceDataStore.loading$
       .pipe(takeUntil(this.destroy$))
-      .subscribe((loading) => {
+      .subscribe((loading: boolean) => {
         this.loading = loading && this.situationsMatchs.length === 0;
       });
   }
@@ -210,12 +210,12 @@ export class SituationMatchListComponent implements OnInit, OnDestroy {
   dupliquerSituationMatch(id: string): void {
     this.duplicatingIds.add(id);
     this.situationMatchService.duplicateSituationMatch(id).subscribe({
-      next: (nouvelleSituationMatch) => {
+      next: (nouvelleSituationMatch: SituationMatch) => {
         this.snackBar.open('Situation/Match dupliquée avec succès', 'Fermer', { duration: 3000 });
         this.loadSituationsMatchs(); // Recharger la liste
         this.duplicatingIds.delete(id);
       },
-      error: (error) => {
+      error: (error: unknown) => {
         console.error('Erreur lors de la duplication:', error);
         this.snackBar.open('Erreur lors de la duplication', 'Fermer', { duration: 3000 });
         this.duplicatingIds.delete(id);
@@ -251,7 +251,7 @@ export class SituationMatchListComponent implements OnInit, OnDestroy {
             this.snackBar.open('Situation/Match supprimée avec succès', 'Fermer', { duration: 3000 });
             this.loadSituationsMatchs(); // Recharger la liste
           },
-          error: (error) => {
+          error: (error: unknown) => {
             console.error('Erreur lors de la suppression:', error);
             this.snackBar.open('Erreur lors de la suppression', 'Fermer', { duration: 3000 });
           }
@@ -330,7 +330,8 @@ export class SituationMatchListComponent implements OnInit, OnDestroy {
   }
 
   private updatePermissions(): void {
-    this.canCreate = this.permissionsService.canCreate();
-    this.canEdit = this.permissionsService.canEdit();
+    const canWrite = this.permissionsService.canWrite();
+    this.canCreate = canWrite;
+    this.canEdit = canWrite;
   }
 }

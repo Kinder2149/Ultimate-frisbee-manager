@@ -76,7 +76,7 @@ export class ExerciceListComponent implements OnInit, OnDestroy {
     console.log('ExerciceListComponent chargé');
     
     // S'abonner aux changements de route
-    this.routeSubscription = this.route.url.subscribe(url => {
+    this.routeSubscription = this.route.url.subscribe((url: unknown) => {
       console.log('Changement de route détecté:', url);
     });
   }
@@ -137,7 +137,7 @@ export class ExerciceListComponent implements OnInit, OnDestroy {
     // S'abonner aux exercices du Store
     this.workspaceDataStore.exercices$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(exercices => {
+      .subscribe((exercices: Exercice[]) => {
         console.log('[ExerciceList] Exercices reçus du Store:', exercices.length);
         this.exercices = exercices;
         this.enrichExercicesWithTags();
@@ -147,7 +147,7 @@ export class ExerciceListComponent implements OnInit, OnDestroy {
     // S'abonner aux tags du Store
     this.workspaceDataStore.tags$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(tags => {
+      .subscribe((tags: Tag[]) => {
         console.log('[ExerciceList] Tags reçus du Store:', tags.length);
         this.allTags = tags;
         this.processTagsByCategory(tags);
@@ -158,7 +158,7 @@ export class ExerciceListComponent implements OnInit, OnDestroy {
     // S'abonner à l'état de chargement du Store
     this.workspaceDataStore.loading$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(loading => {
+      .subscribe((loading: boolean) => {
         // Afficher le spinner uniquement si aucune donnée n'est disponible
         this.loading = loading && this.exercices.length === 0;
       });
@@ -411,8 +411,9 @@ export class ExerciceListComponent implements OnInit, OnDestroy {
    * Met à jour les permissions basées sur le rôle workspace actuel
    */
   private updatePermissions(): void {
-    this.canCreate = this.permissionsService.canCreate();
-    this.canEdit = this.permissionsService.canEdit();
+    const canWrite = this.permissionsService.canWrite();
+    this.canCreate = canWrite;
+    this.canEdit = canWrite;
     this.isBaseWorkspace = this.permissionsService.isBaseWorkspace();
   }
 }

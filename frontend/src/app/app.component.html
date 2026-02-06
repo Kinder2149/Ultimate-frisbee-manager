@@ -29,7 +29,7 @@
             </a>
             <ul class="dropdown-menu" *ngIf="isDropdownOpen.exercices">
               <li><a routerLink="/exercices" routerLinkActive="active">Tous les exercices</a></li>
-              <li *ngIf="((workspaceService.currentWorkspace$ | async)?.role && ((workspaceService.currentWorkspace$ | async)?.role || '').toUpperCase() !== 'VIEWER')"><a routerLink="/exercices/ajouter" routerLinkActive="active">Ajouter un exercice</a></li>
+              <li *ngIf="permissionsService.canWrite()"><a routerLink="/exercices/ajouter" routerLinkActive="active">Ajouter un exercice</a></li>
             </ul>
           </li>
 
@@ -42,7 +42,7 @@
             </a>
             <ul class="dropdown-menu" *ngIf="isDropdownOpen.entrainements">
               <li><a routerLink="/entrainements" routerLinkActive="active">Tous les entraînements</a></li>
-              <li *ngIf="((workspaceService.currentWorkspace$ | async)?.role && ((workspaceService.currentWorkspace$ | async)?.role || '').toUpperCase() !== 'VIEWER')"><a routerLink="/entrainements/nouveau" routerLinkActive="active">Nouvel entraînement</a></li>
+              <li *ngIf="permissionsService.canWrite()"><a routerLink="/entrainements/nouveau" routerLinkActive="active">Nouvel entraînement</a></li>
             </ul>
           </li>
 
@@ -55,7 +55,7 @@
             </a>
             <ul class="dropdown-menu" *ngIf="isDropdownOpen.echauffements">
               <li><a routerLink="/echauffements" routerLinkActive="active">Tous les échauffements</a></li>
-              <li *ngIf="((workspaceService.currentWorkspace$ | async)?.role && ((workspaceService.currentWorkspace$ | async)?.role || '').toUpperCase() !== 'VIEWER')"><a routerLink="/echauffements/ajouter" routerLinkActive="active">Nouvel échauffement</a></li>
+              <li *ngIf="permissionsService.canWrite()"><a routerLink="/echauffements/ajouter" routerLinkActive="active">Nouvel échauffement</a></li>
             </ul>
           </li>
 
@@ -68,7 +68,7 @@
             </a>
             <ul class="dropdown-menu" *ngIf="isDropdownOpen.situations">
               <li><a routerLink="/situations-matchs" routerLinkActive="active">Toutes les situations</a></li>
-              <li *ngIf="((workspaceService.currentWorkspace$ | async)?.role && ((workspaceService.currentWorkspace$ | async)?.role || '').toUpperCase() !== 'VIEWER')"><a routerLink="/situations-matchs/ajouter" routerLinkActive="active">Nouvelle situation</a></li>
+              <li *ngIf="permissionsService.canWrite()"><a routerLink="/situations-matchs/ajouter" routerLinkActive="active">Nouvelle situation</a></li>
             </ul>
           </li>
           
@@ -89,7 +89,7 @@
               <mat-icon class="dropdown-icon">expand_more</mat-icon>
             </a>
             <ul class="dropdown-menu" *ngIf="isDropdownOpen.parametres">
-              <li *ngIf="((currentUser$ | async)?.role || '').toLowerCase() === 'admin'"><a routerLink="/parametres/admin" routerLinkActive="active">Tableau de bord Admin</a></li>
+              <li *ngIf="((currentUser$ | async)?.role || '').toLowerCase() === 'admin'"><a routerLink="/admin/dashboard" routerLinkActive="active">Tableau de bord Admin</a></li>
               <li *ngIf="((currentUser$ | async)?.role || '').toLowerCase() === 'admin'"><a routerLink="/parametres/import-export" routerLinkActive="active">Import/Export</a></li>
               <li *ngIf="isAuthenticated$ | async"><a routerLink="/parametres/profil" routerLinkActive="active">Profil</a></li>
               <li *ngIf="isAuthenticated$ | async"><a href="#" (click)="$event.preventDefault(); onLogout()">Déconnexion</a></li>

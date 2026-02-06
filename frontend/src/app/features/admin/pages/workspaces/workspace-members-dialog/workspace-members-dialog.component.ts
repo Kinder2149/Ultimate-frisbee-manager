@@ -25,6 +25,9 @@ export interface WorkspaceMembersDialogResult {
   updated: boolean;
 }
 
+type AdminUsersResponse = { users: GlobalUser[] };
+type WorkspaceUsersResponse = { users: AdminWorkspaceUser[] };
+
 @Component({
   selector: 'app-workspace-members-dialog',
   standalone: true,
@@ -76,8 +79,9 @@ export interface WorkspaceMembersDialogResult {
             <mat-form-field appearance="outline" class="role" *ngIf="isUserInWorkspace(u.id)">
               <mat-label>Rôle</mat-label>
               <mat-select [ngModel]="getWorkspaceUserRole(u.id)" (ngModelChange)="setUserRole(u.id, $event)">
-                <mat-option value="USER">Utilisateur</mat-option>
-                <mat-option value="OWNER">Owner</mat-option>
+                <mat-option value="VIEWER">Lecteur</mat-option>
+                <mat-option value="MEMBER">Membre</mat-option>
+                <mat-option value="MANAGER">Gestionnaire</mat-option>
               </mat-select>
             </mat-form-field>
           </div>
@@ -130,6 +134,13 @@ export class WorkspaceMembersDialogComponent implements OnInit {
     private snackBar: MatSnackBar
   ) {}
 
+  private normalizeWorkspaceRole(role: string | null | undefined): string {
+    const r = String(role || '').trim().toUpperCase();
+    if (r === 'OWNER') return 'MANAGER';
+    if (r === 'USER') return 'MEMBER';
+    return r;
+  }
+
   formatUserName(prenom?: string, nom?: string): string {
     return [prenom, nom].filter((v) => !!v).join(' ');
   }
@@ -138,11 +149,14 @@ export class WorkspaceMembersDialogComponent implements OnInit {
     this.loading = true;
 
     this.adminService.getUsers().subscribe({
-      next: (res) => {
+      next: (res: AdminUsersResponse) => {
         this.allUsers = (res.users || []) as any;
         this.adminService.getWorkspaceUsers(this.data.workspaceId).subscribe({
-          next: (wsRes) => {
-            this.workspaceUsers = wsRes.users || [];
+          next: (wsRes: WorkspaceUsersResponse) => {
+            this.workspaceUsers = (wsRes.users || []).map((u) => ({
+              ...u,
+              role: this.normalizeWorkspaceRole(u.role),
+            }));
             this.loading = false;
           },
           error: () => {
@@ -176,13 +190,13 @@ export class WorkspaceMembersDialogComponent implements OnInit {
 
   getWorkspaceUserRole(userId: string): string {
     const u = this.workspaceUsers.find((w) => w.userId === userId);
-    return u?.role || 'USER';
+    return this.normalizeWorkspaceRole(u?.role) || 'MEMBER';
   }
 
   setUserRole(userId: string, role: string): void {
     const existing = this.workspaceUsers.find((u) => u.userId === userId);
     if (existing) {
-      existing.role = role;
+      existing.role = this.normalizeWorkspaceRole(role);
       return;
     }
 
@@ -192,7 +206,7 @@ export class WorkspaceMembersDialogComponent implements OnInit {
       email: baseInfo?.email || '',
       nom: baseInfo?.nom,
       prenom: baseInfo?.prenom,
-      role: role || 'USER',
+      role: this.normalizeWorkspaceRole(role) || 'MEMBER',
       linkId: '',
     });
   }
@@ -203,7 +217,7 @@ export class WorkspaceMembersDialogComponent implements OnInit {
       this.workspaceUsers = this.workspaceUsers.filter((u) => u.userId !== userId);
       return;
     }
-    this.setUserRole(userId, 'USER');
+    this.setUserRole(userId, 'MEMBER');
   }
 
   save(): void {
@@ -211,7 +225,7 @@ export class WorkspaceMembersDialogComponent implements OnInit {
 
     const payload = this.workspaceUsers.map((u) => ({
       userId: u.userId,
-      role: (u.role || 'USER').toUpperCase(),
+      role: this.normalizeWorkspaceRole(u.role || 'MEMBER').toUpperCase(),
     }));
 
     this.saving = true;

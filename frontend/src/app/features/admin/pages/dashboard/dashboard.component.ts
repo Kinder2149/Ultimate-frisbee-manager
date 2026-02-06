@@ -62,12 +62,12 @@ export class DashboardComponent implements OnInit {
   loadData(): void {
     this.loading = true;
     this.adminService.getOverview().subscribe({
-      next: (data) => {
+      next: (data: AdminOverviewResponse) => {
         this.data = data;
         this.buildRecentActivity(data.recent);
         this.loading = false;
       },
-      error: (error) => {
+      error: (error: unknown) => {
         console.error('Erreur chargement dashboard:', error);
         this.snackBar.open('Erreur lors du chargement des données', 'Fermer', { duration: 4000 });
         this.loading = false;
@@ -132,10 +132,8 @@ export class DashboardComponent implements OnInit {
   }
 
   exportData(): void {
-    this.snackBar.open('Export en cours...', '', { duration: 2000 });
-    
-    // Utiliser la route backend existante GET /api/admin/export-ufm
-    window.open('/api/admin/export-ufm', '_blank');
+    this.router.navigate(['/parametres/import-export']);
+    this.snackBar.open('Accédez à Import/Export pour sélectionner les éléments à exporter.', 'Fermer', { duration: 3500 });
   }
 
   refresh(): void {

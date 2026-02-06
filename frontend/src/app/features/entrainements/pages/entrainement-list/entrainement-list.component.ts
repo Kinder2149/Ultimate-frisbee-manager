@@ -74,14 +74,14 @@ export class EntrainementListComponent implements OnInit, OnDestroy {
 
     this.workspaceDataStore.entrainements$
       .pipe(takeUntil(this.destroy$))
-      .subscribe((entrainements) => {
+      .subscribe((entrainements: Entrainement[]) => {
         this.entrainements = entrainements;
         this.applyFilters();
       });
 
     this.workspaceDataStore.loading$
       .pipe(takeUntil(this.destroy$))
-      .subscribe((loading) => {
+      .subscribe((loading: boolean) => {
         this.loading = loading && this.entrainements.length === 0;
       });
   }
@@ -246,7 +246,8 @@ export class EntrainementListComponent implements OnInit, OnDestroy {
   }
 
   private updatePermissions(): void {
-    this.canCreate = this.permissionsService.canCreate();
-    this.canEdit = this.permissionsService.canEdit();
+    const canWrite = this.permissionsService.canWrite();
+    this.canCreate = canWrite;
+    this.canEdit = canWrite;
   }
 }

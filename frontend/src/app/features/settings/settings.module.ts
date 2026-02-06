@@ -16,7 +16,7 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     children: [
       { path: 'tags', component: TagsManagerComponent },
-      { path: 'import-export', component: ImportExportComponent },
+      { path: 'import-export', component: ImportExportComponent, canActivate: [RoleGuard], data: { role: 'admin' } },
       { path: 'import-exercices', component: ImportExercicesComponent },
       { path: 'profil', component: ProfilePageComponent },
       // Redirection de l'ancienne admin vers la nouvelle

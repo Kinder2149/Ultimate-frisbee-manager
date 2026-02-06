@@ -79,15 +79,22 @@ export class WorkspaceAdminComponent implements OnInit {
 
     this.newMemberForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      role: ['USER', [Validators.required]],
+      role: ['MEMBER', [Validators.required]],
     });
+  }
+
+  normalizeWorkspaceRole(role: string | null | undefined): string {
+    const r = String(role || '').trim().toUpperCase();
+    if (r === 'OWNER') return 'MANAGER';
+    if (r === 'USER') return 'MEMBER';
+    return r;
   }
 
   ngOnInit(): void {
     this.workspace = this.workspaceService.getCurrentWorkspace();
     this.authService.currentUser$.pipe(take(1)).subscribe((user: User | null) => {
-      const wsRole = String(this.workspace?.role || '').toUpperCase();
-      const isManager = wsRole === 'MANAGER' || wsRole === 'OWNER';
+      const wsRole = this.normalizeWorkspaceRole(this.workspace?.role);
+      const isManager = wsRole === 'MANAGER';
       const isBase = this.workspace?.isBase === true;
       const isAdmin = String(user?.role || '').toUpperCase() === 'ADMIN';
       this.canManage = isManager;
@@ -103,9 +110,12 @@ export class WorkspaceAdminComponent implements OnInit {
     const url = `${environment.apiUrl}/workspaces/members`;
 
     this.http.get<WorkspaceMembersResponse>(url).subscribe({
-      next: (res) => {
+      next: (res: WorkspaceMembersResponse) => {
         this.loading = false;
-        this.members = res.users || [];
+        this.members = (res.users || []).map((u: WorkspaceMemberDto) => ({
+          ...u,
+          role: this.normalizeWorkspaceRole(u.role),
+        }));
 
         if (this.settingsForm && res.name) {
           this.settingsForm.patchValue({ name: res.name });
@@ -164,12 +174,12 @@ export class WorkspaceAdminComponent implements OnInit {
         email: lowerEmail,
         nom: '',
         prenom: '',
-        role: String(role).toUpperCase(),
+        role: this.normalizeWorkspaceRole(role),
         linkId: '',
       },
     ];
 
-    this.newMemberForm.reset({ role: 'USER' });
+    this.newMemberForm.reset({ role: 'MEMBER' });
     this.saveMembers();
   }
 
@@ -179,7 +189,7 @@ export class WorkspaceAdminComponent implements OnInit {
   }
 
   changeRole(member: WorkspaceMemberDto, role: string): void {
-    member.role = role.toUpperCase();
+    member.role = this.normalizeWorkspaceRole(role);
     this.saveMembers();
   }
 
@@ -189,7 +199,7 @@ export class WorkspaceAdminComponent implements OnInit {
     const payload = {
       users: this.members.map((m) => ({
         userId: m.userId,
-        role: m.role,
+        role: this.normalizeWorkspaceRole(m.role),
       })),
     };
 

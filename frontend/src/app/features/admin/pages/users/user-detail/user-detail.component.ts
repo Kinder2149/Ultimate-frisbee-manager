@@ -11,9 +11,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { AdminService } from '../../../../../core/services/admin.service';
-import { HttpClient } from '@angular/common/http';
-import { ApiUrlService } from '../../../../../core/services/api-url.service';
-import { forkJoin, of } from 'rxjs';
+import { of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { UserEditDialogComponent } from '../user-edit-dialog/user-edit-dialog.component';
 
@@ -86,8 +84,6 @@ export class UserDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private adminService: AdminService,
-    private http: HttpClient,
-    private api: ApiUrlService,
     private snackBar: MatSnackBar,
     private dialog: MatDialog
   ) {}
@@ -106,8 +102,8 @@ export class UserDetailComponent implements OnInit {
 
     // Charger les données utilisateur depuis la liste
     this.adminService.getUsers().subscribe({
-      next: (response) => {
-        const foundUser = response.users.find(u => u.id === this.userId);
+      next: (response: { users: UserDetail[] }) => {
+        const foundUser = response.users.find((u: UserDetail) => u.id === this.userId);
         if (foundUser) {
           this.user = foundUser;
           this.loadWorkspaces();
@@ -119,7 +115,7 @@ export class UserDetailComponent implements OnInit {
         }
         this.loading = false;
       },
-      error: (error) => {
+      error: (error: unknown) => {
         console.error('Erreur chargement utilisateur:', error);
         this.snackBar.open('Erreur lors du chargement', 'Fermer', { duration: 4000 });
         this.loading = false;
@@ -128,14 +124,43 @@ export class UserDetailComponent implements OnInit {
   }
 
   loadWorkspaces(): void {
-    // Charger les workspaces de l'utilisateur
-    const url = this.api.getUrl('workspaces/me');
-    this.http.get<Workspace[]>(url)
-      .pipe(catchError(() => of([])))
-      .subscribe(workspaces => {
+    if (!this.userId) return;
+
+    this.adminService
+      .getUserWorkspaces(this.userId)
+      .pipe(catchError(() => of({ workspaces: [] as Workspace[] })))
+      .subscribe((res: { workspaces: Workspace[] }) => {
+        const workspaces = (res?.workspaces || []).map((ws) => ({
+          ...ws,
+          role: this.normalizeWorkspaceRole(ws.role)
+        }));
         this.workspaces = workspaces;
         this.stats.workspacesCount = workspaces.length;
       });
+  }
+
+  normalizeWorkspaceRole(role: string | undefined): string | undefined {
+    if (!role) return role;
+    const upper = String(role).toUpperCase();
+    if (upper === 'OWNER') return 'MANAGER';
+    if (upper === 'USER') return 'MEMBER';
+    return upper;
+  }
+
+  getWorkspaceRoleLabel(role: string | undefined): string {
+    const r = this.normalizeWorkspaceRole(role);
+    if (r === 'MANAGER') return 'Manager';
+    if (r === 'MEMBER') return 'Membre';
+    if (r === 'VIEWER') return 'Lecteur';
+    return r || '';
+  }
+
+  getWorkspaceRoleColor(role: string | undefined): string {
+    const r = this.normalizeWorkspaceRole(role);
+    if (r === 'MANAGER') return '#8b5cf6';
+    if (r === 'MEMBER') return '#3b82f6';
+    if (r === 'VIEWER') return '#64748b';
+    return '#3b82f6';
   }
 
   generateMockStats(): void {
@@ -194,7 +219,7 @@ export class UserDetailComponent implements OnInit {
       }
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result: { updated?: boolean } | undefined) => {
       if (result?.updated) {
         // Recharger les données utilisateur
         this.loadUserData();

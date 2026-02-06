@@ -121,6 +121,11 @@ export class AdminService {
     return this.http.patch<{ user: any }>(url, payload);
   }
 
+  getUserWorkspaces(id: string): Observable<{ workspaces: Array<{ id: string; name: string; createdAt?: string; isBase?: boolean; role?: string }> }> {
+    const url = this.api.getUrl(`admin/users/${id}/workspaces`);
+    return this.http.get<{ workspaces: Array<{ id: string; name: string; createdAt?: string; isBase?: boolean; role?: string }> }>(url);
+  }
+
   createUser(payload: { email: string; password: string; nom?: string; prenom?: string; role?: string; isActive?: boolean }): Observable<{ user: any }> {
     const url = this.api.getUrl('admin/users');
     return this.http.post<{ user: any }>(url, payload);

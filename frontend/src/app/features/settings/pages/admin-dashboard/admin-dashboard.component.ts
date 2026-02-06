@@ -124,7 +124,7 @@ export class AdminDashboardComponent implements OnInit {
           panelClass: ['success-snackbar'] 
         });
       },
-      error: (err: any) => {
+      error: (err: unknown) => {
         console.error('Erreur lors du chargement des données:', err);
         this.error = 'Impossible de charger les données. Vérifiez votre connexion.';
         this.loading = false;
@@ -143,10 +143,10 @@ export class AdminDashboardComponent implements OnInit {
 
   // Exporter les données
   exportData(): void {
-    this.snack.open('Export en cours de développement...', 'Fermer', { 
-      duration: 3000 
+    this.router.navigate(['/parametres/import-export']);
+    this.snack.open('Accédez à Import/Export pour sélectionner les éléments à exporter.', 'Fermer', {
+      duration: 3500
     });
-    // TODO: Implémenter l'export via /api/admin/export-ufm
   }
 
 }
