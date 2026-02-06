@@ -27,9 +27,14 @@ async function main() {
 
   // 2. Vérifier le workspace BASE
   console.log('📁 Vérification du workspace BASE...');
-  let baseWorkspace = await prisma.workspace.findFirst({
-    where: { name: 'BASE' }
+  const baseCandidates = await prisma.workspace.findMany({
+    where: {
+      OR: [{ isBase: true }, { name: 'BASE' }],
+    },
+    orderBy: { createdAt: 'asc' },
   });
+
+  let baseWorkspace = baseCandidates.find((w) => w.isBase === true) || baseCandidates[0] || null;
 
   if (!baseWorkspace) {
     console.log('  ⚠️  Workspace BASE non trouvé, création...');
@@ -37,7 +42,7 @@ async function main() {
       data: {
         name: 'BASE',
         isBase: true,
-      }
+      },
     });
     console.log(`  ✅ Workspace BASE créé (ID: ${baseWorkspace.id})`);
   } else {

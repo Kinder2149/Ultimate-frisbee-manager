@@ -35,6 +35,14 @@ async function main() {
   // 1. Vérifier/créer workspace BASE
   let baseWs = await prisma.workspace.findUnique({ where: { id: WORKSPACE_BASE_ID } });
   if (!baseWs) {
+    const existingByName = await prisma.workspace.findMany({
+      where: { name: 'BASE' },
+      orderBy: { createdAt: 'asc' },
+    });
+    baseWs = existingByName[0] || null;
+  }
+
+  if (!baseWs) {
     baseWs = await prisma.workspace.upsert({
       where: { id: WORKSPACE_BASE_ID },
       update: { isBase: true },
@@ -44,7 +52,7 @@ async function main() {
   } else {
     if (baseWs.isBase !== true) {
       baseWs = await prisma.workspace.update({
-        where: { id: WORKSPACE_BASE_ID },
+        where: { id: baseWs.id },
         data: { isBase: true },
       });
     }
@@ -71,7 +79,7 @@ async function main() {
       where: {
         label: tagData.label,
         category: tagData.category,
-        workspaceId: WORKSPACE_BASE_ID,
+        workspaceId: baseWs.id,
       },
     });
 
@@ -79,7 +87,7 @@ async function main() {
       await prisma.tag.create({
         data: {
           ...tagData,
-          workspaceId: WORKSPACE_BASE_ID,
+          workspaceId: baseWs.id,
         },
       });
       console.log(`  ✅ Tag créé: ${tagData.label} (${tagData.category})`);
@@ -95,12 +103,12 @@ async function main() {
   for (const user of allUsers) {
     // Lier à BASE (tous les users)
     const baseLink = await prisma.workspaceUser.findUnique({
-      where: { workspaceId_userId: { workspaceId: WORKSPACE_BASE_ID, userId: user.id } },
+      where: { workspaceId_userId: { workspaceId: baseWs.id, userId: user.id } },
     });
     if (!baseLink) {
       await prisma.workspaceUser.create({
         data: {
-          workspaceId: WORKSPACE_BASE_ID,
+          workspaceId: baseWs.id,
           userId: user.id,
           role: 'MEMBER', // Rôle MEMBER par défaut dans BASE
         },
@@ -133,9 +141,9 @@ async function main() {
 
   // 5. Afficher le résumé
   console.log('\n📊 Résumé:');
-  const baseMembers = await prisma.workspaceUser.count({ where: { workspaceId: WORKSPACE_BASE_ID } });
+  const baseMembers = await prisma.workspaceUser.count({ where: { workspaceId: baseWs.id } });
   const testMembers = await prisma.workspaceUser.count({ where: { workspaceId: WORKSPACE_TEST_ID } });
-  const baseTags = await prisma.tag.count({ where: { workspaceId: WORKSPACE_BASE_ID } });
+  const baseTags = await prisma.tag.count({ where: { workspaceId: baseWs.id } });
 
   console.log(`  - Workspace BASE: ${baseMembers} membres, ${baseTags} tags`);
   console.log(`  - Workspace TEST: ${testMembers} membres (admins uniquement)`);

@@ -36,9 +36,14 @@ async function ensureDefaultWorkspaceAndLink(userId, options = {}) {
   const hasTestLink = existingLinks.some((l) => l.workspace.name === ADMIN_WORKSPACE_NAME);
 
   if (!hasBaseLink && !isTester) {
-    let baseWorkspace = await prisma.workspace.findFirst({
-      where: { name: DEFAULT_WORKSPACE_NAME },
+    const baseCandidates = await prisma.workspace.findMany({
+      where: {
+        OR: [{ isBase: true }, { name: DEFAULT_WORKSPACE_NAME }],
+      },
+      orderBy: [{ createdAt: 'asc' }],
     });
+
+    let baseWorkspace = baseCandidates.find((w) => w.isBase === true) || baseCandidates[0] || null;
 
     if (!baseWorkspace) {
       baseWorkspace = await prisma.workspace.create({
