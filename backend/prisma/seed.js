@@ -29,9 +29,10 @@ async function main() {
 
   // --- Création/Mise à jour de l'utilisateur admin ---
   console.log('👤 Création/MàJ de l\'utilisateur admin par défaut...');
+  let adminUser;
   try {
     const adminEmail = 'admin@ultimate.com';
-    await prisma.user.upsert({
+    adminUser = await prisma.user.upsert({
       where: { email: adminEmail },
       update: { nom: 'Admin', role: 'ADMIN', isActive: true },
       create: { id: uuidv4(), email: adminEmail, nom: 'Admin', prenom: 'Ultimate', role: 'ADMIN', isActive: true },
@@ -42,22 +43,54 @@ async function main() {
   }
 
   let seedWorkspaceId;
+  let baseWorkspace;
   try {
     const existingBaseWorkspace = await prisma.workspace.findFirst({ where: { isBase: true } });
     if (existingBaseWorkspace) {
       seedWorkspaceId = existingBaseWorkspace.id;
+      baseWorkspace = existingBaseWorkspace;
+      console.log('✅ Workspace BASE existant trouvé:', baseWorkspace.name);
     } else {
       const createdBaseWorkspace = await prisma.workspace.create({
         data: {
           id: uuidv4(),
-          name: 'Base',
+          name: 'BASE',
           isBase: true,
         },
       });
       seedWorkspaceId = createdBaseWorkspace.id;
+      baseWorkspace = createdBaseWorkspace;
+      console.log('✅ Workspace BASE créé:', baseWorkspace.name);
     }
   } catch (e) {
     console.error(`❌ Erreur lors de la création/mise à jour du workspace de seed: ${e.message}`);
+  }
+
+  // --- Association admin au workspace BASE avec rôle MANAGER ---
+  console.log('🔗 Association admin au workspace BASE...');
+  if (adminUser && baseWorkspace) {
+    try {
+      await prisma.workspaceUser.upsert({
+        where: {
+          workspaceId_userId: {
+            workspaceId: baseWorkspace.id,
+            userId: adminUser.id,
+          },
+        },
+        update: { role: 'MANAGER' },
+        create: {
+          id: uuidv4(),
+          workspaceId: baseWorkspace.id,
+          userId: adminUser.id,
+          role: 'MANAGER',
+        },
+      });
+      console.log('✅ Admin associé au workspace BASE avec rôle MANAGER');
+    } catch (e) {
+      console.error(`❌ Erreur lors de l'association admin au workspace BASE: ${e.message}`);
+    }
+  } else {
+    console.warn('⚠️ Admin ou workspace BASE manquant, association ignorée');
   }
 
   // --- Création/Mise à jour des Tags ---

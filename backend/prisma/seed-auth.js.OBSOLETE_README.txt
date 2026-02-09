@@ -1,0 +1,17 @@
+FICHIER OBSOLÈTE - NE PAS UTILISER
+
+Date d'obsolescence : 2026-02-09
+Raison : Utilise le champ 'passwordHash' supprimé lors de la migration vers Supabase Auth (migration 20260129_remove_password_hash)
+
+Ce script ne fonctionne plus depuis le passage à Supabase Auth.
+La création de l'utilisateur admin est désormais gérée par :
+- backend/prisma/seed.js (création User avec role ADMIN)
+- backend/prisma/repair-data.js (réparation si admin perdu)
+
+Pour créer un admin :
+1. Créer compte via Supabase Auth (interface ou API)
+2. Exécuter : node prisma/seed.js
+   OU
+   Exécuter : node prisma/repair-data.js
+
+Référence : docs/reference/database/MIGRATION_STRATEGY.md
