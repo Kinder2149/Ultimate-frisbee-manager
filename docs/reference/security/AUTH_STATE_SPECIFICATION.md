@@ -2,8 +2,14 @@
 
 **Document de référence** : Mission 3.2 - Gestion des états intermédiaires d'authentification  
 **Date de création** : 29 janvier 2026  
-**Version** : 1.0  
+**Dernière mise à jour** : 9 février 2026  
+**Version** : 1.1  
 **Statut** : ✅ Validé
+
+**Changelog v1.1** :
+- Correction RACE-1 : Double exécution initializeAuth + SIGNED_IN éliminée
+- Correction RACE-2 : Formulaire login masqué si déjà authentifié
+- Amélioration UX : Feedback visuel cohérent pendant cycle d'authentification
 
 ---
 
@@ -701,22 +707,25 @@ Ce document formalise **tous les états intermédiaires possibles** de l'authent
 
 **Situation** : Application démarre, état auth non encore déterminé
 
-**Comportement actuel** :
+**Comportement actuel (v1.1)** :
 - `isAuthenticated$` = `false` (valeur initiale)
-- `AuthGuard` redirige immédiatement vers login
-- `initializeAuth()` s'exécute en parallèle
-- **Flash de redirection** possible
+- `initializeAuth()` détecte session et passe `isAuthenticated$` à `true`
+- LoginComponent masque le formulaire si `isAuthenticated$ === true`
+- `authReady$` passe à `true` après chargement profil + workspace
+- AuthGuard attend `authReady$ === true` avant de laisser passer
 
 **Problème** :
-- ⚠️ **Race condition** : Guard peut rediriger avant vérification session
+- ✅ **Résolu v1.1** : LoginComponent réagit immédiatement à `isAuthenticated$`
+- ✅ **Résolu v1.1** : Double exécution éliminée via flag `_initDone`
 
 **État attendu** :
-- `UNKNOWN` → Attendre `CHECKING` → Décision
+- `UNKNOWN` → `CHECKING` → `AUTHENTICATED` → `READY`
+- Formulaire login jamais visible si session active
 
-**Action recommandée** :
-- Guard doit attendre fin de `initializeAuth()`
-- Utiliser état `CHECKING` explicite
-- Afficher loader pendant vérification
+**Action implémentée v1.1** :
+- LoginComponent subscribe à `isAuthenticated$` et affiche loader si `true`
+- `handleSignedIn()` vérifie `_initDone` pour éviter double exécution
+- Feedback visuel cohérent pendant toute la séquence
 
 ---
 

@@ -52,6 +52,19 @@ export class LoginComponent implements OnInit, OnDestroy {
     // Récupérer l'URL de retour si elle existe
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
 
+    // Masquer le formulaire si l'utilisateur est déjà authentifié
+    this.authService.isAuthenticated$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((isAuth) => {
+        if (isAuth) {
+          this.isLoading = true;
+          this.loadingMessage = 'Chargement de votre profil...';
+          this.loadingSteps.connecting = true;
+          this.loadingSteps.connected = true;
+          this.loadingSteps.loadingProfile = true;
+        }
+      });
+
     // Réagir au moment où l'auth est réellement prête (profil + workspace).
     // La redirection ne se fait QUE quand authReady$ === true
     this.authService.authReady$

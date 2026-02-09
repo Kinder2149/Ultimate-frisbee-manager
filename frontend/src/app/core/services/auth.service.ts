@@ -170,8 +170,8 @@ export class AuthService {
     if (!session?.user) return;
 
     // Si initializeAuth() a déjà traité cette session, ne pas réexécuter
-    if (this.authReadySubject.value === true) {
-      console.log('[Auth] SIGNED_IN ignoré : auth déjà prête');
+    if (this._initDone) {
+      console.log('[Auth] SIGNED_IN ignoré : init déjà terminée');
       return;
     }
     
@@ -182,7 +182,10 @@ export class AuthService {
     // Chaîner syncUserProfile → ensureWorkspaceSelected
     this.syncUserProfile().pipe(
       switchMap(() => this.ensureWorkspaceSelected()),
-      tap(() => this.authReadySubject.next(true))
+      tap(() => {
+        this._initDone = true;
+        this.authReadySubject.next(true);
+      })
     ).subscribe({
       next: () => {
         console.log('[Auth] Profil et workspace prêts');

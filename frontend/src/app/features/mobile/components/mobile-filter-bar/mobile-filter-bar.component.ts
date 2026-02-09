@@ -37,11 +37,11 @@ export class MobileFilterBarComponent {
   @Output() sortChange = new EventEmitter<SortOrder>();
 
   categories: CategoryConfig[] = [
-    { type: 'all', label: 'Tout', icon: 'apps', color: '#34495e' },
+    { type: 'all', label: 'Tout', icon: 'apps', color: '#2c3e50' },
     { type: 'exercice', label: 'Exercices', icon: 'fitness_center', color: '#e74c3c' },
     { type: 'entrainement', label: 'Entraînements', icon: 'sports', color: '#3498db' },
-    { type: 'echauffement', label: 'Échauffements', icon: 'directions_run', color: '#f39c12' },
-    { type: 'situation', label: 'Situations', icon: 'sports_soccer', color: '#9b59b6' }
+    { type: 'echauffement', label: 'Échauffements', icon: 'directions_run', color: '#FF9800' },
+    { type: 'situation', label: 'Situations', icon: 'sports_soccer', color: '#4CAF50' }
   ];
 
   onCategoryClick(category: CategoryType): void {

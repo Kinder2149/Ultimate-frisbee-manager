@@ -41,11 +41,11 @@ export class HeroContextuelComponent {
 
   get categoryColor(): string {
     const colors: Record<CategoryType, string> = {
-      all: '#34495e',
+      all: '#2c3e50',
       exercice: '#e74c3c',
       entrainement: '#3498db',
-      echauffement: '#f39c12',
-      situation: '#9b59b6'
+      echauffement: '#FF9800',
+      situation: '#4CAF50'
     };
     return colors[this.category];
   }

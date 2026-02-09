@@ -320,23 +320,7 @@ export class MobilePageComponent implements OnInit, OnDestroy {
   }
 
   onCategoryChange(category: CategoryType): void {
-    if (category === 'all') {
-      this.activeCategory = category;
-      return;
-    }
-
-    const desktopRouteByCategory: Record<Exclude<CategoryType, 'all'>, string> = {
-      exercice: '/exercices',
-      entrainement: '/entrainements',
-      echauffement: '/echauffements',
-      situation: '/situations-matchs'
-    };
-
-    const target = desktopRouteByCategory[category];
-    this.mobileDetector.forceDesktop();
-    this.router.navigate([target], {
-      queryParams: { forceDesktop: '1' }
-    });
+    this.activeCategory = category;
   }
 
   onSortChange(order: SortOrder): void {
@@ -344,23 +328,36 @@ export class MobilePageComponent implements OnInit, OnDestroy {
   }
 
   onSearchClick(): void {
-    console.log('[MobilePage] Recherche cliquée - À implémenter');
+    const query = prompt('Rechercher dans les contenus :');
+    if (query !== null && query.trim()) {
+      this.searchQuery = query.trim();
+    } else if (query === '') {
+      this.searchQuery = '';
+    }
   }
 
   onSettingsClick(): void {
-    this.router.navigate(['/parametres']);
+    this.snackBar.open('Paramètres - Fonctionnalité en cours de développement pour mobile', 'Fermer', { 
+      duration: 3000 
+    });
   }
 
   onProfileClick(): void {
-    this.router.navigate(['/profil']);
+    this.snackBar.open('Profil - Fonctionnalité en cours de développement pour mobile', 'Fermer', { 
+      duration: 3000 
+    });
   }
 
   onTagsClick(): void {
-    this.router.navigate(['/tags']);
+    this.snackBar.open('Tags - Fonctionnalité en cours de développement pour mobile', 'Fermer', { 
+      duration: 3000 
+    });
   }
 
   onAdminClick(): void {
-    this.router.navigate(['/admin']);
+    this.snackBar.open('Administration - Fonctionnalité en cours de développement pour mobile', 'Fermer', { 
+      duration: 3000 
+    });
   }
 
   onLogoutClick(): void {
