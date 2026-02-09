@@ -25,6 +25,9 @@ export class AuthService {
   private authReadySubject = new BehaviorSubject<boolean>(false);
   public authReady$ = this.authReadySubject.asObservable();
 
+  private _initDone = false;
+  private _isLoggingOut = false;
+
   constructor(
     private http: HttpClient,
     private router: Router,
@@ -40,10 +43,7 @@ export class AuthService {
    * Initialisation de l'authentification au démarrage
    */
   private async initializeAuth(): Promise<void> {
-    // Écouter les changements d'état Supabase
-    this.listenToAuthStateChanges();
-
-    // Vérifier si une session Supabase existe
+    // Vérifier si une session Supabase existe AVANT d'enregistrer le listener
     const { data: { session } } = await this.supabaseService.supabase.auth.getSession();
     
     if (session?.user) {
@@ -60,21 +60,29 @@ export class AuthService {
       // Synchroniser avec le backend ET s'assurer qu'un workspace est sélectionné
       this.syncUserProfile().pipe(
         switchMap(() => this.ensureWorkspaceSelected()),
-        tap(() => this.authReadySubject.next(true))
+        tap(() => {
+          this._initDone = true;
+          this.authReadySubject.next(true);
+        })
       ).subscribe({
         next: () => {
           console.log('[Auth] Init complète : profil + workspace prêts');
         },
         error: (err) => {
+          this._initDone = true;
           this.authReadySubject.next(false);
           console.error('[Auth] Erreur init auth:', err);
         }
       });
     } else {
       console.log('[Auth] Aucune session active');
+      this._initDone = true;
       this.isAuthenticatedSubject.next(false);
       this.authReadySubject.next(false);
     }
+
+    // Enregistrer le listener APRÈS getSession() pour éviter la double exécution
+    this.listenToAuthStateChanges();
   }
 
   /**
@@ -160,6 +168,12 @@ export class AuthService {
    */
   private handleSignedIn(session: Session | null): void {
     if (!session?.user) return;
+
+    // Si initializeAuth() a déjà traité cette session, ne pas réexécuter
+    if (this.authReadySubject.value === true) {
+      console.log('[Auth] SIGNED_IN ignoré : auth déjà prête');
+      return;
+    }
     
     console.log('[Auth] Connexion réussie:', session.user.email);
     this.isAuthenticatedSubject.next(true);
@@ -196,10 +210,12 @@ export class AuthService {
     this.currentUserSubject.next(null);
     this.isAuthenticatedSubject.next(false);
     this.authReadySubject.next(false);
+    this._initDone = false;
     this.clearCachedProfile();
     this.workspaceService.clear();
     this.indexedDb.clearAll();
     this.router.navigate(['/login']);
+    this._isLoggingOut = false;
   }
 
 
@@ -245,9 +261,22 @@ export class AuthService {
   }
 
   /**
-   * Déconnexion
+   * Vérifier si un logout est en cours (utilisé par les interceptors)
+   */
+  get isLoggingOut(): boolean {
+    return this._isLoggingOut;
+  }
+
+  /**
+   * Déconnexion (idempotent : un seul logout à la fois)
    */
   logout(): Observable<void> {
+    if (this._isLoggingOut) {
+      console.log('[Auth] Logout déjà en cours, ignoré');
+      return of(void 0);
+    }
+    this._isLoggingOut = true;
+
     return from(
       this.supabaseService.supabase.auth.signOut({ scope: 'local' })
     ).pipe(
@@ -257,6 +286,10 @@ export class AuthService {
         }
         // L'événement SIGNED_OUT gérera le nettoyage
         return;
+      }),
+      catchError(error => {
+        this._isLoggingOut = false;
+        return throwError(() => error);
       })
     );
   }

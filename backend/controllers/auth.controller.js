@@ -4,6 +4,7 @@
  */
 const { prisma } = require('../services/prisma');
 const { clearUserCache } = require('../middleware/auth.middleware');
+const { ensureMinOneAdmin } = require('../services/business/admin-safety.service');
 
 /**
  * Récupérer le profil utilisateur
@@ -197,10 +198,26 @@ module.exports = {
       }
 
       // Rôle et statut actif: uniquement si admin connecté
-      const isAdmin = (authUser.role || '').toLowerCase() === 'admin';
+      const isAdmin = (authUser.role || '').toUpperCase() === 'ADMIN';
       if (isAdmin) {
-        if (typeof role === 'string') data.role = role;
+        if (typeof role === 'string') {
+          const normalizedRole = role.toUpperCase();
+          const validRoles = ['USER', 'ADMIN'];
+          if (!validRoles.includes(normalizedRole)) {
+            return res.status(400).json({ error: `Rôle invalide: ${role}. Valeurs acceptées: ${validRoles.join(', ')}`, code: 'INVALID_ROLE' });
+          }
+          data.role = normalizedRole;
+        }
         if (typeof isActive === 'boolean') data.isActive = isActive;
+      }
+
+      // Protection invariant ADM-1 via service centralisé
+      const safetyCheck = await ensureMinOneAdmin(authUser.id, data);
+      if (!safetyCheck.safe) {
+        return res.status(409).json({
+          error: safetyCheck.error,
+          code: 'LAST_ADMIN_PROTECTION'
+        });
       }
 
       // Si e-mail fourni, vérifier l'unicité (et que ce n'est pas celui d'un autre user)

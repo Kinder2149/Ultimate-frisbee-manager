@@ -13,6 +13,9 @@ import { AuthService } from '../services/auth.service';
 
 @Injectable()
 export class HttpErrorInterceptor implements HttpInterceptor {
+  // Flag de déduplication : évite N logouts + N notifications pour N erreurs 401 simultanées
+  private _authErrorHandled = false;
+
   constructor(
     private errorService: ErrorService,
     private authService: AuthService,
@@ -27,39 +30,55 @@ export class HttpErrorInterceptor implements HttpInterceptor {
         const errorCode = error?.error?.code;
 
         // Gestion centralisée des erreurs d'authentification basées sur les codes backend
-        if (errorCode === 'NO_TOKEN' || errorCode === 'INVALID_TOKEN' || errorCode === 'USER_INACTIVE') {
-          // Éviter les boucles si on est déjà sur /login
-          if (!this.router.url.startsWith('/login')) {
-            this.authService.logout().subscribe({
-              complete: () => {
-                this.router.navigate(['/login']).catch(() => {});
-              },
-              error: () => {
-                this.router.navigate(['/login']).catch(() => {});
-              }
-            });
+        const isAuthError = errorCode === 'NO_TOKEN' || errorCode === 'INVALID_TOKEN' || errorCode === 'USER_INACTIVE';
+        const isUserNotFound = errorCode === 'USER_NOT_FOUND';
+
+        if (isAuthError || isUserNotFound) {
+          // Déduplication : si un logout est déjà en cours ou si une erreur auth a déjà été traitée, ne pas refaire
+          if (this.authService.isLoggingOut || this._authErrorHandled) {
+            return throwError(() => error);
           }
 
-          userMessage = errorCode === 'USER_INACTIVE'
-            ? 'Votre compte est désactivé. Contactez un administrateur.'
-            : 'Votre session a expiré. Veuillez vous reconnecter.';
-        } else if (errorCode === 'USER_NOT_FOUND') {
-          if (!this.router.url.startsWith('/login')) {
-            this.authService.logout().subscribe({
-              complete: () => {
-                this.router.navigate(['/login/signup'], {
-                  queryParams: { reason: 'profile-not-found' }
-                }).catch(() => {});
-              },
-              error: () => {
-                this.router.navigate(['/login/signup'], {
-                  queryParams: { reason: 'profile-not-found' }
-                }).catch(() => {});
-              }
-            });
+          this._authErrorHandled = true;
+          // Réinitialiser le flag après un court délai pour permettre de futures erreurs légitimes
+          setTimeout(() => { this._authErrorHandled = false; }, 3000);
+
+          if (isAuthError) {
+            userMessage = errorCode === 'USER_INACTIVE'
+              ? 'Votre compte est désactivé. Contactez un administrateur.'
+              : 'Votre session a expiré. Veuillez vous reconnecter.';
+
+            if (!this.router.url.startsWith('/login')) {
+              this.authService.logout().subscribe({
+                complete: () => {
+                  this.router.navigate(['/login']).catch(() => {});
+                },
+                error: () => {
+                  this.router.navigate(['/login']).catch(() => {});
+                }
+              });
+            }
+          } else if (isUserNotFound) {
+            userMessage = 'Compte non trouvé. Veuillez vous inscrire.';
+
+            if (!this.router.url.startsWith('/login')) {
+              this.authService.logout().subscribe({
+                complete: () => {
+                  this.router.navigate(['/login/signup'], {
+                    queryParams: { reason: 'profile-not-found' }
+                  }).catch(() => {});
+                },
+                error: () => {
+                  this.router.navigate(['/login/signup'], {
+                    queryParams: { reason: 'profile-not-found' }
+                  }).catch(() => {});
+                }
+              });
+            }
           }
 
-          userMessage = 'Compte non trouvé. Veuillez vous inscrire.';
+          this.errorService.showError(userMessage, error);
+          return throwError(() => error);
         }
 
         if (error.error instanceof ErrorEvent) {
@@ -67,10 +86,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
           userMessage = 'Impossible de se connecter au serveur. Vérifiez votre connexion internet.';
         } else {
           // Erreur côté serveur - mapper vers messages utilisateur
-          // Si on a déjà défini un message plus précis (codes auth), on le conserve.
-          if (userMessage === 'Une erreur est survenue') {
-            userMessage = this.getErrorMessage(error.status);
-          }
+          userMessage = this.getErrorMessage(error.status);
         }
 
         // Afficher le message utilisateur (logs techniques conservés dans ErrorService)

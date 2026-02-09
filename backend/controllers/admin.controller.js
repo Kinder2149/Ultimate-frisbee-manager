@@ -2,9 +2,9 @@
  * Contrôleur Admin - Aperçu agrégé des données
  */
 const { prisma } = require('../services/prisma');
-const bcrypt = require('bcryptjs');
 const { clearUserCache } = require('../middleware/auth.middleware');
 const workspaceService = require('../services/business/workspace.service');
+const { ensureMinOneAdmin } = require('../services/business/admin-safety.service');
 
 /**
  * GET /api/admin/overview
@@ -181,9 +181,6 @@ exports.createUser = async (req, res) => {
     if (!email || typeof email !== 'string') {
       return res.status(400).json({ error: "Email requis" });
     }
-    if (!password || typeof password !== 'string' || password.length < 6) {
-      return res.status(400).json({ error: "Mot de passe requis (min 6 caractères)" });
-    }
     const normalizedEmail = email.trim().toLowerCase();
 
     const existing = await prisma.user.findUnique({ where: { email: normalizedEmail } });
@@ -191,14 +188,19 @@ exports.createUser = async (req, res) => {
       return res.status(409).json({ error: 'Email déjà utilisé' });
     }
 
-    const hashed = await bcrypt.hash(password, 10);
+    // Valider que le rôle est dans l'enum UserRole (USER ou ADMIN)
+    const validRoles = ['USER', 'ADMIN'];
+    const normalizedRole = (role || 'USER').toUpperCase();
+    if (!validRoles.includes(normalizedRole)) {
+      return res.status(400).json({ error: `Rôle invalide: ${role}. Valeurs acceptées: ${validRoles.join(', ')}` });
+    }
+
     const created = await prisma.user.create({
       data: {
         email: normalizedEmail,
-        passwordHash: hashed,
         nom: nom?.trim() || '',
         prenom: prenom?.trim() || null,
-        role: (role || 'MEMBER').toUpperCase(),
+        role: normalizedRole,
         isActive: !!isActive,
         iconUrl: null
       }
@@ -444,8 +446,24 @@ exports.updateUser = async (req, res) => {
     const { role, isActive } = req.body || {};
 
     const data = {};
-    if (typeof role === 'string') data.role = role.toUpperCase();
+    if (typeof role === 'string') {
+      const normalizedRole = role.toUpperCase();
+      const validRoles = ['USER', 'ADMIN'];
+      if (!validRoles.includes(normalizedRole)) {
+        return res.status(400).json({ error: `Rôle invalide: ${role}. Valeurs acceptées: ${validRoles.join(', ')}` });
+      }
+      data.role = normalizedRole;
+    }
     if (typeof isActive === 'boolean') data.isActive = isActive;
+
+    // Protection invariant ADM-1 via service centralisé
+    const safetyCheck = await ensureMinOneAdmin(id, data);
+    if (!safetyCheck.safe) {
+      return res.status(409).json({
+        error: safetyCheck.error,
+        code: 'LAST_ADMIN_PROTECTION'
+      });
+    }
 
     const updated = await prisma.user.update({ where: { id }, data });
     

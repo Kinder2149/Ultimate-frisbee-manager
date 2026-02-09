@@ -1,4 +1,4 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable, Injector, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Subject, interval, Subscription } from 'rxjs';
 import { switchMap, filter, catchError } from 'rxjs/operators';
@@ -20,7 +20,9 @@ export class SyncService implements OnDestroy {
   private lastVersions: SyncVersion | null = null;
   private isOnline = true;
   private isUserActive = true;
+  private isAuthReady = false;
   private lastActivityTime = Date.now();
+  private authReadySubscription: Subscription | null = null;
   
   // Configuration du polling adaptatif
   private readonly ACTIVE_INTERVAL = 10 * 1000;    // 10s si utilisateur actif
@@ -33,11 +35,13 @@ export class SyncService implements OnDestroy {
   constructor(
     private http: HttpClient,
     private workspaceService: WorkspaceService,
-    private cache: DataCacheService
+    private cache: DataCacheService,
+    private injector: Injector
   ) {
     this.initBroadcastChannel();
     this.setupOnlineDetection();
     this.setupActivityDetection();
+    this.bindToAuthLifecycle();
   }
 
   ngOnDestroy(): void {
@@ -45,6 +49,31 @@ export class SyncService implements OnDestroy {
     if (this.syncChannel) {
       this.syncChannel.close();
     }
+    if (this.authReadySubscription) {
+      this.authReadySubscription.unsubscribe();
+    }
+  }
+
+  /**
+   * Lie le polling au lifecycle auth : start quand authReady=true, stop quand false
+   */
+  private bindToAuthLifecycle(): void {
+    // Injection différée pour éviter la dépendance circulaire AuthService ↔ SyncService
+    setTimeout(() => {
+      try {
+        const { AuthService } = require('./auth.service');
+        const authService = this.injector.get(AuthService);
+        this.authReadySubscription = authService.authReady$.subscribe((isReady: boolean) => {
+          this.isAuthReady = isReady;
+          if (!isReady) {
+            this.stopPeriodicSync();
+            this.resetVersions();
+          }
+        });
+      } catch (e) {
+        console.warn('[Sync] Could not bind to auth lifecycle:', e);
+      }
+    }, 0);
   }
 
   /**
@@ -174,6 +203,7 @@ export class SyncService implements OnDestroy {
     this.syncSubscription = interval(1000)
       .pipe(
         filter(() => this.isOnline),
+        filter(() => this.isAuthReady),
         filter(() => !!this.workspaceService.getCurrentWorkspaceId()),
         // Vérifier si on doit faire un sync selon l'activité
         filter(() => {
