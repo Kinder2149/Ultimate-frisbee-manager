@@ -83,17 +83,10 @@ export class WorkspaceAdminComponent implements OnInit {
     });
   }
 
-  normalizeWorkspaceRole(role: string | null | undefined): string {
-    const r = String(role || '').trim().toUpperCase();
-    if (r === 'OWNER') return 'MANAGER';
-    if (r === 'USER') return 'MEMBER';
-    return r;
-  }
-
   ngOnInit(): void {
     this.workspace = this.workspaceService.getCurrentWorkspace();
     this.authService.currentUser$.pipe(take(1)).subscribe((user: User | null) => {
-      const wsRole = this.normalizeWorkspaceRole(this.workspace?.role);
+      const wsRole = this.workspace?.role?.toUpperCase();
       const isManager = wsRole === 'MANAGER';
       const isBase = this.workspace?.isBase === true;
       const isAdmin = String(user?.role || '').toUpperCase() === 'ADMIN';
@@ -114,7 +107,7 @@ export class WorkspaceAdminComponent implements OnInit {
         this.loading = false;
         this.members = (res.users || []).map((u: WorkspaceMemberDto) => ({
           ...u,
-          role: this.normalizeWorkspaceRole(u.role),
+          role: u.role?.toUpperCase() || 'MEMBER',
         }));
 
         if (this.settingsForm && res.name) {
@@ -174,7 +167,7 @@ export class WorkspaceAdminComponent implements OnInit {
         email: lowerEmail,
         nom: '',
         prenom: '',
-        role: this.normalizeWorkspaceRole(role),
+        role: role?.toUpperCase() || 'MEMBER',
         linkId: '',
       },
     ];
@@ -189,7 +182,7 @@ export class WorkspaceAdminComponent implements OnInit {
   }
 
   changeRole(member: WorkspaceMemberDto, role: string): void {
-    member.role = this.normalizeWorkspaceRole(role);
+    member.role = role?.toUpperCase() || 'MEMBER';
     this.saveMembers();
   }
 
@@ -199,7 +192,7 @@ export class WorkspaceAdminComponent implements OnInit {
     const payload = {
       users: this.members.map((m) => ({
         userId: m.userId,
-        role: this.normalizeWorkspaceRole(m.role),
+        role: m.role?.toUpperCase() || 'MEMBER',
       })),
     };
 

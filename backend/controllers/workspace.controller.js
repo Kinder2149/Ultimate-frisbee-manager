@@ -527,14 +527,8 @@ exports.adminSetWorkspaceUsers = async (req, res, next) => {
       return res.status(400).json({ error: 'Format invalide: users doit être un tableau', code: 'USERS_ARRAY_REQUIRED' });
     }
 
-    // Normaliser les rôles legacy avant validation
-    const normalizedUsers = users.map(u => ({
-      userId: u.userId,
-      role: u.role === 'OWNER' ? 'MANAGER' : u.role === 'USER' ? 'MEMBER' : u.role
-    }));
-
     // Valider avec Zod
-    const validation = setWorkspaceMembersSchema.safeParse({ users: normalizedUsers });
+    const validation = setWorkspaceMembersSchema.safeParse({ users });
     if (!validation.success) {
       return res.status(400).json({
         error: 'Données invalides',
@@ -630,14 +624,8 @@ exports.ownerSetWorkspaceMembers = async (req, res, next) => {
       return res.status(400).json({ error: 'Format invalide: users doit être un tableau', code: 'USERS_ARRAY_REQUIRED' });
     }
 
-    // Normaliser les rôles legacy avant validation
-    const normalizedUsers = users.map(u => ({
-      userId: u.userId,
-      role: u.role === 'OWNER' ? 'MANAGER' : u.role === 'USER' ? 'MEMBER' : u.role
-    }));
-
     // Valider avec Zod
-    const validation = setWorkspaceMembersSchema.safeParse({ users: normalizedUsers });
+    const validation = setWorkspaceMembersSchema.safeParse({ users });
     if (!validation.success) {
       return res.status(400).json({
         error: 'Données invalides',

@@ -285,8 +285,8 @@ export class AuthService {
   async getAccessToken(): Promise<string | null> {
     // Juste après SIGNED_IN, il peut y avoir une courte fenêtre où getSession()
     // renvoie encore null selon le navigateur / le timing (mobile notamment).
-    // Cela déclenche des appels backend sans token (401), et peut bloquer la redirection.
-    const delaysMs = [0, 150, 350, 800];
+    // Retry rapide avec délai total max de 150ms.
+    const delaysMs = [0, 50, 100];
     let lastError: any = null;
 
     for (const delayMs of delaysMs) {
@@ -332,7 +332,7 @@ export class AuthService {
     if (lastError) {
       console.error('[Frontend Auth] Erreur getSession:', lastError);
     } else {
-      console.warn('[Frontend Auth] Pas de session active');
+      console.warn('[Frontend Auth] Token non disponible après 150ms');
     }
 
     return null;
@@ -381,18 +381,39 @@ private syncUserProfile(): Observable<User> {
     catchError(error => {
       console.error('[Auth] Erreur sync profil:', error);
       
-      // Si l'utilisateur n'existe pas en base (403), rediriger vers signup
+      // Si l'utilisateur n'existe pas en base (403), créer automatiquement le profil
       if (error.status === 403) {
-        console.error('[Auth] Profil utilisateur non trouvé en base');
-        // Déconnecter de Supabase
-        this.supabaseService.supabase.auth.signOut();
-        // Rediriger vers signup avec message
-        this.router.navigate(['/login/signup'], {
-          queryParams: { reason: 'profile-not-found' }
-        });
+        console.log('[Auth] Profil non trouvé, création automatique...');
+        return this.createProfileFromSupabase().pipe(
+          tap(user => {
+            this.currentUserSubject.next(user);
+            this.cacheUserProfile(user);
+            console.log('[Auth] Profil créé automatiquement:', user.email);
+          })
+        );
       }
       
       return throwError(() => error);
+    })
+  );
+}
+
+/**
+ * Créer le profil backend à partir de la session Supabase
+ */
+private createProfileFromSupabase(): Observable<User> {
+  return from(this.supabaseService.supabase.auth.getUser()).pipe(
+    switchMap(({ data }) => {
+      if (!data.user) {
+        throw new Error('Aucun utilisateur Supabase trouvé');
+      }
+      
+      return this.http.post<{ user: User }>(`${this.apiUrl}/register`, {
+        supabaseUserId: data.user.id,
+        email: data.user.email
+      }).pipe(
+        map(response => response.user)
+      );
     })
   );
 }

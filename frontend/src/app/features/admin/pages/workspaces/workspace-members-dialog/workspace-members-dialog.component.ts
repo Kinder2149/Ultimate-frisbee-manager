@@ -134,13 +134,6 @@ export class WorkspaceMembersDialogComponent implements OnInit {
     private snackBar: MatSnackBar
   ) {}
 
-  private normalizeWorkspaceRole(role: string | null | undefined): string {
-    const r = String(role || '').trim().toUpperCase();
-    if (r === 'OWNER') return 'MANAGER';
-    if (r === 'USER') return 'MEMBER';
-    return r;
-  }
-
   formatUserName(prenom?: string, nom?: string): string {
     return [prenom, nom].filter((v) => !!v).join(' ');
   }
@@ -155,7 +148,7 @@ export class WorkspaceMembersDialogComponent implements OnInit {
           next: (wsRes: WorkspaceUsersResponse) => {
             this.workspaceUsers = (wsRes.users || []).map((u) => ({
               ...u,
-              role: this.normalizeWorkspaceRole(u.role),
+              role: u.role?.toUpperCase() || 'MEMBER',
             }));
             this.loading = false;
           },
@@ -190,13 +183,13 @@ export class WorkspaceMembersDialogComponent implements OnInit {
 
   getWorkspaceUserRole(userId: string): string {
     const u = this.workspaceUsers.find((w) => w.userId === userId);
-    return this.normalizeWorkspaceRole(u?.role) || 'MEMBER';
+    return u?.role?.toUpperCase() || 'MEMBER';
   }
 
   setUserRole(userId: string, role: string): void {
     const existing = this.workspaceUsers.find((u) => u.userId === userId);
     if (existing) {
-      existing.role = this.normalizeWorkspaceRole(role);
+      existing.role = role?.toUpperCase() || 'MEMBER';
       return;
     }
 
@@ -206,7 +199,7 @@ export class WorkspaceMembersDialogComponent implements OnInit {
       email: baseInfo?.email || '',
       nom: baseInfo?.nom,
       prenom: baseInfo?.prenom,
-      role: this.normalizeWorkspaceRole(role) || 'MEMBER',
+      role: role?.toUpperCase() || 'MEMBER',
       linkId: '',
     });
   }
@@ -225,7 +218,7 @@ export class WorkspaceMembersDialogComponent implements OnInit {
 
     const payload = this.workspaceUsers.map((u) => ({
       userId: u.userId,
-      role: this.normalizeWorkspaceRole(u.role || 'MEMBER').toUpperCase(),
+      role: u.role?.toUpperCase() || 'MEMBER',
     }));
 
     this.saving = true;

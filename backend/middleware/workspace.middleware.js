@@ -1,12 +1,5 @@
 const { prisma } = require('../services/prisma');
 
-const normalizeWorkspaceRole = (role) => {
-  const r = String(role || '').trim().toUpperCase();
-  if (r === 'OWNER') return 'MANAGER';
-  if (r === 'USER') return 'MEMBER';
-  return r;
-};
-
 const baseMutationGuard = (req, res, next) => {
   const method = String(req.method || '').toUpperCase();
   const isMutating = method === 'POST' || method === 'PUT' || method === 'PATCH' || method === 'DELETE';
@@ -86,7 +79,6 @@ const workspaceGuard = async (req, res, next) => {
     req.workspace = link.workspace;
     req.workspaceLink = link;
     req.workspaceRole = link.role;
-    req.workspaceRoleNormalized = normalizeWorkspaceRole(link.role);
 
     const isTester = Boolean(req.user && req.user.isTester === true);
     const isBase = Boolean(req.workspace && req.workspace.isBase === true);
@@ -108,8 +100,7 @@ const workspaceGuard = async (req, res, next) => {
 };
 
 const requireWorkspaceManager = (req, res, next) => {
-  const role = normalizeWorkspaceRole(req.workspaceRole);
-  if (role !== 'MANAGER') {
+  if (req.workspaceRole !== 'MANAGER') {
     return res.status(403).json({
       error: 'Action réservée aux responsables de ce workspace',
       code: 'WORKSPACE_MANAGER_REQUIRED',
@@ -119,8 +110,7 @@ const requireWorkspaceManager = (req, res, next) => {
 };
 
 const requireWorkspaceWrite = (req, res, next) => {
-  const role = normalizeWorkspaceRole(req.workspaceRole);
-  if (role !== 'MANAGER' && role !== 'MEMBER') {
+  if (req.workspaceRole !== 'MANAGER' && req.workspaceRole !== 'MEMBER') {
     return res.status(403).json({
       error: 'Action réservée aux membres du workspace',
       code: 'WORKSPACE_WRITE_REQUIRED',
@@ -129,70 +119,9 @@ const requireWorkspaceWrite = (req, res, next) => {
   return next();
 };
 
-/**
- * Middleware complémentaire pour restreindre certaines actions aux « owners/managers »
- * d'un workspace donné.
- *
- * À utiliser APRÈS workspaceGuard sur des routes nécessitant un niveau d'autorisation
- * plus élevé que simple membre.
- */
-const requireWorkspaceOwner = async (req, res, next) => {
-  try {
-    const user = req.user;
-    const workspaceId = req.workspaceId;
-
-    if (!user || !workspaceId) {
-      return res.status(400).json({
-        error: 'Contexte workspace manquant pour le contrôle de rôle',
-        code: 'WORKSPACE_CONTEXT_REQUIRED',
-      });
-    }
-
-    // Si workspaceGuard a déjà chargé le lien, on le réutilise
-    let link = req.workspaceLink;
-
-    if (!link) {
-      link = await prisma.workspaceUser.findFirst({
-        where: {
-          workspaceId,
-          userId: user.id,
-        },
-      });
-    }
-
-    if (!link) {
-      return res.status(403).json({
-        error: 'Accès refusé à ce workspace',
-        code: 'WORKSPACE_FORBIDDEN',
-      });
-    }
-
-    const role = normalizeWorkspaceRole(link.role);
-
-    // Rôles autorisés pour administrer un workspace spécifique.
-    // On part sur OWNER comme rôle intermédiaire principal.
-    if (role !== 'MANAGER') {
-      return res.status(403).json({
-        error: 'Action réservée aux responsables de ce workspace',
-        code: 'WORKSPACE_OWNER_REQUIRED',
-      });
-    }
-
-    // On laisse passer
-    return next();
-  } catch (error) {
-    console.error('[WorkspaceOwnerGuard] Erreur lors du contrôle de rôle:', error);
-    return res.status(500).json({
-      error: 'Erreur serveur lors du contrôle de rôle du workspace',
-      code: 'WORKSPACE_OWNER_ERROR',
-    });
-  }
-};
-
 module.exports = {
   workspaceGuard,
   baseMutationGuard,
-  requireWorkspaceOwner,
   requireWorkspaceManager,
   requireWorkspaceWrite,
 };

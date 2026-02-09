@@ -13,6 +13,12 @@ enum UserRole {
   ADMIN
 }
 
+enum WorkspaceRole {
+  MANAGER
+  MEMBER
+  VIEWER
+}
+
 model Exercice {
   id              String                 @id @default(uuid())
   nom             String
@@ -193,11 +199,11 @@ model Workspace {
 }
 
 model WorkspaceUser {
-  id          String    @id @default(uuid())
+  id          String        @id @default(uuid())
   workspaceId String
   userId      String
-  role        String    @default("MEMBER")
-  createdAt   DateTime  @default(now())
+  role        WorkspaceRole @default(MEMBER)
+  createdAt   DateTime      @default(now())
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)

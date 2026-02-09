@@ -4,7 +4,7 @@ import { WorkspaceService } from './workspace.service';
 import { AuthService } from './auth.service';
 import { User } from '../models/user.model';
 
-export type WorkspaceRole = 'MANAGER' | 'MEMBER' | 'VIEWER' | 'OWNER' | 'USER' | null;
+export type WorkspaceRole = 'MANAGER' | 'MEMBER' | 'VIEWER' | null;
 
 @Injectable({
   providedIn: 'root'
@@ -22,22 +22,12 @@ export class PermissionsService {
   }
 
   /**
-   * Normalise les rôles legacy vers les nouveaux rôles
-   */
-  private normalizeRole(role: string | undefined | null): WorkspaceRole {
-    if (!role) return null;
-    const normalized = role.toUpperCase();
-    if (normalized === 'OWNER') return 'MANAGER';
-    if (normalized === 'USER') return 'MEMBER';
-    return normalized as WorkspaceRole;
-  }
-
-  /**
-   * Récupère le rôle workspace actuel normalisé
+   * Récupère le rôle workspace actuel
    */
   getCurrentRole(): WorkspaceRole {
     const workspace = this.workspaceService.getCurrentWorkspace();
-    return this.normalizeRole(workspace?.role);
+    const role = workspace?.role?.toUpperCase();
+    return (role as WorkspaceRole) || null;
   }
 
   /**
@@ -45,7 +35,10 @@ export class PermissionsService {
    */
   getCurrentRole$(): Observable<WorkspaceRole> {
     return this.workspaceService.currentWorkspace$.pipe(
-      map(workspace => this.normalizeRole(workspace?.role))
+      map(workspace => {
+        const role = workspace?.role?.toUpperCase();
+        return (role as WorkspaceRole) || null;
+      })
     );
   }
 

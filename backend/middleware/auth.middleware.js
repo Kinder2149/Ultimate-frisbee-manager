@@ -316,8 +316,8 @@ const authenticateToken = async (req, res, next) => {
  * Middleware de vérification du rôle administrateur
  */
 const requireAdmin = (req, res, next) => {
-  const role = req.user?.role ? String(req.user.role).toLowerCase() : undefined;
-  if (!req.user || role !== 'admin') {
+  const role = req.user?.role ? String(req.user.role).toUpperCase() : undefined;
+  if (!req.user || role !== 'ADMIN') {
     return res.status(403).json({
       error: 'Accès réservé aux administrateurs',
       code: 'FORBIDDEN'

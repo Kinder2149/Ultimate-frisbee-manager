@@ -21,14 +21,23 @@ export class AuthGuard implements CanActivate {
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): Observable<boolean> {
-    return this.authService.isAuthenticated$.pipe(
-      take(1), // On ne s'intéresse qu'à l'état actuel au moment de la navigation
-      map(isAuthenticated => {
-        if (isAuthenticated) {
-          return true; // L'utilisateur est authentifié, on autorise l'accès.
+    return this.authService.authReady$.pipe(
+      take(1),
+      map(isReady => {
+        if (isReady) {
+          // Authentification complète (profil + workspace chargés)
+          return true;
         }
 
-        // L'utilisateur n'est pas authentifié, on le redirige vers la page de connexion.
+        // Vérifier si authentification en cours
+        const isAuthenticating = this.authService.isAuthenticated();
+        if (isAuthenticating) {
+          // Session Supabase existe mais données pas encore prêtes
+          // Bloquer la navigation sans rediriger (authReady$ passera à true bientôt)
+          return false;
+        }
+
+        // Pas de session du tout, rediriger vers login
         this.router.navigate(['/login'], {
           queryParams: { returnUrl: state.url }
         });

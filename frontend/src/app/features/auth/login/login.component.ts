@@ -52,14 +52,8 @@ export class LoginComponent implements OnInit, OnDestroy {
     // Récupérer l'URL de retour si elle existe
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
 
-    // Si l'utilisateur est déjà connecté, le rediriger immédiatement
-    if (this.authService.isAuthenticated()) {
-      this.router.navigate([this.returnUrl]);
-      return;
-    }
-
     // Réagir au moment où l'auth est réellement prête (profil + workspace).
-    // Évite les redirections trop tôt qui forcent refresh/clics multiples.
+    // La redirection ne se fait QUE quand authReady$ === true
     this.authService.authReady$
       .pipe(
         takeUntil(this.destroy$),

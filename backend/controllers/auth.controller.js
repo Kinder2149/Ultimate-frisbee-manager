@@ -40,10 +40,16 @@ const getProfile = async (req, res) => {
  */
 const logout = async (req, res) => {
   // Avec Supabase Auth, la déconnexion est gérée par le client.
-  // Cette route peut être conservée pour des raisons de cohérence de l'API, mais elle n'a pas d'effet côté serveur.
+  // Côté serveur : invalider le cache utilisateur pour éviter toute persistance.
   try {
+    const userId = req.user?.id;
+    if (userId) {
+      clearUserCache(userId);
+      console.log('[Auth] Cache invalidé pour utilisateur:', userId);
+    }
+    
     res.json({
-      message: 'Déconnexion initiée côté client.'
+      message: 'Déconnexion réussie.'
     });
   } catch (error) {
     console.error('Erreur logout:', error);
