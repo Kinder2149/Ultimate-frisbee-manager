@@ -55,7 +55,7 @@ const routes: Routes = [
     canActivate: [AuthGuard]
   },
 
-  // Administration du workspace courant (OWNER)
+  // Administration du workspace courant (MANAGER)
   {
     path: 'workspace/admin',
     loadComponent: () => import('./features/workspaces/workspace-admin/workspace-admin.component')

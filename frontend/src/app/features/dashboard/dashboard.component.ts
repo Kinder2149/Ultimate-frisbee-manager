@@ -17,7 +17,7 @@ import { environment } from '../../../environments/environment';
           <div class="workspace-icon">🏢</div>
           <div class="workspace-details">
             <h2 class="workspace-name">{{ currentWorkspace.name }}</h2>
-            <span class="workspace-role" [class.owner]="currentWorkspace.role === 'OWNER'">{{ getRoleLabel(currentWorkspace.role || 'USER') }}</span>
+            <span class="workspace-role">{{ getRoleLabel(currentWorkspace.role || 'MEMBER') }}</span>
           </div>
         </div>
         <div class="workspace-actions" *ngIf="hasMultipleWorkspaces()">
@@ -180,9 +180,9 @@ import { environment } from '../../../environments/environment';
       letter-spacing: 0.5px;
     }
 
-    .workspace-role.owner {
-      background: rgba(255, 215, 0, 0.3);
-      color: #ffd700;
+    .workspace-role {
+      background: rgba(56, 142, 60, 0.18);
+      color: #2e7d32;
     }
 
     .workspace-actions {
@@ -543,8 +543,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   getRoleLabel(role: string): string {
     switch(role) {
-      case 'OWNER': return 'Propriétaire';
-      case 'USER': return 'Utilisateur';
+      case 'MANAGER': return 'Gestionnaire';
+      case 'MEMBER': return 'Membre';
+      case 'VIEWER': return 'Lecteur';
       default: return role;
     }
   }

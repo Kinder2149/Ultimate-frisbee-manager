@@ -1,0 +1,9 @@
+Archivé le: 2026-02-09
+
+Raison:
+- Documents obsolètes suite au nettoyage/normalisation des rôles (suppression legacy OWNER/USER workspace)
+- Remplacés (en tout ou partie) par les documents de référence dans /docs/reference/
+
+Remplacements / Références:
+- Rôles & permissions: /docs/reference/features/ROLES_SPECIFICATION.md
+- Index/structure: /docs/work/audits/20260209_CARTOGRAPHIE_DOCUMENTATION_ROLES.md et /docs/PLAN_RESTRUCTURATION_DOCUMENTATION.md

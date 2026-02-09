@@ -18,9 +18,10 @@
 
       <mat-form-field appearance="outline" class="role-select" *ngIf="isInWorkspace(ws.id)">
         <mat-label>Rôle</mat-label>
-        <mat-select [value]="memberships[ws.id]?.role || 'USER'" (selectionChange)="changeRole(ws.id, $event.value)">
-          <mat-option value="OWNER">Propriétaire (admin du workspace)</mat-option>
-          <mat-option value="USER">Utilisateur</mat-option>
+        <mat-select [value]="memberships[ws.id]?.role || 'MEMBER'" (selectionChange)="changeRole(ws.id, $event.value)">
+          <mat-option value="MANAGER">Gestionnaire</mat-option>
+          <mat-option value="MEMBER">Membre</mat-option>
+          <mat-option value="VIEWER">Lecteur</mat-option>
         </mat-select>
       </mat-form-field>
     </div>

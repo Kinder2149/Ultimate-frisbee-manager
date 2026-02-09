@@ -1,7 +1,6 @@
 const request = require('supertest');
 const app = require('../app');
 const { prisma } = require('../services/prisma');
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const makeToken = async (role = 'ADMIN') => {
@@ -10,7 +9,6 @@ const makeToken = async (role = 'ADMIN') => {
     data: {
       email: `export-admin-${Date.now()}@ultimate.com`,
       nom: 'Admin', prenom: 'Export',
-      passwordHash: bcrypt.hashSync('password123', 10),
       role,
     },
   });

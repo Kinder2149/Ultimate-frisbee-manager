@@ -1,5 +1,5 @@
 <div class="workspace-admin-page" *ngIf="!loading; else loadingTpl">
-  <!-- En-tête OWNER local : administration du workspace courant -->
+  <!-- En-tête MANAGER local : administration du workspace courant -->
   <header class="page-header">
     <div class="page-header__icon">
       <mat-icon>settings</mat-icon>
@@ -12,7 +12,7 @@
       </p>
       <div class="page-badges" *ngIf="workspace as ws">
         <span class="badge badge--workspace">Workspace : {{ ws.name }}</span>
-        <span class="badge" *ngIf="ws.role">Rôle local : {{ normalizeWorkspaceRole(ws.role) }}</span>
+        <span class="badge" *ngIf="ws.role">Rôle local : {{ ws.role.toUpperCase() }}</span>
       </div>
     </div>
   </header>
@@ -49,10 +49,10 @@
         </mat-card-content>
       </mat-card>
 
-      <!-- Carte d'information OWNER uniquement -->
-      <mat-card class="owner-info-card" *ngIf="(workspace?.role || '').toUpperCase() === 'MANAGER'">
+      <!-- Carte d'information MANAGER uniquement -->
+      <mat-card class="manager-info-card" *ngIf="(workspace?.role || '').toUpperCase() === 'MANAGER'">
         <mat-card-header>
-          <div mat-card-avatar class="owner-info-card__avatar">
+          <div mat-card-avatar class="manager-info-card__avatar">
             <mat-icon>security</mat-icon>
           </div>
           <mat-card-title>Vous êtes MANAGER de ce workspace</mat-card-title>
@@ -124,7 +124,7 @@
               <th mat-header-cell *matHeaderCellDef>Rôle local</th>
               <td mat-cell *matCellDef="let m">
                 <div class="role-cell">
-                  <span class="role-badge" [class.role-badge--owner]="m.role === 'MANAGER'">
+                  <span class="role-badge" [class.role-badge--manager]="m.role === 'MANAGER'">
                     {{ m.role }}
                   </span>
                   <mat-form-field appearance="outline" class="role-select">

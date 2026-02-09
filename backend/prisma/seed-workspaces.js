@@ -129,7 +129,7 @@ async function main() {
           data: {
             workspaceId: WORKSPACE_TEST_ID,
             userId: user.id,
-            role: 'MANAGER', // Les admins sont OWNER dans TEST
+            role: 'MANAGER',
           },
         });
         console.log(`  ✅ ${user.email} (ADMIN) lié à TEST`);

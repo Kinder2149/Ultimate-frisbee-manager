@@ -572,9 +572,9 @@ exports.adminSetWorkspaceUsers = async (req, res, next) => {
 };
 
 /**
- * OWNER – lister les utilisateurs de SON workspace courant
+ * MANAGER – lister les utilisateurs de SON workspace courant
  * GET /api/workspaces/members
- * Nécessite: authenticateToken, workspaceGuard, requireWorkspaceOwner
+ * Nécessite: authenticateToken, workspaceGuard, requireWorkspaceManager
  */
 exports.ownerGetWorkspaceMembers = async (req, res, next) => {
   try {
@@ -610,10 +610,10 @@ exports.ownerGetWorkspaceMembers = async (req, res, next) => {
 };
 
 /**
- * OWNER – mettre à jour la liste des utilisateurs de SON workspace courant
+ * MANAGER – mettre à jour la liste des utilisateurs de SON workspace courant
  * PUT /api/workspaces/members
  * body: { users: [{ userId, role }] }
- * Nécessite: authenticateToken, workspaceGuard, requireWorkspaceOwner
+ * Nécessite: authenticateToken, workspaceGuard, requireWorkspaceManager
  */
 exports.ownerSetWorkspaceMembers = async (req, res, next) => {
   try {

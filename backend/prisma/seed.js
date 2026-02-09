@@ -1,6 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
 const { v4: uuidv4 } = require('uuid');
-const bcrypt = require('bcryptjs');
 // Catégories normalisées (slugs) alignées avec @ufm/shared/constants/tag-categories
 const TAG_CATEGORIES = {
   OBJECTIF: 'objectif',
@@ -32,20 +31,42 @@ async function main() {
   console.log('👤 Création/MàJ de l\'utilisateur admin par défaut...');
   try {
     const adminEmail = 'admin@ultimate.com';
-    const adminPlainPassword = 'Ultim@t+';
-    const passwordHash = await bcrypt.hash(adminPlainPassword, 10);
     await prisma.user.upsert({
       where: { email: adminEmail },
-      update: { passwordHash: passwordHash, nom: 'Admin', role: 'ADMIN', isActive: true },
-      create: { id: uuidv4(), email: adminEmail, passwordHash: passwordHash, nom: 'Admin', prenom: 'Ultimate', role: 'ADMIN', isActive: true },
+      update: { nom: 'Admin', role: 'ADMIN', isActive: true },
+      create: { id: uuidv4(), email: adminEmail, nom: 'Admin', prenom: 'Ultimate', role: 'ADMIN', isActive: true },
     });
-    console.log('✅ Compte admin opérationnel: admin@ultimate.com / Ultim@t+');
+    console.log('✅ Compte admin opérationnel: admin@ultimate.com');
   } catch (e) {
     console.error(`❌ Erreur lors de la création/mise à jour du compte admin: ${e.message}`);
   }
 
+  let seedWorkspaceId;
+  try {
+    const existingBaseWorkspace = await prisma.workspace.findFirst({ where: { isBase: true } });
+    if (existingBaseWorkspace) {
+      seedWorkspaceId = existingBaseWorkspace.id;
+    } else {
+      const createdBaseWorkspace = await prisma.workspace.create({
+        data: {
+          id: uuidv4(),
+          name: 'Base',
+          isBase: true,
+        },
+      });
+      seedWorkspaceId = createdBaseWorkspace.id;
+    }
+  } catch (e) {
+    console.error(`❌ Erreur lors de la création/mise à jour du workspace de seed: ${e.message}`);
+  }
+
   // --- Création/Mise à jour des Tags ---
   console.log('📝 Création/MàJ des tags...');
+  if (!seedWorkspaceId) {
+    console.error('❌ Aucun workspace de seed disponible. Abandon du seed des tags.');
+    console.log('✅ Seeding terminé avec succès !');
+    return;
+  }
   const tagsToCreate = [
     // Objectif
     { label: 'Échauffement', category: TAG_CATEGORIES.OBJECTIF, color: '#4285F4' },
@@ -80,9 +101,9 @@ async function main() {
   for (const tagData of tagsToCreate) {
     try {
       const tag = await prisma.tag.upsert({
-        where: { label_category: { label: tagData.label, category: tagData.category } },
+        where: { workspaceId_label_category: { workspaceId: seedWorkspaceId, label: tagData.label, category: tagData.category } },
         update: { color: tagData.color, level: tagData.level },
-        create: { ...tagData, id: uuidv4() },
+        create: { ...tagData, id: uuidv4(), workspaceId: seedWorkspaceId },
       });
       createdTags[tagData.label] = tag;
     } catch (e) {

@@ -1,3 +1,4 @@
 -- AlterTable
-ALTER TABLE "Exercice" ADD COLUMN     "points" TEXT,
-ADD COLUMN     "schemaUrls" TEXT;
+ALTER TABLE "Exercice" 
+ADD COLUMN IF NOT EXISTS "points" TEXT,
+ADD COLUMN IF NOT EXISTS "schemaUrls" TEXT;

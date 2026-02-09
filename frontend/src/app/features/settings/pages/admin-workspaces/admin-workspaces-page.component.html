@@ -8,7 +8,7 @@
       <h1 class="page-title">Administration globale des workspaces</h1>
       <p class="page-subtitle">
         Gérez toutes les bases (workspaces) et leurs membres. Cette vue est réservée aux administrateurs
-        globaux et ne concerne pas l'administration locale d'un seul workspace (OWNER).
+        globaux et ne concerne pas l'administration locale d'un seul workspace (MANAGER).
       </p>
     </div>
   </header>
@@ -294,7 +294,7 @@
           </div>
           <mat-card-title>Membres de "{{ ws.name }}"</mat-card-title>
           <mat-card-subtitle>
-            Affectez des utilisateurs à cette base et définissez leur rôle local (OWNER / USER).
+            Affectez des utilisateurs à cette base et définissez leur rôle local (MANAGER / MEMBER / VIEWER).
           </mat-card-subtitle>
         </mat-card-header>
 
@@ -311,8 +311,9 @@
           </div>
 
           <p class="workspace-users__hint">
-            <strong>OWNER</strong> : admin local de ce workspace uniquement.
-            <strong>USER</strong> : utilisateur simple de cette base.
+            <strong>MANAGER</strong> : gestionnaire local de ce workspace.
+            <strong>MEMBER</strong> : membre (écriture) de cette base.
+            <strong>VIEWER</strong> : lecteur (lecture seule) de cette base.
             Les permissions globales (ADMIN) restent gérées au niveau des utilisateurs.
           </p>
 
@@ -337,8 +338,9 @@
                     [value]="getWorkspaceUserRole(user.id)"
                     (selectionChange)="setUserRole(user.id, $event.value)"
                   >
-                    <mat-option value="OWNER">Owner (admin local du workspace)</mat-option>
-                    <mat-option value="USER">Utilisateur du workspace</mat-option>
+                    <mat-option value="VIEWER">Lecteur</mat-option>
+                    <mat-option value="MEMBER">Membre</mat-option>
+                    <mat-option value="MANAGER">Gestionnaire</mat-option>
                   </mat-select>
                 </mat-form-field>
               </div>

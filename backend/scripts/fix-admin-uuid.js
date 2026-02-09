@@ -103,7 +103,7 @@ async function main() {
       role: 'MANAGER'
     }
   });
-  console.log('✅ Liaison créée avec rôle OWNER');
+  console.log('✅ Liaison créée avec rôle MANAGER');
 
   // 6. Résumé final
   console.log('\n📊 Configuration finale:');

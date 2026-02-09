@@ -1,0 +1,11 @@
+Archivé le: 2026-02-09
+
+Document archivé:
+- docs/reference/features/ROLES_SPECIFICATION.md (Version 2.0)
+
+Raison:
+- Remplacé par la spécification officielle consolidée: docs/reference/features/ROLES_ACCESS_SPECIFICATION.md (Version 1.0)
+- Objectif: disposer d’un unique document contractuel « Rôles & Accès » sans section legacy.
+
+Référence de remplacement:
+- docs/reference/features/ROLES_ACCESS_SPECIFICATION.md

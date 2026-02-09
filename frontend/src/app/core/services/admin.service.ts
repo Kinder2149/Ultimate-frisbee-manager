@@ -164,7 +164,7 @@ export class AdminService {
     return this.http.get<AdminWorkspaceSummary[]>(url);
   }
 
-  createWorkspace(payload: { name: string; ownerUserId?: string }): Observable<{ id: string; name: string; createdAt: string }> {
+  createWorkspace(payload: { name: string; managerUserId?: string }): Observable<{ id: string; name: string; createdAt: string }> {
     const url = this.api.getUrl('workspaces');
     return this.http.post<{ id: string; name: string; createdAt: string }>(url, payload);
   }

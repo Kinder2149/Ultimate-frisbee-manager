@@ -44,7 +44,7 @@ const createWorkspaceSchema = z.object({
     invalid_type_error: 'Le nom doit être une chaîne de caractères.',
   }).min(3, { message: 'Le nom doit contenir au moins 3 caractères.' }),
 
-  ownerUserId: z.string().uuid().optional(),
+  managerUserId: z.string().uuid().optional(),
 });
 
 /**

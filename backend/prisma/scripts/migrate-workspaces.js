@@ -44,7 +44,7 @@ async function main() {
   await backfillWorkspaceId('blocEchauffement');
   await backfillWorkspaceId('situationMatch');
 
-  // 4) Create WorkspaceUser links: each existing user becomes OWNER
+  // 4) Create WorkspaceUser links: each existing user becomes MANAGER
   console.log('\nCreating WorkspaceUser links for existing users...');
   const users = await prisma.user.findMany();
   console.log(`Found ${users.length} users.`);

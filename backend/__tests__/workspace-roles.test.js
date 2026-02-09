@@ -1,7 +1,6 @@
 const request = require('supertest');
-const app = require('../server');
+const app = require('../app');
 const { prisma } = require('../services/prisma');
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const makeAdminToken = async () => {
@@ -11,7 +10,6 @@ const makeAdminToken = async () => {
       email: `roles-admin-${Date.now()}@ultimate.com`,
       nom: 'Admin',
       prenom: 'Roles',
-      passwordHash: bcrypt.hashSync('password123', 10),
       role: 'ADMIN',
       isActive: true,
     },
@@ -25,7 +23,6 @@ const makeUserToken = async () => {
       email: `roles-user-${Date.now()}@ultimate.com`,
       nom: 'User',
       prenom: 'Roles',
-      passwordHash: bcrypt.hashSync('password123', 10),
       role: 'USER',
       isActive: true,
     },
@@ -77,37 +74,6 @@ describe('Workspace Roles - Enum et validation', () => {
     expect(link.role).toBe('MANAGER');
   });
 
-  it('Rejette les rôles legacy: OWNER', async () => {
-    const { userId } = await makeUserToken();
-
-    const res = await request(app)
-      .put(`/api/admin/workspaces/${workspace.id}/users`)
-      .set('Authorization', `Bearer ${adminToken}`)
-      .send({
-        users: [
-          { userId, role: 'OWNER' },
-        ],
-      });
-
-    expect(res.statusCode).toBe(400);
-    expect(res.body.code).toBe('VALIDATION_ERROR');
-  });
-
-  it('Rejette les rôles legacy: USER (workspace)', async () => {
-    const { userId } = await makeUserToken();
-
-    const res = await request(app)
-      .put(`/api/admin/workspaces/${workspace.id}/users`)
-      .set('Authorization', `Bearer ${adminToken}`)
-      .send({
-        users: [
-          { userId, role: 'USER' },
-        ],
-      });
-
-    expect(res.statusCode).toBe(400);
-    expect(res.body.code).toBe('VALIDATION_ERROR');
-  });
 
   it('Rejette les rôles invalides', async () => {
     const { userId } = await makeUserToken();

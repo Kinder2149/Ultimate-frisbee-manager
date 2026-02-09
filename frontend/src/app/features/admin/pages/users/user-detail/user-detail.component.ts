@@ -141,15 +141,12 @@ export class UserDetailComponent implements OnInit {
 
   normalizeWorkspaceRole(role: string | undefined): string | undefined {
     if (!role) return role;
-    const upper = String(role).toUpperCase();
-    if (upper === 'OWNER') return 'MANAGER';
-    if (upper === 'USER') return 'MEMBER';
-    return upper;
+    return String(role).toUpperCase();
   }
 
   getWorkspaceRoleLabel(role: string | undefined): string {
     const r = this.normalizeWorkspaceRole(role);
-    if (r === 'MANAGER') return 'Manager';
+    if (r === 'MANAGER') return 'Gestionnaire';
     if (r === 'MEMBER') return 'Membre';
     if (r === 'VIEWER') return 'Lecteur';
     return r || '';

@@ -107,8 +107,8 @@
     }
   }
 
-  .owner-info-card {
-    .owner-info-card__avatar {
+  .manager-info-card {
+    .manager-info-card__avatar {
       background-color: rgba(76, 175, 80, 0.16);
 
       mat-icon {
@@ -185,7 +185,7 @@
           background: rgba(0, 0, 0, 0.04);
           color: rgba(0, 0, 0, 0.7);
 
-          &--owner {
+          &--manager {
             background: rgba(56, 142, 60, 0.18);
             color: #2e7d32;
           }
