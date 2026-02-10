@@ -1,0 +1,28 @@
+<div class="mobile-home">
+  <app-mobile-filter-bar
+    [activeCategory]="stateService.activeCategory()"
+    [sortOrder]="stateService.sortOrder()"
+    [categoryCount]="stateService.categoryCount()"
+    [selectedTags]="stateService.selectedTags()"
+    [availableTags]="availableTags"
+    (categoryChange)="onCategoryChange($event)"
+    (sortChange)="onSortChange($event)"
+    (tagAdd)="onTagAdd($event)"
+    (tagRemove)="onTagRemove($event)">
+  </app-mobile-filter-bar>
+
+  <app-content-feed
+    [items]="stateService.filteredItems()"
+    [loading]="stateService.loading()"
+    [error]="stateService.error()"
+    (itemView)="onItemView($event)"
+    (itemEdit)="onItemEdit($event)"
+    (itemDuplicate)="onItemDuplicate($event)"
+    (itemDelete)="onItemDelete($event)">
+  </app-content-feed>
+
+  <app-mobile-terrain-toggle
+    [terrainMode]="stateService.terrainMode()"
+    (terrainModeChange)="onTerrainModeChange($event)">
+  </app-mobile-terrain-toggle>
+</div>

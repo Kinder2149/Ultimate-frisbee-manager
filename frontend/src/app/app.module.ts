@@ -66,7 +66,7 @@ const routes: Routes = [
   // Route mobile (protégée)
   {
     path: 'mobile',
-    loadComponent: () => import('./features/mobile/pages/mobile-page/mobile-page.component').then(c => c.MobilePageComponent),
+    loadChildren: () => import('./features/mobile/mobile.routes').then(r => r.MOBILE_ROUTES),
     canActivate: [AuthGuard, WorkspaceSelectedGuard]
   },
   

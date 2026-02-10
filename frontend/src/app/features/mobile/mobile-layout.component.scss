@@ -1,0 +1,10 @@
+@import '../../shared/styles/mobile-variables';
+
+.mobile-layout {
+  min-height: 100vh;
+  background-color: $mobile-bg-page;
+}
+
+.mobile-layout__content {
+  padding-top: $mobile-header-height;
+}

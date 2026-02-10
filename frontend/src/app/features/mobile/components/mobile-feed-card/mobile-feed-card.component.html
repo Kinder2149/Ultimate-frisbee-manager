@@ -1,0 +1,65 @@
+<div class="mobile-feed-card" [class]="'mobile-feed-card--' + item.type" (click)="onCardClick()">
+  <div class="mobile-feed-card__type-indicator"></div>
+
+  <div class="mobile-feed-card__content">
+    <div class="mobile-feed-card__header">
+      <div class="mobile-feed-card__type-badge">
+        <mat-icon class="mobile-feed-card__type-icon">{{ typeIcon }}</mat-icon>
+        <span class="mobile-feed-card__type-label">{{ typeLabel }}</span>
+      </div>
+
+      <button
+        mat-icon-button
+        class="mobile-feed-card__menu-btn"
+        [matMenuTriggerFor]="actionsMenu"
+        (click)="onMenuButtonClick($event)"
+        aria-label="Actions">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+
+      <mat-menu #actionsMenu="matMenu">
+        <button mat-menu-item (click)="onViewClick($event)">
+          <mat-icon>visibility</mat-icon>
+          <span>Voir</span>
+        </button>
+        <button mat-menu-item (click)="onDuplicateClick($event)" [disabled]="duplicating">
+          <mat-icon>content_copy</mat-icon>
+          <span>{{ duplicating ? 'Duplication...' : 'Dupliquer' }}</span>
+        </button>
+        <button mat-menu-item (click)="onDeleteClick($event)" class="mobile-feed-card__delete-action">
+          <mat-icon>delete</mat-icon>
+          <span>Supprimer</span>
+        </button>
+      </mat-menu>
+    </div>
+
+    <h3 class="mobile-feed-card__title">{{ item.title }}</h3>
+
+    <div class="mobile-feed-card__meta">
+      <span class="mobile-feed-card__meta-item" *ngIf="item.duree">
+        <mat-icon class="mobile-feed-card__meta-icon">schedule</mat-icon>
+        {{ formatDuree(item.duree) }}
+      </span>
+      <span class="mobile-feed-card__meta-item" *ngIf="item.nombreBlocs">
+        <mat-icon class="mobile-feed-card__meta-icon">view_module</mat-icon>
+        {{ item.nombreBlocs }} blocs
+      </span>
+      <span class="mobile-feed-card__meta-item">
+        <mat-icon class="mobile-feed-card__meta-icon">calendar_today</mat-icon>
+        {{ item.createdAt | date:'dd/MM/yyyy' }}
+      </span>
+    </div>
+
+    <div class="mobile-feed-card__tags" *ngIf="item.tags && item.tags.length > 0">
+      <span
+        *ngFor="let tag of item.tags.slice(0, 2)"
+        class="mobile-feed-card__tag"
+        [style.background-color]="tag.color">
+        {{ tag.label }}
+      </span>
+      <span *ngIf="item.tags.length > 2" class="mobile-feed-card__tag mobile-feed-card__tag--more">
+        +{{ item.tags.length - 2 }}
+      </span>
+    </div>
+  </div>
+</div>

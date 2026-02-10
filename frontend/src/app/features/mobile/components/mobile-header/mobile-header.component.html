@@ -1,21 +1,41 @@
-<header class="mobile-header">
-  <div class="mobile-header__brand">
+<header class="mobile-header" [class.mobile-header--search-expanded]="searchExpanded">
+  <div class="mobile-header__brand" *ngIf="!searchExpanded">
     <mat-icon class="mobile-header__icon">sports</mat-icon>
-    <h1 class="mobile-header__title">UFM</h1>
+    <h1 class="mobile-header__title">Ultimate Frisbee Manager</h1>
+  </div>
+
+  <div class="mobile-header__search" *ngIf="showSearch && searchExpanded">
+    <input 
+      type="text" 
+      class="mobile-header__search-input"
+      [(ngModel)]="searchQuery"
+      (ngModelChange)="onSearchInput($event)"
+      placeholder="Rechercher..."
+      autofocus>
+    <button 
+      mat-icon-button 
+      class="mobile-header__search-clear"
+      *ngIf="searchQuery"
+      (click)="clearSearch()"
+      aria-label="Effacer">
+      <mat-icon>close</mat-icon>
+    </button>
   </div>
 
   <div class="mobile-header__actions">
     <button 
       mat-icon-button 
       class="mobile-header__action-btn"
-      (click)="onSearchClick()"
-      aria-label="Rechercher">
-      <mat-icon>search</mat-icon>
+      *ngIf="showSearch"
+      (click)="toggleSearch()"
+      [attr.aria-label]="searchExpanded ? 'Fermer la recherche' : 'Rechercher'">
+      <mat-icon>{{ searchExpanded ? 'close' : 'search' }}</mat-icon>
     </button>
 
     <button 
       mat-icon-button 
       class="mobile-header__action-btn mobile-header__avatar"
+      *ngIf="!searchExpanded"
       [matMenuTriggerFor]="userMenu"
       aria-label="Menu utilisateur">
       <span class="avatar-initials">{{ userInitials }}</span>
@@ -24,19 +44,26 @@
 </header>
 
 <mat-menu #userMenu="matMenu" class="mobile-header__menu">
-  <button mat-menu-item (click)="onProfileClick()">
+  <div class="mobile-header__menu-user">
+    <div class="mobile-header__menu-avatar">{{ userInitials }}</div>
+    <div class="mobile-header__menu-name">{{ userFullName }}</div>
+  </div>
+  
+  <mat-divider></mat-divider>
+
+  <button mat-menu-item disabled>
     <mat-icon>person</mat-icon>
-    <span>Profil</span>
+    <span>Profil (bientôt disponible)</span>
   </button>
 
-  <button mat-menu-item (click)="onTagsClick()">
+  <button mat-menu-item disabled>
     <mat-icon>label</mat-icon>
-    <span>Tags</span>
+    <span>Tags (bientôt disponible)</span>
   </button>
 
-  <button mat-menu-item *ngIf="isAdmin" (click)="onAdminClick()">
+  <button mat-menu-item *ngIf="isAdmin" disabled>
     <mat-icon>admin_panel_settings</mat-icon>
-    <span>Administration</span>
+    <span>Administration (bientôt disponible)</span>
   </button>
 
   <mat-divider></mat-divider>

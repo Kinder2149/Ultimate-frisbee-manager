@@ -1,8 +1,8 @@
-@import '../../../../shared/styles/global-theme.scss';
+@import '../../../../shared/styles/mobile-variables.scss';
 
 .hero-contextuel {
   padding: 12px;
-  background: linear-gradient(135deg, var(--hero-color) 0%, rgba(0, 0, 0, 0.05) 100%);
+  background: linear-gradient(135deg, var(--hero-color) 0%, $mobile-bg-secondary 100%);
   
   &__header {
     display: flex;
@@ -12,7 +12,7 @@
   }
   
   &__star {
-    color: #ffd700;
+    color: $mobile-accent;
     font-size: 18px;
     width: 18px;
     height: 18px;

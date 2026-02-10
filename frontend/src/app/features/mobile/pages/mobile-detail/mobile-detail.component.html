@@ -1,0 +1,97 @@
+<div class="mobile-detail">
+  <!-- Header avec bouton retour -->
+  <div class="mobile-detail__header">
+    <button
+      mat-icon-button
+      class="mobile-detail__back-btn"
+      (click)="goBack()"
+      aria-label="Retour">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <span class="mobile-detail__header-title">{{ typeLabel }}</span>
+  </div>
+
+  <!-- Loading -->
+  <div class="mobile-detail__loading" *ngIf="loading">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Chargement...</p>
+  </div>
+
+  <!-- Erreur -->
+  <div class="mobile-detail__error" *ngIf="error && !loading">
+    <mat-icon>error_outline</mat-icon>
+    <p>{{ error }}</p>
+    <button mat-flat-button color="primary" (click)="goBack()">Retour au feed</button>
+  </div>
+
+  <!-- Contenu -->
+  <div class="mobile-detail__content" *ngIf="item && !loading && !error">
+    <!-- Badge type -->
+    <div class="mobile-detail__type-badge" [class]="'mobile-detail__type-badge--' + item.type">
+      <mat-icon>{{ typeIcon }}</mat-icon>
+      <span>{{ typeLabel }}</span>
+    </div>
+
+    <!-- Titre -->
+    <h1 class="mobile-detail__title">{{ item.title }}</h1>
+
+    <!-- Image -->
+    <div class="mobile-detail__image" *ngIf="item.imageUrl">
+      <img [src]="item.imageUrl" [alt]="item.title" loading="lazy">
+    </div>
+
+    <!-- Métadonnées -->
+    <div class="mobile-detail__meta">
+      <div class="mobile-detail__meta-item" *ngIf="item.duree">
+        <mat-icon>schedule</mat-icon>
+        <span>{{ formatDuree(item.duree) }}</span>
+      </div>
+      <div class="mobile-detail__meta-item" *ngIf="item.nombreBlocs">
+        <mat-icon>view_module</mat-icon>
+        <span>{{ item.nombreBlocs }} blocs</span>
+      </div>
+      <div class="mobile-detail__meta-item">
+        <mat-icon>calendar_today</mat-icon>
+        <span>Créé le {{ item.createdAt | date:'dd/MM/yyyy' }}</span>
+      </div>
+    </div>
+
+    <!-- Description (texte brut en Phase 1) -->
+    <div class="mobile-detail__description" *ngIf="plainDescription">
+      <h2 class="mobile-detail__section-title">Description</h2>
+      <p>{{ plainDescription }}</p>
+    </div>
+
+    <!-- Tags -->
+    <div class="mobile-detail__tags" *ngIf="item.tags && item.tags.length > 0">
+      <h2 class="mobile-detail__section-title">Tags</h2>
+      <div class="mobile-detail__tags-list">
+        <span
+          *ngFor="let tag of item.tags"
+          class="mobile-detail__tag"
+          [style.background-color]="tag.color">
+          {{ tag.label }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="mobile-detail__actions">
+      <button
+        mat-flat-button
+        class="mobile-detail__action-btn"
+        (click)="onDuplicate()">
+        <mat-icon>content_copy</mat-icon>
+        Dupliquer
+      </button>
+      <button
+        mat-flat-button
+        color="warn"
+        class="mobile-detail__action-btn"
+        (click)="onDelete()">
+        <mat-icon>delete</mat-icon>
+        Supprimer
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,42 @@
+@import '../../../../shared/styles/mobile-variables';
+
+.mobile-confirm-dialog {
+  padding: $mobile-spacing-lg;
+}
+
+.mobile-confirm-dialog__title {
+  margin: 0 0 $mobile-spacing-md 0;
+  font-size: $mobile-font-size-title;
+  font-weight: $mobile-font-weight-bold;
+  color: $mobile-text-primary;
+}
+
+.mobile-confirm-dialog__message {
+  margin: 0 0 $mobile-spacing-xl 0;
+  font-size: $mobile-font-size-body;
+  color: $mobile-text-secondary;
+  line-height: 1.5;
+}
+
+.mobile-confirm-dialog__actions {
+  display: flex;
+  gap: $mobile-spacing-md;
+  justify-content: flex-end;
+}
+
+.mobile-confirm-dialog__btn {
+  min-width: 100px;
+  min-height: $mobile-touch-target;
+  font-size: $mobile-font-size-body;
+  font-weight: $mobile-font-weight-medium;
+  border-radius: $mobile-border-radius-md;
+}
+
+.mobile-confirm-dialog__btn--cancel {
+  background-color: $mobile-bg-secondary;
+  color: $mobile-text-secondary;
+}
+
+.mobile-confirm-dialog__btn--confirm {
+  min-width: 100px;
+}

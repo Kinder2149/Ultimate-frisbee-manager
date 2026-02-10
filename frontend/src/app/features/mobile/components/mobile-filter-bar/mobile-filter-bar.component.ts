@@ -2,7 +2,9 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatChipsModule } from '@angular/material/chips';
 import { CategoryType, SortOrder } from '../../models/content-item.model';
+import { Tag } from '../../../../core/models/tag.model';
 
 interface CategoryConfig {
   type: CategoryType;
@@ -17,7 +19,8 @@ interface CategoryConfig {
   imports: [
     CommonModule,
     MatIconModule,
-    MatButtonModule
+    MatButtonModule,
+    MatChipsModule
   ],
   templateUrl: './mobile-filter-bar.component.html',
   styleUrls: ['./mobile-filter-bar.component.scss']
@@ -32,9 +35,13 @@ export class MobileFilterBarComponent {
     echauffement: 0,
     situation: 0
   };
+  @Input() selectedTags: Tag[] = [];
+  @Input() availableTags: Tag[] = [];
 
   @Output() categoryChange = new EventEmitter<CategoryType>();
   @Output() sortChange = new EventEmitter<SortOrder>();
+  @Output() tagAdd = new EventEmitter<Tag>();
+  @Output() tagRemove = new EventEmitter<string>();
 
   categories: CategoryConfig[] = [
     { type: 'all', label: 'Tout', icon: 'apps', color: '#2c3e50' },
@@ -65,5 +72,23 @@ export class MobileFilterBarComponent {
 
   get sortLabel(): string {
     return this.sortOrder === 'recent' ? 'Récent' : 'Ancien';
+  }
+
+  onTagRemove(tagId: string): void {
+    this.tagRemove.emit(tagId);
+  }
+
+  isTagSelected(tag: Tag): boolean {
+    return this.selectedTags.some(t => t.id === tag.id);
+  }
+
+  onTagClick(tag: Tag): void {
+    if (this.isTagSelected(tag)) {
+      if (tag.id) {
+        this.tagRemove.emit(tag.id);
+      }
+    } else {
+      this.tagAdd.emit(tag);
+    }
   }
 }

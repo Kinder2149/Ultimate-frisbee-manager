@@ -1,0 +1,87 @@
+/* ==========================================================================
+   MOBILE VARIABLES — Source de vérité unique pour la vue mobile dédiée
+   Dérivées de global-theme.scss
+   ========================================================================== */
+
+/* Couleurs par type de contenu */
+$mobile-exercice-color: #3498db;       /* = --exercice-color de global-theme.scss */
+$mobile-exercice-light: #EBF3FD;       /* = --exercice-light */
+$mobile-entrainement-color: #2ecc71;   /* Distinct de exercice — choix mobile documenté */
+$mobile-entrainement-light: #E8F8F0;
+$mobile-echauffement-color: #FF9800;   /* = --echauffement-color de global-theme.scss */
+$mobile-echauffement-light: #FFF8E1;   /* = --echauffement-light */
+$mobile-situation-color: #4CAF50;      /* = --situation-color de global-theme.scss */
+$mobile-situation-light: #E8F5E8;      /* = --situation-light */
+
+/* Couleurs principales */
+$mobile-primary: #3498db;              /* = --primary-color */
+$mobile-primary-dark: #2980b9;         /* = --primary-dark */
+$mobile-accent: #e74c3c;              /* = --accent-color */
+$mobile-warn: #e74c3c;               /* = --danger-color */
+
+/* Couleurs de texte */
+$mobile-text-primary: #2c3e50;         /* = --text-primary */
+$mobile-text-secondary: #34495e;       /* = --text-secondary */
+$mobile-text-muted: #7f8c8d;          /* = --text-muted */
+
+/* Couleurs de fond */
+$mobile-bg-primary: #ffffff;           /* = --bg-primary */
+$mobile-bg-secondary: #f8f9fa;         /* = --bg-secondary */
+$mobile-bg-page: #f0f2f5;             /* Fond de page mobile */
+
+/* Bordures */
+$mobile-border-color: #e1e8ed;         /* = --border-color */
+$mobile-border-light: #ecf0f1;         /* = --border-light */
+$mobile-border-medium: #bdc3c7;        /* Bordure moyenne pour états hover */
+
+/* Ombres */
+$mobile-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+$mobile-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.1);
+$mobile-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.15);
+
+/* Typographie mobile */
+$mobile-font-size-title: 1.1rem;
+$mobile-font-size-body: 0.95rem;
+$mobile-font-size-meta: 0.85rem;
+$mobile-font-size-small: 0.75rem;
+$mobile-font-weight-bold: 600;
+$mobile-font-weight-medium: 500;
+$mobile-font-weight-normal: 400;
+
+/* Espacements mobile */
+$mobile-spacing-xs: 4px;
+$mobile-spacing-sm: 8px;
+$mobile-spacing-md: 12px;
+$mobile-spacing-lg: 16px;
+$mobile-spacing-xl: 24px;
+
+/* Touch targets — minimum 44x44px (WCAG / Apple HIG) */
+$mobile-touch-target: 44px;
+
+/* Header mobile */
+$mobile-header-height: 56px;
+$mobile-header-bg: #2c3e50;            /* = --bg-dark */
+
+/* Rayons de bordure */
+$mobile-border-radius-sm: 4px;
+$mobile-border-radius-md: 8px;
+$mobile-border-radius-lg: 12px;
+
+/* Transitions */
+$mobile-transition-fast: 0.15s ease-in-out;
+$mobile-transition-normal: 0.3s ease-in-out;
+
+/* Map des couleurs par type — utilisable dans les composants */
+$mobile-type-colors: (
+  'exercice': $mobile-exercice-color,
+  'entrainement': $mobile-entrainement-color,
+  'echauffement': $mobile-echauffement-color,
+  'situation': $mobile-situation-color,
+);
+
+$mobile-type-colors-light: (
+  'exercice': $mobile-exercice-light,
+  'entrainement': $mobile-entrainement-light,
+  'echauffement': $mobile-echauffement-light,
+  'situation': $mobile-situation-light,
+);

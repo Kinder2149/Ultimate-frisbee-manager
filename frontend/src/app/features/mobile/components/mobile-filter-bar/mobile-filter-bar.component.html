@@ -21,3 +21,25 @@
     <span class="sort-label">{{ sortLabel }}</span>
   </button>
 </div>
+
+<div class="mobile-filter-bar__tags" *ngIf="selectedTags.length > 0 || availableTags.length > 0">
+  <div class="tags-scroll">
+    <div class="tag-chip tag-chip--selected" *ngFor="let tag of selectedTags">
+      <span class="tag-chip__label">{{ tag.label }}</span>
+      <button 
+        class="tag-chip__remove"
+        (click)="onTagRemove(tag.id!)"
+        aria-label="Retirer le tag">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    
+    <div 
+      class="tag-chip"
+      *ngFor="let tag of availableTags"
+      [class.tag-chip--selected]="isTagSelected(tag)"
+      (click)="onTagClick(tag)">
+      <span class="tag-chip__label">{{ tag.label }}</span>
+    </div>
+  </div>
+</div>

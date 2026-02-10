@@ -1,0 +1,82 @@
+﻿npx : npm warn config ignoring workspace config at D:\Coding\AppWindows\Ultimate-frisbee-manager\frontend/.npmrc
+Au caractère Ligne:1 : 1
++ npx ng build --configuration=development 2>&1 | Out-File -FilePath bu ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm warn config...frontend/.npmrc:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+- Generating browser application bundles (phase: setup)...
+Ô£ö Browser application bundle generation complete.
+Ô£ö Browser application bundle generation complete.
+- Copying assets...
+Ô£ö Copying assets complete.
+- Generating index html...
+Ô£ö Index html generation complete.
+
+Initial chunk files                                                                                     | Names                                                              |  Raw size
+vendor.js                                                                                               | vendor                                                             |   6.49 MB | 
+main.js                                                                                                 | main                                                               | 391.63 kB | 
+styles.css                                                                                              | styles                                                             | 149.67 kB | 
+polyfills.js                                                                                            | polyfills                                                          | 114.24 kB | 
+runtime.js                                                                                              | runtime                                                            |  12.39 kB | 
+
+                                                                                                        | Initial total                                                      |   7.14 MB
+
+Lazy chunk files                                                                                        | Names                                                              |  Raw size
+node_modules_quill_quill_js.js                                                                          | quill                                                              | 717.79 kB | 
+src_app_features_tags-advanced_tags-advanced_module_ts.js                                               | features-tags-advanced-tags-advanced-module                        | 365.92 kB | 
+default-src_app_shared_components_search-filter_search-filter_component_ts.js                           | features-settings-settings-module                                  | 364.79 kB | 
+src_app_features_entrainements_entrainements_module_ts.js                                               | features-entrainements-entrainements-module                        | 338.31 kB | 
+src_app_features_settings_settings_module_ts.js                                                         | features-settings-settings-module                                  | 269.06 kB | 
+default-src_app_features_exercices_pages_exercice-form_exercice-form_component_ts.js                    | features-exercices-exercices-module                                | 162.28 kB | 
+src_app_features_mobile_pages_mobile-home_mobile-home_component_ts.js                                   | pages-mobile-home-mobile-home-component                            | 154.80 kB | 
+default-src_app_core_guards_write_guard_ts-src_app_features_exercices_components_exercice-fil-28734a.js | features-exercices-exercices-module                                | 145.02 kB | 
+src_app_features_exercices_exercices_module_ts.js                                                       | features-exercices-exercices-module                                | 126.22 kB | 
+src_app_features_admin_admin_module_ts.js                                                               | features-admin-admin-module                                        | 115.97 kB | 
+src_app_features_admin_pages_workspaces_workspace-detail_workspace-detail_component_ts.js               | pages-workspaces-workspace-detail-workspace-detail-component       | 113.97 kB | 
+src_app_features_situations-matchs_situations-matchs_module_ts.js                                       | features-situations-matchs-situations-matchs-module                |  87.42 kB | 
+src_app_features_echauffements_echauffements_module_ts.js                                               | features-echauffements-echauffements-module                        |  87.28 kB | 
+default-src_app_shared_shared_module_ts.js                                                              | features-settings-settings-module                                  |  86.36 kB | 
+default-src_app_shared_components_forms_situationmatch-form_situationmatch-form_component_ts--de6758.js | features-entrainements-entrainements-module                        |  83.42 kB | 
+default-src_app_shared_components_echauffement-view_echauffement-view_component_ts-src_app_sh-bde29d.js | features-entrainements-entrainements-module                        |  81.04 kB | 
+default-src_app_shared_components_rich-text-editor_rich-text-editor_component_ts.js                     | features-exercices-exercices-module                                |  78.57 kB | 
+src_app_features_auth_auth_module_ts.js                                                                 | features-auth-auth-module                                          |  76.94 kB | 
+src_app_features_admin_pages_users_users-list_users-list_component_ts.js                                | pages-users-users-list-users-list-component                        |  73.03 kB | 
+src_app_features_admin_pages_users_user-detail_user-detail_component_ts.js                              | pages-users-user-detail-user-detail-component                      |  68.64 kB | 
+src_app_features_admin_pages_workspaces_workspaces-list_workspaces-list_component_ts.js                 | pages-workspaces-workspaces-list-workspaces-list-component         |  67.88 kB | 
+default-node_modules_angular_material_fesm2022_slide-toggle_mjs.js                                      | features-tags-advanced-tags-advanced-module                        |  61.33 kB | 
+src_app_features_mobile_mobile-layout_component_ts.js                                                   | mobile-layout-component                                            |  54.27 kB | 
+src_app_features_workspaces_workspace-admin_workspace-admin_component_ts.js                             | features-workspaces-workspace-admin-workspace-admin-component      |  53.26 kB | 
+src_app_features_workspaces_select-workspace_select-workspace_component_ts.js                           | features-workspaces-select-workspace-select-workspace-component    |  49.85 kB | 
+default-node_modules_angular_material_fesm2022_sort_mjs.js                                              | features-tags-advanced-tags-advanced-module                        |  46.01 kB | 
+src_app_features_mobile_pages_mobile-detail_mobile-detail_component_ts.js                               | pages-mobile-detail-mobile-detail-component                        |  45.65 kB | 
+src_app_features_admin_pages_dashboard_dashboard_component_ts.js                                        | pages-dashboard-dashboard-component                                |  43.80 kB | 
+default-node_modules_angular_material_fesm2022_paginator_mjs.js                                         | pages-content-content-component                                    |  40.32 kB | 
+src_app_features_admin_pages_content_content_component_ts.js                                            | pages-content-content-component                                    |  37.88 kB | 
+default-src_app_features_admin_pages_users_user-edit-dialog_user-edit-dialog_component_ts.js            | pages-users-users-list-users-list-component                        |  37.45 kB | 
+src_app_features_auth_pages_reset-password_reset-password-page_component_ts.js                          | features-auth-pages-reset-password-reset-password-page-component   |  32.36 kB | 
+src_app_features_admin_pages_roles-rights_roles-rights_component_ts.js                                  | pages-roles-rights-roles-rights-component                          |  30.40 kB | 
+src_app_features_auth_pages_forgot-password_forgot-password-page_component_ts.js                        | features-auth-pages-forgot-password-forgot-password-page-component |  30.38 kB | 
+default-src_app_features_auth_shared_auth-error_auth-error_component_ts-src_app_features_auth-58ceff.js | features-auth-pages-forgot-password-forgot-password-page-component |  23.48 kB | 
+default-src_app_shared_components_duplicate-button_duplicate-button_component_ts-src_app_shar-9a0315.js | features-exercices-exercices-module                                |  22.49 kB | 
+src_app_features_auth_pages_confirm-email_confirm-email-page_component_ts.js                            | features-auth-pages-confirm-email-confirm-email-page-component     |  21.01 kB | 
+default-src_app_shared_components_dialog_confirm-dialog_component_ts.js                                 | features-exercices-exercices-module                                |  18.08 kB | 
+default-src_app_features_auth_shared_auth-loader_auth-loader_component_ts-src_app_features_au-954180.js | features-auth-pages-reset-password-reset-password-page-component   |  16.69 kB | 
+default-src_app_shared_components_dialog_dialog_service_ts.js                                           | features-exercices-exercices-module                                |  15.87 kB | 
+default-src_app_features_mobile_components_mobile-confirm-dialog_mobile-confirm-dialog_component_ts.js  | pages-mobile-home-mobile-home-component                            |  13.64 kB | 
+src_app_features_admin_pages_stats_stats_component_ts.js                                                | pages-stats-stats-component                                        |  13.48 kB | 
+src_app_features_admin_pages_settings_settings_component_ts.js                                          | pages-settings-settings-component                                  |   9.06 kB | 
+src_app_features_admin_pages_activity_activity_component_ts.js                                          | pages-activity-activity-component                                  |   5.99 kB | 
+common.js                                                                                               | common                                                             |   3.51 kB | 
+src_app_features_mobile_mobile_routes_ts.js                                                             | features-mobile-mobile-routes                                      |   1.87 kB | 
+
+Build at: 2026-02-10T10:17:45.770Z - Hash: 64f7b210e8a0d682 - Time: 19346ms
+
+Warning: D:\Coding\AppWindows\Ultimate-frisbee-manager\frontend\src\app\features\tags\pages\tags-manager.component.ts depends on '@ufm/shared/constants/tag-categories'. CommonJS or AMD dependencies can cause optimization bailouts.
+For more info see: https://angular.io/guide/build#configuring-commonjs-dependencies
+
+Warning: D:\Coding\AppWindows\Ultimate-frisbee-manager\node_modules\quill\core.js depends on 'quill-delta'. CommonJS or AMD dependencies can cause optimization bailouts.
+For more info see: https://angular.io/guide/build#configuring-commonjs-dependencies
+
+

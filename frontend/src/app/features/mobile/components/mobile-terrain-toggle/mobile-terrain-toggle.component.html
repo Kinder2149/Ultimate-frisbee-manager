@@ -1,0 +1,10 @@
+<button
+  class="terrain-toggle-fab"
+  [class.terrain-toggle-fab--active]="terrainMode"
+  mat-fab
+  (click)="onToggle()"
+  [matTooltip]="tooltipText"
+  matTooltipPosition="left"
+  aria-label="Basculer le mode terrain">
+  <mat-icon>{{ iconName }}</mat-icon>
+</button>

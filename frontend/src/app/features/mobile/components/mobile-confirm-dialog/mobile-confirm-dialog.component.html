@@ -1,0 +1,20 @@
+<div class="mobile-confirm-dialog">
+  <h2 class="mobile-confirm-dialog__title">{{ data.title }}</h2>
+  <p class="mobile-confirm-dialog__message">{{ data.message }}</p>
+
+  <div class="mobile-confirm-dialog__actions">
+    <button
+      mat-flat-button
+      class="mobile-confirm-dialog__btn mobile-confirm-dialog__btn--cancel"
+      (click)="onCancel()">
+      {{ data.cancelLabel }}
+    </button>
+    <button
+      mat-flat-button
+      class="mobile-confirm-dialog__btn mobile-confirm-dialog__btn--confirm"
+      [color]="data.confirmColor"
+      (click)="onConfirm()">
+      {{ data.confirmLabel }}
+    </button>
+  </div>
+</div>

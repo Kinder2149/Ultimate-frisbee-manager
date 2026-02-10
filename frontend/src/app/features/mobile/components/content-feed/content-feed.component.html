@@ -10,164 +10,22 @@
   </div>
 
   <div class="content-feed__items" *ngIf="!loading && !error">
-    <ng-container *ngFor="let item of items; trackBy: trackByItemId">
-      
-      <!-- Exercice: composant dédié réutilisé -->
-      <app-exercice-card
-        *ngIf="item.type === 'exercice'"
-        [exercice]="item.originalData"
-        [mode]="'default'"
-        (exerciceDeleted)="onDeleteExercice($event)"
-        (exerciceDuplicated)="onDuplicateExercice($event)">
-      </app-exercice-card>
+    <app-mobile-feed-card
+      *ngFor="let item of displayedItems; trackBy: trackByItemId"
+      [item]="item"
+      [duplicating]="isDuplicating(item.id)"
+      (cardClick)="onView(item)"
+      (viewClick)="onView(item)"
+      (duplicateClick)="onDuplicate(item)"
+      (deleteClick)="onDelete(item)">
+    </app-mobile-feed-card>
 
-      <!-- Entraînement: mat-card avec structure entity-card -->
-      <mat-card 
-        *ngIf="item.type === 'entrainement'" 
-        class="entity-card entrainement-card"
-        [style.--category-color]="getCategoryColor(item.type)"
-        (click)="onView(item)">
-        
-        <mat-card-header class="entity-card-header">
-          <mat-card-title>{{ item.title }}</mat-card-title>
-          <div class="entity-card-actions" (click)="$event.stopPropagation()">
-            <button mat-icon-button (click)="onView(item, $event)" matTooltip="Voir">
-              <mat-icon>visibility</mat-icon>
-            </button>
-            <button mat-icon-button (click)="onEdit(item, $event)" matTooltip="Modifier">
-              <mat-icon>edit</mat-icon>
-            </button>
-            <app-duplicate-button 
-              [entityId]="item.id"
-              [loading]="isDuplicating(item.id)"
-              (duplicate)="onDuplicateById($event, item)">
-            </app-duplicate-button>
-            <button mat-icon-button (click)="onDelete(item, $event)" matTooltip="Supprimer">
-              <mat-icon>delete</mat-icon>
-            </button>
-          </div>
-        </mat-card-header>
+    <div class="content-feed__loading-more" *ngIf="loadingMore">
+      <mat-spinner diameter="32"></mat-spinner>
+      <p>Chargement...</p>
+    </div>
 
-        <mat-card-content class="entity-card-body">
-          <div class="info-row" *ngIf="item.duree">
-            <span class="label">Durée:</span>
-            <span class="value duration">{{ formatDuree(item.duree) }}</span>
-          </div>
-
-          <div class="tags-display" *ngIf="item.tags && item.tags.length > 0">
-            <span *ngFor="let tag of item.tags.slice(0, 2)" 
-                  class="tag" 
-                  [style.background-color]="tag.color">
-              {{ tag.label }}
-            </span>
-            <span *ngIf="item.tags.length > 2" class="tag tag--more">
-              +{{ item.tags.length - 2 }}
-            </span>
-          </div>
-
-          <div class="created-at">
-            Créé le {{ item.createdAt | date:'dd/MM/yyyy' }}
-          </div>
-        </mat-card-content>
-      </mat-card>
-
-      <!-- Échauffement: mat-card avec structure entity-card -->
-      <mat-card 
-        *ngIf="item.type === 'echauffement'" 
-        class="entity-card echauffement-card"
-        [style.--category-color]="getCategoryColor(item.type)"
-        (click)="onView(item)">
-        
-        <mat-card-header class="entity-card-header">
-          <mat-card-title>{{ item.title }}</mat-card-title>
-          <div class="entity-card-actions" (click)="$event.stopPropagation()">
-            <button mat-icon-button (click)="onView(item, $event)" matTooltip="Voir">
-              <mat-icon>visibility</mat-icon>
-            </button>
-            <button mat-icon-button (click)="onEdit(item, $event)" matTooltip="Modifier">
-              <mat-icon>edit</mat-icon>
-            </button>
-            <app-duplicate-button 
-              [entityId]="item.id"
-              [loading]="isDuplicating(item.id)"
-              (duplicate)="onDuplicateById($event, item)">
-            </app-duplicate-button>
-            <button mat-icon-button (click)="onDelete(item, $event)" matTooltip="Supprimer">
-              <mat-icon>delete</mat-icon>
-            </button>
-          </div>
-        </mat-card-header>
-
-        <mat-card-content class="entity-card-body">
-          <div class="info-row" *ngIf="item.nombreBlocs">
-            <span class="label">Blocs:</span>
-            <span class="value">{{ item.nombreBlocs }}</span>
-          </div>
-
-          <app-rich-text-view 
-            *ngIf="item.description" 
-            [html]="item.description">
-          </app-rich-text-view>
-
-          <div class="created-at">
-            Créé le {{ item.createdAt | date:'dd/MM/yyyy' }}
-          </div>
-        </mat-card-content>
-      </mat-card>
-
-      <!-- Situation: mat-card avec structure entity-card -->
-      <mat-card 
-        *ngIf="item.type === 'situation'" 
-        class="entity-card situation-card"
-        [style.--category-color]="getCategoryColor(item.type)"
-        (click)="onView(item)">
-        
-        <mat-card-header class="entity-card-header">
-          <mat-card-title>{{ item.title }}</mat-card-title>
-          <div class="entity-card-actions" (click)="$event.stopPropagation()">
-            <button mat-icon-button (click)="onView(item, $event)" matTooltip="Voir">
-              <mat-icon>visibility</mat-icon>
-            </button>
-            <button mat-icon-button (click)="onEdit(item, $event)" matTooltip="Modifier">
-              <mat-icon>edit</mat-icon>
-            </button>
-            <app-duplicate-button 
-              [entityId]="item.id"
-              [loading]="isDuplicating(item.id)"
-              (duplicate)="onDuplicateById($event, item)">
-            </app-duplicate-button>
-            <button mat-icon-button (click)="onDelete(item, $event)" matTooltip="Supprimer">
-              <mat-icon>delete</mat-icon>
-            </button>
-          </div>
-        </mat-card-header>
-
-        <mat-card-content class="entity-card-body">
-          <app-rich-text-view 
-            *ngIf="item.description" 
-            [html]="item.description">
-          </app-rich-text-view>
-
-          <div class="tags-display" *ngIf="item.tags && item.tags.length > 0">
-            <span *ngFor="let tag of item.tags.slice(0, 2)" 
-                  class="tag" 
-                  [style.background-color]="tag.color">
-              {{ tag.label }}
-            </span>
-            <span *ngIf="item.tags.length > 2" class="tag tag--more">
-              +{{ item.tags.length - 2 }}
-            </span>
-          </div>
-
-          <div class="created-at">
-            Créé le {{ item.createdAt | date:'dd/MM/yyyy' }}
-          </div>
-        </mat-card-content>
-      </mat-card>
-
-    </ng-container>
-
-    <div class="content-feed__empty" *ngIf="items.length === 0">
+    <div class="content-feed__empty" *ngIf="displayedItems.length === 0">
       <mat-icon>inbox</mat-icon>
       <p>Aucun élément à afficher</p>
     </div>
