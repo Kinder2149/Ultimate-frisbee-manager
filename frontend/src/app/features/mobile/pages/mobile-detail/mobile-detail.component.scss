@@ -177,6 +177,157 @@
   color: white;
 }
 
+// Sections spécifiques
+.mobile-detail__section {
+  margin-bottom: $mobile-spacing-lg;
+
+  p {
+    margin: 0;
+    font-size: $mobile-font-size-body;
+    color: $mobile-text-secondary;
+    line-height: 1.6;
+  }
+}
+
+// Matériel (exercice)
+.mobile-detail__materiel-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $mobile-spacing-sm;
+}
+
+.mobile-detail__materiel-item {
+  display: inline-block;
+  padding: $mobile-spacing-xs $mobile-spacing-md;
+  background: $mobile-bg-secondary;
+  border-radius: $mobile-border-radius-md;
+  font-size: $mobile-font-size-meta;
+  color: $mobile-text-secondary;
+}
+
+// Exercices (entraînement)
+.mobile-detail__exercices-list {
+  display: flex;
+  flex-direction: column;
+  gap: $mobile-spacing-md;
+}
+
+.mobile-detail__exercice-item {
+  padding: $mobile-spacing-md;
+  background: $mobile-bg-secondary;
+  border-radius: $mobile-border-radius-md;
+  border-left: 3px solid $mobile-entrainement-color;
+}
+
+.mobile-detail__exercice-header {
+  display: flex;
+  align-items: center;
+  gap: $mobile-spacing-sm;
+  margin-bottom: $mobile-spacing-xs;
+}
+
+.mobile-detail__exercice-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: $mobile-entrainement-color;
+  color: white;
+  border-radius: 50%;
+  font-size: $mobile-font-size-small;
+  font-weight: $mobile-font-weight-bold;
+  flex-shrink: 0;
+}
+
+.mobile-detail__exercice-name {
+  font-size: $mobile-font-size-body;
+  font-weight: $mobile-font-weight-medium;
+  color: $mobile-text-primary;
+}
+
+.mobile-detail__exercice-meta {
+  display: flex;
+  align-items: center;
+  gap: $mobile-spacing-xs;
+  font-size: $mobile-font-size-meta;
+  color: $mobile-text-muted;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+// Blocs (échauffement)
+.mobile-detail__blocs-list {
+  display: flex;
+  flex-direction: column;
+  gap: $mobile-spacing-md;
+}
+
+.mobile-detail__bloc-item {
+  padding: $mobile-spacing-md;
+  background: $mobile-bg-secondary;
+  border-radius: $mobile-border-radius-md;
+  border-left: 3px solid $mobile-echauffement-color;
+}
+
+.mobile-detail__bloc-header {
+  display: flex;
+  align-items: center;
+  gap: $mobile-spacing-sm;
+  margin-bottom: $mobile-spacing-xs;
+}
+
+.mobile-detail__bloc-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: $mobile-echauffement-color;
+  color: white;
+  border-radius: 50%;
+  font-size: $mobile-font-size-small;
+  font-weight: $mobile-font-weight-bold;
+  flex-shrink: 0;
+}
+
+.mobile-detail__bloc-name {
+  font-size: $mobile-font-size-body;
+  font-weight: $mobile-font-weight-medium;
+  color: $mobile-text-primary;
+}
+
+.mobile-detail__bloc-meta {
+  display: flex;
+  flex-direction: column;
+  gap: $mobile-spacing-xs;
+  margin: $mobile-spacing-sm 0;
+}
+
+.mobile-detail__bloc-meta-item {
+  font-size: $mobile-font-size-meta;
+  color: $mobile-text-secondary;
+
+  strong {
+    color: $mobile-text-primary;
+  }
+}
+
+.mobile-detail__bloc-description {
+  margin: $mobile-spacing-xs 0 0 0;
+  font-size: $mobile-font-size-meta;
+  color: $mobile-text-secondary;
+  line-height: 1.5;
+
+  strong {
+    color: $mobile-text-primary;
+  }
+}
+
 // Actions
 .mobile-detail__actions {
   display: flex;

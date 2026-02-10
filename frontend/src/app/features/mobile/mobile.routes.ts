@@ -13,6 +13,10 @@ export const MOBILE_ROUTES: Routes = [
         path: 'detail/:type/:id',
         loadComponent: () => import('./pages/mobile-detail/mobile-detail.component').then(c => c.MobileDetailComponent),
       },
+      {
+        path: 'coming-soon/:feature',
+        loadComponent: () => import('./pages/mobile-coming-soon/mobile-coming-soon.component').then(c => c.MobileComingSoonComponent),
+      },
     ],
   },
 ];

@@ -78,15 +78,15 @@ export class MobileHeaderComponent {
   }
 
   onProfileClick(): void {
-    this.profileClick.emit();
+    this.router.navigate(['/mobile/coming-soon/profil']);
   }
 
   onTagsClick(): void {
-    this.tagsClick.emit();
+    this.router.navigate(['/mobile/coming-soon/tags']);
   }
 
   onAdminClick(): void {
-    this.adminClick.emit();
+    this.router.navigate(['/mobile/coming-soon/admin']);
   }
 
   onLogoutClick(): void {

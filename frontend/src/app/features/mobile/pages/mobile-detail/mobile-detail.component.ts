@@ -220,6 +220,28 @@ export class MobileDetailComponent implements OnInit, OnDestroy {
     return `${duree} min`;
   }
 
+  // --- Getters pour données spécifiques par type ---
+
+  get exerciceData(): Exercice | null {
+    if (!this.item || this.item.type !== 'exercice') return null;
+    return this.item.originalData as Exercice;
+  }
+
+  get entrainementData(): Entrainement | null {
+    if (!this.item || this.item.type !== 'entrainement') return null;
+    return this.item.originalData as Entrainement;
+  }
+
+  get echauffementData(): Echauffement | null {
+    if (!this.item || this.item.type !== 'echauffement') return null;
+    return this.item.originalData as Echauffement;
+  }
+
+  get situationData(): SituationMatch | null {
+    if (!this.item || this.item.type !== 'situation') return null;
+    return this.item.originalData as SituationMatch;
+  }
+
   // --- Actions ---
 
   onDuplicate(): void {

@@ -1,0 +1,114 @@
+@import '../../../../shared/styles/mobile-variables';
+
+.mobile-coming-soon {
+  min-height: 100vh;
+  background: $mobile-bg-primary;
+}
+
+// Header
+.mobile-coming-soon__header {
+  display: flex;
+  align-items: center;
+  gap: $mobile-spacing-sm;
+  padding: $mobile-spacing-sm $mobile-spacing-md;
+  border-bottom: 1px solid $mobile-border-light;
+  background: $mobile-bg-primary;
+}
+
+.mobile-coming-soon__back-btn {
+  min-width: $mobile-touch-target;
+  min-height: $mobile-touch-target;
+  width: $mobile-touch-target;
+  height: $mobile-touch-target;
+}
+
+.mobile-coming-soon__header-title {
+  font-size: $mobile-font-size-body;
+  font-weight: $mobile-font-weight-medium;
+  color: $mobile-text-secondary;
+}
+
+// Contenu
+.mobile-coming-soon__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $mobile-spacing-xl;
+  text-align: center;
+  min-height: calc(100vh - 60px);
+}
+
+.mobile-coming-soon__icon-wrapper {
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  border-radius: 50%;
+  margin-bottom: $mobile-spacing-xl;
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.mobile-coming-soon__icon {
+  font-size: 64px;
+  width: 64px;
+  height: 64px;
+  color: white;
+}
+
+.mobile-coming-soon__title {
+  margin: 0 0 $mobile-spacing-md 0;
+  font-size: 1.5rem;
+  font-weight: $mobile-font-weight-bold;
+  color: $mobile-text-primary;
+}
+
+.mobile-coming-soon__description {
+  margin: 0 0 $mobile-spacing-xl 0;
+  font-size: $mobile-font-size-body;
+  color: $mobile-text-secondary;
+  line-height: 1.6;
+  max-width: 400px;
+}
+
+.mobile-coming-soon__info {
+  display: flex;
+  align-items: flex-start;
+  gap: $mobile-spacing-sm;
+  padding: $mobile-spacing-md;
+  background: $mobile-bg-secondary;
+  border-radius: $mobile-border-radius-md;
+  border-left: 3px solid #3498db;
+  margin-bottom: $mobile-spacing-xl;
+  text-align: left;
+  max-width: 400px;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: #3498db;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  p {
+    margin: 0;
+    font-size: $mobile-font-size-meta;
+    color: $mobile-text-secondary;
+    line-height: 1.5;
+  }
+}
+
+.mobile-coming-soon__back-button {
+  min-height: $mobile-touch-target;
+  padding: 0 $mobile-spacing-xl;
+  font-size: $mobile-font-size-body;
+  font-weight: $mobile-font-weight-medium;
+  border-radius: $mobile-border-radius-md;
+  display: flex;
+  align-items: center;
+  gap: $mobile-spacing-sm;
+}

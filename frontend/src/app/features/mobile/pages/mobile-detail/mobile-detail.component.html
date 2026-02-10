@@ -56,11 +56,88 @@
       </div>
     </div>
 
-    <!-- Description (texte brut en Phase 1) -->
+    <!-- Description -->
     <div class="mobile-detail__description" *ngIf="plainDescription">
       <h2 class="mobile-detail__section-title">Description</h2>
       <p>{{ plainDescription }}</p>
     </div>
+
+    <!-- Contenu spécifique EXERCICE -->
+    <ng-container *ngIf="item.type === 'exercice' && exerciceData">
+      <div class="mobile-detail__section" *ngIf="exerciceData.critereReussite">
+        <h2 class="mobile-detail__section-title">Critère de réussite</h2>
+        <p>{{ exerciceData.critereReussite }}</p>
+      </div>
+
+      <div class="mobile-detail__section" *ngIf="exerciceData.materiel">
+        <h2 class="mobile-detail__section-title">Matériel</h2>
+        <p>{{ exerciceData.materiel }}</p>
+      </div>
+
+      <div class="mobile-detail__section" *ngIf="exerciceData.notes">
+        <h2 class="mobile-detail__section-title">Notes</h2>
+        <p>{{ exerciceData.notes }}</p>
+      </div>
+    </ng-container>
+
+    <!-- Contenu spécifique ENTRAINEMENT -->
+    <ng-container *ngIf="item.type === 'entrainement' && entrainementData">
+      <div class="mobile-detail__section" *ngIf="entrainementData.exercices && entrainementData.exercices.length > 0">
+        <h2 class="mobile-detail__section-title">Exercices ({{ entrainementData.exercices.length }})</h2>
+        <div class="mobile-detail__exercices-list">
+          <div *ngFor="let ex of entrainementData.exercices; let i = index" class="mobile-detail__exercice-item">
+            <div class="mobile-detail__exercice-header">
+              <span class="mobile-detail__exercice-number">{{ i + 1 }}</span>
+              <span class="mobile-detail__exercice-name">{{ ex.exercice?.nom || 'Exercice sans nom' }}</span>
+            </div>
+            <div class="mobile-detail__exercice-meta" *ngIf="ex.duree">
+              <mat-icon>schedule</mat-icon>
+              <span>{{ ex.duree }} min</span>
+            </div>
+            <p class="mobile-detail__exercice-notes" *ngIf="ex.notes">{{ ex.notes }}</p>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Contenu spécifique SITUATION -->
+    <ng-container *ngIf="item.type === 'situation' && situationData">
+      <div class="mobile-detail__section" *ngIf="situationData.temps">
+        <h2 class="mobile-detail__section-title">Durée</h2>
+        <p>{{ situationData.temps }}</p>
+      </div>
+
+      <div class="mobile-detail__section" *ngIf="situationData.type">
+        <h2 class="mobile-detail__section-title">Type</h2>
+        <p>{{ situationData.type }}</p>
+      </div>
+    </ng-container>
+
+    <!-- Contenu spécifique ECHAUFFEMENT -->
+    <ng-container *ngIf="item.type === 'echauffement' && echauffementData">
+      <div class="mobile-detail__section" *ngIf="echauffementData.blocs && echauffementData.blocs.length > 0">
+        <h2 class="mobile-detail__section-title">Blocs ({{ echauffementData.blocs.length }})</h2>
+        <div class="mobile-detail__blocs-list">
+          <div *ngFor="let bloc of echauffementData.blocs; let i = index" class="mobile-detail__bloc-item">
+            <div class="mobile-detail__bloc-header">
+              <span class="mobile-detail__bloc-number">{{ i + 1 }}</span>
+              <span class="mobile-detail__bloc-name">{{ bloc.titre || 'Bloc sans nom' }}</span>
+            </div>
+            <div class="mobile-detail__bloc-meta">
+              <div *ngIf="bloc.repetitions" class="mobile-detail__bloc-meta-item">
+                <strong>Répétitions:</strong> {{ bloc.repetitions }}
+              </div>
+              <div *ngIf="bloc.temps" class="mobile-detail__bloc-meta-item">
+                <strong>Temps:</strong> {{ bloc.temps }}
+              </div>
+            </div>
+            <p class="mobile-detail__bloc-description" *ngIf="bloc.informations">{{ bloc.informations }}</p>
+            <p class="mobile-detail__bloc-description" *ngIf="bloc.fonctionnement"><strong>Fonctionnement:</strong> {{ bloc.fonctionnement }}</p>
+            <p class="mobile-detail__bloc-description" *ngIf="bloc.notes"><strong>Notes:</strong> {{ bloc.notes }}</p>
+          </div>
+        </div>
+      </div>
+    </ng-container>
 
     <!-- Tags -->
     <div class="mobile-detail__tags" *ngIf="item.tags && item.tags.length > 0">
