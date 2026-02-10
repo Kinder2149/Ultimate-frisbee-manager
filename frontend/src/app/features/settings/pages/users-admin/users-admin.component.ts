@@ -277,7 +277,7 @@ export class UserWorkspacesDialogComponent {
         email: this.data.email,
         nom: this.data.nom,
         prenom: this.data.prenom,
-        role: 'USER',
+        role: 'MEMBER',
         linkId: ''
       } as AdminWorkspaceUser;
     }
@@ -304,7 +304,7 @@ export class UserWorkspacesDialogComponent {
       if (m) {
         membersArray.push(m);
       }
-      const payload = membersArray.map(u => ({ userId: u.userId, role: u.role || 'USER' }));
+      const payload = membersArray.map(u => ({ userId: u.userId, role: u.role || 'MEMBER' }));
       this.admin.setWorkspaceUsers(ws.id, payload).subscribe({
         next: () => {
           remaining--;
