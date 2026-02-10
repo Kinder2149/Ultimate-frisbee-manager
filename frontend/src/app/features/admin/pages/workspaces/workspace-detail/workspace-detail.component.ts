@@ -260,11 +260,19 @@ export class WorkspaceDetailComponent implements OnInit {
   }
 
   getRoleColor(role: string): string {
-    return role === 'ADMIN' ? '#f59e0b' : '#3b82f6';
+    const r = role?.toUpperCase();
+    if (r === 'MANAGER') return '#8b5cf6';
+    if (r === 'MEMBER') return '#3b82f6';
+    if (r === 'VIEWER') return '#64748b';
+    return '#3b82f6';
   }
 
   getRoleLabel(role: string): string {
-    return role === 'ADMIN' ? 'Admin' : 'Membre';
+    const r = role?.toUpperCase();
+    if (r === 'MANAGER') return 'Gestionnaire';
+    if (r === 'MEMBER') return 'Membre';
+    if (r === 'VIEWER') return 'Lecteur';
+    return role || 'Membre';
   }
 
   changeRole(member: WorkspaceMember): void {
