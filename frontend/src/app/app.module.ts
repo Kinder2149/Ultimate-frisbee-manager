@@ -70,11 +70,18 @@ const routes: Routes = [
     canActivate: [AuthGuard, WorkspaceSelectedGuard]
   },
   
-  // Route directe vers le dashboard (protégée)
+  // Route par défaut : redirection vers login
+  // Évite le blocage avec 3 guards sur la route racine
   { 
     path: '', 
+    redirectTo: '/login',
+    pathMatch: 'full'
+  },
+  
+  // Dashboard accessible via route explicite (protégée)
+  { 
+    path: 'dashboard', 
     component: DashboardComponent,
-    pathMatch: 'full',
     canActivate: [AuthGuard, WorkspaceSelectedGuard, MobileGuard]
   },
   

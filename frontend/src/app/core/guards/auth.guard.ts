@@ -26,11 +26,11 @@ export class AuthGuard implements CanActivate {
       filter((isReady: boolean) => isReady === true),
       take(1),
       map(() => true),
-      // Timeout de 20s : si authReady$ ne passe jamais à true
-      // Augmenté pour gérer les cas d'onglet privé où l'init peut être plus lente
-      timeout(20000),
+      // Timeout de 5s : si authReady$ ne passe jamais à true
+      // 5s suffit car le retry sur getSession() prend max 800ms
+      timeout(5000),
       catchError(() => {
-        console.warn('[AuthGuard] Timeout: auth non prête après 20s');
+        console.error('[AuthGuard] Timeout: auth non prête après 5s');
         // Vérifier si l'utilisateur a au moins une session active
         if (this.authService.isAuthenticated()) {
           // Session existe mais init a échoué → laisser passer quand même
@@ -38,10 +38,13 @@ export class AuthGuard implements CanActivate {
           console.warn('[AuthGuard] Session existe, passage autorisé malgré timeout');
           return of(true);
         }
-        // Pas de session → rediriger vers login
-        this.router.navigate(['/login'], {
-          queryParams: { returnUrl: state.url }
-        });
+        // Pas de session → rediriger vers login de manière synchrone
+        console.error('[AuthGuard] Redirection immédiate vers /login');
+        setTimeout(() => {
+          this.router.navigate(['/login'], {
+            queryParams: { returnUrl: state.url }
+          });
+        }, 0);
         return of(false);
       })
     );

@@ -577,6 +577,207 @@ Le problème vient d'une **race condition** entre :
 
 ---
 
-**FIN DU DIAGNOSTIC**
+## 10. MISE À JOUR : PROBLÈME PERSISTE APRÈS CORRECTIONS
 
-**Statut** : ⏸️ EN ATTENTE DE VALIDATION AVANT IMPLÉMENTATION
+### 10.1 Nouveaux logs (14/02/2026 - 13h26)
+
+```
+[DataCache] All caches cleared
+[GlobalPreloader] Initializing automatic preloading
+[App] Global preloader initialized
+[IndexedDB] Database opened successfully
+
+⚠️ ERREUR LOCK (TOUJOURS PRÉSENTE):
+Sn: Acquiring an exclusive Navigator LockManager lock "lock:sb-rnreaaeiccqkwgwxwxeg-auth-token" immediately failed
+
+✅ RETRY FONCTIONNE:
+[Auth] Aucune session active après retry
+
+[IndexedDB] Clearing all data
+[DataCache] All caches cleared
+[Auth] Event: INITIAL_SESSION no user
+
+⚠️ TIMEOUT AUTHGUARD (20s):
+[AuthGuard] Timeout: auth non prête après 20s
+
+⚠️ ERREUR LOCK (RÉPÉTÉE):
+Sn: Acquiring an exclusive Navigator LockManager lock "lock:sb-rnreaaeiccqkwgwxwxeg-auth-token" immediately failed
+```
+
+### 10.2 Nouveau symptôme
+
+**Utilisateur** : "Quand je vais sur le domaine attendu, il met au moins 2 min à m'afficher la page d'authentification c'est normal ? L'appbar apparaît mais une page blanche en dessous et au bout de deux min la page d'authentification connexion"
+
+### 10.3 Analyse du nouveau problème
+
+#### **Problème P0-4 : Page blanche pendant 2 minutes**
+
+**Séquence observée** :
+1. Utilisateur va sur le domaine (route `/`)
+2. Route `/` a `canActivate: [AuthGuard, WorkspaceSelectedGuard, MobileGuard]`
+3. AuthGuard attend `authReady$ = true`
+4. Timeout après 20s → `[AuthGuard] Timeout: auth non prête après 20s`
+5. AuthGuard vérifie `isAuthenticated()` → `false`
+6. AuthGuard devrait rediriger vers `/login`
+7. **MAIS** : La redirection ne se fait pas immédiatement
+8. Page reste blanche pendant ~2 minutes
+9. Finalement, la page `/login` s'affiche
+
+**Cause racine** :
+- La redirection `this.router.navigate(['/login'])` dans le `catchError` de l'AuthGuard **ne fonctionne pas correctement**
+- Possible problème de zone Angular ou de timing
+- Le router peut être bloqué ou en attente d'autres guards
+
+#### **Problème P0-5 : Route par défaut avec trop de guards**
+
+**Route actuelle** :
+```typescript
+{ 
+  path: '', 
+  component: DashboardComponent,
+  pathMatch: 'full',
+  canActivate: [AuthGuard, WorkspaceSelectedGuard, MobileGuard]
+}
+```
+
+**Problème** :
+- Quand l'utilisateur arrive sur `/`, **3 guards** s'exécutent séquentiellement
+- Si l'un timeout, les autres peuvent aussi timeout
+- Cela peut créer un blocage en cascade
+
+#### **Problème P0-6 : Pas de route de fallback immédiate**
+
+**Route fallback actuelle** :
+```typescript
+{ path: '**', redirectTo: '/login' }
+```
+
+**Problème** :
+- Cette route ne s'active que si aucune autre route ne match
+- Si la route `/` est en cours d'évaluation par les guards, le fallback ne s'active pas
+
+### 10.4 Solutions proposées
+
+#### **Solution A : Redirection immédiate dans AuthGuard (PRIORITAIRE)**
+
+**Problème** : La redirection dans `catchError` peut être asynchrone ou ignorée
+
+**Solution** : Forcer la redirection de manière synchrone
+
+```typescript
+catchError(() => {
+  console.warn('[AuthGuard] Timeout: auth non prête après 20s');
+  
+  if (this.authService.isAuthenticated()) {
+    console.warn('[AuthGuard] Session existe, passage autorisé malgré timeout');
+    return of(true);
+  }
+  
+  // ✅ CORRECTION : Redirection immédiate et synchrone
+  console.warn('[AuthGuard] Redirection vers /login');
+  setTimeout(() => {
+    this.router.navigate(['/login'], {
+      queryParams: { returnUrl: state.url }
+    });
+  }, 0);
+  
+  return of(false);
+})
+```
+
+#### **Solution B : Réduire le timeout à 5s (RECOMMANDÉ)**
+
+**Problème** : 20s est trop long, l'utilisateur attend trop
+
+**Solution** : Réduire à 5s et améliorer le feedback
+
+```typescript
+timeout(5000),  // 5s au lieu de 20s
+catchError(() => {
+  console.error('[AuthGuard] Auth non prête après 5s - redirection vers login');
+  // ...
+})
+```
+
+**Justification** :
+- Le retry sur `getSession()` prend max 800ms (0+100+200+500)
+- Si après 5s l'auth n'est pas prête, c'est qu'il y a un vrai problème
+- Mieux vaut rediriger rapidement vers `/login` que laisser une page blanche
+
+#### **Solution C : Route par défaut vers /login (STRUCTUREL)**
+
+**Problème** : La route `/` avec 3 guards crée un goulot d'étranglement
+
+**Solution** : Rediriger `/` vers `/login` par défaut, et laisser le LoginComponent gérer la navigation
+
+```typescript
+// Route par défaut : redirection vers login
+{ 
+  path: '', 
+  redirectTo: '/login',
+  pathMatch: 'full'
+},
+
+// Dashboard accessible uniquement via navigation explicite
+{ 
+  path: 'dashboard', 
+  component: DashboardComponent,
+  canActivate: [AuthGuard, WorkspaceSelectedGuard, MobileGuard]
+},
+```
+
+**Avantages** :
+- Pas de guards sur la route par défaut
+- Chargement immédiat de la page de login
+- Le LoginComponent redirige vers dashboard si déjà connecté
+
+#### **Solution D : Améliorer le feedback utilisateur (UX)**
+
+**Problème** : L'utilisateur voit une page blanche sans savoir ce qui se passe
+
+**Solution** : Afficher un loader global pendant l'initialisation
+
+```typescript
+// Dans app.component.html
+<div *ngIf="!(authService.authReady$ | async)" class="global-loader">
+  <mat-spinner></mat-spinner>
+  <p>Initialisation...</p>
+</div>
+```
+
+### 10.5 Plan d'action révisé
+
+#### Phase 1 : HOT FIX URGENT (IMMÉDIAT)
+
+1. ✅ **Réduire timeout AuthGuard à 5s** (au lieu de 20s)
+2. ✅ **Forcer redirection synchrone** dans catchError
+3. ✅ **Changer route par défaut** : `/` → `/login`
+4. ✅ **Tester** en onglet privé
+
+#### Phase 2 : AMÉLIORATION UX (COURT TERME)
+
+1. **Ajouter loader global** pendant initialisation
+2. **Afficher message d'erreur** si timeout
+3. **Améliorer feedback** dans LoginComponent
+
+#### Phase 3 : REFACTORING (MOYEN TERME)
+
+1. **Revoir architecture des guards** (trop de guards en cascade)
+2. **Implémenter state machine** pour AuthService
+3. **Simplifier la logique** de routing
+
+### 10.6 Risques identifiés
+
+#### Risque 1 : Boucle de redirection
+- **Description** : Si `/login` redirige vers `/` et `/` redirige vers `/login`
+- **Mitigation** : Le LoginComponent ne redirige que si `authReady$ = true`
+
+#### Risque 2 : Régression sur utilisateurs connectés
+- **Description** : Un utilisateur déjà connecté qui va sur `/` sera redirigé vers `/login`
+- **Mitigation** : Le LoginComponent détecte la session et redirige vers dashboard
+
+---
+
+**FIN DU DIAGNOSTIC RÉVISÉ**
+
+**Statut** : 🔴 PROBLÈME PERSISTE - CORRECTIONS URGENTES NÉCESSAIRES

@@ -50,7 +50,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     // Récupérer l'URL de retour si elle existe
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
 
     // Masquer le formulaire si l'utilisateur est déjà authentifié
     this.authService.isAuthenticated$
