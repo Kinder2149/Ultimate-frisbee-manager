@@ -44,7 +44,28 @@ export class AuthService {
    */
   private async initializeAuth(): Promise<void> {
     // Vérifier si une session Supabase existe AVANT d'enregistrer le listener
-    const { data: { session } } = await this.supabaseService.supabase.auth.getSession();
+    // Retry avec délais progressifs pour gérer le problème de lock en onglet privé
+    let session: Session | null = null;
+    const delays = [0, 100, 200, 500];
+    
+    for (const delay of delays) {
+      if (delay > 0) {
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+      
+      const { data, error } = await this.supabaseService.supabase.auth.getSession();
+      
+      if (error) {
+        console.warn(`[Auth] Erreur getSession (tentative ${delays.indexOf(delay) + 1}/${delays.length}):`, error);
+        continue;
+      }
+      
+      if (data.session) {
+        session = data.session;
+        console.log(`[Auth] Session récupérée après ${delays.indexOf(delay) + 1} tentative(s)`);
+        break;
+      }
+    }
     
     if (session?.user) {
       console.log('[Auth] Session Supabase trouvée, chargement du profil');
@@ -75,8 +96,8 @@ export class AuthService {
         }
       });
     } else {
-      console.log('[Auth] Aucune session active');
-      this._initDone = true;
+      console.log('[Auth] Aucune session active après retry');
+      // Ne pas mettre _initDone = true ici, on attend les événements Supabase
       this.isAuthenticatedSubject.next(false);
       this.authReadySubject.next(false);
     }
@@ -169,9 +190,11 @@ export class AuthService {
   private handleSignedIn(session: Session | null): void {
     if (!session?.user) return;
 
-    // Si initializeAuth() a déjà traité cette session, ne pas réexécuter
-    if (this._initDone) {
-      console.log('[Auth] SIGNED_IN ignoré : init déjà terminée');
+    // Vérifier si on a déjà un utilisateur chargé ET que l'init est terminée
+    // Cela évite de retraiter un événement déjà traité, mais permet de traiter
+    // les événements qui arrivent après un getSession() raté
+    if (this.currentUserSubject.value && this._initDone) {
+      console.log('[Auth] SIGNED_IN ignoré : utilisateur déjà chargé');
       return;
     }
     
