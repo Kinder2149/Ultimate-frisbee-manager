@@ -1,0 +1,75 @@
+<div class="mobile-profile">
+  <app-mobile-header
+    [title]="'Profil'"
+    [showBack]="false"
+  ></app-mobile-header>
+
+  <div class="profile-content">
+    <!-- Section utilisateur -->
+    <div class="user-section">
+      <div class="user-avatar">{{ userInitials }}</div>
+      <h2>{{ userFullName }}</h2>
+      <p class="user-email">{{ currentUser?.email }}</p>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <!-- Section workspace -->
+    <div class="workspace-section">
+      <h3>🏢 Workspace actuel</h3>
+      <div class="workspace-info">
+        <div class="workspace-name">{{ currentWorkspace?.name || 'Aucun workspace' }}</div>
+        <div class="workspace-role" *ngIf="currentWorkspace">
+          Rôle: {{ currentWorkspace.role }}
+        </div>
+      </div>
+      <button mat-raised-button (click)="onChangeWorkspace()">
+        Changer de workspace
+      </button>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <!-- Section paramètres -->
+    <div class="settings-section">
+      <h3>⚙️ Paramètres</h3>
+      <mat-list>
+        <mat-list-item (click)="onEditProfile()">
+          <mat-icon matListItemIcon>person</mat-icon>
+          <span matListItemTitle>Modifier le profil</span>
+          <mat-icon matListItemMeta>chevron_right</mat-icon>
+        </mat-list-item>
+        <mat-list-item (click)="onNotifications()">
+          <mat-icon matListItemIcon>notifications</mat-icon>
+          <span matListItemTitle>Notifications</span>
+          <mat-icon matListItemMeta>chevron_right</mat-icon>
+        </mat-list-item>
+        <mat-list-item (click)="onOfflineMode()">
+          <mat-icon matListItemIcon>cloud_off</mat-icon>
+          <span matListItemTitle>Mode hors ligne</span>
+          <mat-icon matListItemMeta>chevron_right</mat-icon>
+        </mat-list-item>
+        <mat-list-item (click)="onSync()">
+          <mat-icon matListItemIcon>sync</mat-icon>
+          <span matListItemTitle>Synchronisation</span>
+          <mat-icon matListItemMeta>chevron_right</mat-icon>
+        </mat-list-item>
+        <mat-list-item (click)="onTheme()">
+          <mat-icon matListItemIcon>palette</mat-icon>
+          <span matListItemTitle>Thème (Clair/Sombre)</span>
+          <mat-icon matListItemMeta>chevron_right</mat-icon>
+        </mat-list-item>
+      </mat-list>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <!-- Section déconnexion -->
+    <div class="logout-section">
+      <button mat-raised-button color="warn" (click)="onLogout()">
+        <mat-icon>logout</mat-icon>
+        Déconnexion
+      </button>
+    </div>
+  </div>
+</div>

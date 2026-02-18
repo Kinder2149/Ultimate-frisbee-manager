@@ -1,0 +1,133 @@
+<div class="mobile-create-entrainement">
+  <app-mobile-header
+    title="Créer un entraînement"
+    [showBack]="true"
+  ></app-mobile-header>
+
+  <app-mobile-stepper
+    [steps]="steps"
+    [currentStep]="currentStep"
+    [canProceed]="canProceedStep"
+    [canComplete]="canComplete"
+    (stepChange)="onStepChange($event)"
+    (next)="onNext()"
+    (previous)="onPrevious()"
+    (complete)="onComplete()"
+    (cancel)="onCancel()"
+  >
+    <!-- Étape 0 : Informations -->
+    <div step-0 class="step-content">
+      <h2>Informations générales</h2>
+      <form [formGroup]="entrainementForm">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Titre de l'entraînement</mat-label>
+          <input matInput formControlName="titre" required>
+          <mat-error *ngIf="entrainementForm.get('titre')?.hasError('required')">
+            Le titre est obligatoire
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Date</mat-label>
+          <input matInput [matDatepicker]="picker" formControlName="date">
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+      </form>
+    </div>
+
+    <!-- Étape 1 : Échauffement -->
+    <div step-1 class="step-content">
+      <h2>Échauffement (optionnel)</h2>
+      <p class="step-hint">Sélectionnez un échauffement pour cette séance</p>
+      <app-mobile-relation-selector
+        [availableItems]="availableEchauffements"
+        [selectedItems]="selectedEchauffement ? [selectedEchauffement] : []"
+        (selectionChange)="onEchauffementChange($event)"
+      ></app-mobile-relation-selector>
+    </div>
+
+    <!-- Étape 2 : Exercices -->
+    <div step-2 class="step-content">
+      <h2>Exercices</h2>
+      <p class="step-hint">Sélectionnez et ordonnez les exercices</p>
+      <div class="duration-info" *ngIf="selectedExercices.length > 0">
+        <mat-icon>schedule</mat-icon>
+        <span>Durée totale : {{ totalDuration }} minutes</span>
+      </div>
+      <app-mobile-relation-selector
+        [availableItems]="availableExercices"
+        [selectedItems]="selectedExercices"
+        (selectionChange)="onExercicesChange($event)"
+      ></app-mobile-relation-selector>
+    </div>
+
+    <!-- Étape 3 : Situation -->
+    <div step-3 class="step-content">
+      <h2>Situation de match (optionnel)</h2>
+      <p class="step-hint">Sélectionnez une situation pour cette séance</p>
+      <app-mobile-relation-selector
+        [availableItems]="availableSituations"
+        [selectedItems]="selectedSituation ? [selectedSituation] : []"
+        (selectionChange)="onSituationChange($event)"
+      ></app-mobile-relation-selector>
+    </div>
+
+    <!-- Étape 4 : Tags -->
+    <div step-4 class="step-content">
+      <h2>Tags (optionnel)</h2>
+      <app-mobile-tag-selector
+        [availableTags]="allTags"
+        [selectedTags]="selectedTags"
+        [categories]="tagCategories"
+        (tagsChange)="onTagsChange($event)"
+      ></app-mobile-tag-selector>
+    </div>
+
+    <!-- Étape 5 : Résumé -->
+    <div step-5 class="step-content">
+      <h2>Résumé</h2>
+      
+      <div class="summary-section">
+        <h3>Informations</h3>
+        <p><strong>Titre :</strong> {{ entrainementForm.get('titre')?.value }}</p>
+        <p><strong>Date :</strong> {{ entrainementForm.get('date')?.value | date:'dd/MM/yyyy' }}</p>
+        <p><strong>Durée totale :</strong> {{ totalDuration }} minutes</p>
+      </div>
+
+      <div class="summary-section" *ngIf="selectedEchauffement">
+        <h3>Échauffement</h3>
+        <p>{{ selectedEchauffement.title }}</p>
+      </div>
+
+      <div class="summary-section">
+        <h3>Exercices ({{ selectedExercices.length }})</h3>
+        <ol class="exercices-list">
+          <li *ngFor="let ex of selectedExercices">
+            {{ ex.title }}
+            <span *ngIf="ex.duration" class="duration-badge">{{ ex.duration }} min</span>
+          </li>
+        </ol>
+      </div>
+
+      <div class="summary-section" *ngIf="selectedSituation">
+        <h3>Situation de match</h3>
+        <p>{{ selectedSituation.title }}</p>
+      </div>
+
+      <div class="summary-section" *ngIf="selectedTags.length > 0">
+        <h3>Tags ({{ selectedTags.length }})</h3>
+        <div class="tags-list">
+          <span *ngFor="let tag of selectedTags" class="tag-chip">
+            {{ tag.nom }}
+          </span>
+        </div>
+      </div>
+
+      <div class="summary-warning" *ngIf="submitting">
+        <mat-icon>hourglass_empty</mat-icon>
+        <p>Création en cours...</p>
+      </div>
+    </div>
+  </app-mobile-stepper>
+</div>

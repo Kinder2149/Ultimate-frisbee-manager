@@ -1,0 +1,73 @@
+<div class="mobile-terrain">
+  <app-mobile-header
+    [title]="'Mode Terrain'"
+    [showBack]="false"
+  ></app-mobile-header>
+
+  <div class="terrain-content">
+    <!-- Chronomètre -->
+    <div class="timer-section">
+      <h2>⏱️ Chronomètre</h2>
+      <div class="timer-display">{{ formattedTime }}</div>
+      <div class="timer-controls">
+        <button 
+          *ngIf="!timerRunning"
+          mat-raised-button 
+          color="primary"
+          (click)="startTimer()"
+        >
+          <mat-icon>play_arrow</mat-icon>
+          Démarrer
+        </button>
+        <button 
+          *ngIf="timerRunning"
+          mat-raised-button 
+          color="warn"
+          (click)="pauseTimer()"
+        >
+          <mat-icon>pause</mat-icon>
+          Pause
+        </button>
+        <button 
+          mat-raised-button
+          (click)="stopTimer()"
+        >
+          <mat-icon>stop</mat-icon>
+          Arrêter
+        </button>
+      </div>
+    </div>
+
+    <!-- Entraînement du jour -->
+    <div class="training-section" *ngIf="activeTraining$ | async as training">
+      <h2>📋 Entraînement du jour</h2>
+      <div class="training-card">
+        <h3>{{ training.titre }}</h3>
+        <p>{{ training.dureeTotal }} min</p>
+      </div>
+    </div>
+
+    <!-- Favoris rapides -->
+    <div class="favorites-section">
+      <h2>⭐ Favoris rapides</h2>
+      <div class="favorites-list">
+        <p *ngIf="(favorites$ | async)?.length === 0" class="empty-message">
+          Aucun favori. Ajoutez des exercices à vos favoris pour un accès rapide.
+        </p>
+      </div>
+    </div>
+
+    <!-- Bloc Notes -->
+    <div class="notes-section">
+      <h2>📝 Notes de séance</h2>
+      <textarea
+        [(ngModel)]="sessionNotes"
+        (ngModelChange)="onNotesChange()"
+        placeholder="Prenez des notes pendant votre séance..."
+        rows="6"
+        class="notes-textarea"
+      ></textarea>
+      <p class="notes-hint" *ngIf="notesSaved">✓ Notes sauvegardées automatiquement</p>
+    </div>
+  </div>
+</div>

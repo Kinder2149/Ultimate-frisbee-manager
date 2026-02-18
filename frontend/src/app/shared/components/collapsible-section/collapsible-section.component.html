@@ -1,0 +1,25 @@
+<div class="collapsible-section">
+  <button 
+    class="section-header"
+    (click)="toggle()"
+    [attr.aria-expanded]="isOpen"
+    type="button"
+  >
+    <div class="header-content">
+      <mat-icon *ngIf="icon" class="section-icon">{{ icon }}</mat-icon>
+      <h3 class="section-title">{{ title }}</h3>
+    </div>
+    <mat-icon class="expand-icon" [class.rotated]="isOpen">
+      expand_more
+    </mat-icon>
+  </button>
+
+  <div 
+    class="section-content"
+    [@expandCollapse]="expandState"
+  >
+    <div class="content-wrapper">
+      <ng-content></ng-content>
+    </div>
+  </div>
+</div>

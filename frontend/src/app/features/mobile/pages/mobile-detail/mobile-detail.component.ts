@@ -1,16 +1,18 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatDialog } from '@angular/material/dialog';
+import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
-import { MobileConfirmDialogComponent } from '../../components/mobile-confirm-dialog/mobile-confirm-dialog.component';
-import { ContentItem } from '../../models/content-item.model';
+import { MobileHeaderComponent, HeaderAction } from '../../components/mobile-header/mobile-header.component';
+import { CollapsibleSectionComponent } from '../../../../shared/components/collapsible-section/collapsible-section.component';
+import { MobileImageViewerComponent } from '../../../../shared/components/mobile-image-viewer/mobile-image-viewer.component';
+import { MobileNavigationService } from '../../../../core/services/mobile-navigation.service';
 import { Exercice } from '../../../../core/models/exercice.model';
 import { Entrainement } from '../../../../core/models/entrainement.model';
 import { Echauffement } from '../../../../core/models/echauffement.model';
@@ -20,6 +22,7 @@ import { ExerciceService } from '../../../../core/services/exercice.service';
 import { EntrainementService } from '../../../../core/services/entrainement.service';
 import { EchauffementService } from '../../../../core/services/echauffement.service';
 import { SituationMatchService } from '../../../../core/services/situationmatch.service';
+import { PermissionsService } from '../../../../core/services/permissions.service';
 
 @Component({
   selector: 'app-mobile-detail',
@@ -29,32 +32,40 @@ import { SituationMatchService } from '../../../../core/services/situationmatch.
     MatIconModule,
     MatButtonModule,
     MatSnackBarModule,
-    MatProgressSpinnerModule
+    MatChipsModule,
+    MatProgressSpinnerModule,
+    MobileHeaderComponent,
+    CollapsibleSectionComponent,
+    MobileImageViewerComponent
   ],
   templateUrl: './mobile-detail.component.html',
-  styleUrls: ['./mobile-detail.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrls: ['./mobile-detail.component.scss']
 })
 export class MobileDetailComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
-  item: ContentItem | null = null;
+  item: any = null;
   loading = true;
   error: string | null = null;
+  showImageViewer = false;
+  currentImageIndex = 0;
 
   private itemType = '';
   private itemId = '';
+
+  headerActions: HeaderAction[] = [];
 
   constructor(
     private router: Router,
     private route: ActivatedRoute,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog,
     private cdr: ChangeDetectorRef,
     private exerciceService: ExerciceService,
     private entrainementService: EntrainementService,
     private echauffementService: EchauffementService,
-    private situationMatchService: SituationMatchService
+    private situationMatchService: SituationMatchService,
+    private mobileStateService: MobileStateService,
+    private permissionsService: PermissionsService
   ) {}
 
   ngOnInit(): void {
@@ -75,29 +86,46 @@ export class MobileDetailComponent implements OnInit, OnDestroy {
   private loadItem(): void {
     this.loading = true;
     this.error = null;
+    this.setupHeaderActions();
 
     switch (this.itemType) {
       case 'exercice':
         this.exerciceService.getExerciceById(this.itemId).subscribe({
-          next: (exercice: Exercice) => this.setItem(this.mapExercice(exercice)),
+          next: (exercice: Exercice) => {
+            this.item = exercice;
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
           error: () => this.setError()
         });
         break;
       case 'entrainement':
         this.entrainementService.getEntrainementById(this.itemId).subscribe({
-          next: (entrainement: Entrainement) => this.setItem(this.mapEntrainement(entrainement)),
+          next: (entrainement: Entrainement) => {
+            this.item = entrainement;
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
           error: () => this.setError()
         });
         break;
       case 'echauffement':
         this.echauffementService.getEchauffementById(this.itemId).subscribe({
-          next: (echauffement: Echauffement) => this.setItem(this.mapEchauffement(echauffement)),
+          next: (echauffement: Echauffement) => {
+            this.item = echauffement;
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
           error: () => this.setError()
         });
         break;
       case 'situation':
         this.situationMatchService.getSituationMatchById(this.itemId).subscribe({
-          next: (situation: SituationMatch) => this.setItem(this.mapSituation(situation)),
+          next: (situation: SituationMatch) => {
+            this.item = situation;
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
           error: () => this.setError()
         });
         break;
@@ -106,10 +134,31 @@ export class MobileDetailComponent implements OnInit, OnDestroy {
     }
   }
 
-  private setItem(item: ContentItem): void {
-    this.item = item;
+  private setupHeaderActions(): void {
+    this.headerActions = [];
+
+    if (this.permissionsService.canWrite()) {
+      this.headerActions.push(
+        { icon: 'edit', label: 'Éditer', action: () => this.onEdit() },
+        { icon: 'content_copy', label: 'Dupliquer', action: () => this.onDuplicate() }
+      );
+    }
+
+    if (this.permissionsService.canWrite()) {
+      this.headerActions.push(
+        { icon: 'delete', label: 'Supprimer', action: () => this.onDelete() }
+      );
+    }
+
+    this.headerActions.push(
+      { icon: 'share', label: 'Partager', action: () => this.onShare() }
+    );
+  }
+
+
+  private setError(): void {
+    this.error = 'Élément introuvable';
     this.loading = false;
-    this.error = null;
     this.cdr.markForCheck();
   }
 
@@ -119,7 +168,74 @@ export class MobileDetailComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  private mapExercice(exercice: Exercice): ContentItem {
+  get itemTitle(): string {
+    if (!this.item) return '';
+    if (this.itemType === 'exercice') return (this.item as Exercice).nom;
+    if (this.itemType === 'entrainement') return (this.item as Entrainement).titre;
+    if (this.itemType === 'echauffement') return (this.item as Echauffement).nom;
+    if (this.itemType === 'situation') return (this.item as SituationMatch).nom || 'Sans titre';
+    return '';
+  }
+
+  get itemImages(): string[] {
+    if (!this.item) return [];
+    if (this.itemType === 'exercice' && (this.item as Exercice).imageUrl) {
+      return [(this.item as Exercice).imageUrl!];
+    }
+    if (this.itemType === 'situation' && (this.item as SituationMatch).imageUrl) {
+      return [(this.item as SituationMatch).imageUrl!];
+    }
+    return [];
+  }
+
+  onImageClick(index: number): void {
+    this.currentImageIndex = index;
+    this.showImageViewer = true;
+  }
+
+  onImageViewerClose(): void {
+    this.showImageViewer = false;
+  }
+
+  toggleFavorite(): void {
+    if (!this.item) return;
+    const isFavorite = this.mobileStateService.isFavorite(this.itemId);
+    if (isFavorite) {
+      this.mobileStateService.removeFavorite(this.itemId);
+      this.snackBar.open('Retiré des favoris', 'Fermer', { duration: 2000 });
+    } else {
+      this.mobileStateService.addFavorite(this.itemId);
+      this.snackBar.open('Ajouté aux favoris', 'Fermer', { duration: 2000 });
+    }
+  }
+
+  isFavorite(): boolean {
+    return this.mobileStateService.isFavorite(this.itemId);
+  }
+
+  onEdit(): void {
+    const routes: Record<string, string> = {
+      exercice: '/exercices/edit',
+      entrainement: '/entrainements/edit',
+      echauffement: '/echauffements/edit',
+      situation: '/situations-matchs/edit'
+    };
+    this.router.navigate([routes[this.itemType], this.itemId]);
+  }
+
+  onShare(): void {
+    this.snackBar.open('Fonctionnalité de partage à venir', 'Fermer', { duration: 2000 });
+  }
+
+  onDuplicate(): void {
+    this.snackBar.open('Duplication en cours...', '', { duration: 1000 });
+  }
+
+  onDelete(): void {
+    this.snackBar.open('Suppression à implémenter', 'Fermer', { duration: 2000 });
+  }
+
+  private mapExercice_UNUSED(exercice: Exercice): any {
     return {
       id: exercice.id!,
       type: 'exercice',
@@ -132,7 +248,7 @@ export class MobileDetailComponent implements OnInit, OnDestroy {
     };
   }
 
-  private mapEntrainement(entrainement: Entrainement): ContentItem {
+  private mapEntrainement_UNUSED(entrainement: Entrainement): any {
     return {
       id: entrainement.id!,
       type: 'entrainement',
@@ -144,7 +260,7 @@ export class MobileDetailComponent implements OnInit, OnDestroy {
     };
   }
 
-  private mapEchauffement(echauffement: Echauffement): ContentItem {
+  private mapEchauffement_UNUSED(echauffement: Echauffement): any {
     return {
       id: echauffement.id!,
       type: 'echauffement',
@@ -156,7 +272,7 @@ export class MobileDetailComponent implements OnInit, OnDestroy {
     };
   }
 
-  private mapSituation(situation: SituationMatch): ContentItem {
+  private mapSituation_UNUSED(situation: SituationMatch): any {
     return {
       id: situation.id!,
       type: 'situation',
@@ -190,24 +306,24 @@ export class MobileDetailComponent implements OnInit, OnDestroy {
 
   get typeIcon(): string {
     if (!this.item) return '';
-    const icons: Record<ContentItem['type'], string> = {
+    const icons: Record<string, string> = {
       exercice: 'fitness_center',
       entrainement: 'sports',
       echauffement: 'whatshot',
       situation: 'flag'
     };
-    return icons[this.item.type];
+    return icons[this.itemType];
   }
 
   get typeLabel(): string {
     if (!this.item) return '';
-    const labels: Record<ContentItem['type'], string> = {
+    const labels: Record<string, string> = {
       exercice: 'Exercice',
       entrainement: 'Entraînement',
       echauffement: 'Échauffement',
       situation: 'Situation'
     };
-    return labels[this.item.type];
+    return labels[this.itemType];
   }
 
   get plainDescription(): string {
@@ -223,23 +339,23 @@ export class MobileDetailComponent implements OnInit, OnDestroy {
   // --- Getters pour données spécifiques par type ---
 
   get exerciceData(): Exercice | null {
-    if (!this.item || this.item.type !== 'exercice') return null;
-    return this.item.originalData as Exercice;
+    if (!this.item || this.itemType !== 'exercice') return null;
+    return this.item as Exercice;
   }
 
   get entrainementData(): Entrainement | null {
-    if (!this.item || this.item.type !== 'entrainement') return null;
-    return this.item.originalData as Entrainement;
+    if (!this.item || this.itemType !== 'entrainement') return null;
+    return this.item as Entrainement;
   }
 
   get echauffementData(): Echauffement | null {
-    if (!this.item || this.item.type !== 'echauffement') return null;
-    return this.item.originalData as Echauffement;
+    if (!this.item || this.itemType !== 'echauffement') return null;
+    return this.item as Echauffement;
   }
 
   get situationData(): SituationMatch | null {
-    if (!this.item || this.item.type !== 'situation') return null;
-    return this.item.originalData as SituationMatch;
+    if (!this.item || this.itemType !== 'situation') return null;
+    return this.item as SituationMatch;
   }
 
   // --- Actions ---
@@ -247,14 +363,14 @@ export class MobileDetailComponent implements OnInit, OnDestroy {
   onDuplicate(): void {
     if (!this.item) return;
 
-    const serviceMap: Record<ContentItem['type'], { service: any; method: string }> = {
+    const serviceMap: Record<string, { service: any; method: string }> = {
       exercice: { service: this.exerciceService, method: 'duplicateExercice' },
       entrainement: { service: this.entrainementService, method: 'duplicateEntrainement' },
       echauffement: { service: this.echauffementService, method: 'duplicateEchauffement' },
       situation: { service: this.situationMatchService, method: 'duplicateSituationMatch' }
     };
 
-    const { service, method } = serviceMap[this.item.type];
+    const { service, method } = serviceMap[this.itemType];
 
     if (typeof service[method] !== 'function') {
       this.snackBar.open('Fonctionnalité non disponible', 'Fermer', { duration: 3000 });
@@ -278,7 +394,7 @@ export class MobileDetailComponent implements OnInit, OnDestroy {
     const dialogRef = this.dialog.open(MobileConfirmDialogComponent, {
       data: {
         title: 'Supprimer l\'élément',
-        message: `Êtes-vous sûr de vouloir supprimer "${this.item.title}" ?`,
+        message: `Êtes-vous sûr de vouloir supprimer "${this.itemTitle}" ?`,
         confirmLabel: 'Supprimer',
         cancelLabel: 'Annuler',
         confirmColor: 'warn' as const
@@ -292,14 +408,14 @@ export class MobileDetailComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe((confirmed: boolean) => {
       if (!confirmed || !this.item) return;
 
-      const serviceMap: Record<ContentItem['type'], { service: any; method: string }> = {
+      const serviceMap: Record<string, { service: any; method: string }> = {
         exercice: { service: this.exerciceService, method: 'deleteExercice' },
         entrainement: { service: this.entrainementService, method: 'deleteEntrainement' },
         echauffement: { service: this.echauffementService, method: 'deleteEchauffement' },
         situation: { service: this.situationMatchService, method: 'deleteSituationMatch' }
       };
 
-      const { service, method } = serviceMap[this.item.type];
+      const { service, method } = serviceMap[this.itemType];
 
       if (typeof service[method] !== 'function') {
         this.snackBar.open('Fonctionnalité non disponible', 'Fermer', { duration: 3000 });

@@ -98,7 +98,7 @@ export class MobileHomeComponent implements OnInit, OnDestroy {
   }
 
   onItemEdit(item: ContentItem): void {
-    this.snackBar.open('Édition non disponible en mobile', 'Fermer', { duration: 3000 });
+    this.router.navigate(['/mobile/edit', item.type, item.id]);
   }
 
   onItemDuplicate(item: ContentItem): void {

@@ -1,0 +1,74 @@
+<div class="mobile-library">
+  <app-mobile-header
+    [title]="'Bibliothèque'"
+    [showBack]="false"
+  ></app-mobile-header>
+
+  <div class="library-content">
+    <mat-tab-group 
+      [(selectedIndex)]="selectedTabIndex"
+      (selectedIndexChange)="onTabChange($event)"
+      class="library-tabs"
+    >
+      <mat-tab label="Exercices">
+        <div class="tab-content">
+          <div class="items-list">
+            <div 
+              *ngFor="let exercice of exercices$ | async"
+              class="item-card"
+              (click)="onItemClick('exercice', exercice.id || '')"
+            >
+              <h3>{{ exercice.nom }}</h3>
+              <p>{{ exercice['duree_minutes'] || 0 }} min</p>
+            </div>
+          </div>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Entraînements">
+        <div class="tab-content">
+          <div class="items-list">
+            <div 
+              *ngFor="let entrainement of entrainements$ | async"
+              class="item-card"
+              (click)="onItemClick('entrainement', entrainement.id || '')"
+            >
+              <h3>{{ entrainement.titre }}</h3>
+              <p>{{ entrainement.dureeTotal || 0 }} min</p>
+            </div>
+          </div>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Échauffements">
+        <div class="tab-content">
+          <div class="items-list">
+            <div 
+              *ngFor="let echauffement of echauffements$ | async"
+              class="item-card"
+              (click)="onItemClick('echauffement', echauffement.id || '')"
+            >
+              <h3>{{ echauffement.nom }}</h3>
+              <p>Échauffement</p>
+            </div>
+          </div>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Situations">
+        <div class="tab-content">
+          <div class="items-list">
+            <div 
+              *ngFor="let situation of situations$ | async"
+              class="item-card"
+              (click)="onItemClick('situation', situation.id || '')"
+            >
+              <h3>{{ situation.nom }}</h3>
+              <p>Situation de match</p>
+            </div>
+          </div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+</div>

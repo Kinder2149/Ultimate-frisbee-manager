@@ -1,0 +1,98 @@
+<div class="mobile-create-situation">
+  <app-mobile-header
+    title="Créer une situation"
+    [showBack]="true"
+  ></app-mobile-header>
+
+  <app-mobile-stepper
+    [steps]="steps"
+    [currentStep]="currentStep"
+    [canProceed]="canProceedStep"
+    [canComplete]="canComplete"
+    (stepChange)="onStepChange($event)"
+    (next)="onNext()"
+    (previous)="onPrevious()"
+    (complete)="onComplete()"
+    (cancel)="onCancel()"
+  >
+    <!-- Étape 0 : Informations -->
+    <div step-0 class="step-content">
+      <h2>Informations générales</h2>
+      <form [formGroup]="situationForm">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Nom de la situation</mat-label>
+          <input matInput formControlName="nom" required>
+          <mat-error *ngIf="situationForm.get('nom')?.hasError('required')">
+            Le nom est obligatoire
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Description</mat-label>
+          <textarea 
+            matInput 
+            formControlName="description" 
+            rows="8"
+            required
+          ></textarea>
+          <mat-error *ngIf="situationForm.get('description')?.hasError('required')">
+            La description est obligatoire
+          </mat-error>
+        </mat-form-field>
+      </form>
+    </div>
+
+    <!-- Étape 1 : Image -->
+    <div step-1 class="step-content">
+      <h2>Image (optionnel)</h2>
+      <p class="step-hint">Ajoutez un schéma ou une photo de la situation</p>
+      <app-mobile-image-picker
+        [imagePreview]="imagePreview"
+        [uploading]="uploading"
+        (imageSelected)="onImageSelected($event)"
+        (imageRemoved)="onImageRemoved()"
+      ></app-mobile-image-picker>
+    </div>
+
+    <!-- Étape 2 : Tags -->
+    <div step-2 class="step-content">
+      <h2>Tags (optionnel)</h2>
+      <app-mobile-tag-selector
+        [availableTags]="allTags"
+        [selectedTags]="selectedTags"
+        [categories]="tagCategories"
+        (tagsChange)="onTagsChange($event)"
+      ></app-mobile-tag-selector>
+    </div>
+
+    <!-- Étape 3 : Résumé -->
+    <div step-3 class="step-content">
+      <h2>Résumé</h2>
+      
+      <div class="summary-section">
+        <h3>Informations</h3>
+        <p><strong>Nom :</strong> {{ situationForm.get('nom')?.value || '-' }}</p>
+        <p><strong>Description :</strong> {{ situationForm.get('description')?.value || '-' }}</p>
+      </div>
+
+      <div class="summary-section" *ngIf="imagePreview">
+        <h3>Image</h3>
+        <img [src]="imagePreview" alt="Aperçu" class="summary-image">
+      </div>
+
+      <div class="summary-section" *ngIf="selectedTags.length > 0">
+        <h3>Tags ({{ selectedTags.length }})</h3>
+        <div class="tags-list">
+          <span *ngFor="let tag of selectedTags" class="tag-chip">
+            {{ tag.nom }}
+          </span>
+        </div>
+      </div>
+
+      <div class="summary-warning" *ngIf="submitting">
+        <mat-icon>hourglass_empty</mat-icon>
+        <p>Création en cours...</p>
+      </div>
+    </div>
+  </app-mobile-stepper>
+</div>

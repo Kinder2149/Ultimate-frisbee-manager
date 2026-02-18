@@ -1,0 +1,84 @@
+# ARCHIVAGE DOCUMENTATION MOBILE - 2026-02-18
+
+## Raison de l'archivage
+
+Restructuration complète de la documentation mobile pour séparer clairement :
+1. L'état actuel fonctionnel (ce qui existe vraiment)
+2. La proposition complète (vision et roadmap)
+
+## Documents archivés
+
+### 20260218_IMPLEMENTATION_MOBILE_PROGRESS_ARCHIVED.md
+- **Statut original :** WORK
+- **Raison :** Document de suivi d'implémentation incomplet et mélange état actuel/proposition
+- **Remplacé par :** 
+  - `docs/reference/MOBILE_ETAT_ACTUEL.md` (état fonctionnel)
+  - `docs/reference/MOBILE_PROPOSITION_COMPLETE.md` (proposition complète)
+
+### 20260218_PROPOSITION_VUE_MOBILE_ARCHIVED.md
+- **Statut original :** WORK
+- **Raison :** Proposition initiale incomplète, manque d'analyse de la vue desktop
+- **Remplacé par :** 
+  - `docs/reference/MOBILE_PROPOSITION_COMPLETE.md` (proposition enrichie et complète)
+
+## Documents conservés dans docs/work
+
+### 20260218_ANALYSE_VUE_CLASSIQUE.md
+- **Statut :** WORK (à promouvoir en REFERENCE si validé)
+- **Raison :** Analyse exhaustive de la vue desktop, base pour la refonte mobile
+- **Action recommandée :** Valider et promouvoir en `docs/reference/VUE_DESKTOP_ANALYSE.md`
+
+### 20260218_GUIDE_TESTS_MOBILE.md
+- **Statut :** WORK
+- **Raison :** Guide de tests pour Phase 3, toujours pertinent
+- **Action recommandée :** Conserver pour tests, archiver après validation complète
+
+## Nouveaux documents de référence créés
+
+### docs/reference/MOBILE_ETAT_ACTUEL.md
+- **Statut :** REFERENCE v1.0
+- **Contenu :** État réel et fonctionnel de la vue mobile (ce qui existe)
+- **Sections :**
+  - Architecture actuelle (routes, services, composants)
+  - Pages implémentées (détails fonctionnels)
+  - Design system actuel
+  - Fonctionnalités testées
+  - Fonctionnalités manquantes
+  - Bugs connus
+  - Métriques
+
+### docs/reference/MOBILE_PROPOSITION_COMPLETE.md
+- **Statut :** REFERENCE v1.0
+- **Contenu :** Proposition complète de refonte mobile (vision A à Z)
+- **Sections :**
+  - Vision globale et principes
+  - Design system mobile complet
+  - Architecture complète (routes, services)
+  - Pages détaillées (layouts, fonctionnalités)
+  - Fonctionnalités avancées (offline, notifications, gestes)
+  - Composants réutilisables
+  - Performance & optimisation
+  - Tests & validation
+  - Roadmap d'implémentation (10 phases)
+
+## Méthodologie appliquée
+
+Conforme à la méthodologie documentaire :
+- Séparation stricte : docs/reference (validé) vs docs/work (en cours) vs docs/history (archivé)
+- 1 sujet = 1 document de référence
+- Versioning clair (v1.0)
+- En-têtes standardisés (statut, date, version)
+
+## Prochaines actions recommandées
+
+1. Valider `MOBILE_ETAT_ACTUEL.md` avec tests réels
+2. Valider `MOBILE_PROPOSITION_COMPLETE.md` avec l'équipe
+3. Promouvoir `20260218_ANALYSE_VUE_CLASSIQUE.md` en référence
+4. Créer `docs/_meta/INDEX.md` comme point d'entrée unique
+5. Commencer Phase 4 de la roadmap (Création et édition)
+
+---
+
+**Date d'archivage :** 2026-02-18
+**Archivé par :** Cascade AI
+**Validation :** Tests manuels sur mobile réel (authentification fonctionnelle)

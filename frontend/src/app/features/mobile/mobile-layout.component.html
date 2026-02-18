@@ -1,16 +1,10 @@
 <div class="mobile-layout">
-  <app-mobile-header
-    [currentUser]="currentUser"
-    [returnUrl]="returnUrl"
-    (searchClick)="onSearchClick()"
-    (settingsClick)="onSettingsClick()"
-    (profileClick)="onProfileClick()"
-    (tagsClick)="onTagsClick()"
-    (adminClick)="onAdminClick()"
-    (logoutClick)="onLogoutClick()">
-  </app-mobile-header>
-
-  <main class="mobile-layout__content">
+  <main class="mobile-content">
     <router-outlet></router-outlet>
   </main>
+
+  <app-mobile-bottom-nav
+    [activeRoute]="activeRoute"
+    (navigationChange)="onNavigationChange($event)"
+  ></app-mobile-bottom-nav>
 </div>

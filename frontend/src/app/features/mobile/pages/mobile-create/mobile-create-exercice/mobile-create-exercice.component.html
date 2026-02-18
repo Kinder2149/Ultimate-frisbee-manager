@@ -1,0 +1,143 @@
+<div class="mobile-create-exercice">
+  <app-mobile-header
+    title="Créer un exercice"
+    [showBack]="true"
+  ></app-mobile-header>
+
+  <app-mobile-stepper
+    [steps]="steps"
+    [currentStep]="currentStep"
+    [canProceed]="canProceedStep"
+    [canComplete]="canComplete"
+    (stepChange)="onStepChange($event)"
+    (next)="onNext()"
+    (previous)="onPrevious()"
+    (complete)="onComplete()"
+    (cancel)="onCancel()"
+  >
+    <!-- Étape 0 : Informations générales -->
+    <div step-0 class="step-content">
+      <h2>Informations générales</h2>
+      <form [formGroup]="exerciceForm">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Nom de l'exercice</mat-label>
+          <input matInput formControlName="nom" required>
+          <mat-error *ngIf="exerciceForm.get('nom')?.hasError('required')">
+            Le nom est obligatoire
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Description</mat-label>
+          <textarea 
+            matInput 
+            formControlName="description" 
+            rows="6"
+            required
+          ></textarea>
+          <mat-error *ngIf="exerciceForm.get('description')?.hasError('required')">
+            La description est obligatoire
+          </mat-error>
+        </mat-form-field>
+      </form>
+    </div>
+
+    <!-- Étape 1 : Détails -->
+    <div step-1 class="step-content">
+      <h2>Détails de l'exercice</h2>
+      <form [formGroup]="exerciceForm">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Durée (minutes)</mat-label>
+          <input matInput type="number" formControlName="duree_minutes">
+        </mat-form-field>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Joueurs min</mat-label>
+            <input matInput type="number" formControlName="nombre_joueurs_min">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Joueurs max</mat-label>
+            <input matInput type="number" formControlName="nombre_joueurs_max">
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Matériel nécessaire</mat-label>
+          <textarea matInput formControlName="materiel" rows="3"></textarea>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Critère de réussite</mat-label>
+          <textarea matInput formControlName="critereReussite" rows="3"></textarea>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Notes</mat-label>
+          <textarea matInput formControlName="notes" rows="3"></textarea>
+        </mat-form-field>
+      </form>
+    </div>
+
+    <!-- Étape 2 : Image -->
+    <div step-2 class="step-content">
+      <h2>Image (optionnel)</h2>
+      <app-mobile-image-picker
+        [imagePreview]="imagePreview"
+        [uploading]="uploading"
+        (imageSelected)="onImageSelected($event)"
+        (imageRemoved)="onImageRemoved()"
+      ></app-mobile-image-picker>
+    </div>
+
+    <!-- Étape 3 : Tags -->
+    <div step-3 class="step-content">
+      <h2>Tags</h2>
+      <app-mobile-tag-selector
+        [availableTags]="allTags"
+        [selectedTags]="selectedTags"
+        [categories]="tagCategories"
+        (tagsChange)="onTagsChange($event)"
+      ></app-mobile-tag-selector>
+    </div>
+
+    <!-- Étape 4 : Résumé -->
+    <div step-4 class="step-content">
+      <h2>Résumé</h2>
+      <div class="summary-section">
+        <h3>Informations générales</h3>
+        <p><strong>Nom :</strong> {{ exerciceForm.get('nom')?.value || '-' }}</p>
+        <p><strong>Description :</strong> {{ exerciceForm.get('description')?.value || '-' }}</p>
+      </div>
+
+      <div class="summary-section" *ngIf="exerciceForm.get('duree_minutes')?.value">
+        <h3>Détails</h3>
+        <p><strong>Durée :</strong> {{ exerciceForm.get('duree_minutes')?.value }} min</p>
+        <p *ngIf="exerciceForm.get('nombre_joueurs_min')?.value">
+          <strong>Joueurs :</strong> 
+          {{ exerciceForm.get('nombre_joueurs_min')?.value }} - {{ exerciceForm.get('nombre_joueurs_max')?.value }}
+        </p>
+      </div>
+
+      <div class="summary-section" *ngIf="imagePreview">
+        <h3>Image</h3>
+        <img [src]="imagePreview" alt="Aperçu" class="summary-image">
+      </div>
+
+      <div class="summary-section" *ngIf="selectedTags.length > 0">
+        <h3>Tags ({{ selectedTags.length }})</h3>
+        <div class="tags-list">
+          <span *ngFor="let tag of selectedTags" class="tag-chip">
+            {{ tag.nom }}
+          </span>
+        </div>
+      </div>
+
+      <div class="summary-warning" *ngIf="submitting">
+        <mat-icon>hourglass_empty</mat-icon>
+        <p>Création en cours...</p>
+      </div>
+    </div>
+  </app-mobile-stepper>
+</div>

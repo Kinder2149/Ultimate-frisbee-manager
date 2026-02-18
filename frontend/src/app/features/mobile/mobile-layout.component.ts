@@ -1,14 +1,12 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet } from '@angular/router';
-import { Router, ActivatedRoute } from '@angular/router';
+import { RouterOutlet, Router } from '@angular/router';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Subject, fromEvent } from 'rxjs';
 import { takeUntil, filter } from 'rxjs/operators';
 
-import { MobileHeaderComponent } from './components/mobile-header/mobile-header.component';
-import { User } from '../../core/models/user.model';
-import { AuthService } from '../../core/services/auth.service';
+import { MobileBottomNavComponent } from './components/mobile-bottom-nav/mobile-bottom-nav.component';
+import { MobileNavigationService } from '../../core/services/mobile-navigation.service';
 import { MobileDetectorService } from '../../core/services/mobile-detector.service';
 
 @Component({
@@ -18,28 +16,24 @@ import { MobileDetectorService } from '../../core/services/mobile-detector.servi
     CommonModule,
     RouterOutlet,
     MatSnackBarModule,
-    MobileHeaderComponent
+    MobileBottomNavComponent
   ],
   templateUrl: './mobile-layout.component.html',
   styleUrls: ['./mobile-layout.component.scss']
 })
 export class MobileLayoutComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
-
-  currentUser: User | null = null;
-  returnUrl: string | undefined;
+  activeRoute: string = 'home';
 
   constructor(
     private router: Router,
-    private route: ActivatedRoute,
     private snackBar: MatSnackBar,
-    private authService: AuthService,
+    private mobileNavigationService: MobileNavigationService,
     private mobileDetector: MobileDetectorService
   ) {}
 
   ngOnInit(): void {
-    this.loadCurrentUser();
-    this.loadReturnUrl();
+    this.setupRouteTracking();
     this.setupResizeListener();
   }
 
@@ -48,16 +42,25 @@ export class MobileLayoutComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private loadCurrentUser(): void {
-    this.authService.currentUser$
+  private setupRouteTracking(): void {
+    this.mobileNavigationService.currentTab$
       .pipe(takeUntil(this.destroy$))
-      .subscribe((user: User | null) => {
-        this.currentUser = user;
+      .subscribe(tab => {
+        this.activeRoute = tab;
       });
-  }
 
-  private loadReturnUrl(): void {
-    this.returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || undefined;
+    const currentPath = this.router.url;
+    if (currentPath.includes('/home')) {
+      this.mobileNavigationService.setCurrentTab('home');
+    } else if (currentPath.includes('/library')) {
+      this.mobileNavigationService.setCurrentTab('library');
+    } else if (currentPath.includes('/create')) {
+      this.mobileNavigationService.setCurrentTab('create');
+    } else if (currentPath.includes('/terrain')) {
+      this.mobileNavigationService.setCurrentTab('terrain');
+    } else if (currentPath.includes('/profile')) {
+      this.mobileNavigationService.setCurrentTab('profile');
+    }
   }
 
   private setupResizeListener(): void {
@@ -80,43 +83,12 @@ export class MobileLayoutComponent implements OnInit, OnDestroy {
 
     snackBarRef.onAction().subscribe(() => {
       this.mobileDetector.forceDesktop();
-      const targetUrl = this.returnUrl || '/';
-      this.router.navigate([targetUrl]);
+      this.router.navigate(['/']);
     });
   }
 
-  onSearchClick(): void {
-    // Transmis au child MobileHomeComponent via un service ou événement
-    // En Phase 1, le header émet l'événement mais la search bar est dans MobileHome
-    // Ce handler est un placeholder — la logique de recherche est dans MobileHomeComponent
-  }
-
-  onSettingsClick(): void {
-    this.snackBar.open('Paramètres - Fonctionnalité en cours de développement pour mobile', 'Fermer', {
-      duration: 3000
-    });
-  }
-
-  onProfileClick(): void {
-    this.snackBar.open('Profil - Fonctionnalité en cours de développement pour mobile', 'Fermer', {
-      duration: 3000
-    });
-  }
-
-  onTagsClick(): void {
-    this.snackBar.open('Tags - Fonctionnalité en cours de développement pour mobile', 'Fermer', {
-      duration: 3000
-    });
-  }
-
-  onAdminClick(): void {
-    this.snackBar.open('Administration - Fonctionnalité en cours de développement pour mobile', 'Fermer', {
-      duration: 3000
-    });
-  }
-
-  onLogoutClick(): void {
-    this.authService.logout().subscribe();
-    this.router.navigate(['/login']);
+  onNavigationChange(route: string): void {
+    const tab = route.split('/').pop() || 'home';
+    this.mobileNavigationService.setCurrentTab(tab);
   }
 }

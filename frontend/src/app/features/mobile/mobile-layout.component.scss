@@ -1,10 +1,23 @@
 @import '../../shared/styles/mobile-variables';
 
 .mobile-layout {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
-  background-color: $mobile-bg-page;
+  background: #f8f9fa;
+
+  @media (prefers-color-scheme: dark) {
+    background: #121212;
+  }
 }
 
 .mobile-layout__content {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 64px;
   padding-top: $mobile-header-height;
+
+  @media (prefers-color-scheme: dark) {
+    background: #121212;
+  }
 }

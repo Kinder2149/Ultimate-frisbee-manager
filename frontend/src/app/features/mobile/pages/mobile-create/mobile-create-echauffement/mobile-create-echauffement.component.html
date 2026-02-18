@@ -1,0 +1,125 @@
+<div class="mobile-create-echauffement">
+  <app-mobile-header
+    title="Créer un échauffement"
+    [showBack]="true"
+  ></app-mobile-header>
+
+  <app-mobile-stepper
+    [steps]="steps"
+    [currentStep]="currentStep"
+    [canProceed]="canProceedStep"
+    [canComplete]="canComplete"
+    (stepChange)="onStepChange($event)"
+    (next)="onNext()"
+    (previous)="onPrevious()"
+    (complete)="onComplete()"
+    (cancel)="onCancel()"
+  >
+    <!-- Étape 0 : Informations -->
+    <div step-0 class="step-content">
+      <h2>Informations générales</h2>
+      <form [formGroup]="echauffementForm">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Nom de l'échauffement</mat-label>
+          <input matInput formControlName="nom" required>
+          <mat-error *ngIf="echauffementForm.get('nom')?.hasError('required')">
+            Le nom est obligatoire
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Description</mat-label>
+          <textarea 
+            matInput 
+            formControlName="description" 
+            rows="6"
+            required
+          ></textarea>
+          <mat-error *ngIf="echauffementForm.get('description')?.hasError('required')">
+            La description est obligatoire
+          </mat-error>
+        </mat-form-field>
+      </form>
+    </div>
+
+    <!-- Étape 1 : Blocs -->
+    <div step-1 class="step-content">
+      <h2>Blocs d'échauffement</h2>
+      <p class="step-hint">Organisez votre échauffement en plusieurs blocs</p>
+
+      <div formArrayName="blocs" [formGroup]="echauffementForm">
+        <mat-card 
+          *ngFor="let bloc of blocs.controls; let i = index"
+          class="bloc-card"
+        >
+          <mat-card-header>
+            <mat-card-title>Bloc {{ i + 1 }}</mat-card-title>
+            <button 
+              mat-icon-button 
+              *ngIf="blocs.length > 1"
+              (click)="removeBloc(i)"
+              class="remove-bloc-button"
+            >
+              <mat-icon>delete</mat-icon>
+            </button>
+          </mat-card-header>
+
+          <mat-card-content [formGroupName]="i">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Titre du bloc</mat-label>
+              <input matInput formControlName="titre" required>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Description</mat-label>
+              <textarea matInput formControlName="description" rows="3"></textarea>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Durée (minutes)</mat-label>
+              <input matInput type="number" formControlName="duree">
+            </mat-form-field>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <button 
+        mat-raised-button 
+        color="primary"
+        (click)="addBloc()"
+        class="add-bloc-button"
+      >
+        <mat-icon>add</mat-icon>
+        Ajouter un bloc
+      </button>
+    </div>
+
+    <!-- Étape 2 : Résumé -->
+    <div step-2 class="step-content">
+      <h2>Résumé</h2>
+
+      <div class="summary-section">
+        <h3>Informations</h3>
+        <p><strong>Nom :</strong> {{ echauffementForm.get('nom')?.value }}</p>
+        <p><strong>Description :</strong> {{ echauffementForm.get('description')?.value }}</p>
+      </div>
+
+      <div class="summary-section">
+        <h3>Blocs ({{ blocs.length }})</h3>
+        <div *ngFor="let bloc of blocs.controls; let i = index" class="bloc-summary">
+          <h4>{{ i + 1 }}. {{ bloc.get('titre')?.value }}</h4>
+          <p *ngIf="bloc.get('description')?.value">{{ bloc.get('description')?.value }}</p>
+          <p *ngIf="bloc.get('duree')?.value" class="duration-info">
+            <mat-icon>schedule</mat-icon>
+            {{ bloc.get('duree')?.value }} minutes
+          </p>
+        </div>
+      </div>
+
+      <div class="summary-warning" *ngIf="submitting">
+        <mat-icon>hourglass_empty</mat-icon>
+        <p>Création en cours...</p>
+      </div>
+    </div>
+  </app-mobile-stepper>
+</div>

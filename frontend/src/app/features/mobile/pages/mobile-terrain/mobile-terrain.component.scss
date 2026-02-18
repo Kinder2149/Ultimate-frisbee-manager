@@ -1,0 +1,117 @@
+.mobile-terrain {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.terrain-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.timer-section {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+
+  h2 {
+    margin: 0 0 16px 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2c3e50;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    background: #1e1e1e;
+
+    h2 {
+      color: #e0e0e0;
+    }
+  }
+}
+
+.timer-display {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #667eea;
+  margin: 24px 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.timer-controls {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+
+  button {
+    min-width: 120px;
+    min-height: 48px;
+  }
+}
+
+.training-section,
+.favorites-section {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  h2 {
+    margin: 0 0 16px 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2c3e50;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    background: #1e1e1e;
+
+    h2 {
+      color: #e0e0e0;
+    }
+  }
+}
+
+.training-card {
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+
+  h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c3e50;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #7f8c8d;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    background: #2a2a2a;
+
+    h3 {
+      color: #e0e0e0;
+    }
+
+    p {
+      color: #a0a0a0;
+    }
+  }
+}
+
+.empty-message {
+  text-align: center;
+  color: #7f8c8d;
+  font-size: 0.9rem;
+  margin: 0;
+}

@@ -25,12 +25,8 @@ try {
 const server = app.listen(PORT, '0.0.0.0', async () => {
   if (process.env.NODE_ENV !== 'test') {
     console.log(`[Startup] Server listening on http://0.0.0.0:${PORT} (local: http://localhost:${PORT})`);
-    // JWT config
-    if (config.jwt.refreshSecret) {
-      console.log('[Startup] JWT refresh: ENABLED');
-    } else {
-      console.warn('[Startup] JWT refresh: DISABLED (JWT_REFRESH_SECRET absent)');
-    }
+    // Auth via Supabase
+    console.log('[Startup] Auth: Supabase Auth enabled');
     // Vérification Cloudinary
     if (!config.cloudinary.url) {
       // Fallback possible via variables séparées; on avertit pour faciliter la config
