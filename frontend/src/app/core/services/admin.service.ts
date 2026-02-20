@@ -190,12 +190,12 @@ export class AdminService {
   }
 
   getWorkspaceUsers(id: string): Observable<{ workspaceId: string; name: string; users: AdminWorkspaceUser[] }> {
-    const url = this.api.getUrl(`workspaces/${id}/users`);
+    const url = this.api.getUrl(`admin/workspaces/${id}/users`);
     return this.http.get<{ workspaceId: string; name: string; users: AdminWorkspaceUser[] }>(url);
   }
 
   setWorkspaceUsers(id: string, users: { userId: string; role: string }[]): Observable<void> {
-    const url = this.api.getUrl(`workspaces/${id}/users`);
+    const url = this.api.getUrl(`admin/workspaces/${id}/users`);
     return this.http.put<void>(url, { users });
   }
 }
