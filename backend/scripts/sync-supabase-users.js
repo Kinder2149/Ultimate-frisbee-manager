@@ -92,9 +92,8 @@ async function main() {
             email: authUser.email,
             nom: authUser.user_metadata?.nom || authUser.email.split('@')[0],
             prenom: authUser.user_metadata?.prenom || '',
-            role: 'MEMBER',
-            isActive: true,
-            passwordHash: '' // Pas de mot de passe local, authentification via Supabase
+            role: 'USER',
+            isActive: true
           }
         });
 
