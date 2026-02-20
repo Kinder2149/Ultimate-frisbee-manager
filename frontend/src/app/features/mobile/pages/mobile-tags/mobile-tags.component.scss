@@ -1,0 +1,293 @@
+@import '../../../../shared/styles/mobile-variables';
+
+.mobile-tags {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: $mobile-bg-primary;
+}
+
+.tags-content {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.tags-tabs {
+  flex: 1;
+  overflow: hidden;
+
+  ::ng-deep {
+    .mat-mdc-tab-group {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .mat-mdc-tab-body-wrapper {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .mat-mdc-tab-labels {
+      background: white;
+      border-bottom: 1px solid $mobile-border-light;
+    }
+
+    .mat-mdc-tab-label {
+      font-size: 0.85rem;
+      min-width: 80px;
+      padding: 0 8px;
+    }
+  }
+}
+
+.tab-content {
+  padding: 16px;
+}
+
+// Statistiques
+.category-stats {
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+
+  mat-icon {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+  }
+
+  .stat-info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .stat-number {
+    font-size: 1.8rem;
+    font-weight: bold;
+  }
+
+  .stat-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+  }
+}
+
+// Formulaire
+.tag-form {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.form-title {
+  margin: 0 0 16px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: $mobile-text-primary;
+}
+
+.form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tag-input {
+  width: 100%;
+}
+
+.color-picker {
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: $mobile-text-secondary;
+  }
+
+  .color-options {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 8px;
+  }
+
+  .color-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 0;
+
+    &.active {
+      border-color: $mobile-text-primary;
+      transform: scale(1.1);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+
+  .btn-save {
+    flex: 1;
+    min-height: 44px;
+    font-weight: 600;
+  }
+
+  .btn-cancel {
+    min-height: 44px;
+    min-width: 100px;
+  }
+}
+
+// Liste des tags
+.tags-list {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.list-title {
+  margin: 0 0 16px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: $mobile-text-primary;
+}
+
+.tags-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tag-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: $mobile-bg-secondary;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+  transition: transform 0.2s;
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.tag-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.tag-color {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tag-label {
+  font-size: 1rem;
+  font-weight: 500;
+  color: $mobile-text-primary;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tag-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+
+  button {
+    width: 40px;
+    height: 40px;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+.no-tags {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  color: $mobile-text-muted;
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+  }
+
+  p {
+    margin: 0 0 8px 0;
+    font-size: 1rem;
+  }
+
+  .hint {
+    font-size: 0.9rem;
+    opacity: 0.7;
+  }
+}
+
+// Dark mode
+@media (prefers-color-scheme: dark) {
+  .mobile-tags {
+    background: #121212;
+  }
+
+  .tag-form,
+  .tags-list {
+    background: #1e1e1e;
+  }
+
+  .form-title,
+  .list-title,
+  .tag-label {
+    color: #e0e0e0;
+  }
+
+  .tag-item {
+    background: #2a2a2a;
+  }
+
+  .color-picker label {
+    color: #b0b0b0;
+  }
+}

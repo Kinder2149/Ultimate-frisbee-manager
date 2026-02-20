@@ -9,7 +9,9 @@
     "test": "ng test",
     "lint": "ng lint",
     "cypress:open": "cypress open",
-    "cypress:run": "cypress run"
+    "cypress:run": "cypress run",
+    "test:mobile": "cypress run --spec 'cypress/e2e/mobile/**/*.cy.ts'",
+    "test:mobile:open": "cypress open --e2e --browser chrome"
   },
   "private": true,
   "dependencies": {

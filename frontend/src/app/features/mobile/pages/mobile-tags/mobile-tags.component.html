@@ -1,0 +1,132 @@
+<div class="mobile-tags">
+  <app-mobile-header
+    [title]="'Gestion des tags'"
+    [showBack]="true"
+    (backClick)="goBack()"
+  ></app-mobile-header>
+
+  <div class="tags-content">
+    <mat-tab-group 
+      [(selectedIndex)]="selectedTabIndex"
+      (selectedIndexChange)="onTabChange($event)"
+      class="tags-tabs"
+    >
+      <mat-tab *ngFor="let category of tagCategories" [label]="getCategoryDisplayName(category)">
+        <div class="tab-content">
+          <!-- Statistiques -->
+          <div class="category-stats">
+            <div class="stat-card">
+              <mat-icon>label</mat-icon>
+              <div class="stat-info">
+                <span class="stat-number">{{ (groupedTags[category] || []).length }}</span>
+                <span class="stat-label">tags</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Formulaire création/édition -->
+          <div class="tag-form" *ngIf="permissionsService.canWrite()">
+            <h3 class="form-title">
+              {{ editingTag ? 'Modifier le tag' : 'Nouveau tag' }}
+            </h3>
+            
+            <div class="form-fields">
+              <mat-form-field appearance="outline" class="tag-input">
+                <mat-label>Nom du tag</mat-label>
+                <input 
+                  matInput 
+                  [(ngModel)]="newTagLabel"
+                  placeholder="Ex: Défense"
+                  maxlength="50"
+                />
+              </mat-form-field>
+
+              <div class="color-picker">
+                <label>Couleur</label>
+                <div class="color-options">
+                  <button 
+                    *ngFor="let color of ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b', '#fa709a', '#fee140', '#30cfd0']"
+                    class="color-btn"
+                    [class.active]="newTagColor === color"
+                    [style.background-color]="color"
+                    (click)="newTagColor = color"
+                  ></button>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button 
+                  mat-flat-button 
+                  color="primary"
+                  class="btn-save"
+                  (click)="editingTag ? onUpdateTag() : onCreateTag()"
+                  [disabled]="!newTagLabel.trim()"
+                >
+                  <mat-icon>{{ editingTag ? 'save' : 'add' }}</mat-icon>
+                  {{ editingTag ? 'Modifier' : 'Créer' }}
+                </button>
+                <button 
+                  mat-stroked-button
+                  class="btn-cancel"
+                  *ngIf="editingTag"
+                  (click)="cancelEdit()"
+                >
+                  <mat-icon>close</mat-icon>
+                  Annuler
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Liste des tags -->
+          <div class="tags-list">
+            <h3 class="list-title">
+              Tags existants ({{ (groupedTags[category] || []).length }})
+            </h3>
+
+            <div class="tags-grid" *ngIf="(groupedTags[category] || []).length > 0">
+              <div 
+                *ngFor="let tag of groupedTags[category]"
+                class="tag-item"
+                [style.border-left-color]="tag.color"
+              >
+                <div class="tag-info">
+                  <div 
+                    class="tag-color" 
+                    [style.background-color]="tag.color"
+                  ></div>
+                  <span class="tag-label">{{ tag.label }}</span>
+                </div>
+                <div class="tag-actions" *ngIf="permissionsService.canWrite()">
+                  <button 
+                    mat-icon-button
+                    class="btn-edit"
+                    (click)="onEditTag(tag)"
+                  >
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button 
+                    mat-icon-button
+                    color="warn"
+                    class="btn-delete"
+                    (click)="onDeleteTag(tag)"
+                  >
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="no-tags" *ngIf="(groupedTags[category] || []).length === 0">
+              <mat-icon>label_off</mat-icon>
+              <p>Aucun tag dans cette catégorie</p>
+              <p class="hint" *ngIf="permissionsService.canWrite()">
+                Créez votre premier tag ci-dessus
+              </p>
+            </div>
+          </div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+</div>

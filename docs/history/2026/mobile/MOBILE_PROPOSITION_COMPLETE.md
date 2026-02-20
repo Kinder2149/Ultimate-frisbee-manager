@@ -1,10 +1,15 @@
 # PROPOSITION COMPLÈTE - VUE MOBILE ULTIMATE FRISBEE MANAGER
 
+**⚠️ DOCUMENT ARCHIVÉ - Remplacé par `docs/reference/MOBILE_SPECIFICATION.md` v3.0**
+
 **Date :** 2026-02-18  
-**Statut :** REFERENCE  
+**Statut :** ARCHIVED  
 **Version :** 1.0  
 **Projet :** Ultimate Frisbee Manager  
-**Basé sur :** Analyse vue desktop + État actuel mobile
+**Basé sur :** Analyse vue desktop + État actuel mobile  
+**Archivé le :** 2026-02-19  
+**Remplacé par :** docs/reference/MOBILE_SPECIFICATION.md v3.0  
+**Raison :** Contient informations obsolètes (mode offline) et redondances
 
 ---
 

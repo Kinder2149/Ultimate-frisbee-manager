@@ -6,12 +6,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { MobileHeaderComponent, HeaderAction } from '../../components/mobile-header/mobile-header.component';
 import { CollapsibleSectionComponent } from '../../../../shared/components/collapsible-section/collapsible-section.component';
 import { MobileImageViewerComponent } from '../../../../shared/components/mobile-image-viewer/mobile-image-viewer.component';
+import { MobileConfirmDialogComponent } from '../../components/mobile-confirm-dialog/mobile-confirm-dialog.component';
 import { MobileNavigationService } from '../../../../core/services/mobile-navigation.service';
 import { Exercice } from '../../../../core/models/exercice.model';
 import { Entrainement } from '../../../../core/models/entrainement.model';
@@ -34,6 +36,7 @@ import { PermissionsService } from '../../../../core/services/permissions.servic
     MatSnackBarModule,
     MatChipsModule,
     MatProgressSpinnerModule,
+    MatDialogModule,
     MobileHeaderComponent,
     CollapsibleSectionComponent,
     MobileImageViewerComponent
@@ -102,6 +105,23 @@ import { PermissionsService } from '../../../../core/services/permissions.servic
             <mat-icon>{{ isFavorite() ? 'star' : 'star_border' }}</mat-icon>
             {{ isFavorite() ? 'Retirer des favoris' : 'Ajouter aux favoris' }}
           </button>
+          
+          <button 
+            mat-raised-button 
+            (click)="onDuplicate()"
+          >
+            <mat-icon>content_copy</mat-icon>
+            Dupliquer
+          </button>
+          
+          <button 
+            mat-raised-button 
+            color="warn"
+            (click)="onDelete()"
+          >
+            <mat-icon>delete</mat-icon>
+            Supprimer
+          </button>
         </div>
       </div>
 
@@ -162,6 +182,9 @@ import { PermissionsService } from '../../../../core/services/permissions.servic
 
     .actions-section {
       margin-top: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
       
       button {
         width: 100%;
@@ -197,6 +220,7 @@ export class MobileDetailComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private snackBar: MatSnackBar,
     private cdr: ChangeDetectorRef,
+    private dialog: MatDialog,
     private exerciceService: ExerciceService,
     private entrainementService: EntrainementService,
     private echauffementService: EchauffementService,
@@ -343,6 +367,122 @@ export class MobileDetailComponent implements OnInit, OnDestroy {
 
   onShare(): void {
     this.snackBar.open('Fonctionnalité de partage à venir', 'Fermer', { duration: 2000 });
+  }
+
+  onDuplicate(): void {
+    if (!this.item) return;
+    
+    const canDuplicate = this.permissionsService.canCreate();
+    if (!canDuplicate) {
+      this.snackBar.open('Permissions insuffisantes', 'OK', { duration: 3000 });
+      return;
+    }
+    
+    switch (this.itemType) {
+      case 'exercice':
+        this.exerciceService.duplicateExercice(this.itemId).subscribe({
+          next: (newItem) => {
+            this.snackBar.open('Exercice dupliqué', 'OK', { duration: 3000 });
+            this.router.navigate(['/mobile/detail/exercice', newItem.id]);
+          },
+          error: () => this.snackBar.open('Erreur lors de la duplication', 'OK', { duration: 3000 })
+        });
+        break;
+      case 'entrainement':
+        this.entrainementService.duplicateEntrainement(this.itemId).subscribe({
+          next: (newItem) => {
+            this.snackBar.open('Entraînement dupliqué', 'OK', { duration: 3000 });
+            this.router.navigate(['/mobile/detail/entrainement', newItem.id]);
+          },
+          error: () => this.snackBar.open('Erreur lors de la duplication', 'OK', { duration: 3000 })
+        });
+        break;
+      case 'echauffement':
+        this.echauffementService.duplicateEchauffement(this.itemId).subscribe({
+          next: (newItem) => {
+            this.snackBar.open('Échauffement dupliqué', 'OK', { duration: 3000 });
+            this.router.navigate(['/mobile/detail/echauffement', newItem.id]);
+          },
+          error: () => this.snackBar.open('Erreur lors de la duplication', 'OK', { duration: 3000 })
+        });
+        break;
+      case 'situation':
+        this.situationMatchService.duplicateSituationMatch(this.itemId).subscribe({
+          next: (newItem) => {
+            this.snackBar.open('Situation dupliquée', 'OK', { duration: 3000 });
+            this.router.navigate(['/mobile/detail/situation', newItem.id]);
+          },
+          error: () => this.snackBar.open('Erreur lors de la duplication', 'OK', { duration: 3000 })
+        });
+        break;
+    }
+  }
+
+  onDelete(): void {
+    if (!this.item) return;
+    
+    const canDelete = this.permissionsService.canDelete();
+    if (!canDelete) {
+      this.snackBar.open('Permissions insuffisantes', 'OK', { duration: 3000 });
+      return;
+    }
+    
+    const dialogRef = this.dialog.open(MobileConfirmDialogComponent, {
+      data: {
+        title: 'Confirmer la suppression',
+        message: `Voulez-vous vraiment supprimer "${this.itemTitle}" ?`,
+        confirmLabel: 'Supprimer',
+        cancelLabel: 'Annuler',
+        confirmColor: 'warn'
+      }
+    });
+    
+    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
+      if (confirmed) {
+        this.deleteItem();
+      }
+    });
+  }
+
+  private deleteItem(): void {
+    switch (this.itemType) {
+      case 'exercice':
+        this.exerciceService.deleteExercice(this.itemId).subscribe({
+          next: () => {
+            this.snackBar.open('Exercice supprimé', 'OK', { duration: 3000 });
+            this.router.navigate(['/mobile/library']);
+          },
+          error: () => this.snackBar.open('Erreur lors de la suppression', 'OK', { duration: 3000 })
+        });
+        break;
+      case 'entrainement':
+        this.entrainementService.deleteEntrainement(this.itemId).subscribe({
+          next: () => {
+            this.snackBar.open('Entraînement supprimé', 'OK', { duration: 3000 });
+            this.router.navigate(['/mobile/library']);
+          },
+          error: () => this.snackBar.open('Erreur lors de la suppression', 'OK', { duration: 3000 })
+        });
+        break;
+      case 'echauffement':
+        this.echauffementService.deleteEchauffement(this.itemId).subscribe({
+          next: () => {
+            this.snackBar.open('Échauffement supprimé', 'OK', { duration: 3000 });
+            this.router.navigate(['/mobile/library']);
+          },
+          error: () => this.snackBar.open('Erreur lors de la suppression', 'OK', { duration: 3000 })
+        });
+        break;
+      case 'situation':
+        this.situationMatchService.deleteSituationMatch(this.itemId).subscribe({
+          next: () => {
+            this.snackBar.open('Situation supprimée', 'OK', { duration: 3000 });
+            this.router.navigate(['/mobile/library']);
+          },
+          error: () => this.snackBar.open('Erreur lors de la suppression', 'OK', { duration: 3000 })
+        });
+        break;
+    }
   }
 
   goBack(): void {

@@ -97,8 +97,8 @@ export class MobileCreateEchauffementComponent implements OnInit, OnDestroy {
   get canProceedStep(): boolean {
     switch (this.currentStep) {
       case 0:
-        return this.echauffementForm.get('nom')?.valid && 
-               this.echauffementForm.get('description')?.valid;
+        return !!(this.echauffementForm.get('nom')?.valid && 
+               this.echauffementForm.get('description')?.valid);
       case 1:
         return this.blocs.length > 0 && this.blocs.valid;
       case 2:

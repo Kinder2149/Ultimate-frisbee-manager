@@ -30,6 +30,8 @@ model Exercice {
   critereReussite String?
   variablesPlus   String                 @default("")
   variablesMinus  String                 @default("")
+  duree_minutes   Int?
+  nombre_joueurs  Int?
   createdAt       DateTime               @default(now())
   updatedAt       DateTime               @updatedAt
   entrainements   EntrainementExercice[]
@@ -152,6 +154,7 @@ model SituationMatch {
   description   String?
   temps         String?
   imageUrl      String?
+  nombre_joueurs Int?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   entrainements Entrainement[]

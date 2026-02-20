@@ -24,7 +24,7 @@ if (result.error) {
 
 // Valider et exporter la configuration
 const config = {
-  port: process.env.PORT || 3002,
+  port: process.env.PORT || 3000,
   databaseUrl: process.env.DATABASE_URL,
   corsOrigins: process.env.CORS_ORIGINS || 'http://localhost:4200',
   cloudinary: {

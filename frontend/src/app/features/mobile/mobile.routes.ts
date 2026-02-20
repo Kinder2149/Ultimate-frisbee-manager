@@ -27,6 +27,10 @@ export const MOBILE_ROUTES: Routes = [
         loadComponent: () => import('./pages/mobile-profile/mobile-profile.component').then(c => c.MobileProfileComponent),
       },
       {
+        path: 'tags',
+        loadComponent: () => import('./pages/mobile-tags/mobile-tags.component').then(c => c.MobileTagsComponent),
+      },
+      {
         path: 'create',
         loadComponent: () => import('./pages/mobile-create/mobile-create.component').then(c => c.MobileCreateComponent),
       },

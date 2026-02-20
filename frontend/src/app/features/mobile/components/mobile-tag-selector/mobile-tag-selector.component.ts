@@ -36,7 +36,7 @@ import { Tag } from '../../../../core/models/tag.model';
             *ngFor="let tag of selectedTags"
             (removed)="onRemoveTag(tag)"
           >
-            {{ tag.nom }}
+            {{ tag.label }}
             <button matChipRemove>
               <mat-icon>cancel</mat-icon>
             </button>
@@ -63,7 +63,7 @@ import { Tag } from '../../../../core/models/tag.model';
                 [class.selected]="isSelected(tag)"
                 (click)="onToggleTag(tag, category.multiple)"
               >
-                {{ tag.nom }}
+                {{ tag.label }}
                 <mat-icon *ngIf="isSelected(tag)">check</mat-icon>
               </mat-chip>
             </mat-chip-set>
@@ -164,7 +164,7 @@ export class MobileTagSelectorComponent implements OnInit {
       .map(category => ({
         ...category,
         tags: category.tags.filter(tag => 
-          tag.nom.toLowerCase().includes(query)
+          tag.label.toLowerCase().includes(query)
         )
       }))
       .filter(category => category.tags.length > 0);

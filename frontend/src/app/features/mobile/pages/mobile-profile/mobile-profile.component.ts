@@ -52,16 +52,30 @@ export class MobileProfileComponent implements OnInit, OnDestroy {
   }
 
   private loadUserData(): void {
+    console.log('[MobileProfile] Loading user data...');
+    
     this.authService.currentUser$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(user => {
-        this.currentUser = user;
+      .subscribe({
+        next: (user) => {
+          console.log('[MobileProfile] User loaded:', user);
+          this.currentUser = user;
+        },
+        error: (error) => {
+          console.error('[MobileProfile] Error loading user:', error);
+        }
       });
 
     this.workspaceService.currentWorkspace$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(workspace => {
-        this.currentWorkspace = workspace;
+      .subscribe({
+        next: (workspace) => {
+          console.log('[MobileProfile] Workspace loaded:', workspace);
+          this.currentWorkspace = workspace;
+        },
+        error: (error) => {
+          console.error('[MobileProfile] Error loading workspace:', error);
+        }
       });
   }
 

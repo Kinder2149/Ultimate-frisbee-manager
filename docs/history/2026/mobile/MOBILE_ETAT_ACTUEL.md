@@ -1,9 +1,14 @@
 # ÉTAT ACTUEL DE LA VUE MOBILE
 
+**⚠️ DOCUMENT ARCHIVÉ - Remplacé par `docs/reference/MOBILE_SPECIFICATION.md` v3.0**
+
 **Date :** 2026-02-18  
-**Statut :** REFERENCE  
+**Statut :** ARCHIVED  
 **Version :** 1.0  
-**Projet :** Ultimate Frisbee Manager
+**Projet :** Ultimate Frisbee Manager  
+**Archivé le :** 2026-02-19  
+**Remplacé par :** docs/reference/MOBILE_SPECIFICATION.md v3.0  
+**Raison :** État daté du 18/02, intégré dans nouvelle spécification
 
 ---
 

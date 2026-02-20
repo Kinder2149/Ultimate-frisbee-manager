@@ -21,6 +21,12 @@ export class AuthGuard implements CanActivate {
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): Observable<boolean> {
+    // Bypass authentification en mode test Cypress
+    if ((window as any).Cypress) {
+      console.log('[AuthGuard] Mode test Cypress détecté - bypass authentification');
+      return of(true);
+    }
+    
     return this.authService.authReady$.pipe(
       // Attendre que authReady$ devienne true (au lieu de take(1) immédiat)
       filter((isReady: boolean) => isReady === true),

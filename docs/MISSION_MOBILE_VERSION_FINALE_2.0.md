@@ -1,9 +1,13 @@
 # MISSION MOBILE --- VERSION FINALE VALIDÉE
 
+**⚠️ DOCUMENT ARCHIVÉ - Remplacé par `docs/reference/MOBILE_SPECIFICATION.md` v3.0**
+
 **Projet : Ultimate Frisbee Manager**\
-**Statut : DOCUMENT CONTRACTUEL DE REFONTE**\
+**Statut : ARCHIVED**\
 **Version : 2.0**\
-**Date : 2026-02-18**
+**Date : 2026-02-18**\
+**Archivé le : 2026-02-19**\
+**Remplacé par : docs/reference/MOBILE_SPECIFICATION.md v3.0**
 
 ------------------------------------------------------------------------
 

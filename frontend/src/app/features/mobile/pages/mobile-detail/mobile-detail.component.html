@@ -42,6 +42,14 @@
 
     <!-- Métadonnées -->
     <div class="mobile-detail__meta">
+      <div class="mobile-detail__meta-item" *ngIf="item.duree_minutes">
+        <mat-icon>schedule</mat-icon>
+        <span>{{ item.duree_minutes }} min</span>
+      </div>
+      <div class="mobile-detail__meta-item" *ngIf="item.nombre_joueurs">
+        <mat-icon>group</mat-icon>
+        <span>{{ item.nombre_joueurs }} joueurs</span>
+      </div>
       <div class="mobile-detail__meta-item" *ngIf="item.duree">
         <mat-icon>schedule</mat-icon>
         <span>{{ formatDuree(item.duree) }}</span>
@@ -154,6 +162,14 @@
 
     <!-- Actions -->
     <div class="mobile-detail__actions">
+      <button
+        mat-flat-button
+        color="primary"
+        class="mobile-detail__action-btn mobile-detail__action-btn--favorite"
+        (click)="toggleFavorite()">
+        <mat-icon>{{ isFavorite() ? 'favorite' : 'favorite_border' }}</mat-icon>
+        {{ isFavorite() ? 'Retirer des favoris' : 'Ajouter aux favoris' }}
+      </button>
       <button
         mat-flat-button
         class="mobile-detail__action-btn"

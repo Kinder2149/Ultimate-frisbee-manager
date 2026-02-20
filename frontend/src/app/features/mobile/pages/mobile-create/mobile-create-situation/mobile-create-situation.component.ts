@@ -184,8 +184,8 @@ export class MobileCreateSituationComponent implements OnInit, OnDestroy {
 
       if (this.imageFile) {
         this.uploading = true;
-        const uploadResult = await this.uploadService.uploadImage(this.imageFile, 'situations').toPromise();
-        imageUrl = uploadResult?.url || '';
+        const uploadResult = await this.uploadService.uploadImage('situations-matchs', this.imageFile).toPromise();
+        imageUrl = uploadResult?.imageUrl || '';
         this.uploading = false;
       }
 
@@ -193,8 +193,7 @@ export class MobileCreateSituationComponent implements OnInit, OnDestroy {
         nom: this.situationForm.value.nom,
         description: this.situationForm.value.description,
         imageUrl: imageUrl || undefined,
-        tags: this.selectedTags,
-        tagIds: this.selectedTags.map(t => t.id!).filter(id => id)
+        tags: this.selectedTags
       };
 
       this.situationMatchService.createSituationMatch(situationData as SituationMatch)

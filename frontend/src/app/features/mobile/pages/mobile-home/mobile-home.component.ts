@@ -1,59 +1,99 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatDialog } from '@angular/material/dialog';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
-import { MobileFilterBarComponent } from '../../components/mobile-filter-bar/mobile-filter-bar.component';
-import { MobileTerrainToggleComponent } from '../../components/mobile-terrain-toggle/mobile-terrain-toggle.component';
-import { ContentFeedComponent } from '../../components/content-feed/content-feed.component';
-import { MobileConfirmDialogComponent } from '../../components/mobile-confirm-dialog/mobile-confirm-dialog.component';
-
-import { CategoryType, SortOrder, ContentItem } from '../../models/content-item.model';
-import { Tag } from '../../../../core/models/tag.model';
-
-import { MobileStateService } from '../../services/mobile-state.service';
-import { MobileDataService } from '../../services/mobile-data.service';
-import { MobileFiltersService } from '../../services/mobile-filters.service';
-import { ExerciceService } from '../../../../core/services/exercice.service';
-import { EntrainementService } from '../../../../core/services/entrainement.service';
-import { EchauffementService } from '../../../../core/services/echauffement.service';
-import { SituationMatchService } from '../../../../core/services/situationmatch.service';
+import { MobileHeaderComponent } from '../../components/mobile-header/mobile-header.component';
+import { MobileNavigationService } from '../../../../core/services/mobile-navigation.service';
+import { WorkspaceDataStore, DashboardStats } from '../../../../core/services/workspace-data.store';
+import { WorkspaceService, WorkspaceSummary } from '../../../../core/services/workspace.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-mobile-home',
   standalone: true,
   imports: [
     CommonModule,
-    MatSnackBarModule,
-    MobileFilterBarComponent,
-    MobileTerrainToggleComponent,
-    ContentFeedComponent
+    MobileHeaderComponent
   ],
   templateUrl: './mobile-home.component.html',
-  styleUrls: ['./mobile-home.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrls: ['./mobile-home.component.scss']
 })
 export class MobileHomeComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
+  currentWorkspace: WorkspaceSummary | null = null;
+  stats: DashboardStats = {
+    exercicesCount: 0,
+    entrainementsCount: 0,
+    echauffementsCount: 0,
+    situationsCount: 0,
+    tagsCount: 0,
+    tagsDetails: {},
+    recentActivity: 0
+  };
+  isLoading = true;
+  userName = '';
+
+  get totalElements(): number {
+    return this.stats.exercicesCount + this.stats.entrainementsCount + 
+           this.stats.echauffementsCount + this.stats.situationsCount;
+  }
+
+  getTagsDescription(): string {
+    if (this.isLoading) return 'Chargement...';
+    
+    if (!this.stats.tagsDetails || typeof this.stats.tagsDetails !== 'object') {
+      return 'Aucun tag créé';
+    }
+    
+    const categories = Object.keys(this.stats.tagsDetails);
+    if (categories.length === 0) return 'Aucun tag créé';
+    
+    if (categories.length === 1) {
+      const category = categories[0];
+      const count = this.stats.tagsDetails[category];
+      return `${count} tag${count > 1 ? 's' : ''} ${category}`;
+    }
+    
+    return `${this.stats.tagsCount} tags (${categories.length} catégories)`;
+  }
+
   constructor(
     private router: Router,
-    private snackBar: MatSnackBar,
-    private dialog: MatDialog,
-    public stateService: MobileStateService,
-    private dataService: MobileDataService,
-    private filtersService: MobileFiltersService,
-    private exerciceService: ExerciceService,
-    private entrainementService: EntrainementService,
-    private echauffementService: EchauffementService,
-    private situationMatchService: SituationMatchService
+    private mobileNavigationService: MobileNavigationService,
+    private workspaceDataStore: WorkspaceDataStore,
+    private workspaceService: WorkspaceService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
-    this.stateService.loadAllContent();
+    this.mobileNavigationService.setCurrentTab('home');
+
+    this.authService.currentUser$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(user => {
+      this.userName = user?.email?.split('@')[0] || 'Utilisateur';
+    });
+
+    this.workspaceService.currentWorkspace$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(workspace => {
+      this.currentWorkspace = workspace;
+    });
+
+    this.workspaceDataStore.stats$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(stats => {
+      this.stats = stats;
+    });
+
+    this.workspaceDataStore.loading$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(loading => {
+      this.isLoading = loading;
+    });
   }
 
   ngOnDestroy(): void {
@@ -61,115 +101,48 @@ export class MobileHomeComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  get availableTags(): Tag[] {
-    return this.filtersService.extractUniqueTags(this.stateService.items());
+  navigateToProfile(): void {
+    if (!this.currentWorkspace) return;
+    this.router.navigate(['/mobile/profile']);
   }
 
-  // --- Handlers UI ---
-
-  onCategoryChange(category: CategoryType): void {
-    this.stateService.setCategory(category);
+  navigateToWorkspaceSelection(): void {
+    if (!this.currentWorkspace) return;
+    this.router.navigate(['/select-workspace'], {
+      queryParams: { forceSelection: 'true' }
+    });
   }
 
-  onSortChange(order: SortOrder): void {
-    this.stateService.setSortOrder(order);
+  navigateToLibrary(): void {
+    if (!this.currentWorkspace) return;
+    this.router.navigate(['/mobile/library']);
   }
 
-  onSearchQueryChange(query: string): void {
-    this.stateService.setSearchQuery(query);
+  navigateToModule(type: string): void {
+    if (!this.currentWorkspace) return;
+    const tabIndex = {
+      'exercice': 0,
+      'entrainement': 1,
+      'echauffement': 2,
+      'situation': 3
+    }[type] || 0;
+
+    this.router.navigate(['/mobile/library'], {
+      queryParams: { tab: tabIndex }
+    });
   }
 
-  onTagAdd(tag: Tag): void {
-    this.stateService.addTagFilter(tag);
+  navigateToTags(): void {
+    if (!this.currentWorkspace) return;
+    this.router.navigate(['/mobile/tags']);
   }
 
-  onTagRemove(tagId: string): void {
-    this.stateService.removeTagFilter(tagId);
-  }
-
-  onTerrainModeChange(enabled: boolean): void {
-    this.stateService.setTerrainMode(enabled);
-  }
-
-  // --- Handlers items ---
-
-  onItemView(item: ContentItem): void {
-    this.router.navigate(['/mobile/detail', item.type, item.id]);
-  }
-
-  onItemEdit(item: ContentItem): void {
-    this.router.navigate(['/mobile/edit', item.type, item.id]);
-  }
-
-  onItemDuplicate(item: ContentItem): void {
-    const serviceMap: Record<ContentItem['type'], { service: any; method: string }> = {
-      exercice: { service: this.exerciceService, method: 'duplicateExercice' },
-      entrainement: { service: this.entrainementService, method: 'duplicateEntrainement' },
-      echauffement: { service: this.echauffementService, method: 'duplicateEchauffement' },
-      situation: { service: this.situationMatchService, method: 'duplicateSituationMatch' }
-    };
-
-    const { service, method } = serviceMap[item.type];
-
-    if (typeof service[method] !== 'function') {
-      this.snackBar.open('Fonctionnalité non disponible', 'Fermer', { duration: 3000 });
-      return;
+  getRoleLabel(role: string): string {
+    switch(role) {
+      case 'MANAGER': return 'Gestionnaire';
+      case 'MEMBER': return 'Membre';
+      case 'VIEWER': return 'Lecteur';
+      default: return role;
     }
-
-    service[method](item.id).subscribe({
-      next: () => {
-        this.snackBar.open('Élément dupliqué avec succès', 'Fermer', { duration: 3000 });
-        this.stateService.loadAllContent(true);
-      },
-      error: (err: any) => {
-        console.error('[MobileHome] Erreur duplication:', err);
-        this.snackBar.open('Erreur lors de la duplication', 'Fermer', { duration: 3000 });
-      }
-    });
-  }
-
-  onItemDelete(item: ContentItem): void {
-    const dialogRef = this.dialog.open(MobileConfirmDialogComponent, {
-      data: {
-        title: 'Supprimer l\'élément',
-        message: `Êtes-vous sûr de vouloir supprimer "${item.title}" ?`,
-        confirmLabel: 'Supprimer',
-        cancelLabel: 'Annuler',
-        confirmColor: 'warn' as const
-      },
-      panelClass: 'mobile-confirm-dialog-panel',
-      maxWidth: '95vw',
-      width: '100%',
-      position: { bottom: '0' }
-    });
-
-    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
-      if (!confirmed) return;
-
-      const serviceMap: Record<ContentItem['type'], { service: any; method: string }> = {
-        exercice: { service: this.exerciceService, method: 'deleteExercice' },
-        entrainement: { service: this.entrainementService, method: 'deleteEntrainement' },
-        echauffement: { service: this.echauffementService, method: 'deleteEchauffement' },
-        situation: { service: this.situationMatchService, method: 'deleteSituationMatch' }
-      };
-
-      const { service, method } = serviceMap[item.type];
-
-      if (typeof service[method] !== 'function') {
-        this.snackBar.open('Fonctionnalité non disponible', 'Fermer', { duration: 3000 });
-        return;
-      }
-
-      service[method](item.id).subscribe({
-        next: () => {
-          this.snackBar.open('Élément supprimé avec succès', 'Fermer', { duration: 3000 });
-          this.stateService.removeItem(item.id);
-        },
-        error: (err: any) => {
-          console.error('[MobileHome] Erreur suppression:', err);
-          this.snackBar.open('Erreur lors de la suppression', 'Fermer', { duration: 3000 });
-        }
-      });
-    });
   }
 }

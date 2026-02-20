@@ -1,28 +1,99 @@
 <div class="mobile-home">
-  <app-mobile-filter-bar
-    [activeCategory]="stateService.activeCategory()"
-    [sortOrder]="stateService.sortOrder()"
-    [categoryCount]="stateService.categoryCount()"
-    [selectedTags]="stateService.selectedTags()"
-    [availableTags]="availableTags"
-    (categoryChange)="onCategoryChange($event)"
-    (sortChange)="onSortChange($event)"
-    (tagAdd)="onTagAdd($event)"
-    (tagRemove)="onTagRemove($event)">
-  </app-mobile-filter-bar>
+  <app-mobile-header
+    [title]="'Accueil'"
+    [showBack]="false"
+  ></app-mobile-header>
 
-  <app-content-feed
-    [items]="stateService.filteredItems()"
-    [loading]="stateService.loading()"
-    [error]="stateService.error()"
-    (itemView)="onItemView($event)"
-    (itemEdit)="onItemEdit($event)"
-    (itemDuplicate)="onItemDuplicate($event)"
-    (itemDelete)="onItemDelete($event)">
-  </app-content-feed>
+  <div class="dashboard-content">
+    <!-- Carte Utilisateur -->
+    <div class="user-card card">
+      <div class="card-header">
+        <div class="user-icon">👤</div>
+        <div class="user-info">
+          <h3>{{ userName }}</h3>
+          <p>Utilisateur</p>
+        </div>
+      </div>
+      <button class="card-action" (click)="navigateToProfile()">
+        Voir le profil →
+      </button>
+    </div>
 
-  <app-mobile-terrain-toggle
-    [terrainMode]="stateService.terrainMode()"
-    (terrainModeChange)="onTerrainModeChange($event)">
-  </app-mobile-terrain-toggle>
+    <!-- Carte Workspace -->
+    <div class="workspace-card card">
+      <div class="card-header">
+        <div class="workspace-icon">🏢</div>
+        <div class="workspace-info">
+          <h3>{{ currentWorkspace?.name || 'Aucun workspace' }}</h3>
+          <p class="workspace-role">{{ getRoleLabel(currentWorkspace?.role || 'MEMBER') }}</p>
+        </div>
+      </div>
+      <button class="card-action" (click)="navigateToWorkspaceSelection()">
+        Modifier l'espace →
+      </button>
+    </div>
+
+    <!-- Section Modules -->
+    <div class="section">
+      <h2 class="section-title">📚 Modules</h2>
+      <div class="modules-grid">
+        <div class="module-card" (click)="navigateToModule('exercice')">
+          <div class="module-icon">🏃‍♂️</div>
+          <h3>Exercices</h3>
+          <p class="module-count">{{ stats.exercicesCount }}</p>
+        </div>
+
+        <div class="module-card" (click)="navigateToModule('entrainement')">
+          <div class="module-icon">📋</div>
+          <h3>Entraînements</h3>
+          <p class="module-count">{{ stats.entrainementsCount }}</p>
+        </div>
+
+        <div class="module-card" (click)="navigateToModule('echauffement')">
+          <div class="module-icon">🔥</div>
+          <h3>Échauffements</h3>
+          <p class="module-count">{{ stats.echauffementsCount }}</p>
+        </div>
+
+        <div class="module-card" (click)="navigateToModule('situation')">
+          <div class="module-icon">🥏</div>
+          <h3>Situations</h3>
+          <p class="module-count">{{ stats.situationsCount }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Carte Tags -->
+    <div class="tags-card card">
+      <div class="card-header">
+        <div class="tags-icon">🏷️</div>
+        <div class="tags-info">
+          <h3>Tags</h3>
+          <p>{{ getTagsDescription() }}</p>
+        </div>
+      </div>
+      <button class="card-action" (click)="navigateToTags()">
+        Gérer les tags →
+      </button>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="section">
+      <h2 class="section-title">📊 Aperçu</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number">{{ totalElements }}</div>
+          <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">{{ stats.tagsCount }}</div>
+          <div class="stat-label">Tags</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">{{ stats.recentActivity }}</div>
+          <div class="stat-label">Récents</div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

@@ -330,20 +330,33 @@
 
 // Actions
 .mobile-detail__actions {
-  display: flex;
-  gap: $mobile-spacing-md;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
   padding-top: $mobile-spacing-lg;
   border-top: 1px solid $mobile-border-light;
 }
 
 .mobile-detail__action-btn {
-  flex: 1;
-  min-height: $mobile-touch-target;
-  font-size: $mobile-font-size-body;
+  min-height: 44px;
+  padding: 12px;
+  font-size: 0.9rem;
   font-weight: $mobile-font-weight-medium;
   border-radius: $mobile-border-radius-md;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: $mobile-spacing-sm;
+  gap: $mobile-spacing-xs;
+  
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+  
+  &--favorite {
+    grid-column: 1 / -1;
+    padding: 14px;
+    font-size: 1rem;
+  }
 }

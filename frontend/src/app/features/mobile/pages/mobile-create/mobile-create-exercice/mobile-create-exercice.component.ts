@@ -132,8 +132,8 @@ export class MobileCreateExerciceComponent implements OnInit, OnDestroy {
   get canProceedStep(): boolean {
     switch (this.currentStep) {
       case 0:
-        return this.exerciceForm.get('nom')?.valid && 
-               this.exerciceForm.get('description')?.valid;
+        return !!(this.exerciceForm.get('nom')?.valid && 
+               this.exerciceForm.get('description')?.valid);
       case 1:
         return true;
       case 2:
@@ -207,7 +207,8 @@ export class MobileCreateExerciceComponent implements OnInit, OnDestroy {
 
       if (this.imageFile) {
         this.uploading = true;
-        imageUrl = await this.uploadService.uploadImage(this.imageFile).toPromise();
+        const result = await this.uploadService.uploadImage('entrainements', this.imageFile).toPromise();
+        imageUrl = result?.imageUrl || '';
         this.uploading = false;
       }
 

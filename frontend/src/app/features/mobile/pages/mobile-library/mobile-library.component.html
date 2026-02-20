@@ -1,74 +1,272 @@
 <div class="mobile-library">
   <app-mobile-header
-    [title]="'Bibliothèque'"
+    [title]="selectedType ? getTypeLabel(selectedType) : 'Bibliothèque'"
     [showBack]="false"
   ></app-mobile-header>
 
   <div class="library-content">
-    <mat-tab-group 
-      [(selectedIndex)]="selectedTabIndex"
-      (selectedIndexChange)="onTabChange($event)"
-      class="library-tabs"
-    >
-      <mat-tab label="Exercices">
-        <div class="tab-content">
-          <div class="items-list">
-            <div 
-              *ngFor="let exercice of exercices$ | async"
-              class="item-card"
-              (click)="onItemClick('exercice', exercice.id || '')"
-            >
-              <h3>{{ exercice.nom }}</h3>
-              <p>{{ exercice['duree_minutes'] || 0 }} min</p>
+    <!-- Vue grille 2x2 (par défaut) -->
+    <div class="module-selector" *ngIf="!selectedType">
+      <div class="modules-grid">
+        <div class="module-card" (click)="selectType('exercice')">
+          <div class="module-icon">🏃‍♂️</div>
+          <h3>Exercices</h3>
+          <p class="module-count">{{ (exercices$ | async)?.length || 0 }}</p>
+        </div>
+        
+        <div class="module-card" (click)="selectType('entrainement')">
+          <div class="module-icon">📋</div>
+          <h3>Entraînements</h3>
+          <p class="module-count">{{ (entrainements$ | async)?.length || 0 }}</p>
+        </div>
+        
+        <div class="module-card" (click)="selectType('echauffement')">
+          <div class="module-icon">🔥</div>
+          <h3>Échauffements</h3>
+          <p class="module-count">{{ (echauffements$ | async)?.length || 0 }}</p>
+        </div>
+        
+        <div class="module-card" (click)="selectType('situation')">
+          <div class="module-icon">🥏</div>
+          <h3>Situations</h3>
+          <p class="module-count">{{ (situations$ | async)?.length || 0 }}</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Vue liste filtrée (après sélection) -->
+    <div class="type-list" *ngIf="selectedType">
+      <button class="back-button" (click)="selectedType = null">
+        <mat-icon>arrow_back</mat-icon>
+        Retour
+      </button>
+      
+      <div class="search-bar">
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-icon matPrefix>search</mat-icon>
+          <input 
+            matInput 
+            [placeholder]="'Rechercher ' + getTypePlural(selectedType) + '...'"
+            [(ngModel)]="searchQuery"
+            (ngModelChange)="onSearchChange()"
+          />
+          <button 
+            matSuffix 
+            mat-icon-button 
+            *ngIf="searchQuery" 
+            (click)="clearSearch()"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+        </mat-form-field>
+      </div>
+      
+      <div class="items-list">
+        <!-- Exercices -->
+        <ng-container *ngIf="selectedType === 'exercice'">
+          <div 
+            *ngFor="let exercice of filteredExercices$ | async"
+            class="item-card"
+            (click)="onItemClick('exercice', exercice.id || '')">
+            <div class="item-header">
+              <div class="item-icon">🏃‍♂️</div>
+              <div class="item-title">
+                <h3>{{ exercice.nom }}</h3>
+                <span class="item-type">Exercice</span>
+              </div>
+            </div>
+            
+            <div class="image-container" *ngIf="exercice.imageUrl">
+              <img [src]="getFullImageUrl(exercice.imageUrl)" [alt]="exercice.nom">
+            </div>
+            
+            <div class="item-details">
+              <div class="detail-row" *ngIf="exercice['duree_minutes']">
+                <span class="detail-icon">⏱️</span>
+                <span>{{ exercice['duree_minutes'] }} min</span>
+              </div>
+              <div class="detail-row" *ngIf="exercice['nombre_joueurs']">
+                <span class="detail-icon">👥</span>
+                <span>{{ exercice['nombre_joueurs'] }} joueurs</span>
+              </div>
+              <div class="detail-row" *ngIf="exercice.materiel">
+                <span class="detail-icon">🎯</span>
+                <span>{{ exercice.materiel }}</span>
+              </div>
+              <div class="detail-row" *ngIf="exercice.critereReussite">
+                <span class="detail-icon">✓</span>
+                <span>{{ exercice.critereReussite }}</span>
+              </div>
+            </div>
+            
+            <p class="item-description" *ngIf="exercice.description">
+              {{ (exercice.description | stripHtml).length > 100 ? ((exercice.description | stripHtml) | slice:0:100) + '...' : (exercice.description | stripHtml) }}
+            </p>
+            
+            <div class="item-tags" *ngIf="exercice.tags && exercice.tags.length > 0">
+              <span class="tag" *ngFor="let tag of exercice.tags.slice(0, 4)" [style.background-color]="tag.color || '#667eea'">
+                {{ tag.label }}
+              </span>
+              <span class="tag-more" *ngIf="exercice.tags.length > 4">
+                +{{ exercice.tags.length - 4 }}
+              </span>
             </div>
           </div>
-        </div>
-      </mat-tab>
+          <div *ngIf="(filteredExercices$ | async)?.length === 0" class="no-results">
+            <p>Aucun exercice trouvé</p>
+          </div>
+        </ng-container>
 
-      <mat-tab label="Entraînements">
-        <div class="tab-content">
-          <div class="items-list">
-            <div 
-              *ngFor="let entrainement of entrainements$ | async"
-              class="item-card"
-              (click)="onItemClick('entrainement', entrainement.id || '')"
-            >
-              <h3>{{ entrainement.titre }}</h3>
-              <p>{{ entrainement.dureeTotal || 0 }} min</p>
+        <!-- Entraînements -->
+        <ng-container *ngIf="selectedType === 'entrainement'">
+          <div 
+            *ngFor="let entrainement of filteredEntrainements$ | async"
+            class="item-card"
+            (click)="onItemClick('entrainement', entrainement.id || '')">
+            <div class="item-header">
+              <div class="item-icon">📋</div>
+              <div class="item-title">
+                <h3>{{ entrainement.titre }}</h3>
+                <span class="item-type">Entraînement</span>
+              </div>
+            </div>
+            
+            <div class="image-container" *ngIf="entrainement.imageUrl">
+              <img [src]="getFullImageUrl(entrainement.imageUrl)" [alt]="entrainement.titre">
+            </div>
+            
+            <div class="item-details">
+              <div class="detail-row" *ngIf="entrainement.dureeTotal">
+                <span class="detail-icon">⏱️</span>
+                <span>{{ entrainement.dureeTotal }} min</span>
+              </div>
+              <div class="detail-row" *ngIf="entrainement.date">
+                <span class="detail-icon">📅</span>
+                <span>{{ entrainement.date | date:'dd/MM/yyyy' }}</span>
+              </div>
+              <div class="detail-row" *ngIf="entrainement.exercices && entrainement.exercices.length > 0">
+                <span class="detail-icon">📝</span>
+                <span>{{ entrainement.exercices.length }} exercice{{ entrainement.exercices.length > 1 ? 's' : '' }}</span>
+              </div>
+              <div class="detail-row" *ngIf="entrainement.echauffement">
+                <span class="detail-icon">�</span>
+                <span>{{ entrainement.echauffement.nom }}</span>
+              </div>
+              <div class="detail-row" *ngIf="entrainement.situationMatch">
+                <span class="detail-icon">🥏</span>
+                <span>{{ entrainement.situationMatch.nom || entrainement.situationMatch.type }}</span>
+              </div>
+            </div>
+            
+            <div class="item-tags" *ngIf="entrainement.tags && entrainement.tags.length > 0">
+              <span class="tag" *ngFor="let tag of entrainement.tags.slice(0, 4)" [style.background-color]="tag.color || '#667eea'">
+                {{ tag.label }}
+              </span>
+              <span class="tag-more" *ngIf="entrainement.tags.length > 4">
+                +{{ entrainement.tags.length - 4 }}
+              </span>
             </div>
           </div>
-        </div>
-      </mat-tab>
+          <div *ngIf="(filteredEntrainements$ | async)?.length === 0" class="no-results">
+            <p>Aucun entraînement trouvé</p>
+          </div>
+        </ng-container>
 
-      <mat-tab label="Échauffements">
-        <div class="tab-content">
-          <div class="items-list">
-            <div 
-              *ngFor="let echauffement of echauffements$ | async"
-              class="item-card"
-              (click)="onItemClick('echauffement', echauffement.id || '')"
-            >
-              <h3>{{ echauffement.nom }}</h3>
-              <p>Échauffement</p>
+        <!-- Échauffements -->
+        <ng-container *ngIf="selectedType === 'echauffement'">
+          <div 
+            *ngFor="let echauffement of filteredEchauffements$ | async"
+            class="item-card"
+            (click)="onItemClick('echauffement', echauffement.id || '')">
+            <div class="item-header">
+              <div class="item-icon">🔥</div>
+              <div class="item-title">
+                <h3>{{ echauffement.nom }}</h3>
+                <span class="item-type">Échauffement</span>
+              </div>
+            </div>
+            
+            <div class="image-container" *ngIf="echauffement.imageUrl">
+              <img [src]="getFullImageUrl(echauffement.imageUrl)" [alt]="echauffement.nom">
+            </div>
+            
+            <div class="item-details">
+              <div class="detail-row" *ngIf="echauffement.blocs && echauffement.blocs.length > 0">
+                <span class="detail-icon">📦</span>
+                <span>{{ echauffement.blocs.length }} bloc{{ echauffement.blocs.length > 1 ? 's' : '' }}</span>
+              </div>
+              <div class="detail-row" *ngIf="getTotalTemps(echauffement)">
+                <span class="detail-icon">⏱️</span>
+                <span>{{ getTotalTemps(echauffement) }}</span>
+              </div>
+            </div>
+            
+            <p class="item-description" *ngIf="echauffement.description">
+              {{ (echauffement.description | stripHtml).length > 100 ? ((echauffement.description | stripHtml) | slice:0:100) + '...' : (echauffement.description | stripHtml) }}
+            </p>
+            
+            <div class="blocs-preview" *ngIf="echauffement.blocs && echauffement.blocs.length > 0">
+              <div class="bloc-item" *ngFor="let bloc of echauffement.blocs.slice(0, 3); let i = index">
+                <span class="bloc-number">{{ i + 1 }}.</span>
+                <span class="bloc-title">{{ bloc.titre }}</span>
+              </div>
+              <span class="blocs-more" *ngIf="echauffement.blocs.length > 3">
+                +{{ echauffement.blocs.length - 3 }} bloc(s)
+              </span>
             </div>
           </div>
-        </div>
-      </mat-tab>
+          <div *ngIf="(filteredEchauffements$ | async)?.length === 0" class="no-results">
+            <p>Aucun échauffement trouvé</p>
+          </div>
+        </ng-container>
 
-      <mat-tab label="Situations">
-        <div class="tab-content">
-          <div class="items-list">
-            <div 
-              *ngFor="let situation of situations$ | async"
-              class="item-card"
-              (click)="onItemClick('situation', situation.id || '')"
-            >
-              <h3>{{ situation.nom }}</h3>
-              <p>Situation de match</p>
+        <!-- Situations -->
+        <ng-container *ngIf="selectedType === 'situation'">
+          <div 
+            *ngFor="let situation of filteredSituations$ | async"
+            class="item-card"
+            (click)="onItemClick('situation', situation.id || '')">
+            <div class="item-header">
+              <div class="item-icon">🥏</div>
+              <div class="item-title">
+                <h3>{{ situation.nom || situation.type }}</h3>
+                <span class="item-type">{{ situation.type || 'Situation' }}</span>
+              </div>
+            </div>
+            
+            <div class="image-container" *ngIf="situation.imageUrl">
+              <img [src]="getFullImageUrl(situation.imageUrl)" [alt]="situation.nom || situation.type">
+            </div>
+            
+            <div class="item-details">
+              <div class="detail-row" *ngIf="situation.temps">
+                <span class="detail-icon">⏱️</span>
+                <span>{{ situation.temps }}</span>
+              </div>
+              <div class="detail-row" *ngIf="situation['nombre_joueurs']">
+                <span class="detail-icon">👥</span>
+                <span>{{ situation['nombre_joueurs'] }} joueurs</span>
+              </div>
+            </div>
+            
+            <p class="item-description" *ngIf="situation.description">
+              {{ (situation.description | stripHtml).length > 100 ? ((situation.description | stripHtml) | slice:0:100) + '...' : (situation.description | stripHtml) }}
+            </p>
+            
+            <div class="item-tags" *ngIf="situation.tags && situation.tags.length > 0">
+              <span class="tag" *ngFor="let tag of situation.tags.slice(0, 4)" [style.background-color]="tag.color || '#667eea'">
+                {{ tag.label }}
+              </span>
+              <span class="tag-more" *ngIf="situation.tags.length > 4">
+                +{{ situation.tags.length - 4 }}
+              </span>
             </div>
           </div>
-        </div>
-      </mat-tab>
-    </mat-tab-group>
+          <div *ngIf="(filteredSituations$ | async)?.length === 0" class="no-results">
+            <p>Aucune situation trouvée</p>
+          </div>
+        </ng-container>
+      </div>
+    </div>
   </div>
 </div>
