@@ -20,7 +20,7 @@ export interface Tag {
   /** Code couleur au format HEX (#RRGGBB) */
   color?: string;
   /** Niveau de difficulté (1-5) - uniquement pour les tags de catégorie 'niveau' */
-  level?: number;
+  level?: number | null;
   /** Date de création du tag */
   createdAt?: Date;
 }

@@ -8,7 +8,7 @@ export interface Tag {
   label: string;
   category: string;
   color?: string;
-  level?: number;
+  level?: number | null;
 }
 
 export interface TagRecommendation {
