@@ -168,7 +168,7 @@ export class TagFormComponent implements OnInit, OnChanges {
       category: formValue.category,
       color: formValue.color || DEFAULT_TAG_COLORS[formValue.category as string],
       // Inclure le level si c'est un tag de niveau
-              level: formValue.category === 'niveau' ? formValue.level : undefined
+              level: formValue.category === 'niveau' ? formValue.level : null
     };
     
     // Ajouter ou mettre à jour le tag
