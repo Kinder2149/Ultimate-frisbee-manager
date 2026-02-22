@@ -25,13 +25,11 @@ const validate = (schema) => (req, res, next) => {
             message: err.message,
           }))
         : [{ field: '', message: 'Payload invalide.' }];
-      // Aide au debug en dev
-      if (process.env.NODE_ENV !== 'production') {
-        // eslint-disable-next-line no-console
-        console.debug('[validate] Body invalide:', req.body);
-        // eslint-disable-next-line no-console
-        console.debug('[validate] Détails Zod:', validationError.details);
-      }
+      // Aide au debug (temporaire en production pour diagnostiquer tags)
+      // eslint-disable-next-line no-console
+      console.log('[VALIDATION ERROR] Body reçu:', JSON.stringify(req.body));
+      // eslint-disable-next-line no-console
+      console.log('[VALIDATION ERROR] Détails:', JSON.stringify(validationError.details));
       return next(validationError);
     }
 
