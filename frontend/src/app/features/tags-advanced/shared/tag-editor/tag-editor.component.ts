@@ -140,7 +140,8 @@ export class TagEditorComponent implements OnInit {
       label: formValue.label,
       category: formValue.category,
       color: formValue.color,
-      level: formValue.level
+      // Convertir en number et appliquer null si pas catégorie niveau
+      level: formValue.category === 'niveau' ? Number(formValue.level) : null
     };
     
     this.saveTag.emit(tag);
