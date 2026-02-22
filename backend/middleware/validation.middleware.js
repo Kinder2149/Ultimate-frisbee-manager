@@ -14,6 +14,12 @@ const validate = (schema) => (req, res, next) => {
     const result = schema.safeParse(req.body);
 
     if (!result.success) {
+      // Logs détaillés pour diagnostiquer le problème
+      // eslint-disable-next-line no-console
+      console.log('[VALIDATION] Body reçu:', JSON.stringify(req.body));
+      // eslint-disable-next-line no-console
+      console.log('[VALIDATION] Erreur Zod complète:', JSON.stringify(result.error, null, 2));
+      
       const zodErr = result && result.error ? result.error : undefined;
       const validationError = new Error('Les données fournies sont invalides.');
       validationError.statusCode = 400;
@@ -25,11 +31,9 @@ const validate = (schema) => (req, res, next) => {
             message: err.message,
           }))
         : [{ field: '', message: 'Payload invalide.' }];
-      // Aide au debug (temporaire en production pour diagnostiquer tags)
+      
       // eslint-disable-next-line no-console
-      console.log('[VALIDATION ERROR] Body reçu:', JSON.stringify(req.body));
-      // eslint-disable-next-line no-console
-      console.log('[VALIDATION ERROR] Détails:', JSON.stringify(validationError.details));
+      console.log('[VALIDATION] Détails formatés:', JSON.stringify(validationError.details));
       return next(validationError);
     }
 
