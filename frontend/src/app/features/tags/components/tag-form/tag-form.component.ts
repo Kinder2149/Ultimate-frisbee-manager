@@ -216,6 +216,8 @@ export class TagFormComponent implements OnInit, OnChanges {
   resetForm(): void {
     this.errorMessage = '';
     this.initForm();
+    this.tagForm.markAsPristine();
+    this.tagForm.markAsUntouched();
   }
 
   /**

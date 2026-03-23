@@ -17,7 +17,10 @@
         <!-- Ligne 1: Nom -->
         <div class="row">
           <div class="col col-12">
-            <label for="nom" class="label">Nom</label>
+            <label for="nom" class="label">
+              Nom
+              <span class="required-indicator" title="Champ obligatoire">*</span>
+            </label>
             <input id="nom" type="text" class="input" formControlName="nom" [class.invalid]="submitted && f['nom'].errors" placeholder="Nom de l’exercice">
             <div class="error" *ngIf="submitted && f['nom'].errors && f['nom'].errors['required']">Le nom est requis.</div>
           </div>
@@ -49,7 +52,10 @@
 
     <!-- C — Description (éditeur riche) -->
     <section class="card section">
-      <h2 class="section-title">Description</h2>
+      <h2 class="section-title">
+        Description
+        <span class="required-indicator" title="Champ obligatoire">*</span>
+      </h2>
       <app-rich-text-editor formControlName="description" [placeholder]="'Décris l\'exercice…'"></app-rich-text-editor>
       <div class="error" *ngIf="submitted && f['description'].errors && f['description'].errors['required']">La description est requise.</div>
     </section>

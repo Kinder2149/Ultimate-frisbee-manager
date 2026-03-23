@@ -280,7 +280,14 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
   onSubmit(): void {
     this.submitted = true;
     if (this.exerciceForm.invalid) {
-      this.errorMessage = "Veuillez corriger les erreurs dans le formulaire.";
+      const missingFields = this.getMissingRequiredFields();
+      if (missingFields.length > 0) {
+        this.errorMessage = `Champs obligatoires manquants : ${missingFields.join(', ')}`;
+        this.snackBar.open(this.errorMessage, 'Fermer', { duration: 5000 });
+      } else {
+        this.errorMessage = "Veuillez corriger les erreurs dans le formulaire.";
+        this.snackBar.open(this.errorMessage, 'Fermer', { duration: 5000 });
+      }
       return;
     }
     this.submitting = true;
@@ -433,5 +440,22 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
   // Fonction de comparaison pour les mat-select avec des objets
   compareTags(t1: Tag, t2: Tag): boolean {
     return t1 && t2 ? t1.id === t2.id : t1 === t2;
+  }
+
+  /**
+   * Retourne la liste des champs obligatoires manquants
+   */
+  private getMissingRequiredFields(): string[] {
+    const missingFields: string[] = [];
+    
+    if (this.exerciceForm.get('nom')?.hasError('required')) {
+      missingFields.push('Nom');
+    }
+    
+    if (this.exerciceForm.get('description')?.hasError('required')) {
+      missingFields.push('Description');
+    }
+    
+    return missingFields;
   }
 }

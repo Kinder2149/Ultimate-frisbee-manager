@@ -64,6 +64,11 @@
 
 // Inputs
 .label { font-size: 13px; color: #475467; }
+.required-indicator {
+  color: #d92d20;
+  font-weight: bold;
+  margin-left: 4px;
+}
 .input, .textarea {
   width: 100%;
   border: 1px solid #d0d5dd;
