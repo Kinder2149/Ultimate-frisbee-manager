@@ -66,6 +66,11 @@ function parseExerciceJsonFields(exercice) {
  * Valider les tags d'un exercice (règles métier)
  */
 async function validateExerciceTags(tagIds, workspaceId) {
+  // Si aucun tag n'est fourni, pas de validation nécessaire
+  if (!tagIds || tagIds.length === 0) {
+    return;
+  }
+
   // SÉCURITÉ: Valider que tous les tags appartiennent au workspace
   const tagValidation = await validateTagsInWorkspace(tagIds, workspaceId);
   if (!tagValidation.valid) {
@@ -79,25 +84,10 @@ async function validateExerciceTags(tagIds, workspaceId) {
   // Récupérer les tags pour valider les règles métier
   const tagsFromDb = await prisma.tag.findMany({ where: { id: { in: tagIds } } });
   const objectifTags = tagsFromDb.filter(t => t.category === 'objectif');
-  const travailSpecifiqueTags = tagsFromDb.filter(t => t.category === 'travail_specifique');
 
-  // Règle 1: Un tag "objectif" obligatoire
-  if (objectifTags.length === 0) {
-    const error = new Error('Un tag de catégorie "objectif" est obligatoire.');
-    error.statusCode = 400;
-    throw error;
-  }
-
-  // Règle 2: Un seul tag "objectif"
+  // Règle: Un seul tag "objectif" maximum (si fourni)
   if (objectifTags.length > 1) {
     const error = new Error('Un seul tag de catégorie "objectif" est autorisé.');
-    error.statusCode = 400;
-    throw error;
-  }
-
-  // Règle 3: Au moins un tag "travail_specifique"
-  if (travailSpecifiqueTags.length === 0) {
-    const error = new Error('Au moins un tag de catégorie "travail_specifique" est obligatoire.');
     error.statusCode = 400;
     throw error;
   }
@@ -160,15 +150,11 @@ async function createExercice(data, workspaceId, file = null) {
 
   // Déterminer les tagIds finaux
   const finalTagIds = tagIds || (tags && Array.isArray(tags) ? tags.map(t => t.id) : []);
-  
-  if (!Array.isArray(finalTagIds) || finalTagIds.length === 0) {
-    const error = new Error('Au moins un tag est requis.');
-    error.statusCode = 400;
-    throw error;
-  }
 
-  // Valider les tags (sécurité + règles métier)
-  await validateExerciceTags(finalTagIds, workspaceId);
+  // Valider les tags si fournis (sécurité + règles métier)
+  if (finalTagIds && finalTagIds.length > 0) {
+    await validateExerciceTags(finalTagIds, workspaceId);
+  }
 
   // Logs en développement
   if (process.env.NODE_ENV !== 'production') {
@@ -192,11 +178,15 @@ async function createExercice(data, workspaceId, file = null) {
     workspaceId,
     variablesPlus: JSON.stringify(normalizeStringArray(Array.isArray(variablesPlus) ? variablesPlus : [])),
     variablesMinus: JSON.stringify(normalizeStringArray(Array.isArray(variablesMinus) ? variablesMinus : [])),
-    points: JSON.stringify(normalizeStringArray(Array.isArray(points) ? points : [])),
-    tags: {
-      connect: finalTagIds.map(id => ({ id }))
-    }
+    points: JSON.stringify(normalizeStringArray(Array.isArray(points) ? points : []))
   };
+
+  // Ajouter les tags seulement s'il y en a
+  if (finalTagIds && finalTagIds.length > 0) {
+    createData.tags = {
+      connect: finalTagIds.map(id => ({ id }))
+    };
+  }
 
   const newExercice = await prisma.exercice.create({
     data: createData,

@@ -382,17 +382,27 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
         });
 
         // Construire un message utilisateur détaillé
-        const details = Array.isArray(err?.error?.details) ? err.error.details : [];
-        let reason = err?.error?.message || "Une erreur est survenue lors de l'enregistrement.";
-        if (details.length > 0) {
-          const readable = details
+        let reason = "Une erreur est survenue lors de l'enregistrement.";
+        
+        // Priorité 1: Message d'erreur direct du backend
+        if (err?.error?.error) {
+          reason = err.error.error;
+        } 
+        // Priorité 2: Message d'erreur standard
+        else if (err?.error?.message) {
+          reason = err.error.message;
+        }
+        // Priorité 3: Détails de validation
+        else if (Array.isArray(err?.error?.details) && err.error.details.length > 0) {
+          const readable = err.error.details
             .map((d: any) => (d?.field ? `${d.field}: ${d.message}` : d?.message))
             .filter((x: any) => !!x)
-            .join(' \u2013 ');
+            .join(' – ');
           if (readable) reason = readable;
         }
+        
         this.errorMessage = reason;
-        this.snackBar.open(this.errorMessage || "Une erreur est survenue.", 'Fermer', { duration: 5000 });
+        this.snackBar.open(this.errorMessage, 'Fermer', { duration: 5000 });
       }
     });
   }
