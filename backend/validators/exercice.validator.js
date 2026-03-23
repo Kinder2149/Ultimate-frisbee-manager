@@ -25,10 +25,10 @@ const createExerciceSchema = z.object({
   variablesMinus: z.array(z.string()).optional().default([]),
 
   // Les tags sont attendus comme un tableau d'IDs (UUIDs)
-  // La contrainte métier (1 tag objectif max, >=1 travail_specifique)
-  // est vérifiée au niveau du contrôleur avec accès à la base.
+  // Les tags sont optionnels, un exercice peut être créé sans tags
   tagIds: z.array(z.string().uuid({ message: "L'ID d'un tag est invalide." }))
-    .min(1, { message: 'Au moins un tag est requis.' }),
+    .optional()
+    .default([]),
 });
 
 // Schéma pour la mise à jour (tous les champs sont optionnels)
