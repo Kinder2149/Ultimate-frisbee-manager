@@ -1,0 +1,110 @@
+.error-display {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+  border-left: 4px solid;
+  margin: 1rem 0;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  &__header {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  &__icon {
+    flex-shrink: 0;
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+  }
+
+  &__content {
+    flex: 1;
+  }
+
+  &__message {
+    margin: 0 0 0.5rem 0;
+    font-weight: 500;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  &__details {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+    list-style: disc;
+  }
+
+  &__detail-item {
+    margin: 0.25rem 0;
+    font-size: 0.9rem;
+    line-height: 1.4;
+
+    strong {
+      font-weight: 600;
+    }
+  }
+
+  &__request-id {
+    margin: 0.5rem 0 0 0;
+    font-size: 0.85rem;
+    opacity: 0.7;
+    font-family: monospace;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+  }
+
+  &__copy-btn,
+  &__action-btn {
+    font-size: 0.875rem;
+  }
+
+  // Variantes de sévérité
+  &--error {
+    border-left-color: #f44336;
+    background-color: #ffebee;
+
+    .error-display__icon {
+      color: #f44336;
+    }
+
+    .error-display__message {
+      color: #c62828;
+    }
+  }
+
+  &--warning {
+    border-left-color: #ff9800;
+    background-color: #fff3e0;
+
+    .error-display__icon {
+      color: #ff9800;
+    }
+
+    .error-display__message {
+      color: #e65100;
+    }
+  }
+
+  &--info {
+    border-left-color: #2196f3;
+    background-color: #e3f2fd;
+
+    .error-display__icon {
+      color: #2196f3;
+    }
+
+    .error-display__message {
+      color: #1565c0;
+    }
+  }
+}

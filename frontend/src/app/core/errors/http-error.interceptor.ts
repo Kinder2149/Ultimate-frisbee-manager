@@ -4,12 +4,14 @@ import {
   HttpEvent,
   HttpHandler,
   HttpInterceptor,
-  HttpRequest
+  HttpRequest,
+  HttpResponse
 } from '@angular/common/http';
-import { Observable, catchError, throwError } from 'rxjs';
+import { Observable, catchError, throwError, tap } from 'rxjs';
 import { ErrorService } from './error.service';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { LoggerService } from '../services/logger.service';
 
 @Injectable()
 export class HttpErrorInterceptor implements HttpInterceptor {
@@ -19,14 +21,46 @@ export class HttpErrorInterceptor implements HttpInterceptor {
   constructor(
     private errorService: ErrorService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private logger: LoggerService
   ) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    const startTime = Date.now();
+    
+    // Logger la requête sortante
+    this.logger.logHttpRequest(req.method, req.url);
+    
     return next.handle(req).pipe(
+      tap((event: HttpEvent<any>) => {
+        // Logger les réponses réussies
+        if (event instanceof HttpResponse) {
+          const duration = Date.now() - startTime;
+          const requestId = event.headers.get('X-Request-ID');
+          
+          this.logger.logHttpResponse(
+            req.method,
+            req.url,
+            event.status,
+            duration,
+            { requestId }
+          );
+        }
+      }),
       catchError((error: HttpErrorResponse) => {
+        const duration = Date.now() - startTime;
+        const requestId = error.headers?.get('X-Request-ID');
+        
+        // Logger l'erreur HTTP
+        this.logger.logHttpResponse(
+          req.method,
+          req.url,
+          error.status,
+          duration,
+          { requestId, errorCode: error?.error?.code }
+        );
+        
         let userMessage = 'Une erreur est survenue';
-
         const errorCode = error?.error?.code;
 
         // Gestion centralisée des erreurs d'authentification basées sur les codes backend

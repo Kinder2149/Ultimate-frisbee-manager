@@ -15,7 +15,6 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatSnackBar } from '@angular/material/snack-bar';
 
 // RxJS
 import { Observable, of, Subject } from 'rxjs';
@@ -29,6 +28,8 @@ import { Tag } from '../../../../core/models/tag.model';
 import { ApiUrlService } from '../../../../core/services/api-url.service';
 import { ExerciceService } from '../../../../core/services/exercice.service';
 import { TagService } from '../../../../core/services/tag.service';
+import { NotificationManagerService } from '../../../../core/services/notification-manager.service';
+import { LoggerService } from '../../../../core/services/logger.service';
 
 // Composants partagés
 import { ConfirmationDialogComponent, ConfirmationDialogData } from '../../../../shared/shared.module';
@@ -40,6 +41,7 @@ import { TextChipsFieldComponent } from '../../../../shared/components/form-fiel
 import { TagSelectSingleComponent } from '../../../../shared/components/form-fields/tag-select-single/tag-select-single.component';
 import { TagSelectMultiComponent } from '../../../../shared/components/form-fields/tag-select-multi/tag-select-multi.component';
 import { normalizeStringList } from '../../../../shared/components/form-fields/utils/form-field-utils';
+import { getFormErrors, formErrorsToErrorDetails, validateForm } from '../../../../shared/utils/form-validation.helper';
 
 @Component({
   selector: 'app-exercice-form',
@@ -119,14 +121,15 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private apiUrlService: ApiUrlService,
-    private snackBar: MatSnackBar,
     private fb: FormBuilder,
     private dialog: MatDialog,
+    private notificationManager: NotificationManagerService,
+    private logger: LoggerService,
     @Optional() public dialogRef?: MatDialogRef<ExerciceFormComponent>,
     @Optional() @Inject(MAT_DIALOG_DATA) public data?: any,
     @Optional() @Inject(DOCUMENT) private doc?: Document,
   ) {
-    console.log('[ExerciceForm] TRACE: Constructor - Component instantiated.');
+    this.logger.debug('ExerciceForm instantiated', { component: 'ExerciceForm' });
     this.initForm();
     if (this.data?.customData) {
       const cd = this.data.customData as { mode?: 'create'|'edit'|'view'; exercice?: any };
@@ -140,7 +143,7 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    console.log('[ExerciceForm] TRACE: ngOnInit - Lifecycle hook started.');
+    this.logger.debug('ExerciceForm initialized', { component: 'ExerciceForm', mode: this.mode });
     this.readonlyMode = this.mode === 'view';
     
     this.loading = true;
@@ -150,9 +153,9 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
     // 3. Charger l'exercice correspondant à l'ID
     // 4. Mettre à jour le formulaire une fois toutes les données reçues
     this.loadTags().pipe(
-      tap(() => console.log('[ExerciceForm] TRACE: 1. Tags loaded.')),
+      tap(() => this.logger.debug('Tags loaded', { component: 'ExerciceForm' })),
       switchMap(() => this.ignoreRouteParams ? of(this.exerciceId) : this.route.paramMap.pipe(map(params => params.get('id')))),
-      tap(id => console.log(`[ExerciceForm] TRACE: 2. Exercice ID found: ${id}`)),
+      tap(id => this.logger.debug('Exercice ID resolved', { component: 'ExerciceForm', exerciceId: id })),
       switchMap(id => {
         if (id) {
           this.exerciceId = id;
@@ -163,7 +166,7 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe({
       next: (exercice) => {
-        console.log('[ExerciceForm] TRACE: 3. Exercice data received.', exercice);
+        this.logger.debug('Exercice data loaded', { component: 'ExerciceForm', hasExercice: !!exercice });
         if (exercice) {
           // Cas classique: exercice chargé depuis l'API par ID
           this.exercice = exercice;
@@ -175,9 +178,10 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
         this.loading = false;
       },
       error: (err) => {
-        console.error("Erreur critique lors du chargement des données du formulaire", err);
+        this.logger.error('Failed to load form data', err, { component: 'ExerciceForm' });
         this.loading = false;
         this.errorMessage = "Impossible de charger les données de l'exercice.";
+        this.notificationManager.error(this.errorMessage);
       }
     });
 
@@ -231,7 +235,7 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
   }
 
   private updateFormWithExercice(exercice: Exercice): void {
-    console.log('[ExerciceForm] TRACE: 4. Updating form with exercice data.');
+    this.logger.debug('Updating form with exercice data', { component: 'ExerciceForm', exerciceId: exercice.id });
 
     // Préparer la sélection de tags
     let tagsToSelect: Tag[] = [];
@@ -265,7 +269,7 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
       tempsTags: tempsTag,
       formatTags: formatTag
     });
-    console.log('[ExerciceForm] TRACE: 5. Form patched with data.');
+    this.logger.debug('Form patched with exercice data', { component: 'ExerciceForm' });
 
     // Éditeur Quill: plus de synchronisation DOM manuelle
 
@@ -279,15 +283,19 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
 
   onSubmit(): void {
     this.submitted = true;
-    if (this.exerciceForm.invalid) {
-      const missingFields = this.getMissingRequiredFields();
-      if (missingFields.length > 0) {
-        this.errorMessage = `Champs obligatoires manquants : ${missingFields.join(', ')}`;
-        this.snackBar.open(this.errorMessage, 'Fermer', { duration: 5000 });
-      } else {
-        this.errorMessage = "Veuillez corriger les erreurs dans le formulaire.";
-        this.snackBar.open(this.errorMessage, 'Fermer', { duration: 5000 });
-      }
+    
+    if (!validateForm(this.exerciceForm)) {
+      const errors = getFormErrors(this.exerciceForm);
+      const errorDetails = formErrorsToErrorDetails(errors);
+      
+      this.logger.warn('Form validation failed', { 
+        component: 'ExerciceForm', 
+        errorCount: errors.length,
+        fields: errors.map(e => e.field)
+      });
+      
+      this.errorMessage = 'Veuillez corriger les erreurs dans le formulaire';
+      this.notificationManager.error(this.errorMessage, { details: errorDetails });
       return;
     }
     this.submitting = true;
@@ -360,10 +368,24 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
       ? this.exerciceService.updateExercice(this.exerciceId, formData as any)
       : this.exerciceService.createExercice(formData as any);
 
+    this.logger.logAction('EXERCICE_SUBMIT', { 
+      component: 'ExerciceForm',
+      mode: this.exerciceId ? 'update' : 'create',
+      exerciceId: this.exerciceId 
+    });
+
     saveObservable.subscribe({
       next: (savedExercice) => {
         this.submitting = false;
-        this.snackBar.open(`Exercice ${this.exerciceId ? 'mis à jour' : 'créé'}`, 'Fermer', { duration: 3000 });
+        
+        this.logger.info('Exercice saved successfully', {
+          component: 'ExerciceForm',
+          exerciceId: savedExercice.id,
+          mode: this.exerciceId ? 'update' : 'create'
+        });
+        
+        this.notificationManager.success(`Exercice ${this.exerciceId ? 'mis à jour' : 'créé'} avec succès`);
+        
         if (this.dialogRef) {
           this.dialogRef.close(savedExercice);
         } else {
@@ -373,36 +395,15 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
       },
       error: (err: any) => {
         this.submitting = false;
-        // Logs structurés pour investiguer
-        console.error('[ExerciceForm] Échec de sauvegarde:', {
-          status: err?.status,
-          message: err?.error?.message || err?.message,
-          details: err?.error?.details,
-          body: err?.error
+        
+        this.logger.error('Failed to save exercice', err, {
+          component: 'ExerciceForm',
+          mode: this.exerciceId ? 'update' : 'create',
+          exerciceId: this.exerciceId,
+          status: err?.status
         });
 
-        // Construire un message utilisateur détaillé
-        let reason = "Une erreur est survenue lors de l'enregistrement.";
-        
-        // Priorité 1: Message d'erreur direct du backend
-        if (err?.error?.error) {
-          reason = err.error.error;
-        } 
-        // Priorité 2: Message d'erreur standard
-        else if (err?.error?.message) {
-          reason = err.error.message;
-        }
-        // Priorité 3: Détails de validation
-        else if (Array.isArray(err?.error?.details) && err.error.details.length > 0) {
-          const readable = err.error.details
-            .map((d: any) => (d?.field ? `${d.field}: ${d.message}` : d?.message))
-            .filter((x: any) => !!x)
-            .join(' – ');
-          if (readable) reason = readable;
-        }
-        
-        this.errorMessage = reason;
-        this.snackBar.open(this.errorMessage, 'Fermer', { duration: 5000 });
+        this.notificationManager.showHttpError(err, "Échec de l'enregistrement de l'exercice");
       }
     });
   }

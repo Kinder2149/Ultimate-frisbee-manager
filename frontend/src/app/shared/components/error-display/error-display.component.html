@@ -1,0 +1,41 @@
+<div class="error-display" [ngClass]="severityClass" *ngIf="message">
+  <div class="error-display__header">
+    <mat-icon class="error-display__icon">{{ icon }}</mat-icon>
+    <div class="error-display__content">
+      <p class="error-display__message">{{ message }}</p>
+      
+      <!-- Liste des détails d'erreur -->
+      <ul class="error-display__details" *ngIf="details && details.length > 0">
+        <li *ngFor="let detail of details" class="error-display__detail-item">
+          <strong *ngIf="detail.field">{{ detail.field }}:</strong>
+          {{ detail.message }}
+        </li>
+      </ul>
+      
+      <!-- Request ID pour traçabilité -->
+      <p class="error-display__request-id" *ngIf="requestId">
+        <small>ID de requête: {{ requestId }}</small>
+      </p>
+    </div>
+  </div>
+  
+  <!-- Actions -->
+  <div class="error-display__actions" *ngIf="showCopyButton || actionLabel">
+    <button 
+      mat-stroked-button 
+      *ngIf="showCopyButton && (requestId || details.length > 0)"
+      (click)="copyDetails()"
+      class="error-display__copy-btn">
+      <mat-icon>content_copy</mat-icon>
+      Copier les détails
+    </button>
+    
+    <button 
+      mat-raised-button 
+      *ngIf="actionLabel && actionCallback"
+      (click)="executeAction()"
+      class="error-display__action-btn">
+      {{ actionLabel }}
+    </button>
+  </div>
+</div>

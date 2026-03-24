@@ -5,6 +5,7 @@ const pinoHttp = require('pino-http');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
 const errorHandler = require('./middleware/errorHandler.middleware');
+const requestCorrelation = require('./middleware/request-correlation.middleware');
 const { writeMethodsRateLimit, readMethodsRateLimit } = require('./middleware/rateLimit.middleware');
 const app = express();
 
@@ -108,6 +109,9 @@ app.use(readMethodsRateLimit);
 
 // Middleware pour parser le JSON
 app.use(express.json());
+
+// Middleware de corrélation des requêtes (génère requestId unique)
+app.use(requestCorrelation);
 
 // Documentation API Swagger
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
