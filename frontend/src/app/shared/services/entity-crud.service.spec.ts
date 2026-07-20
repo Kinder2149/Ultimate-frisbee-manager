@@ -1,8 +1,5 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { EntityCrudService, Entity, CrudOptions } from './entity-crud.service';
-import { HttpGenericService } from './http-generic.service';
-import { CacheService } from '../../core/services/cache.service';
 import { ApiUrlService } from '../../core/services/api-url.service';
 
 interface TestEntity extends Entity {

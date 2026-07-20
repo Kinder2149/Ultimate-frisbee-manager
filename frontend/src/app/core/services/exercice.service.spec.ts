@@ -1,8 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
-import { ExerciceService } from './exercice.service';
-import { HttpGenericService } from '../../shared/services/http-generic.service';
-import { CacheService } from './cache.service';
+import { ExerciceService } from '../../features/exercices/services/exercice.service';
 
 class HttpGenericServiceMock {
   post = jasmine.createSpy('post').and.callFake((_url: string, body: any) => of({ ...(body as any), id: '1' }));

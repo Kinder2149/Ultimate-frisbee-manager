@@ -229,3 +229,11 @@ shared/**/*.js.map
 !shared/jest.config.js
 .vercel
 .env*.local
+graphify-out/
+
+# Outillage local Kinder (ne pas versionner)
+.claude/
+METHODO/
+.graphify_python
+.graphifyignore
+graphify-out/

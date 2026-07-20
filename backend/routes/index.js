@@ -54,6 +54,7 @@ module.exports = (app) => {
   app.use('/api/matches', authenticateToken, workspaceGuard, baseMutationGuard, situationMatchRoutes);
   app.use('/api/dashboard', authenticateToken, workspaceGuard, baseMutationGuard, dashboardRoutes);
   app.use('/api/import', authenticateToken, workspaceGuard, baseMutationGuard, importRoutes);
+  app.use('/api/sync', authenticateToken, workspaceGuard, syncRoutes);
 
   app.use('/api/admin', adminRoutes);
 

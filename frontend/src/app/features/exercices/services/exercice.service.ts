@@ -1,53 +1,115 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { ExerciceOptimizedService } from './exercice-optimized.service';
+import { HttpClient } from '@angular/common/http';
+import { Observable, Subject } from 'rxjs';
+import { tap, map } from 'rxjs/operators';
 import { Exercice } from '../../../core/models/exercice.model';
+import { environment } from '../../../../environments/environment';
+import { DataCacheService } from '../../../core/services/data-cache.service';
+import { SyncService } from '../../../core/services/sync.service';
+import { WorkspaceDataStore } from '../../../core/services/workspace-data.store';
+import { CacheOptions } from '../../../core/models/cache.model';
 
 /**
- * Service façade pour la gestion des exercices
- * Utilise le service optimisé en interne tout en fournissant une interface simplifiée
+ * Service pour la gestion des exercices
  */
 @Injectable({
   providedIn: 'root'
 })
 export class ExerciceService {
-  constructor(private exerciceOptimizedService: ExerciceOptimizedService) {}
-  
-  /**
-   * Récupère tous les exercices disponibles
-   */
-  getAllExercices(): Observable<Exercice[]> {
-    return this.exerciceOptimizedService.getExercices();
+  private readonly apiUrl = `${environment.apiUrl}/exercises`;
+
+  private exercicesUpdated = new Subject<void>();
+  exercicesUpdated$ = this.exercicesUpdated.asObservable();
+
+  constructor(
+    private http: HttpClient,
+    private cache: DataCacheService,
+    private sync: SyncService,
+    private workspaceDataStore: WorkspaceDataStore
+  ) {}
+
+  getAllExercices(options: CacheOptions = {}): Observable<Exercice[]> {
+    return this.cache.get<Exercice[]>(
+      'exercices-list',
+      'exercices',
+      () => this.http.get<any>(this.apiUrl).pipe(
+        map(response => {
+          return Array.isArray(response) ? response : (response.data || []);
+        })
+      ),
+      options
+    );
   }
-  
-  /**
-   * Récupère un exercice par son ID
-   */
-  getExerciceById(id: string): Observable<Exercice> {
-    return this.exerciceOptimizedService.getExerciceById(id);
+
+  getExerciceById(id: string, options: CacheOptions = {}): Observable<Exercice> {
+    return this.cache.get<Exercice>(
+      `exercice-${id}`,
+      'exercices',
+      () => this.http.get<Exercice>(`${this.apiUrl}/${id}`),
+      options
+    );
   }
-  
-  /**
-   * Crée un nouvel exercice
-   * @param formData Les données du formulaire, y compris le fichier image si présent
-   */
-  createExercice(formData: FormData): Observable<Exercice> {
-    return this.exerciceOptimizedService.ajouterExercice(formData);
+
+  createExercice(data: FormData | Partial<Exercice>): Observable<Exercice> {
+    return this.http.post<Exercice>(this.apiUrl, data).pipe(
+      tap((exercice) => {
+        const current = this.workspaceDataStore.getExercices();
+        this.workspaceDataStore.setExercices([exercice, ...current]);
+        console.log('[ExerciceService] Store patched after create', { id: exercice.id });
+
+        this.cache.invalidate('exercices-list', 'exercices');
+        this.sync.notifyChange({
+          type: 'exercice',
+          action: 'create',
+          id: exercice.id || '',
+          workspaceId: this.cache.getCurrentWorkspaceId() || '',
+          timestamp: Date.now()
+        });
+        this.exercicesUpdated.next();
+      })
+    );
   }
-  
-  /**
-   * Met à jour un exercice existant
-   * @param id L'identifiant de l'exercice à mettre à jour
-   * @param formData Les données du formulaire, y compris le fichier image si présent
-   */
-  updateExercice(id: string, formData: FormData): Observable<Exercice> {
-    return this.exerciceOptimizedService.updateExercice(id, formData);
+
+  updateExercice(id: string, data: FormData | Partial<Exercice>): Observable<Exercice> {
+    return this.http.put<Exercice>(`${this.apiUrl}/${id}`, data).pipe(
+      tap(() => {
+        const current = this.workspaceDataStore.getExercices();
+        const updated = current.map(e => (e.id === id ? ({ ...(e as any), ...(data as any), id } as Exercice) : e));
+        this.workspaceDataStore.setExercices(updated);
+        console.log('[ExerciceService] Store patched after update', { id });
+
+        this.cache.invalidate('exercices-list', 'exercices');
+        this.cache.invalidate(`exercice-${id}`, 'exercices');
+        this.sync.notifyChange({
+          type: 'exercice',
+          action: 'update',
+          id,
+          workspaceId: this.cache.getCurrentWorkspaceId() || '',
+          timestamp: Date.now()
+        });
+        this.exercicesUpdated.next();
+      })
+    );
   }
-  
-  /**
-   * Supprime un exercice
-   */
+
   deleteExercice(id: string): Observable<void> {
-    return this.exerciceOptimizedService.deleteExercice(id);
+    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
+      tap(() => {
+        const current = this.workspaceDataStore.getExercices();
+        this.workspaceDataStore.setExercices(current.filter(e => e.id !== id));
+        console.log('[ExerciceService] Store patched after delete', { id });
+
+        this.cache.invalidate('exercices-list', 'exercices');
+        this.cache.invalidate(`exercice-${id}`, 'exercices');
+        this.sync.notifyChange({
+          type: 'exercice',
+          action: 'delete',
+          id,
+          workspaceId: this.cache.getCurrentWorkspaceId() || '',
+          timestamp: Date.now()
+        });
+        this.exercicesUpdated.next();
+      })
+    );
   }
 }
