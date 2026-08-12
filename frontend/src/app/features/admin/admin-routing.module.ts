@@ -44,10 +44,6 @@ const routes: Routes = [
         loadComponent: () => import('./pages/stats/stats.component').then(m => m.StatsComponent)
       },
       {
-        path: 'logs',
-        loadComponent: () => import('./pages/activity/activity.component').then(m => m.ActivityComponent)
-      },
-      {
         path: 'roles-rights',
         loadComponent: () => import('./pages/roles-rights/roles-rights.component').then(m => m.RolesRightsComponent)
       },
