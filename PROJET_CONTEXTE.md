@@ -191,3 +191,19 @@ Tout autre fichier .md va dans `_archives/`.
 
 *Rempli avec : Claude (mode Project) — 2026-04-10*
 *Lu par : Cascade à chaque début de session*
+
+---
+
+## 10. AUDIT DE REPRISE (2026-08-06)
+
+**Constat :**
+- **B1 (bug bloquant, priorité 1 du backlog) semble déjà résolu** : `ExerciceOptimizedService` (`exercice-optimized.service.ts`) n'existe plus du tout dans `frontend/src` — recherche exhaustive sans résultat. `BUGS.md` mis à jour en conséquence (statut passé de "Ouvert/CRITIQUE" à "Probablement résolu — à confirmer"). Seuls des fichiers `*.spec.ts` mentionnent encore les noms de services absents (`EntityCrudService`, `HttpGenericService`), ce qui pourrait faire planter ces tests spécifiquement — à vérifier avec `npm test`.
+- **`CHANGELOG.md` très en retard** : sa dernière entrée date du 2026-04-14, alors que `git log` montre des commits jusqu'au 2026-07-20 (dont "Nettoyage documentation et corrections services", "Rendre tous les tags optionnels", corrections TypeScript/Zod sur les tags) — aucun de ces travaux n'est tracé dans le changelog.
+- `git status` propre, `graphify-out/GRAPH_REPORT.md` daté du 2026-07-20, cohérent avec le dernier commit — le graphe n'est pas en retard, contrairement au CHANGELOG.
+- Le reste du backlog section 9 (points 2 à 7 : `/api/sync`, nettoyage scripts, doublons, feature terrain mobile) n'a pas été vérifié dans cet audit doc-only — à re-confirmer un par un à la prochaine reprise de code.
+
+**Backlog additionnel (reprise) :**
+1. Confirmer que B1 est bien résolu (lancer `npm run build` côté frontend) et clore formellement le point 1 du backlog section 9 si confirmé.
+2. Mettre à jour `CHANGELOG.md` avec les missions de commits entre le 2026-04-14 et le 2026-07-20 (tags optionnels, corrections Zod/TypeScript, nettoyage doc).
+3. Nettoyer les `*.spec.ts` qui importent encore `EntityCrudService`/`HttpGenericService` (services inexistants) — `echauffement.service.spec.ts`, `entrainement.service.spec.ts`, `exercice.service.spec.ts`, `situationmatch.service.spec.ts`, `entity-crud.service.spec.ts`.
+4. Re-vérifier B2 (admin/pages/activity) et les points 2-7 du backlog existant — non revalidés dans cet audit doc-only.
