@@ -15,8 +15,6 @@ import { StartupLoaderComponent } from './core/components/startup-loader/startup
 // Core module qui regroupe les services et composants partagés
 import { CoreModule } from './core/core.module';
 
-// Module de tags avancés
-import { TagsAdvancedModule } from './features/tags-advanced/tags-advanced.module';
 import { MaterialModule } from './core/material/material.module';
 import { WorkspaceSwitcherComponent } from './shared/components/workspace-switcher/workspace-switcher.component';
 
@@ -91,13 +89,8 @@ const routes: Routes = [
     redirectTo: 'parametres/tags',
     pathMatch: 'full'
   },
-  { 
-    path: 'tags-advanced', 
-    loadChildren: () => import('./features/tags-advanced/tags-advanced.module').then(m => m.TagsAdvancedModule),
-    canActivate: [AuthGuard, WorkspaceSelectedGuard, MobileGuard]
-  },
-  { 
-    path: 'admin', 
+  {
+    path: 'admin',
     loadChildren: () => import('./features/admin/admin.module').then(m => m.AdminModule),
     canActivate: [AuthGuard, WorkspaceSelectedGuard, MobileGuard]
   },
@@ -151,7 +144,7 @@ const routes: Routes = [
     RouterModule.forRoot(routes),
     CoreModule, // Module core qui inclut MaterialModule et HttpClientModule
     WorkspaceSwitcherComponent
-    // Tous les modules (ExercicesModule, TagsModule, TagsAdvancedModule, TrainingsModule) sont chargés en lazy loading
+    // Tous les modules (ExercicesModule, TagsModule, TrainingsModule) sont chargés en lazy loading
   ],
   providers: [
     { provide: LOCALE_ID, useValue: 'fr-FR' },

@@ -11,7 +11,6 @@ import { TagService } from './services/tag.service';
 import { NotificationService } from './services/notification.service';
 import { DataMappingService } from './services/data-mapping.service';
 import { ApiUrlService } from './services/api-url.service';
-import { TrainingSimpleService } from './services/training-simple.service';
 import { EntrainementService } from './services/entrainement.service';
 import { EchauffementService } from './services/echauffement.service';
 import { SituationMatchService } from './services/situationmatch.service';
@@ -41,7 +40,6 @@ import { HttpErrorInterceptor } from './errors/http-error.interceptor';
     NotificationService,
     DataMappingService,
     ApiUrlService,
-    TrainingSimpleService,
     EntrainementService,
     EchauffementService,
     SituationMatchService,

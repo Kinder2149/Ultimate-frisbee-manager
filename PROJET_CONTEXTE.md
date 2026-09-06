@@ -17,7 +17,7 @@
 | Statut | En production |
 | Utilisateurs actuels | ~10 personnes actives |
 | URL production | https://ultimate-frisbee-manager.vercel.app |
-| Dernière mise à jour de ce fichier | 2026-04-10 |
+| Dernière mise à jour de ce fichier | 2026-09-06 |
 
 ---
 
@@ -84,7 +84,8 @@ Ultimate-frisbee-manager/
 `/api/auth` · `/api/health` · `/api/workspaces` · `/api/exercises` · `/api/tags`
 `/api/trainings` · `/api/warmups` · `/api/matches` · `/api/dashboard` · `/api/import` · `/api/admin`
 
-**Nombre de modules actifs : 12** / 20 maximum
+**Nombre de features frontend : 11** / 20 maximum
+**Nombre de services frontend : 34** (⚠️ > limite de 20 — nettoyage en cours, réduit de 41 à 34 le 2026-09-06)
 
 ---
 
@@ -104,13 +105,13 @@ Ultimate-frisbee-manager/
 - Cache navigateur IndexedDB pour navigation fluide
 
 ### En cours / A décider
-- Feature export (`/api/export`) : controller + service présents, route non montée — à compléter
-- Route `/api/sync` : importée mais non montée — décision requise (garder ou supprimer)
-- Feature terrain mobile (`mobile-terrain.component`) : en cours, potentiellement à supprimer
+- Export : opérationnel sous `/api/admin/export-ufm` (pas de route `/api/export` séparée).
+- Route `/api/sync` : **montée et active** (`routes/index.js` ligne 57) — le `SyncService` frontend est très utilisé (synchro/cache). Conservée.
+- `tags-advanced` : **supprimé le 2026-09-06** (décision figée 2026-04-10 enfin exécutée).
+- Feature terrain mobile (`mobile-terrain` + onglet « Terrain » du menu mobile) : **supprimée le 2026-09-06** (non utilisée, confirmé par le pilote).
 
 ### Bugs connus
-- **B1** `ExerciceOptimizedService` : importe `EntityCrudService`, `HttpGenericService`, `CacheService` — ces 3 fichiers n'existent pas. Build potentiellement cassé. Correction prioritaire.
-- **B2** `admin/pages/activity` et `admin/pages/stats` : composants présents dans le routing admin mais sans données réelles — UI shell vide affiché aux utilisateurs.
+> Source de vérité : `BUGS.md`. Au 2026-09-06 : B1, B2, B2b tous **Résolus** (build propre confirmé). Aucun bug bloquant ouvert.
 
 ### Hors scope (ne jamais implémenter sans décision explicite)
 - Mode offline complet (PWA)
@@ -139,9 +140,9 @@ Ultimate-frisbee-manager/
 | Date | Décision | Raison |
 |---|---|---|
 | (depuis origine) | Backend en JavaScript CommonJS, pas TypeScript | Cohérent, fonctionnel, pas de migration prévue |
-| (depuis origine) | Supabase Auth JWT RS256 via JWKS | Vérifié dans `auth.middleware.js` |
+| (depuis origine / màj 2026-09-06) | Supabase Auth : le code accepte JWT **RS256 (via JWKS) ET HS256 (via SUPABASE_JWT_SECRET)** | Vérifié dans `auth.middleware.js`. Les deux algos Supabase sont supportés (tokens legacy HS256 + tokens RS256). |
 | (depuis origine) | WorkspaceGuard obligatoire sur toutes les routes de données | Vérifié dans `routes/index.js` |
-| 2026-04-10 | Tags simples uniquement (module `tags` dans parametres) | `tags-advanced` supprimé — trop complexe, non utilisé |
+| 2026-04-10 | Tags simples uniquement (module `tags` dans parametres) | ✅ EXÉCUTÉE le 2026-09-06 : module `tags-advanced` (composants, route, service) supprimé du code. |
 | 2026-04-14 | graphify initialisé | Réduction tokens, carte persistante entre sessions |
 
 ---
@@ -162,16 +163,18 @@ Tout autre fichier .md va dans `_archives/`.
 
 ## 8. SESSION EN COURS
 
-**Graphify :** ✅ Actif — GRAPH_REPORT.md lu
-**Objectif de la session :** Audit complet + remise en ordre du backlog
-**Date :** 2026-06-05
-**Résultat :**
-- B1 confirmé CRITIQUE : ExerciceOptimizedService injecté dans exercice.service.ts, 3 dépendances absentes → build cassé
-- B2 corrigé : sync.routes.js contient du vrai code (feature incomplète, pas dead code)
-- B3 confirmé : 27 scripts, 4 à garder, 23 archivables
-- B4 corrigé : activity = vide, stats = fonctionnel (branchée sur /api/admin/overview)
-- B5 infirmé : export déjà opérationnel sous /api/admin/export-ufm
-- Nouveaux points : 4 fichiers spec cassés (N1), incohérence réponse /api (N2), mémoire projet export obsolète (N3)
+**Graphify :** ⚠️ `graphify-out/` non présent dans le repo (gitignoré) — à régénérer avant l'audit code.
+**Objectif de la session :** Audit complet PUIS exécution des corrections (nettoyage, mise à niveau, cohérence).
+**Date :** 2026-09-06
+**Résultat (exécuté par Claude, code modifié) :**
+- 🔴 Sécurité : `backend/.env.CLEAN` retiré du suivi git (`git rm --cached`). **Rotation des secrets = action pilote restante (B3 encore ouvert).**
+- Tests : 4 specs cassés supprimés (importaient des services inexistants) — reste 5 specs.
+- Doublon : `features/exercices/services/exercice.service.ts` supprimé (le vrai est dans `core/services/`).
+- Code mort : 5 services 0-usage supprimés (`filters`, `mapper`, `mobile-content-state`, `validation`, `training-simple`), 2 routes backend mortes (`debug.js`, `swagger`), module `tags-advanced` et feature `mobile-terrain` (+ onglet menu) supprimés.
+- Scripts : 23 scripts one-shot archivés dans `_archives/backend-scripts/`, 5 utiles conservés.
+- Cohérence : décision figée auth alignée (HS256+RS256), compteurs mis à jour (41→34 services, 12→11 features).
+- Reporté volontairement : fusion des 2 services de notification (risque de régression, à traiter isolément).
+- Prod non testable depuis l'environnement distant (egress bloqué) — vérification manuelle Vercel + Supabase à faire côté pilote.
 
 ---
 
@@ -179,13 +182,23 @@ Tout autre fichier .md va dans `_archives/`.
 
 > Ordonné par priorité. Ne jamais commencer la suivante sans que la précédente soit testée.
 
-1. **[BUG BLOQUANT]** Corriger `ExerciceOptimizedService` — créer les 3 services manquants (`EntityCrudService`, `HttpGenericService`, `CacheService`) ou réécrire pour utiliser `ExerciceService` existant. Inclure : corriger les 4 fichiers spec qui importent les mêmes services absents.
-2. **[DÉCISION]** Route `/api/sync` — monter (1 ligne dans `routes/index.js`) ou supprimer le fichier + corriger la réponse JSON de `/api` qui liste `sync` comme route active.
-3. **[NETTOYAGE CODE]** Supprimer le code mort confirmé : `TrainingSimpleService`, module `tags-advanced`, `admin-shell` de settings, `training-simple.service.ts`, `backend/models/entrainement.simple.js`, `backend/routes/debug.js`, `backend/routes/entrainement.routes.swagger.js`
-4. **[NETTOYAGE SCRIPTS]** Archiver les 23 scripts one-shot dans `backend/scripts/` — garder uniquement : `postdeploy-check.js`, `sync-supabase-users.js`, `import-ufm.js`, `export-ufm.mjs`
-5. **[BUG]** `admin/pages/activity` uniquement — supprimer ou brancher des données réelles. (`admin/pages/stats` est fonctionnel, ne pas toucher.)
-6. **[DOUBLONS]** Évaluer et résoudre : deux `mobile-detail`, deux services notification, deux listes utilisateurs dans settings
-7. **[DÉCISION]** Feature terrain mobile — garder ou supprimer
+> État au 2026-09-06 après exécution des corrections. Détail : `_archives/AUDIT_2026-09-06.md`.
+
+### ✅ Fait le 2026-09-06
+- ~~[🔴] `git rm --cached backend/.env.CLEAN`~~ — retiré du suivi git.
+- ~~[🟠] 4 specs cassés~~ — supprimés (B4 résolu).
+- ~~[🟠] Doublon `ExerciceService`~~ — supprimé (B5 résolu).
+- ~~[🟠] `tags-advanced`~~ — supprimé.
+- ~~[🟡] 5 services 0-usage + 2 routes mortes~~ — supprimés.
+- ~~[🟡] Feature terrain mobile~~ — supprimée.
+- ~~[🟡] Archiver scripts~~ — 23 archivés, 5 gardés.
+- ~~[🟡] Cohérence auth HS256/RS256~~ — décision figée alignée.
+
+### 🔜 Reste à faire
+1. **[🔴 SÉCURITÉ — PILOTE, URGENT]** Faire tourner (rotate) TOUS les secrets exposés : Supabase JWT secret, Cloudinary API secret, mot de passe PostgreSQL / DATABASE_URL. Via dashboards. Tant que ce n'est pas fait, les valeurs présentes dans l'historique git restent valides. (B3 — reste ouvert)
+2. **[🟡 OPTION]** Purger `.env.CLEAN` de l'historique git (`git filter-repo`) — non fait volontairement (réécriture d'historique risquée). Facultatif si les secrets sont tournés.
+3. **[🟡 DOUBLON]** Consolider les 2 systèmes de notification (`NotificationService` + `NotificationManagerService`) — reporté (risque de régression, à traiter isolément avec test manuel).
+4. **[🟡 DETTE]** 34 services frontend > limite de 20 : poursuivre la rationalisation (ex : regrouper les services `mobile-*`).
 
 ---
 

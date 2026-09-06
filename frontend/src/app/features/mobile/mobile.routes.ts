@@ -19,10 +19,6 @@ export const MOBILE_ROUTES: Routes = [
         loadComponent: () => import('./pages/mobile-library/mobile-library.component').then(c => c.MobileLibraryComponent),
       },
       {
-        path: 'terrain',
-        loadComponent: () => import('./pages/mobile-terrain/mobile-terrain.component').then(c => c.MobileTerrainComponent),
-      },
-      {
         path: 'profile',
         loadComponent: () => import('./pages/mobile-profile/mobile-profile.component').then(c => c.MobileProfileComponent),
       },

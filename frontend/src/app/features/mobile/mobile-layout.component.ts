@@ -56,8 +56,6 @@ export class MobileLayoutComponent implements OnInit, OnDestroy {
       this.mobileNavigationService.setCurrentTab('library');
     } else if (currentPath.includes('/create')) {
       this.mobileNavigationService.setCurrentTab('create');
-    } else if (currentPath.includes('/terrain')) {
-      this.mobileNavigationService.setCurrentTab('terrain');
     } else if (currentPath.includes('/profile')) {
       this.mobileNavigationService.setCurrentTab('profile');
     }
