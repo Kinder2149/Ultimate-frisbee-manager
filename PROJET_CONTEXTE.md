@@ -177,16 +177,18 @@ Tout autre fichier .md va dans `_archives/`.
 
 > Ordonné par priorité. Ne jamais commencer la suivante sans que la précédente soit testée.
 
-> Réécrit le 2026-09-06 sur l'état réel du code. Les anciens points résolus (B1, activity) ont été retirés. À valider/affiner par l'audit complet à venir.
+> Réécrit le 2026-09-06 après l'audit complet. Détail complet : `_archives/AUDIT_2026-09-06.md`. Chaque point = mission autonome testable.
 
-1. **[AUDIT]** Lancer l'audit complet et profond (6 axes : cohérence doc↔code, dette/code mort, architecture 3 couches, sécurité, tests/qualité, fonctionnel). Livrable : document d'audit figé.
-2. **[DÉCISION]** `tags-advanced` : décision figée 2026-04-10 « supprimé » non exécutée (module encore importé + routé). Trancher : supprimer réellement, ou annuler la décision et le garder.
-3. **[DÉCISION]** Route `/api/sync` : montée et active mais usage réel à confirmer. Garder ou retirer.
-4. **[DETTE]** 41 services frontend > limite dure de 20. Recenser, identifier doublons/morts, rationaliser.
-5. **[NETTOYAGE SCRIPTS]** 28 scripts dans `backend/scripts/`. Identifier ceux à garder (candidats : `postdeploy-check.js`, `sync-supabase-users.js`, `import-ufm.js`, `export-ufm.mjs`) et archiver le reste.
-6. **[NETTOYAGE CODE]** Confirmer et traiter les résidus suspects : `backend/routes/debug.js`, `backend/routes/entrainement.routes.swagger.js`, doublons de services notification/utilisateurs.
-7. **[DÉCISION]** Feature terrain mobile (`mobile-terrain.component`) — confirmer statut, garder ou supprimer.
-8. **[TESTS]** 9 fichiers spec seulement : évaluer la couverture réelle et l'état des tests (passent-ils ?).
+1. **[🔴 SÉCURITÉ — PILOTE]** Faire tourner (rotate) TOUS les secrets exposés dans `.env.CLEAN` : Supabase JWT secret, Cloudinary (API secret), mot de passe PostgreSQL / DATABASE_URL. Via dashboards. **Action la plus urgente.** (B3)
+2. **[🔴 SÉCURITÉ — CASCADE]** `git rm --cached backend/.env.CLEAN` + commit (le `.gitignore` prendra alors effet) ; purge de l'historique git en option. (B3)
+3. **[🟠 TESTS]** Corriger ou supprimer les 4 specs cassés important des services inexistants (`entrainement/exercice/echauffement/situationmatch .service.spec.ts`). (B4)
+4. **[🟠 DOUBLON]** Supprimer le doublon mort `features/exercices/services/exercice.service.ts`. (B5)
+5. **[🟠 DÉCISION]** `tags-advanced` : décision figée 2026-04-10 « supprimé » non exécutée (module importé + routé). Trancher : supprimer réellement, ou annuler la décision.
+6. **[🟡 CODE MORT]** Supprimer services 0-usage (`FiltersService`, `MapperService`, `MobileContentStateService`, `ValidationService`) + `TrainingSimpleService` ; routes mortes `backend/routes/debug.js` + `entrainement.routes.swagger.js`.
+7. **[🟡 DOUBLON]** Consolider les 2 systèmes de notification (`NotificationService` + `NotificationManagerService`) en un seul.
+8. **[🟡 SCRIPTS]** Archiver ~22 scripts one-shot dans `backend/scripts/` ; garder `postdeploy-check.js`, `sync-supabase-users.js`, `import-ufm.js`, `export-ufm.mjs`.
+9. **[🟡 DÉCISION]** Feature terrain mobile (`mobile-terrain`) — garder ou supprimer.
+10. **[🟡 COHÉRENCE]** Clarifier auth HS256/RS256 vs décision figée (aligner le code ou la décision).
 
 ---
 
