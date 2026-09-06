@@ -17,7 +17,7 @@
 | Statut | En production |
 | Utilisateurs actuels | ~10 personnes actives |
 | URL production | https://ultimate-frisbee-manager.vercel.app |
-| Dernière mise à jour de ce fichier | 2026-04-10 |
+| Dernière mise à jour de ce fichier | 2026-09-06 |
 
 ---
 
@@ -104,13 +104,13 @@ Ultimate-frisbee-manager/
 - Cache navigateur IndexedDB pour navigation fluide
 
 ### En cours / A décider
-- Feature export (`/api/export`) : controller + service présents, route non montée — à compléter
-- Route `/api/sync` : importée mais non montée — décision requise (garder ou supprimer)
-- Feature terrain mobile (`mobile-terrain.component`) : en cours, potentiellement à supprimer
+- Export : opérationnel sous `/api/admin/export-ufm` (pas de route `/api/export` séparée).
+- Route `/api/sync` : **montée et active** (`routes/index.js` ligne 57) — reste à décider si la feature est réellement utilisée ou à retirer.
+- `tags-advanced` : **toujours présent ET routé** (`app.module.ts` : import + `path: 'tags-advanced'` lazy-load) alors qu'une décision figée du 2026-04-10 le déclarait supprimé. Contradiction à trancher (voir section 6).
+- Feature terrain mobile (`mobile-terrain.component`) : statut à confirmer lors de l'audit.
 
 ### Bugs connus
-- **B1** `ExerciceOptimizedService` : importe `EntityCrudService`, `HttpGenericService`, `CacheService` — ces 3 fichiers n'existent pas. Build potentiellement cassé. Correction prioritaire.
-- **B2** `admin/pages/activity` et `admin/pages/stats` : composants présents dans le routing admin mais sans données réelles — UI shell vide affiché aux utilisateurs.
+> Source de vérité : `BUGS.md`. Au 2026-09-06 : B1, B2, B2b tous **Résolus** (build propre confirmé). Aucun bug bloquant ouvert.
 
 ### Hors scope (ne jamais implémenter sans décision explicite)
 - Mode offline complet (PWA)
@@ -141,7 +141,7 @@ Ultimate-frisbee-manager/
 | (depuis origine) | Backend en JavaScript CommonJS, pas TypeScript | Cohérent, fonctionnel, pas de migration prévue |
 | (depuis origine) | Supabase Auth JWT RS256 via JWKS | Vérifié dans `auth.middleware.js` |
 | (depuis origine) | WorkspaceGuard obligatoire sur toutes les routes de données | Vérifié dans `routes/index.js` |
-| 2026-04-10 | Tags simples uniquement (module `tags` dans parametres) | `tags-advanced` supprimé — trop complexe, non utilisé |
+| 2026-04-10 | Tags simples uniquement (module `tags` dans parametres) | ⚠️ DÉCISION NON EXÉCUTÉE : `tags-advanced` est encore présent et routé dans le code au 2026-09-06. À trancher : exécuter la suppression, ou annuler la décision. |
 | 2026-04-14 | graphify initialisé | Réduction tokens, carte persistante entre sessions |
 
 ---
@@ -162,16 +162,14 @@ Tout autre fichier .md va dans `_archives/`.
 
 ## 8. SESSION EN COURS
 
-**Graphify :** ✅ Actif — GRAPH_REPORT.md lu
-**Objectif de la session :** Audit complet + remise en ordre du backlog
-**Date :** 2026-06-05
+**Graphify :** ⚠️ `graphify-out/` non présent dans le repo (gitignoré) — à régénérer avant l'audit code.
+**Objectif de la session :** Resynchronisation documentaire (doc ↔ code réel), préalable à un audit complet.
+**Date :** 2026-09-06
 **Résultat :**
-- B1 confirmé CRITIQUE : ExerciceOptimizedService injecté dans exercice.service.ts, 3 dépendances absentes → build cassé
-- B2 corrigé : sync.routes.js contient du vrai code (feature incomplète, pas dead code)
-- B3 confirmé : 27 scripts, 4 à garder, 23 archivables
-- B4 corrigé : activity = vide, stats = fonctionnel (branchée sur /api/admin/overview)
-- B5 infirmé : export déjà opérationnel sous /api/admin/export-ufm
-- Nouveaux points : 4 fichiers spec cassés (N1), incohérence réponse /api (N2), mémoire projet export obsolète (N3)
+- Doc realignée sur le code : CHANGELOG comblé (juillet-août), bugs pointés vers BUGS.md (tous résolus), section 4 corrigée.
+- Contradictions confirmées et documentées : `/api/sync` est monté (pas « non monté »), `tags-advanced` toujours présent et routé (décision figée 2026-04-10 non exécutée), 28 scripts encore présents, 41 services frontend (> limite de 20).
+- Aucune ligne de code modifiée : ces points partent en backlog audit (section 9).
+- Prod non testable depuis l'environnement distant (egress bloqué) — vérification manuelle Vercel + Supabase à faire côté pilote.
 
 ---
 
@@ -179,13 +177,16 @@ Tout autre fichier .md va dans `_archives/`.
 
 > Ordonné par priorité. Ne jamais commencer la suivante sans que la précédente soit testée.
 
-1. **[BUG BLOQUANT]** Corriger `ExerciceOptimizedService` — créer les 3 services manquants (`EntityCrudService`, `HttpGenericService`, `CacheService`) ou réécrire pour utiliser `ExerciceService` existant. Inclure : corriger les 4 fichiers spec qui importent les mêmes services absents.
-2. **[DÉCISION]** Route `/api/sync` — monter (1 ligne dans `routes/index.js`) ou supprimer le fichier + corriger la réponse JSON de `/api` qui liste `sync` comme route active.
-3. **[NETTOYAGE CODE]** Supprimer le code mort confirmé : `TrainingSimpleService`, module `tags-advanced`, `admin-shell` de settings, `training-simple.service.ts`, `backend/models/entrainement.simple.js`, `backend/routes/debug.js`, `backend/routes/entrainement.routes.swagger.js`
-4. **[NETTOYAGE SCRIPTS]** Archiver les 23 scripts one-shot dans `backend/scripts/` — garder uniquement : `postdeploy-check.js`, `sync-supabase-users.js`, `import-ufm.js`, `export-ufm.mjs`
-5. **[BUG]** `admin/pages/activity` uniquement — supprimer ou brancher des données réelles. (`admin/pages/stats` est fonctionnel, ne pas toucher.)
-6. **[DOUBLONS]** Évaluer et résoudre : deux `mobile-detail`, deux services notification, deux listes utilisateurs dans settings
-7. **[DÉCISION]** Feature terrain mobile — garder ou supprimer
+> Réécrit le 2026-09-06 sur l'état réel du code. Les anciens points résolus (B1, activity) ont été retirés. À valider/affiner par l'audit complet à venir.
+
+1. **[AUDIT]** Lancer l'audit complet et profond (6 axes : cohérence doc↔code, dette/code mort, architecture 3 couches, sécurité, tests/qualité, fonctionnel). Livrable : document d'audit figé.
+2. **[DÉCISION]** `tags-advanced` : décision figée 2026-04-10 « supprimé » non exécutée (module encore importé + routé). Trancher : supprimer réellement, ou annuler la décision et le garder.
+3. **[DÉCISION]** Route `/api/sync` : montée et active mais usage réel à confirmer. Garder ou retirer.
+4. **[DETTE]** 41 services frontend > limite dure de 20. Recenser, identifier doublons/morts, rationaliser.
+5. **[NETTOYAGE SCRIPTS]** 28 scripts dans `backend/scripts/`. Identifier ceux à garder (candidats : `postdeploy-check.js`, `sync-supabase-users.js`, `import-ufm.js`, `export-ufm.mjs`) et archiver le reste.
+6. **[NETTOYAGE CODE]** Confirmer et traiter les résidus suspects : `backend/routes/debug.js`, `backend/routes/entrainement.routes.swagger.js`, doublons de services notification/utilisateurs.
+7. **[DÉCISION]** Feature terrain mobile (`mobile-terrain.component`) — confirmer statut, garder ou supprimer.
+8. **[TESTS]** 9 fichiers spec seulement : évaluer la couverture réelle et l'état des tests (passent-ils ?).
 
 ---
 
