@@ -140,7 +140,7 @@ Ultimate-frisbee-manager/
 | Date | Décision | Raison |
 |---|---|---|
 | (depuis origine) | Backend en JavaScript CommonJS, pas TypeScript | Cohérent, fonctionnel, pas de migration prévue |
-| (depuis origine / màj 2026-09-06) | Supabase Auth : le code accepte JWT **RS256 (via JWKS) ET HS256 (via SUPABASE_JWT_SECRET)** | Vérifié dans `auth.middleware.js`. Les deux algos Supabase sont supportés (tokens legacy HS256 + tokens RS256). |
+| (màj 2026-09-06) | Supabase Auth : vérification JWT **asymétrique via JWKS uniquement** (ES256 clé courante ECC P-256, RS256 accepté aussi). HS256 legacy **retiré**. | Migration Supabase vers les JWT Signing Keys. Endpoint JWKS : `/auth/v1/.well-known/jwks.json`. Plus aucune dépendance à `SUPABASE_JWT_SECRET` dans le code. |
 | (depuis origine) | WorkspaceGuard obligatoire sur toutes les routes de données | Vérifié dans `routes/index.js` |
 | 2026-04-10 | Tags simples uniquement (module `tags` dans parametres) | ✅ EXÉCUTÉE le 2026-09-06 : module `tags-advanced` (composants, route, service) supprimé du code. |
 | 2026-04-14 | graphify initialisé | Réduction tokens, carte persistante entre sessions |
@@ -164,17 +164,15 @@ Tout autre fichier .md va dans `_archives/`.
 ## 8. SESSION EN COURS
 
 **Graphify :** ⚠️ `graphify-out/` non présent dans le repo (gitignoré) — à régénérer avant l'audit code.
-**Objectif de la session :** Audit complet PUIS exécution des corrections (nettoyage, mise à niveau, cohérence).
+**Objectif de la session :** Audit complet → exécution des corrections → sécurisation + remise en service de la prod.
 **Date :** 2026-09-06
-**Résultat (exécuté par Claude, code modifié) :**
-- 🔴 Sécurité : `backend/.env.CLEAN` retiré du suivi git (`git rm --cached`). **Rotation des secrets = action pilote restante (B3 encore ouvert).**
-- Tests : 4 specs cassés supprimés (importaient des services inexistants) — reste 5 specs.
-- Doublon : `features/exercices/services/exercice.service.ts` supprimé (le vrai est dans `core/services/`).
-- Code mort : 5 services 0-usage supprimés (`filters`, `mapper`, `mobile-content-state`, `validation`, `training-simple`), 2 routes backend mortes (`debug.js`, `swagger`), module `tags-advanced` et feature `mobile-terrain` (+ onglet menu) supprimés.
-- Scripts : 23 scripts one-shot archivés dans `_archives/backend-scripts/`, 5 utiles conservés.
-- Cohérence : décision figée auth alignée (HS256+RS256), compteurs mis à jour (41→34 services, 12→11 features).
-- Reporté volontairement : fusion des 2 services de notification (risque de régression, à traiter isolément).
-- Prod non testable depuis l'environnement distant (egress bloqué) — vérification manuelle Vercel + Supabase à faire côté pilote.
+**Résultat (exécuté par Claude, déployé et validé en prod) :**
+- Nettoyage audit : 4 specs cassés, doublon `ExerciceService`, 5 services 0-usage, 2 routes mortes, `tags-advanced`, `mobile-terrain` supprimés ; 23 scripts archivés (41→34 services, 12→11 features).
+- 🔴 Sécurité (B3 résolu) : `.env.CLEAN` retiré du suivi git ; mot de passe DB + secret Cloudinary régénérés ; Supabase migré vers JWT Signing Keys (ES256).
+- Auth : backend passé en vérification **asymétrique JWKS uniquement** (ES256/RS256), HS256 retiré → fuite du secret JWT neutralisée. Correctif URL JWKS (`/auth/v1/.well-known/jwks.json`).
+- Déploiement : correctifs poussés sur `master` via PR #2 et #3 → Vercel a redéployé la prod. **Connexion + chargement des données validés en prod** (login, workspaces, préchargement exercices/entraînements/etc., admin).
+- Topologie clarifiée : **Vercel = seule prod** (front + API). 2 services Render abandonnés (déploiements en échec) — à suspendre côté pilote.
+- Reporté volontairement : fusion des 2 services de notification.
 
 ---
 
@@ -194,11 +192,17 @@ Tout autre fichier .md va dans `_archives/`.
 - ~~[🟡] Archiver scripts~~ — 23 archivés, 5 gardés.
 - ~~[🟡] Cohérence auth HS256/RS256~~ — décision figée alignée.
 
+### ✅ Fait aussi le 2026-09-06 (sécurité + remise en service)
+- ~~[🔴] Rotation des secrets~~ (DB + Cloudinary) + migration Supabase ES256.
+- ~~[🔴] Backend RS256/ES256 via JWKS, HS256 retiré~~ — fuite JWT neutralisée.
+- ~~[🔴] DATABASE_URL corrigée~~ + prod redéployée et **validée** (login + données OK).
+
 ### 🔜 Reste à faire
-1. **[🔴 SÉCURITÉ — PILOTE, URGENT]** Faire tourner (rotate) TOUS les secrets exposés : Supabase JWT secret, Cloudinary API secret, mot de passe PostgreSQL / DATABASE_URL. Via dashboards. Tant que ce n'est pas fait, les valeurs présentes dans l'historique git restent valides. (B3 — reste ouvert)
-2. **[🟡 OPTION]** Purger `.env.CLEAN` de l'historique git (`git filter-repo`) — non fait volontairement (réécriture d'historique risquée). Facultatif si les secrets sont tournés.
-3. **[🟡 DOUBLON]** Consolider les 2 systèmes de notification (`NotificationService` + `NotificationManagerService`) — reporté (risque de régression, à traiter isolément avec test manuel).
-4. **[🟡 DETTE]** 34 services frontend > limite de 20 : poursuivre la rationalisation (ex : regrouper les services `mobile-*`).
+1. **[🟢 FINITION — PILOTE]** Retirer la variable `SUPABASE_JWT_SECRET` de Vercel (le code ne s'en sert plus) + suspendre les 2 services Render abandonnés (dashboard).
+2. **[🟡 OPTION]** Front → clé `publishable`, puis révoquer la clé JWT legacy dans Supabase ; purge `.env.CLEAN` de l'historique git. Non bloquant (fuite déjà neutralisée).
+3. **[🟡 DOUBLON]** Consolider les 2 systèmes de notification (`NotificationService` + `NotificationManagerService`) — à traiter isolément avec test manuel.
+4. **[🟡 DETTE]** 34 services frontend > limite de 20 : rationaliser (ex : regrouper les services `mobile-*`).
+5. **[🟡 QUALITÉ]** Nettoyer le log frontend bruyant « Token alg différent de RS256 » (ES256 est normal désormais).
 
 ---
 
