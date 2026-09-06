@@ -2,6 +2,7 @@
 
 | Date | Mission | Résultat |
 |---|---|---|
+| 2026-09-06 | Exécution des corrections d'audit (nettoyage + cohérence) | Sécurité : `.env.CLEAN` retiré du suivi git (rotation secrets = action pilote). Supprimés : 4 specs cassés, doublon `ExerciceService`, 5 services 0-usage, 2 routes mortes (`debug.js`/`swagger`), module `tags-advanced`, feature `mobile-terrain` (+ onglet menu). Archivés : 23 scripts one-shot (5 gardés). Cohérence : décision auth HS256/RS256 alignée. Services frontend 41→34, features 12→11. Reporté : fusion des 2 services notification |
 | 2026-09-06 | Resynchronisation documentaire (reprise projet) | Doc realignée sur le code réel : `/api/sync` confirmé monté et actif, `tags-advanced` confirmé toujours présent ET routé (décision figée 2026-04-10 non exécutée — signalée), bugs B1/B2/B2b confirmés résolus via BUGS.md, backlog section 9 réécrit sur l'état réel, retard CHANGELOG comblé |
 | 2026-08-20 | Mise à jour PROJET_CONTEXTE (audit de reprise) | Section 10 ajoutée : B1 constaté résolu, retard CHANGELOG signalé, backlog de reprise établi |
 | 2026-08-12 | Nettoyage code mort B1/B2 | Suppression `cache-stats.component.ts` (orphelin), `entity-crud.service.spec.ts` (test orphelin), `mobile-detail` (doublon de `mobile-detail-simple`), `admin/pages/activity` (shell vide sans backend). BUGS.md : B1/B2/B2b passés à « Résolu » |

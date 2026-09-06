@@ -84,7 +84,8 @@ Ultimate-frisbee-manager/
 `/api/auth` · `/api/health` · `/api/workspaces` · `/api/exercises` · `/api/tags`
 `/api/trainings` · `/api/warmups` · `/api/matches` · `/api/dashboard` · `/api/import` · `/api/admin`
 
-**Nombre de modules actifs : 12** / 20 maximum
+**Nombre de features frontend : 11** / 20 maximum
+**Nombre de services frontend : 34** (⚠️ > limite de 20 — nettoyage en cours, réduit de 41 à 34 le 2026-09-06)
 
 ---
 
@@ -105,9 +106,9 @@ Ultimate-frisbee-manager/
 
 ### En cours / A décider
 - Export : opérationnel sous `/api/admin/export-ufm` (pas de route `/api/export` séparée).
-- Route `/api/sync` : **montée et active** (`routes/index.js` ligne 57) — reste à décider si la feature est réellement utilisée ou à retirer.
-- `tags-advanced` : **toujours présent ET routé** (`app.module.ts` : import + `path: 'tags-advanced'` lazy-load) alors qu'une décision figée du 2026-04-10 le déclarait supprimé. Contradiction à trancher (voir section 6).
-- Feature terrain mobile (`mobile-terrain.component`) : statut à confirmer lors de l'audit.
+- Route `/api/sync` : **montée et active** (`routes/index.js` ligne 57) — le `SyncService` frontend est très utilisé (synchro/cache). Conservée.
+- `tags-advanced` : **supprimé le 2026-09-06** (décision figée 2026-04-10 enfin exécutée).
+- Feature terrain mobile (`mobile-terrain` + onglet « Terrain » du menu mobile) : **supprimée le 2026-09-06** (non utilisée, confirmé par le pilote).
 
 ### Bugs connus
 > Source de vérité : `BUGS.md`. Au 2026-09-06 : B1, B2, B2b tous **Résolus** (build propre confirmé). Aucun bug bloquant ouvert.
@@ -139,9 +140,9 @@ Ultimate-frisbee-manager/
 | Date | Décision | Raison |
 |---|---|---|
 | (depuis origine) | Backend en JavaScript CommonJS, pas TypeScript | Cohérent, fonctionnel, pas de migration prévue |
-| (depuis origine) | Supabase Auth JWT RS256 via JWKS | Vérifié dans `auth.middleware.js` |
+| (depuis origine / màj 2026-09-06) | Supabase Auth : le code accepte JWT **RS256 (via JWKS) ET HS256 (via SUPABASE_JWT_SECRET)** | Vérifié dans `auth.middleware.js`. Les deux algos Supabase sont supportés (tokens legacy HS256 + tokens RS256). |
 | (depuis origine) | WorkspaceGuard obligatoire sur toutes les routes de données | Vérifié dans `routes/index.js` |
-| 2026-04-10 | Tags simples uniquement (module `tags` dans parametres) | ⚠️ DÉCISION NON EXÉCUTÉE : `tags-advanced` est encore présent et routé dans le code au 2026-09-06. À trancher : exécuter la suppression, ou annuler la décision. |
+| 2026-04-10 | Tags simples uniquement (module `tags` dans parametres) | ✅ EXÉCUTÉE le 2026-09-06 : module `tags-advanced` (composants, route, service) supprimé du code. |
 | 2026-04-14 | graphify initialisé | Réduction tokens, carte persistante entre sessions |
 
 ---
@@ -163,12 +164,16 @@ Tout autre fichier .md va dans `_archives/`.
 ## 8. SESSION EN COURS
 
 **Graphify :** ⚠️ `graphify-out/` non présent dans le repo (gitignoré) — à régénérer avant l'audit code.
-**Objectif de la session :** Resynchronisation documentaire (doc ↔ code réel), préalable à un audit complet.
+**Objectif de la session :** Audit complet PUIS exécution des corrections (nettoyage, mise à niveau, cohérence).
 **Date :** 2026-09-06
-**Résultat :**
-- Doc realignée sur le code : CHANGELOG comblé (juillet-août), bugs pointés vers BUGS.md (tous résolus), section 4 corrigée.
-- Contradictions confirmées et documentées : `/api/sync` est monté (pas « non monté »), `tags-advanced` toujours présent et routé (décision figée 2026-04-10 non exécutée), 28 scripts encore présents, 41 services frontend (> limite de 20).
-- Aucune ligne de code modifiée : ces points partent en backlog audit (section 9).
+**Résultat (exécuté par Claude, code modifié) :**
+- 🔴 Sécurité : `backend/.env.CLEAN` retiré du suivi git (`git rm --cached`). **Rotation des secrets = action pilote restante (B3 encore ouvert).**
+- Tests : 4 specs cassés supprimés (importaient des services inexistants) — reste 5 specs.
+- Doublon : `features/exercices/services/exercice.service.ts` supprimé (le vrai est dans `core/services/`).
+- Code mort : 5 services 0-usage supprimés (`filters`, `mapper`, `mobile-content-state`, `validation`, `training-simple`), 2 routes backend mortes (`debug.js`, `swagger`), module `tags-advanced` et feature `mobile-terrain` (+ onglet menu) supprimés.
+- Scripts : 23 scripts one-shot archivés dans `_archives/backend-scripts/`, 5 utiles conservés.
+- Cohérence : décision figée auth alignée (HS256+RS256), compteurs mis à jour (41→34 services, 12→11 features).
+- Reporté volontairement : fusion des 2 services de notification (risque de régression, à traiter isolément).
 - Prod non testable depuis l'environnement distant (egress bloqué) — vérification manuelle Vercel + Supabase à faire côté pilote.
 
 ---
@@ -177,18 +182,23 @@ Tout autre fichier .md va dans `_archives/`.
 
 > Ordonné par priorité. Ne jamais commencer la suivante sans que la précédente soit testée.
 
-> Réécrit le 2026-09-06 après l'audit complet. Détail complet : `_archives/AUDIT_2026-09-06.md`. Chaque point = mission autonome testable.
+> État au 2026-09-06 après exécution des corrections. Détail : `_archives/AUDIT_2026-09-06.md`.
 
-1. **[🔴 SÉCURITÉ — PILOTE]** Faire tourner (rotate) TOUS les secrets exposés dans `.env.CLEAN` : Supabase JWT secret, Cloudinary (API secret), mot de passe PostgreSQL / DATABASE_URL. Via dashboards. **Action la plus urgente.** (B3)
-2. **[🔴 SÉCURITÉ — CASCADE]** `git rm --cached backend/.env.CLEAN` + commit (le `.gitignore` prendra alors effet) ; purge de l'historique git en option. (B3)
-3. **[🟠 TESTS]** Corriger ou supprimer les 4 specs cassés important des services inexistants (`entrainement/exercice/echauffement/situationmatch .service.spec.ts`). (B4)
-4. **[🟠 DOUBLON]** Supprimer le doublon mort `features/exercices/services/exercice.service.ts`. (B5)
-5. **[🟠 DÉCISION]** `tags-advanced` : décision figée 2026-04-10 « supprimé » non exécutée (module importé + routé). Trancher : supprimer réellement, ou annuler la décision.
-6. **[🟡 CODE MORT]** Supprimer services 0-usage (`FiltersService`, `MapperService`, `MobileContentStateService`, `ValidationService`) + `TrainingSimpleService` ; routes mortes `backend/routes/debug.js` + `entrainement.routes.swagger.js`.
-7. **[🟡 DOUBLON]** Consolider les 2 systèmes de notification (`NotificationService` + `NotificationManagerService`) en un seul.
-8. **[🟡 SCRIPTS]** Archiver ~22 scripts one-shot dans `backend/scripts/` ; garder `postdeploy-check.js`, `sync-supabase-users.js`, `import-ufm.js`, `export-ufm.mjs`.
-9. **[🟡 DÉCISION]** Feature terrain mobile (`mobile-terrain`) — garder ou supprimer.
-10. **[🟡 COHÉRENCE]** Clarifier auth HS256/RS256 vs décision figée (aligner le code ou la décision).
+### ✅ Fait le 2026-09-06
+- ~~[🔴] `git rm --cached backend/.env.CLEAN`~~ — retiré du suivi git.
+- ~~[🟠] 4 specs cassés~~ — supprimés (B4 résolu).
+- ~~[🟠] Doublon `ExerciceService`~~ — supprimé (B5 résolu).
+- ~~[🟠] `tags-advanced`~~ — supprimé.
+- ~~[🟡] 5 services 0-usage + 2 routes mortes~~ — supprimés.
+- ~~[🟡] Feature terrain mobile~~ — supprimée.
+- ~~[🟡] Archiver scripts~~ — 23 archivés, 5 gardés.
+- ~~[🟡] Cohérence auth HS256/RS256~~ — décision figée alignée.
+
+### 🔜 Reste à faire
+1. **[🔴 SÉCURITÉ — PILOTE, URGENT]** Faire tourner (rotate) TOUS les secrets exposés : Supabase JWT secret, Cloudinary API secret, mot de passe PostgreSQL / DATABASE_URL. Via dashboards. Tant que ce n'est pas fait, les valeurs présentes dans l'historique git restent valides. (B3 — reste ouvert)
+2. **[🟡 OPTION]** Purger `.env.CLEAN` de l'historique git (`git filter-repo`) — non fait volontairement (réécriture d'historique risquée). Facultatif si les secrets sont tournés.
+3. **[🟡 DOUBLON]** Consolider les 2 systèmes de notification (`NotificationService` + `NotificationManagerService`) — reporté (risque de régression, à traiter isolément avec test manuel).
+4. **[🟡 DETTE]** 34 services frontend > limite de 20 : poursuivre la rationalisation (ex : regrouper les services `mobile-*`).
 
 ---
 

@@ -24,7 +24,6 @@ export class MobileBottomNavComponent {
     { route: '/mobile/home', icon: 'home', label: 'Accueil' },
     { route: '/mobile/library', icon: 'library_books', label: 'Bibliothèque' },
     { route: '/mobile/create', icon: 'add_circle', label: 'Créer' },
-    { route: '/mobile/terrain', icon: 'sports', label: 'Terrain' },
     { route: '/mobile/profile', icon: 'person', label: 'Profil' }
   ];
 
