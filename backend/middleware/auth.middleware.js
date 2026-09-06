@@ -121,7 +121,7 @@ const authenticateToken = async (req, res, next) => {
     // (secret partagé) n'est plus accepté : ce secret a fuité et n'est plus utilisé
     // par Supabase pour signer les tokens (migration vers les JWT Signing Keys).
     try {
-      const jwksUrl = new URL(`https://${projectRef}.supabase.co/auth/v1/keys`);
+      const jwksUrl = new URL(`https://${projectRef}.supabase.co/auth/v1/.well-known/jwks.json`);
       const JWKS = jose.createRemoteJWKSet(jwksUrl);
       const { payload } = await jose.jwtVerify(token, JWKS, {
         algorithms: ['RS256', 'ES256']
