@@ -85,7 +85,7 @@ Ultimate-frisbee-manager/
 `/api/trainings` · `/api/warmups` · `/api/matches` · `/api/dashboard` · `/api/import` · `/api/admin`
 
 **Nombre de features frontend : 11** / 20 maximum
-**Nombre de services frontend : 34** (⚠️ > limite de 20 — nettoyage en cours, réduit de 41 à 34 le 2026-09-06)
+**Nombre de services frontend : 28** (réduit de 41 → 34 → 28 le 2026-09-06 ; les 28 restants sont tous réellement utilisés. Descendre à 20 imposerait des fusions artificielles nuisant à la lisibilité — non recommandé, sauf la fusion notifications.)
 
 ---
 
@@ -201,7 +201,7 @@ Tout autre fichier .md va dans `_archives/`.
 1. **[🟢 FINITION — PILOTE]** Retirer la variable `SUPABASE_JWT_SECRET` de Vercel (le code ne s'en sert plus) + suspendre les 2 services Render abandonnés (dashboard).
 2. **[🟡 OPTION]** Front → clé `publishable`, puis révoquer la clé JWT legacy dans Supabase ; purge `.env.CLEAN` de l'historique git. Non bloquant (fuite déjà neutralisée).
 3. **[🟡 DOUBLON]** Consolider les 2 systèmes de notification (`NotificationService` + `NotificationManagerService`) — à traiter isolément avec test manuel.
-4. **[🟡 DETTE]** 34 services frontend > limite de 20 : rationaliser (ex : regrouper les services `mobile-*`).
+4. ~~[🟡 DETTE] Rationaliser les services~~ — 6 services morts supprimés le 2026-09-06 (34→28). Les 28 restants sont utilisés ; pas de fusion artificielle pour atteindre 20 (nuirait à la lisibilité). Seule fusion pertinente restante = notifications (point 3).
 5. **[🟡 QUALITÉ]** Nettoyer le log frontend bruyant « Token alg différent de RS256 » (ES256 est normal désormais).
 
 ---
