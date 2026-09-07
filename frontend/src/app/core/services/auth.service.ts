@@ -361,30 +361,7 @@ export class AuthService {
       }
 
       if (data.session?.access_token) {
-        const token = data.session.access_token;
-
-        // LOG DIAGNOSTIC - Décoder le header du token
-        try {
-          const parts = token.split('.');
-          if (parts.length === 3) {
-            const header = JSON.parse(atob(parts[0]));
-            console.log('[Frontend Auth] Token header:', {
-              alg: header.alg,
-              typ: header.typ,
-              kid: header.kid
-            });
-
-            if (header.alg !== 'RS256') {
-              console.warn('[Frontend Auth] Token alg différent de RS256:', header);
-            } else {
-              console.log('[Frontend Auth] ✅ Token RS256 correct');
-            }
-          }
-        } catch (e) {
-          console.error('[Frontend Auth] Erreur décodage token:', e);
-        }
-
-        return token;
+        return data.session.access_token;
       }
     }
 
