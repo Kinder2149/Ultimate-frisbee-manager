@@ -1,5 +1,5 @@
 import { FormGroup, FormControl, AbstractControl, ValidationErrors } from '@angular/forms';
-import { ErrorDetail } from '../../core/services/notification-manager.service';
+import { ErrorDetail } from '../../core/services/notification.service';
 
 /**
  * Interface pour une erreur de validation formatée

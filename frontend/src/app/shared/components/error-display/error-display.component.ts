@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { NotificationManagerService, ErrorDetail } from '../../../core/services/notification-manager.service';
+import { NotificationService, ErrorDetail } from '../../../core/services/notification.service';
 
 /**
  * Type de sévérité pour l'affichage des erreurs
@@ -29,7 +29,7 @@ export class ErrorDisplayComponent {
   @Input() actionLabel?: string;
   @Input() actionCallback?: () => void;
 
-  constructor(private notificationManager: NotificationManagerService) {}
+  constructor(private notification: NotificationService) {}
 
   /**
    * Retourne l'icône selon la sévérité
@@ -58,7 +58,7 @@ export class ErrorDisplayComponent {
    * Copie les détails d'erreur dans le presse-papier
    */
   copyDetails(): void {
-    this.notificationManager.copyErrorDetails(this.message, this.requestId, this.details);
+    this.notification.copyErrorDetails(this.message, this.requestId, this.details);
   }
 
   /**

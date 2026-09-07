@@ -28,7 +28,7 @@ import { Tag } from '../../../../core/models/tag.model';
 import { ApiUrlService } from '../../../../core/services/api-url.service';
 import { ExerciceService } from '../../../../core/services/exercice.service';
 import { TagService } from '../../../../core/services/tag.service';
-import { NotificationManagerService } from '../../../../core/services/notification-manager.service';
+import { NotificationService } from '../../../../core/services/notification.service';
 import { LoggerService } from '../../../../core/services/logger.service';
 
 // Composants partagés
@@ -123,7 +123,7 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
     private apiUrlService: ApiUrlService,
     private fb: FormBuilder,
     private dialog: MatDialog,
-    private notificationManager: NotificationManagerService,
+    private notification: NotificationService,
     private logger: LoggerService,
     @Optional() public dialogRef?: MatDialogRef<ExerciceFormComponent>,
     @Optional() @Inject(MAT_DIALOG_DATA) public data?: any,
@@ -181,7 +181,7 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
         this.logger.error('Failed to load form data', err, { component: 'ExerciceForm' });
         this.loading = false;
         this.errorMessage = "Impossible de charger les données de l'exercice.";
-        this.notificationManager.error(this.errorMessage);
+        this.notification.error(this.errorMessage);
       }
     });
 
@@ -295,7 +295,7 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
       });
       
       this.errorMessage = 'Veuillez corriger les erreurs dans le formulaire';
-      this.notificationManager.error(this.errorMessage, { details: errorDetails });
+      this.notification.error(this.errorMessage, { details: errorDetails });
       return;
     }
     this.submitting = true;
@@ -384,7 +384,7 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
           mode: this.exerciceId ? 'update' : 'create'
         });
         
-        this.notificationManager.success(`Exercice ${this.exerciceId ? 'mis à jour' : 'créé'} avec succès`);
+        this.notification.success(`Exercice ${this.exerciceId ? 'mis à jour' : 'créé'} avec succès`);
         
         if (this.dialogRef) {
           this.dialogRef.close(savedExercice);
@@ -403,7 +403,7 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
           status: err?.status
         });
 
-        this.notificationManager.showHttpError(err, "Échec de l'enregistrement de l'exercice");
+        this.notification.showHttpError(err, "Échec de l'enregistrement de l'exercice");
       }
     });
   }
