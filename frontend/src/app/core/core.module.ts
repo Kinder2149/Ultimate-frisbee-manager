@@ -9,12 +9,10 @@ import { MaterialModule } from './material/material.module';
 import { ExerciceService } from './services/exercice.service';
 import { TagService } from './services/tag.service';
 import { NotificationService } from './services/notification.service';
-import { DataMappingService } from './services/data-mapping.service';
 import { ApiUrlService } from './services/api-url.service';
 import { EntrainementService } from './services/entrainement.service';
 import { EchauffementService } from './services/echauffement.service';
 import { SituationMatchService } from './services/situationmatch.service';
-import { DashboardService } from './services/dashboard.service';
 import { AuthService } from './services/auth.service';
 
 // Import des guards et intercepteurs
@@ -38,12 +36,10 @@ import { HttpErrorInterceptor } from './errors/http-error.interceptor';
     ExerciceService,
     TagService,
     NotificationService,
-    DataMappingService,
     ApiUrlService,
     EntrainementService,
     EchauffementService,
     SituationMatchService,
-    DashboardService,
     AuthService,
     AuthGuard,
     {
