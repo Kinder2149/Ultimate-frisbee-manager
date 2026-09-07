@@ -36,7 +36,7 @@
 **Backend :**
 - Framework : Express.js
 - Langage : JavaScript CommonJS (pas TypeScript — accepté)
-- Port local : 3002
+- Port local : 3000 (défini dans `backend/.env`, aligné avec `frontend/proxy.conf.json`)
 
 **Base de données :**
 - Technologie : PostgreSQL hébergé sur Supabase
