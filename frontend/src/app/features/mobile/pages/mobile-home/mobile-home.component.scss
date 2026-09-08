@@ -97,23 +97,26 @@
   .workspace-info {
     flex: 1;
 
+    // L'en-tete de carte herite d'un fond clair du theme global (.card-header).
+    // Le texte doit donc etre sombre pour rester lisible : en blanc, le nom de
+    // l'espace et le role etaient invisibles (contraste ~1:1).
     h3 {
       margin: 0 0 8px 0;
       font-size: 1.2rem;
       font-weight: 600;
-      color: white;
+      color: #1e293b;
     }
 
     .workspace-role {
       margin: 0;
       font-size: 0.85rem;
       font-weight: 600;
-      color: white;
+      color: #4c3a8f;
       padding: 6px 14px;
-      background: rgba(255, 255, 255, 0.3);
+      background: rgba(102, 126, 234, 0.14);
       border-radius: 16px;
       display: inline-block;
-      border: 1px solid rgba(255, 255, 255, 0.4);
+      border: 1px solid rgba(102, 126, 234, 0.35);
     }
   }
 
