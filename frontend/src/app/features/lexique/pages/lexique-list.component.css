@@ -1,0 +1,65 @@
+.lexique-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.filter-bar {
+  margin: 1rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lexique-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.lexique-item {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+  background: #fff;
+}
+
+.lexique-item.mot-image {
+  border-left: 4px solid #f59e0b;
+}
+
+.lexique-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.terme {
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.categorie-badge {
+  font-size: 0.75rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #3730a3;
+}
+
+.definition {
+  margin: 0.4rem 0 0;
+  color: #444;
+}
+
+.error-message {
+  color: #b91c1c;
+  margin-bottom: 1rem;
+}
+
+.no-data {
+  color: #666;
+  font-style: italic;
+}

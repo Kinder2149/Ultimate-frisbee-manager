@@ -32,6 +32,9 @@ const workspaceRoutes = require('./workspace.routes');
 // Routes de synchronisation
 const syncRoutes = require('./sync.routes');
 
+// Routes du lexique (vocabulaire commun)
+const lexiqueRoutes = require('./lexique.routes');
+
 // Middleware d'authentification
 const { authenticateToken } = require('../middleware/auth.middleware');
 const { workspaceGuard, baseMutationGuard } = require('../middleware/workspace.middleware');
@@ -55,6 +58,7 @@ module.exports = (app) => {
   app.use('/api/dashboard', authenticateToken, workspaceGuard, baseMutationGuard, dashboardRoutes);
   app.use('/api/import', authenticateToken, workspaceGuard, baseMutationGuard, importRoutes);
   app.use('/api/sync', authenticateToken, workspaceGuard, syncRoutes);
+  app.use('/api/lexique', authenticateToken, workspaceGuard, baseMutationGuard, lexiqueRoutes);
 
   app.use('/api/admin', adminRoutes);
 
@@ -73,7 +77,8 @@ module.exports = (app) => {
         admin: '/api/admin',
         import: '/api/import',
         workspaces: '/api/workspaces',
-        sync: '/api/sync'
+        sync: '/api/sync',
+        lexique: '/api/lexique'
       }
     });
   });

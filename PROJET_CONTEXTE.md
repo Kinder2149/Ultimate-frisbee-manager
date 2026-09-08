@@ -17,7 +17,7 @@
 | Statut | En production |
 | Utilisateurs actuels | ~10 personnes actives |
 | URL production | https://ultimate-frisbee-manager.vercel.app |
-| Dernière mise à jour de ce fichier | 2026-09-06 |
+| Dernière mise à jour de ce fichier | 2026-09-08 |
 
 ---
 
@@ -82,9 +82,9 @@ Ultimate-frisbee-manager/
 
 **Routes API actives :**
 `/api/auth` · `/api/health` · `/api/workspaces` · `/api/exercises` · `/api/tags`
-`/api/trainings` · `/api/warmups` · `/api/matches` · `/api/dashboard` · `/api/import` · `/api/admin` · `/api/sync`
+`/api/trainings` · `/api/warmups` · `/api/matches` · `/api/dashboard` · `/api/import` · `/api/admin` · `/api/sync` · `/api/lexique`
 
-**Nombre de features frontend : 12** / 20 maximum (ajout de `errors` le 2026-09-08 : page « introuvable »)
+**Nombre de features frontend : 13** / 20 maximum (ajout de `lexique` le 2026-09-08 — voir section 11)
 **Nombre de services frontend : 26** (réduit de 41 → 34 → 28 → 27 le 2026-09-06, puis → 26 le 2026-09-08 avec la suppression de `upload.service.ts`, qui visait une route inexistante. Les 26 restants sont tous réellement utilisés. Descendre à 20 imposerait des fusions artificielles nuisant à la lisibilité — **écart assumé**.)
 
 ---
@@ -105,6 +105,7 @@ Ultimate-frisbee-manager/
 - Cache navigateur IndexedDB pour navigation fluide
 
 ### En cours / A décider
+- **Intégration Ulti Coach (contenu de formation coachs)** : EN COURS — voir section 11 pour l'état détaillé et la reprise.
 - Export : opérationnel sous `/api/admin/export-ufm` (pas de route `/api/export` séparée).
 - Route `/api/sync` : **montée et active** (`routes/index.js` ligne 57) — le `SyncService` frontend est très utilisé (synchro/cache). Conservée.
 - `tags-advanced` : **supprimé le 2026-09-06** (décision figée 2026-04-10 enfin exécutée).
@@ -234,3 +235,43 @@ Tout autre fichier .md va dans `_archives/`.
 2. Mettre à jour `CHANGELOG.md` avec les missions de commits entre le 2026-04-14 et le 2026-07-20 (tags optionnels, corrections Zod/TypeScript, nettoyage doc).
 3. Nettoyer les `*.spec.ts` qui importent encore `EntityCrudService`/`HttpGenericService` (services inexistants) — `echauffement.service.spec.ts`, `entrainement.service.spec.ts`, `exercice.service.spec.ts`, `situationmatch.service.spec.ts`, `entity-crud.service.spec.ts`.
 4. Re-vérifier B2 (admin/pages/activity) et les points 2-7 du backlog existant — non revalidés dans cet audit doc-only.
+
+---
+
+## 11. INTÉGRATION ULTI COACH (en cours — reprise le 2026-09-09)
+
+**Contexte :** Kinder a produit hors de ce dépôt (`V:\DEV\PROJETS\applications_web\Ulti_Coach`) tout le contenu
+de sa méthode d'entraînement (formation coachs) et une base Notion déjà formalisée (page **SPORT**, 4 data sources
+reliées : Exercices, Contenu - Thèmes & Phases, Lexique, Training/séances). Objectif : transposer ce contenu dans
+un workspace dédié de cette appli, en réutilisant l'existant plutôt qu'en créant un système parallèle.
+
+**Décisions prises (ne pas rediscuter) :**
+- Nouveau workspace dédié : **"Ulti Coach"** (id `e133fed1-ab18-4e1f-8e10-eb9124645fa6` en prod). Kinder y est MANAGER.
+- Les **Thèmes** de la progression annuelle se mappent sur les `Tag` existants (catégorie Thème) — pas de nouvelle table.
+- Le **Lexique** (vocabulaire imagé du club) n'a pas d'équivalent existant → nouvelle table `Lexique` créée.
+- La vue "déroulement sur une année" s'appuiera sur le champ `date` déjà présent sur `Entrainement` (pas de nouvelle table) — **écran pas encore construit**.
+- Une mission à la fois, testée manuellement avant la suivante (règle projet standard, appliquée strictement ici vu l'ampleur).
+
+**✅ Fait le 2026-09-08 (Mission 1 — Lexique) :**
+- Modèle Prisma `Lexique` ajouté (`backend/prisma/schema.prisma`) + migration `20260908120000_add_lexique` appliquée en prod via Supabase MCP (le `DIRECT_URL` de `backend/.env` avait un mot de passe périmé — la migration a été appliquée directement via l'outil Supabase, avec insertion manuelle de la ligne dans `_prisma_migrations` pour garder l'historique Prisma cohérent). **`backend/.env` → `DIRECT_URL` reste à corriger** pour que `npx prisma migrate deploy` refonctionne en local (non bloquant, contournement en place).
+- CRUD backend complet : `backend/services/business/lexique.service.js`, `backend/controllers/lexique.controller.js`, `backend/validators/lexique.validator.js`, `backend/routes/lexique.routes.js`, montée dans `backend/routes/index.js` sous `/api/lexique` (auth + workspaceGuard + baseMutationGuard, comme les autres routes de données).
+- Écran frontend de consultation (lecture seule + filtre par catégorie) : `frontend/src/app/core/models/lexique.model.ts`, `frontend/src/app/core/services/lexique.service.ts`, `frontend/src/app/features/lexique/` (module + page `lexique-list`), route `/lexique` dans `app.module.ts`, lien de nav ajouté dans `app.component.html`.
+- **Pas encore fait pour le Lexique** : formulaire de création/édition/suppression côté UI (le backend le supporte déjà — `POST`/`PUT`/`DELETE` — mais aucun écran ne les appelle). Purement en lecture pour l'instant.
+- Données : les **41 termes** du Lexique Notion importés dans le workspace Ulti Coach (les relations Notion "Introduit dans" (Phase) et "Séances" n'ont **pas** été importées — elles pointent vers des entités pas encore transposées).
+- Vérifié manuellement par Kinder dans le navigateur (workspace "Ulti Coach", écran Lexique, filtre par catégorie) — **validé**.
+
+**❌ Pas fait — reste à faire, dans l'ordre suggéré :**
+1. Formulaire d'édition du Lexique (si Kinder le souhaite au clavier plutôt qu'en réimportant depuis Notion).
+2. Import des **Exercices** (base Notion `🏃 Banque de données - Ultimate Training`, ~schéma : Nom, Type d'exercice, Niveau, Travail spécifique, Zone du corps, Durée, Effectif min/max) vers le modèle `Exercice` existant, dans le workspace Ulti Coach.
+3. Les **Thèmes/Phases** (base Notion `🧭 Contenu - Thèmes & Phases`, hiérarchie Thème→Phase→Sous-phase via Parent/Ordre) → à mapper sur des `Tag` (catégorie à créer/choisir). Point d'attention déjà identifié : `Tag` n'a pas de relation parent-enfant, donc la hiérarchie à 3 niveaux ne peut pas être reproduite telle quelle — a nécessité une décision de Kinder qui n'a pas encore été prise.
+4. Les **séances réelles** (base Notion `Training`) → vers `Entrainement` (+ `EntrainementExercice`), datées, taguées par thème.
+5. L'écran "déroulement sur une année" (liste des `Entrainement` du workspace groupés par mois/tag-thème).
+6. Recroiser avec les fichiers `.md` déjà dépouillés dans `Ulti_Coach/` (`CATALOGUE_EXERCICES.md`, `LE_CUT.md`, `METHODE_KINDER.md`) — Kinder a demandé de croiser Notion **et** ces fichiers, seul Notion a été exploité jusqu'ici.
+
+**Accès Notion :** connecteur Notion actif dans les sessions Claude Code de ce projet (page **SPORT**). IDs utiles :
+- Data source Exercices : `collection://05666cc3-ea31-497b-b51d-181feb3cbcda`
+- Data source Contenu - Thèmes & Phases : `collection://023055ea-eac9-42dd-9e0c-79c5e4eddb49`
+- Data source Lexique : `collection://e4e371e9-140e-4263-814c-542d94c7f8e5` (déjà importée)
+- Data source Training (séances) : `collection://2c9bf6a5-ae94-471a-b652-04175d586400`
+
+**Projet Supabase :** `rnreaaeiccqkwgwxwxeg` (accessible via le connecteur MCP Supabase, utilisé pour appliquer la migration et importer les données en direct — plus fiable que `.env` tant que `DIRECT_URL` n'est pas corrigé).

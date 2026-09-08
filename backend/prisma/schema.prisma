@@ -167,6 +167,22 @@ model SituationMatch {
   @@index([workspaceId])
 }
 
+model Lexique {
+  id          String   @id @default(uuid())
+  terme       String
+  definition  String
+  categorie   String
+  motImage    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspaceId String?
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([workspaceId])
+}
+
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -199,6 +215,7 @@ model Workspace {
   echauffements Echauffement[]
   blocsEchauffement BlocEchauffement[]
   situationsMatch SituationMatch[]
+  lexiques Lexique[]
 }
 
 model WorkspaceUser {

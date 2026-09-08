@@ -134,10 +134,16 @@ const routes: Routes = [
     loadChildren: () => import('./features/echauffements/echauffements.module').then(m => m.EchauffenementsModule),
     canActivate: [AuthGuard, WorkspaceSelectedGuard, MobileGuard]
   },
-  { 
-    path: 'situations-matchs', 
+  {
+    path: 'situations-matchs',
     title: 'Situations & matchs',
     loadChildren: () => import('./features/situations-matchs/situations-matchs.module').then(m => m.SituationsMatchsModule),
+    canActivate: [AuthGuard, WorkspaceSelectedGuard, MobileGuard]
+  },
+  {
+    path: 'lexique',
+    title: 'Lexique',
+    loadChildren: () => import('./features/lexique/lexique.module').then(m => m.LexiqueModule),
     canActivate: [AuthGuard, WorkspaceSelectedGuard, MobileGuard]
   },
   // Route de debug export/import supprimée (ancien système)

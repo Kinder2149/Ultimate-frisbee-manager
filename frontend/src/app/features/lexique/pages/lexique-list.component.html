@@ -1,0 +1,26 @@
+<div class="lexique-container">
+  <h1>Lexique — vocabulaire commun du club</h1>
+
+  <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+
+  <div class="filter-bar">
+    <label for="categorie-filter">Catégorie :</label>
+    <select id="categorie-filter" [(ngModel)]="selectedCategorie" (ngModelChange)="onFilterChange()">
+      <option value="">Toutes</option>
+      <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+    </select>
+  </div>
+
+  <div *ngIf="lexiques.length === 0" class="no-data">Aucun terme trouvé.</div>
+
+  <ul class="lexique-list">
+    <li *ngFor="let mot of lexiques" class="lexique-item" [class.mot-image]="mot.motImage">
+      <div class="lexique-header">
+        <span class="terme">{{ mot.terme }}</span>
+        <span class="categorie-badge">{{ mot.categorie }}</span>
+        <span *ngIf="mot.motImage" class="badge-image" title="Mot imagé, à crier depuis le bord du terrain">🗣️</span>
+      </div>
+      <p class="definition">{{ mot.definition }}</p>
+    </li>
+  </ul>
+</div>

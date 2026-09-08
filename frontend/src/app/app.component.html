@@ -72,6 +72,11 @@
             </ul>
           </li>
           
+          <li><a routerLink="/lexique" routerLinkActive="active" matTooltip="Lexique">
+            <mat-icon>menu_book</mat-icon>
+            <span class="nav-text">Lexique</span>
+          </a></li>
+
           <!-- Menu utilisateur fusionné (Avatar + Paramètres) -->
           <li class="dropdown parametres user-avatar" [class.open]="isDropdownOpen.parametres">
             <a class="nav-link dropdown-toggle" href="#" (click)="toggleDropdown('parametres', $event)" matTooltip="Paramètres">
