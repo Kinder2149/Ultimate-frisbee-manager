@@ -63,7 +63,7 @@ Ultimate-frisbee-manager/
 │   ├── core/           Services, guards, interceptors, modèles, cache
 │   ├── features/       exercices / entrainements / echauffements /
 │   │                   situations-matchs / tags / mobile / admin /
-│   │                   settings / auth / dashboard / workspaces
+│   │                   settings / auth / dashboard / workspaces / errors
 │   └── shared/         Composants, pipes, widgets réutilisables
 ├── backend/
 │   ├── controllers/    Logique de traitement par entité
@@ -82,10 +82,10 @@ Ultimate-frisbee-manager/
 
 **Routes API actives :**
 `/api/auth` · `/api/health` · `/api/workspaces` · `/api/exercises` · `/api/tags`
-`/api/trainings` · `/api/warmups` · `/api/matches` · `/api/dashboard` · `/api/import` · `/api/admin`
+`/api/trainings` · `/api/warmups` · `/api/matches` · `/api/dashboard` · `/api/import` · `/api/admin` · `/api/sync`
 
-**Nombre de features frontend : 11** / 20 maximum
-**Nombre de services frontend : 27** (réduit de 41 → 34 → 28 → 27 le 2026-09-06 ; les 27 restants sont tous réellement utilisés. Descendre à 20 imposerait des fusions artificielles nuisant à la lisibilité — non recommandé.)
+**Nombre de features frontend : 12** / 20 maximum (ajout de `errors` le 2026-09-08 : page « introuvable »)
+**Nombre de services frontend : 26** (réduit de 41 → 34 → 28 → 27 le 2026-09-06, puis → 26 le 2026-09-08 avec la suppression de `upload.service.ts`, qui visait une route inexistante. Les 26 restants sont tous réellement utilisés. Descendre à 20 imposerait des fusions artificielles nuisant à la lisibilité — **écart assumé**.)
 
 ---
 
@@ -156,6 +156,10 @@ Ultimate-frisbee-manager/
 | CHANGELOG.md | Historique des missions terminées |
 | BUGS.md | Bugs connus et leur statut |
 | README.md | Présentation et guide de démarrage |
+
+**Hors quota** : `CLAUDE.md` n'est pas de la documentation projet mais la
+configuration de l'outil (instructions graphify lues par Claude Code au
+démarrage). Il reste à la racine, au même titre que `.gitignore`.
 
 Tout autre fichier .md va dans `_archives/`.
 
