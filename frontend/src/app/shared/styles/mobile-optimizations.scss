@@ -109,11 +109,6 @@
     --mobile-appbar-height: 152px;
   }
 
-  .app-container:not(.mobile-route) app-content-categories,
-  .app-container:not(.mobile-route) .categories-bar {
-    display: none !important;
-  }
-
   .app-container:not(.mobile-route) .main-header {
     position: fixed;
     top: 0;
@@ -791,32 +786,6 @@
     padding: 2px 6px;
     border-radius: 12px;
     white-space: nowrap;
-  }
-  
-  /* Barre d'actions mobile */
-  .action-bar {
-    position: absolute;
-    top: var(--mobile-gap);
-    right: var(--mobile-gap);
-    display: flex;
-    gap: 4px;
-    background: rgba(255,255,255,0.9);
-    border-radius: 20px;
-    padding: 4px;
-    backdrop-filter: blur(10px);
-  }
-  
-  .action-bar button {
-    width: 32px;
-    height: 32px;
-    min-width: 32px;
-    padding: 0;
-  }
-  
-  .action-bar mat-icon {
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
   }
   
   /* Contenu de carte - optimisé pour lecture */
