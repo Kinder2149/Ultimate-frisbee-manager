@@ -172,7 +172,10 @@ Tout autre fichier .md va dans `_archives/`.
 - Auth : backend passé en vérification **asymétrique JWKS uniquement** (ES256/RS256), HS256 retiré → fuite du secret JWT neutralisée. Correctif URL JWKS (`/auth/v1/.well-known/jwks.json`).
 - Déploiement : correctifs poussés sur `master` via PR #2 et #3 → Vercel a redéployé la prod. **Connexion + chargement des données validés en prod** (login, workspaces, préchargement exercices/entraînements/etc., admin).
 - Topologie clarifiée : **Vercel = seule prod** (front + API). 2 services Render abandonnés (déploiements en échec) — à suspendre côté pilote.
-- Reporté volontairement : fusion des 2 services de notification.
+- Rationalisation services : 6 services morts supprimés (34→28) puis fusion des 2 services de notification en un seul `NotificationService` (28→27). Les 27 restants sont tous utilisés.
+- Qualité : log frontend bruyant « Token alg différent de RS256 » retiré.
+- Déploiement : PR #2 → #8 fusionnées dans `master` (Vercel redéploie automatiquement).
+- ⚠️ À valider manuellement par le pilote : notifications succès/erreur + bouton « copier détails » (fusion notifications, ça touche l'UX).
 
 ---
 
@@ -197,12 +200,15 @@ Tout autre fichier .md va dans `_archives/`.
 - ~~[🔴] Backend RS256/ES256 via JWKS, HS256 retiré~~ — fuite JWT neutralisée.
 - ~~[🔴] DATABASE_URL corrigée~~ + prod redéployée et **validée** (login + données OK).
 
-### 🔜 Reste à faire
-1. **[🟢 FINITION — PILOTE]** Retirer la variable `SUPABASE_JWT_SECRET` de Vercel (le code ne s'en sert plus) + suspendre les 2 services Render abandonnés (dashboard).
-2. **[🟡 OPTION]** Front → clé `publishable`, puis révoquer la clé JWT legacy dans Supabase ; purge `.env.CLEAN` de l'historique git. Non bloquant (fuite déjà neutralisée).
-3. ~~[🟡 DOUBLON] Consolider les 2 systèmes de notification~~ — FAIT le 2026-09-06 : `NotificationManagerService` fusionné dans `NotificationService` (service unique, API riche + simple conservée). À valider manuellement (notifications succès/erreur, bouton copier).
-4. ~~[🟡 DETTE] Rationaliser les services~~ — 6 services morts supprimés le 2026-09-06 (34→28). Les 28 restants sont utilisés ; pas de fusion artificielle pour atteindre 20 (nuirait à la lisibilité). Seule fusion pertinente restante = notifications (point 3).
-5. **[🟡 QUALITÉ]** Nettoyer le log frontend bruyant « Token alg différent de RS256 » (ES256 est normal désormais).
+### 🔜 Reste à faire (fin du plan)
+1. **[✅ À VALIDER — PILOTE]** Test manuel des notifications en prod (succès à la création/édition d'exercice, erreur sur champ invalide, bouton « copier détails »). Si un souci → rollback Vercel 1 clic.
+2. **[🟢 FINITION — PILOTE]** Retirer la variable `SUPABASE_JWT_SECRET` de Vercel (le code ne s'en sert plus) + suspendre les 2 services Render abandonnés (dashboard).
+3. **[🟡 OPTION — non bloquant]** Front → clé `publishable`, puis révoquer la clé JWT legacy dans Supabase ; purge `.env.CLEAN` de l'historique git. La fuite est déjà neutralisée (backend n'accepte plus HS256), ces étapes sont du confort.
+
+### ✅ Déjà fait le 2026-09-06 (rationalisation + qualité)
+- ~~[🟡 DETTE] Rationaliser les services~~ — 41 → 27 (6 morts supprimés + fusion notifications). Les 27 restants sont utilisés ; pas de fusion artificielle pour viser 20.
+- ~~[🟡 DOUBLON] Fusion des 2 services de notification~~ — un seul `NotificationService`.
+- ~~[🟡 QUALITÉ] Log bruyant « Token alg différent de RS256 »~~ — retiré.
 
 ---
 
