@@ -187,7 +187,7 @@ export class UserDetailComponent implements OnInit {
       },
       {
         type: 'workspace',
-        title: 'Rejoint un workspace',
+        title: 'Rejoint un espace',
         date: new Date(Date.now() - 3 * 24 * 3600000),
         icon: 'workspaces',
         color: '#10b981'

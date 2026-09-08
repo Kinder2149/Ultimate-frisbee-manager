@@ -153,3 +153,17 @@
     min-height: 48px;
   }
 }
+
+/**
+ * Angular Material applique la police de texte (Roboto) a l'emplacement de droite
+ * des lignes de liste. Une <mat-icon> qui s'y trouve affiche alors le nom de
+ * l'icone en toutes lettres, tronque a la largeur disponible (« che… »).
+ * On lui rend la police d'icones et sa taille normale.
+ */
+:host ::ng-deep .mat-mdc-list-item-meta.mat-icon {
+  font-family: 'Material Icons' !important;
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+}

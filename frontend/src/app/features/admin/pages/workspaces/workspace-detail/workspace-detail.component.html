@@ -39,7 +39,7 @@
           matTooltip="Supprimer le workspace"
         >
           <mat-icon>delete</mat-icon>
-          Supprimer le workspace
+          Supprimer l'espace
         </button>
       </div>
     </div>
@@ -122,7 +122,7 @@
       <div class="section-header">
         <h2>
           <mat-icon>people</mat-icon>
-          Membres du workspace
+          Membres de l'espace
         </h2>
         <span class="section-count">{{ members.length }}</span>
       </div>
@@ -131,7 +131,7 @@
 
       <div *ngIf="members.length === 0" class="empty-section">
         <mat-icon>people_outline</mat-icon>
-        <p>Aucun membre dans ce workspace</p>
+        <p>Aucun membre dans cet espace</p>
       </div>
 
       <div *ngIf="members.length > 0" class="table-wrapper">
@@ -202,7 +202,7 @@
                   <mat-divider></mat-divider>
                   <button mat-menu-item (click)="removeMember(member)" class="danger">
                     <mat-icon>person_remove</mat-icon>
-                    <span>Retirer du workspace</span>
+                    <span>Retirer de l'espace</span>
                   </button>
                 </mat-menu>
               </div>

@@ -19,6 +19,13 @@ export class WriteGuard implements CanActivate {
     this.notificationService.showError(this.permissionsService.getPermissionDeniedMessage());
 
     const url = String(state.url || '');
+
+    // Interface mobile : rester dans l'interface mobile plutot que d'ejecter vers la racine.
+    if (url.startsWith('/mobile')) {
+      this.router.navigate(['/mobile/home']);
+      return false;
+    }
+
     if (url.startsWith('/exercices')) {
       this.router.navigate(['/exercices']);
       return false;

@@ -6,7 +6,7 @@
         <mat-icon>workspaces</mat-icon>
       </div>
       <div class="header-text">
-        <h1>Gestion des workspaces</h1>
+        <h1>Gestion des espaces</h1>
         <p>Gérez vos espaces de travail et leurs membres</p>
       </div>
       <div class="header-stats">
@@ -14,7 +14,7 @@
           <mat-icon>workspaces</mat-icon>
           <div class="stat-content">
             <span class="stat-value">{{ totalWorkspaces }}</span>
-            <span class="stat-label">Workspaces</span>
+            <span class="stat-label">Espaces</span>
           </div>
         </div>
         <div class="stat-card">
@@ -73,7 +73,7 @@
   <mat-card *ngIf="loading" class="loading-card">
     <div class="loading-content">
       <mat-spinner diameter="60"></mat-spinner>
-      <p>Chargement des workspaces...</p>
+      <p>Chargement des espaces...</p>
     </div>
   </mat-card>
 
@@ -139,9 +139,9 @@
   <!-- État vide -->
   <mat-card *ngIf="!loading && filteredWorkspaces.length === 0" class="empty-state">
     <mat-icon>workspaces_outline</mat-icon>
-    <h2>Aucun workspace trouvé</h2>
-    <p *ngIf="searchTerm">Aucun workspace ne correspond à votre recherche.</p>
-    <p *ngIf="!searchTerm">Vous n'avez pas encore de workspace.</p>
+    <h2>Aucun espace trouvé</h2>
+    <p *ngIf="searchTerm">Aucun espace ne correspond à votre recherche.</p>
+    <p *ngIf="!searchTerm">Vous n'avez pas encore d'espace.</p>
     <button mat-raised-button color="primary" (click)="clearFilters()" *ngIf="searchTerm">
       <mat-icon>clear</mat-icon>
       Réinitialiser les filtres

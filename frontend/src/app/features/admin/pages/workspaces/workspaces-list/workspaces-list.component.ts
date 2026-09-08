@@ -170,13 +170,13 @@ export class WorkspacesListComponent implements OnInit {
 
     this.dialogService
       .open(NamePromptDialogComponent, {
-        title: 'Nom du nouveau workspace',
+        title: 'Nom du nouvel espace',
         width: '520px',
         disableClose: true,
         submitButtonText: 'Dupliquer',
         closeButtonText: 'Annuler',
         customData: {
-          title: 'Nom du nouveau workspace',
+          title: 'Nom du nouvel espace',
           label: 'Nom',
           placeholder: 'Ex: Club U17 – Saison 2026',
           initialValue: `${base.name} - `,

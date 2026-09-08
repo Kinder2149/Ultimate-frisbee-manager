@@ -35,7 +35,19 @@
   <div *ngIf="!loading && !errorMessage" class="exercices-grid">
     <!-- Message si aucun exercice trouvé -->
     <div *ngIf="filteredExercices.length === 0" class="no-results">
-      <p>Aucun exercice ne correspond à vos critères de recherche.</p>
+      <!-- Base vide : inviter a creer, comme les autres bibliotheques -->
+      <ng-container *ngIf="exercices.length === 0; else aucunResultat">
+        <h3>Aucun exercice pour le moment</h3>
+        <p>Commencez par créer votre premier exercice</p>
+        <button mat-raised-button color="primary" (click)="onAddExercice()" *ngIf="canCreate">
+          <mat-icon>add</mat-icon>
+          Créer un exercice
+        </button>
+      </ng-container>
+      <!-- Des exercices existent, mais les filtres n'en laissent aucun -->
+      <ng-template #aucunResultat>
+        <p>Aucun exercice ne correspond à vos critères de recherche.</p>
+      </ng-template>
     </div>
     
     <!-- Affichage des exercices -->

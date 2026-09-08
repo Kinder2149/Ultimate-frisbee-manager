@@ -1,10 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-settings',
@@ -34,11 +36,11 @@ import { Router } from '@angular/router';
         <div class="info-grid">
           <div class="info-item">
             <span class="label">Version</span>
-            <span class="value">1.0.0</span>
+            <span class="value">{{ version }}</span>
           </div>
           <div class="info-item">
             <span class="label">Environnement</span>
-            <span class="value">Production</span>
+            <span class="value">{{ environnement }}</span>
           </div>
         </div>
       </mat-card>
@@ -56,8 +58,30 @@ import { Router } from '@angular/router';
     .info-item .value { font-weight: 600; color: #1e293b; }
   `]
 })
-export class SettingsComponent {
-  constructor(private snackBar: MatSnackBar, private router: Router) {}
+export class SettingsComponent implements OnInit {
+  version = 'Chargement…';
+  environnement = 'Chargement…';
+
+  constructor(
+    private snackBar: MatSnackBar,
+    private router: Router,
+    private http: HttpClient
+  ) {}
+
+  ngOnInit(): void {
+    // Source de verite : le serveur lui-meme, via /api/health.
+    this.http.get<{ env?: string; version?: string | null }>(`${environment.apiUrl}/health`)
+      .subscribe({
+        next: (etat) => {
+          this.environnement = etat?.env === 'production' ? 'Production' : 'Développement';
+          this.version = etat?.version || 'Non renseignée';
+        },
+        error: () => {
+          this.environnement = 'Indisponible';
+          this.version = 'Indisponible';
+        }
+      });
+  }
 
   exportData(): void {
     this.router.navigate(['/parametres/import-export']);

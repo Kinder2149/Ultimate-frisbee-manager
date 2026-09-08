@@ -223,7 +223,7 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
       notes: [''],
       critereReussite: [''],
       variables: new FormControl({ variablesPlus: [], variablesMinus: [] }),
-      // UI only: points importants (non persisté côté backend pour l'instant)
+      // Points importants : persistés en base (colonne `points`, tableau de chaînes)
       points: new FormControl<string[]>([]),
       // Ajout des FormControls pour les tags
       objectifTag: [null],

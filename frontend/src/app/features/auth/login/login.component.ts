@@ -65,6 +65,21 @@ export class LoginComponent implements OnInit, OnDestroy {
         }
       });
 
+    // Une panne survenue apres l'identification (profil, espace) doit sortir
+    // l'ecran de son etat d'attente et expliquer ce qui s'est passe.
+    this.authService.authError$
+      .pipe(
+        takeUntil(this.destroy$),
+        filter((message: string | null): message is string => !!message)
+      )
+      .subscribe((message: string) => {
+        this.isLoading = false;
+        this.loadingSteps.loadingProfile = false;
+        this.loadingSteps.loadingWorkspace = false;
+        this.loadingSteps.ready = false;
+        this.errorMessage = message;
+      });
+
     // Réagir au moment où l'auth est réellement prête (profil + workspace).
     // La redirection ne se fait QUE quand authReady$ === true
     this.authService.authReady$

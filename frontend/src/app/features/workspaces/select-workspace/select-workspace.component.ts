@@ -10,6 +10,7 @@ import { WorkspaceService, WorkspaceSummary } from '../../../core/services/works
 import { WorkspacePreloaderService } from '../../../core/services/workspace-preloader.service';
 import { PreloadDialogComponent } from '../../../shared/components/preload-dialog/preload-dialog.component';
 import { environment } from '../../../../environments/environment';
+import { PermissionsService } from '../../../core/services/permissions.service';
 
 interface WorkspaceApiDto {
   id: string;
@@ -32,6 +33,7 @@ export class SelectWorkspaceComponent implements OnInit {
   private returnUrl: string | null = null;
 
   constructor(
+    private permissionsService: PermissionsService,
     private http: HttpClient,
     private router: Router,
     private route: ActivatedRoute,
@@ -166,4 +168,12 @@ export class SelectWorkspaceComponent implements OnInit {
       });
     }
   }
+
+  /**
+   * Libelle francais du role, via le service central de permissions.
+   */
+  libelleRole(role?: string | null): string {
+    return this.permissionsService.getRoleLabel((role || null) as any);
+  }
+
 }

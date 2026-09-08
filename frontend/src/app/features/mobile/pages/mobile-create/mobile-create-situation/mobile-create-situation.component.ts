@@ -20,7 +20,6 @@ import { SituationMatch } from '../../../../../core/models/situationmatch.model'
 import { Tag } from '../../../../../core/models/tag.model';
 import { SituationMatchService } from '../../../../../core/services/situationmatch.service';
 import { TagService } from '../../../../../core/services/tag.service';
-import { UploadService } from '../../../../../core/services/upload.service';
 
 @Component({
   selector: 'app-mobile-create-situation',
@@ -68,7 +67,6 @@ export class MobileCreateSituationComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar,
     private situationMatchService: SituationMatchService,
     private tagService: TagService,
-    private uploadService: UploadService
   ) {
     this.initForm();
   }
@@ -180,27 +178,34 @@ export class MobileCreateSituationComponent implements OnInit, OnDestroy {
     this.submitting = true;
 
     try {
-      let imageUrl = '';
+      const tagIds = this.selectedTags.map(t => t.id!).filter(id => id);
+
+      // L'image accompagne la création (champ `image`), comme dans le formulaire bureau :
+      // le backend n'expose pas de route d'upload séparée.
+      let payload: FormData | Partial<SituationMatch>;
 
       if (this.imageFile) {
         this.uploading = true;
-        const uploadResult = await this.uploadService.uploadImage('situations-matchs', this.imageFile).toPromise();
-        imageUrl = uploadResult?.imageUrl || '';
-        this.uploading = false;
+        const fd = new FormData();
+        if (this.situationForm.value.nom) fd.append('nom', this.situationForm.value.nom);
+        if (this.situationForm.value.description) fd.append('description', this.situationForm.value.description);
+        if (tagIds.length) fd.append('tagIds', JSON.stringify(tagIds));
+        fd.append('image', this.imageFile, this.imageFile.name);
+        payload = fd;
+      } else {
+        payload = {
+          nom: this.situationForm.value.nom,
+          description: this.situationForm.value.description,
+          tags: this.selectedTags
+        };
       }
 
-      const situationData: Partial<SituationMatch> = {
-        nom: this.situationForm.value.nom,
-        description: this.situationForm.value.description,
-        imageUrl: imageUrl || undefined,
-        tags: this.selectedTags
-      };
-
-      this.situationMatchService.createSituationMatch(situationData as SituationMatch)
+      this.situationMatchService.createSituationMatch(payload as SituationMatch)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (created) => {
             this.submitting = false;
+            this.uploading = false;
             this.snackBar.open('Situation créée avec succès', 'Fermer', { duration: 3000 });
             this.router.navigate(['/mobile/detail/situation', created.id]);
           },

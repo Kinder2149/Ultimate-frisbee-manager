@@ -4,21 +4,21 @@
     type="button"
     (click)="toggleMenu($event)"
   >
-    <span class="ws-label">Workspace</span>
+    <span class="ws-label">Espace</span>
     <span class="ws-name">{{ currentWorkspace?.name || 'Sélectionner une base' }}</span>
     <span class="ws-role" *ngIf="currentWorkspace?.isBase === true">(BASE)</span>
-    <span class="ws-role" *ngIf="currentWorkspace?.role">({{ currentWorkspace?.role | titlecase }})</span>
+    <span class="ws-role" *ngIf="currentWorkspace?.role">({{ libelleRole(currentWorkspace?.role) }})</span>
     <mat-icon class="ws-chevron">expand_more</mat-icon>
   </button>
 
   <div class="workspace-switcher__menu" *ngIf="isMenuOpen">
     <div class="workspace-switcher__menu-header" *ngIf="loading">
-      <span>Chargement des workspaces...</span>
+      <span>Chargement des espaces...</span>
     </div>
 
     <ng-container *ngIf="!loading">
       <div *ngIf="workspaces.length === 0" class="workspace-switcher__menu-empty">
-        <span>Aucun workspace disponible</span>
+        <span>Aucun espace disponible</span>
       </div>
 
       <ul *ngIf="workspaces.length > 0" class="workspace-switcher__menu-list">
@@ -29,7 +29,7 @@
         >
           <div class="workspace-switcher__item-name">{{ w.name }}</div>
           <div class="workspace-switcher__item-role" *ngIf="w.isBase === true">BASE</div>
-          <div class="workspace-switcher__item-role" *ngIf="w.role">{{ w.role | uppercase }}</div>
+          <div class="workspace-switcher__item-role" *ngIf="w.role">{{ libelleRole(w.role) }}</div>
         </li>
       </ul>
     </ng-container>

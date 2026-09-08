@@ -26,12 +26,6 @@ import { AdminService } from '../../../../core/services/admin.service';
           <div class="stat-value">{{ stat.value }}</div>
         </mat-card>
       </div>
-      <mat-card *ngIf="!loading">
-        <p class="info-message">
-          <mat-icon>info</mat-icon>
-          Graphiques détaillés en développement. Utilise les données de GET /api/admin/overview.
-        </p>
-      </mat-card>
     </div>
   `,
   styles: [`
@@ -39,7 +33,6 @@ import { AdminService } from '../../../../core/services/admin.service';
     .stats-container h1 { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 24px; }
     .stat-value { font-size: 36px; font-weight: 700; color: #667eea; }
-    .info-message { display: flex; align-items: center; gap: 12px; color: #64748b; }
   `]
 })
 export class StatsComponent implements OnInit {

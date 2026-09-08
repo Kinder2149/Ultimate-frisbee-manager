@@ -20,7 +20,6 @@ import { Exercice } from '../../../../../core/models/exercice.model';
 import { Tag } from '../../../../../core/models/tag.model';
 import { ExerciceService } from '../../../../../core/services/exercice.service';
 import { TagService } from '../../../../../core/services/tag.service';
-import { UploadService } from '../../../../../core/services/upload.service';
 
 @Component({
   selector: 'app-mobile-create-exercice',
@@ -68,8 +67,7 @@ export class MobileCreateExerciceComponent implements OnInit, OnDestroy {
     private router: Router,
     private snackBar: MatSnackBar,
     private exerciceService: ExerciceService,
-    private tagService: TagService,
-    private uploadService: UploadService
+    private tagService: TagService
   ) {
     this.initForm();
   }
@@ -203,27 +201,42 @@ export class MobileCreateExerciceComponent implements OnInit, OnDestroy {
     this.submitting = true;
 
     try {
-      let imageUrl = '';
+      const tagIds = this.selectedTags.map(t => t.id!).filter(id => id);
+
+      // L'image est transmise avec la création elle-même (champ `image`),
+      // comme le fait le formulaire bureau : le backend n'expose pas de route d'upload séparée.
+      let payload: FormData | Partial<Exercice>;
 
       if (this.imageFile) {
         this.uploading = true;
-        const result = await this.uploadService.uploadImage('entrainements', this.imageFile).toPromise();
-        imageUrl = result?.imageUrl || '';
-        this.uploading = false;
+        const fd = new FormData();
+        const valeurs = this.exerciceForm.value;
+        Object.keys(valeurs).forEach(cle => {
+          const valeur = valeurs[cle];
+          if (valeur === null || valeur === undefined || valeur === '') return;
+          if (Array.isArray(valeur) || typeof valeur === 'object') {
+            fd.append(cle, JSON.stringify(valeur));
+          } else {
+            fd.append(cle, String(valeur));
+          }
+        });
+        if (tagIds.length) fd.append('tagIds', JSON.stringify(tagIds));
+        fd.append('image', this.imageFile, this.imageFile.name);
+        payload = fd;
+      } else {
+        payload = {
+          ...this.exerciceForm.value,
+          tags: this.selectedTags,
+          tagIds
+        };
       }
 
-      const exerciceData: Partial<Exercice> = {
-        ...this.exerciceForm.value,
-        imageUrl: imageUrl || undefined,
-        tags: this.selectedTags,
-        tagIds: this.selectedTags.map(t => t.id!).filter(id => id)
-      };
-
-      this.exerciceService.createExercice(exerciceData as Exercice)
+      this.exerciceService.createExercice(payload as Exercice)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (created) => {
             this.submitting = false;
+            this.uploading = false;
             this.snackBar.open('Exercice créé avec succès', 'Fermer', { duration: 3000 });
             this.router.navigate(['/mobile/detail/exercice', created.id]);
           },

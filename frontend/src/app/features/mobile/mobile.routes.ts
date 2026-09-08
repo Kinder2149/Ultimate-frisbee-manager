@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { WriteGuard } from '../../core/guards/write.guard';
 
 export const MOBILE_ROUTES: Routes = [
   {
@@ -29,46 +30,57 @@ export const MOBILE_ROUTES: Routes = [
       {
         path: 'create',
         loadComponent: () => import('./pages/mobile-create/mobile-create.component').then(c => c.MobileCreateComponent),
+        canActivate: [WriteGuard],
       },
       {
         path: 'create/exercice',
         loadComponent: () => import('./pages/mobile-create/mobile-create-exercice/mobile-create-exercice.component').then(c => c.MobileCreateExerciceComponent),
+        canActivate: [WriteGuard],
       },
       {
         path: 'create/entrainement',
         loadComponent: () => import('./pages/mobile-create/mobile-create-entrainement/mobile-create-entrainement.component').then(c => c.MobileCreateEntrainementComponent),
+        canActivate: [WriteGuard],
       },
       {
         path: 'create/echauffement',
         loadComponent: () => import('./pages/mobile-create/mobile-create-echauffement/mobile-create-echauffement.component').then(c => c.MobileCreateEchauffementComponent),
+        canActivate: [WriteGuard],
       },
       {
         path: 'create/situation',
         loadComponent: () => import('./pages/mobile-create/mobile-create-situation/mobile-create-situation.component').then(c => c.MobileCreateSituationComponent),
+        canActivate: [WriteGuard],
       },
       {
         path: 'create/:type',
         loadComponent: () => import('./pages/mobile-create/mobile-create.component').then(c => c.MobileCreateComponent),
+        canActivate: [WriteGuard],
       },
       {
         path: 'edit/:type/:id',
         loadComponent: () => import('./pages/mobile-edit/mobile-edit.component').then(c => c.MobileEditComponent),
+        canActivate: [WriteGuard],
       },
       {
         path: 'edit/exercice/:id',
         loadComponent: () => import('./pages/mobile-create/mobile-create-exercice/mobile-create-exercice.component').then(c => c.MobileCreateExerciceComponent),
+        canActivate: [WriteGuard],
       },
       {
         path: 'edit/entrainement/:id',
         loadComponent: () => import('./pages/mobile-create/mobile-create-entrainement/mobile-create-entrainement.component').then(c => c.MobileCreateEntrainementComponent),
+        canActivate: [WriteGuard],
       },
       {
         path: 'edit/echauffement/:id',
         loadComponent: () => import('./pages/mobile-create/mobile-create-echauffement/mobile-create-echauffement.component').then(c => c.MobileCreateEchauffementComponent),
+        canActivate: [WriteGuard],
       },
       {
         path: 'edit/situation/:id',
         loadComponent: () => import('./pages/mobile-create/mobile-create-situation/mobile-create-situation.component').then(c => c.MobileCreateSituationComponent),
+        canActivate: [WriteGuard],
       },
       {
         path: 'detail/:type/:id',

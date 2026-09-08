@@ -33,9 +33,8 @@ export class AdminShellComponent {
     { label: 'Tableau de bord', route: '/admin/dashboard', icon: 'dashboard' },
     { label: 'Contenus', route: '/admin/content', icon: 'inventory_2' },
     { label: 'Utilisateurs', route: '/admin/users', icon: 'people' },
-    { label: 'Workspaces', route: '/admin/workspaces', icon: 'workspaces' },
+    { label: 'Espaces', route: '/admin/workspaces', icon: 'workspaces' },
     { label: 'Statistiques', route: '/admin/stats', icon: 'bar_chart' },
-    { label: 'Logs', route: '/admin/logs', icon: 'history' },
     { label: 'Rôles & droits', route: '/admin/roles-rights', icon: 'security' },
     { label: 'Paramètres', route: '/admin/settings', icon: 'settings' }
   ];

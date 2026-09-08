@@ -72,7 +72,7 @@
         </div>
         <div class="stat-content">
           <span class="stat-value">{{ stats.workspacesCount }}</span>
-          <span class="stat-label">Workspaces</span>
+          <span class="stat-label">Espaces</span>
         </div>
       </mat-card>
 
@@ -122,7 +122,7 @@
       <div class="section-header">
         <h2>
           <mat-icon>workspaces</mat-icon>
-          Workspaces associés
+          Espaces associés
         </h2>
         <span class="section-count">{{ workspaces.length }}</span>
       </div>
@@ -131,7 +131,7 @@
 
       <div *ngIf="workspaces.length === 0" class="empty-section">
         <mat-icon>workspaces_outline</mat-icon>
-        <p>Aucun workspace associé</p>
+        <p>Aucun espace associé</p>
       </div>
 
       <div *ngIf="workspaces.length > 0" class="workspaces-list">

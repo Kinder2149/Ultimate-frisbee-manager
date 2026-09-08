@@ -16,6 +16,7 @@ import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../core/services/auth.service';
 import { User } from '../../../core/models/user.model';
 import { take } from 'rxjs/operators';
+import { PermissionsService } from '../../../core/services/permissions.service';
 
 interface WorkspaceMemberDto {
   userId: string;
@@ -67,6 +68,7 @@ export class WorkspaceAdminComponent implements OnInit {
   newMemberForm: FormGroup;
 
   constructor(
+    private permissionsService: PermissionsService,
     private http: HttpClient,
     private workspaceService: WorkspaceService,
     private authService: AuthService,
@@ -215,4 +217,12 @@ export class WorkspaceAdminComponent implements OnInit {
       },
     });
   }
+
+  /**
+   * Libelle francais du role, via le service central de permissions.
+   */
+  libelleRole(role?: string | null): string {
+    return this.permissionsService.getRoleLabel((role || null) as any);
+  }
+
 }

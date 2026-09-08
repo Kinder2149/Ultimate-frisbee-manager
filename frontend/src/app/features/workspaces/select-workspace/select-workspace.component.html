@@ -4,10 +4,10 @@
       <mat-icon>group_work</mat-icon>
     </div>
     <div class="page-header__content">
-      <h1 class="page-title">Choisissez votre workspace</h1>
+      <h1 class="page-title">Choisissez votre espace</h1>
       <p class="page-subtitle">
         Sélectionnez la base (club / projet) sur laquelle vous souhaitez travailler. Votre rôle peut varier d'une base à
-        l'autre (MANAGER, MEMBER ou VIEWER).
+        l'autre (gestionnaire, membre ou lecteur).
       </p>
     </div>
   </header>
@@ -40,7 +40,7 @@
           <mat-card-title>{{ ws.name }}</mat-card-title>
           <mat-card-subtitle>
             <span class="role-badge" *ngIf="ws.role as role">
-              {{ role | uppercase }}
+              {{ libelleRole(role) }}
             </span>
             <span class="role-badge" *ngIf="ws.isBase === true">BASE</span>
           </mat-card-subtitle>
@@ -48,12 +48,12 @@
 
         <mat-card-content>
           <p *ngIf="ws.createdAt" class="meta">Créée le {{ ws.createdAt | date: 'mediumDate' }}</p>
-          <p class="hint">Cliquez sur la carte ou utilisez le bouton ci-dessous pour entrer dans ce workspace.</p>
+          <p class="hint">Cliquez sur la carte ou utilisez le bouton ci-dessous pour entrer dans cet espace.</p>
         </mat-card-content>
 
         <mat-card-actions>
           <button mat-raised-button color="primary" (click)="$event.stopPropagation(); selectWorkspace(ws)">
-            Entrer dans ce workspace
+            Entrer dans cet espace
           </button>
         </mat-card-actions>
       </mat-card>

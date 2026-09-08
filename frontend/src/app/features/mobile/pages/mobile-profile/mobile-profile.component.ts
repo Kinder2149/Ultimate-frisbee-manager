@@ -13,6 +13,7 @@ import { MobileNavigationService } from '../../../../core/services/mobile-naviga
 import { AuthService } from '../../../../core/services/auth.service';
 import { WorkspaceService, WorkspaceSummary } from '../../../../core/services/workspace.service';
 import { User } from '../../../../core/models/user.model';
+import { PermissionsService } from '../../../../core/services/permissions.service';
 
 @Component({
   selector: 'app-mobile-profile',
@@ -35,6 +36,7 @@ export class MobileProfileComponent implements OnInit, OnDestroy {
   currentWorkspace: WorkspaceSummary | null = null;
 
   constructor(
+    private permissionsService: PermissionsService,
     private router: Router,
     private mobileNavigationService: MobileNavigationService,
     private authService: AuthService,
@@ -101,29 +103,21 @@ export class MobileProfileComponent implements OnInit, OnDestroy {
     this.router.navigate(['/parametres/profil']);
   }
 
-  onNotifications(): void {
-    // TODO: Implémenter la page de notifications
-    console.log('Notifications');
-  }
 
-  onOfflineMode(): void {
-    // TODO: Implémenter la gestion du mode hors ligne
-    console.log('Mode hors ligne');
-  }
 
-  onSync(): void {
-    // TODO: Implémenter la synchronisation
-    console.log('Synchronisation');
-  }
 
-  onTheme(): void {
-    // TODO: Implémenter le changement de thème
-    console.log('Thème');
-  }
 
   onLogout(): void {
     this.authService.logout().subscribe(() => {
       this.router.navigate(['/login']);
     });
   }
+
+  /**
+   * Libelle francais du role, via le service central de permissions.
+   */
+  libelleRole(role?: string | null): string {
+    return this.permissionsService.getRoleLabel((role || null) as any);
+  }
+
 }

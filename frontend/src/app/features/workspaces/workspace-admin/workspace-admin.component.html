@@ -5,14 +5,14 @@
       <mat-icon>settings</mat-icon>
     </div>
     <div class="page-header__content">
-      <h1 class="page-title">Administration du workspace courant</h1>
+      <h1 class="page-title">Administration de l'espace courant</h1>
       <p class="page-subtitle">
-        Vous gérez ici uniquement ce workspace. Les comptes utilisateurs globaux et la création de nouvelles bases
+        Vous gérez ici uniquement cet espace. Les comptes utilisateurs globaux et la création de nouvelles bases
         restent sous le contrôle de l'administrateur global.
       </p>
       <div class="page-badges" *ngIf="workspace as ws">
-        <span class="badge badge--workspace">Workspace : {{ ws.name }}</span>
-        <span class="badge" *ngIf="ws.role">Rôle local : {{ ws.role.toUpperCase() }}</span>
+        <span class="badge badge--workspace">Espace : {{ ws.name }}</span>
+        <span class="badge" *ngIf="ws.role">Votre rôle : {{ libelleRole(ws.role) }}</span>
       </div>
     </div>
   </header>
@@ -22,17 +22,17 @@
     <div class="workspace-column">
       <mat-card class="workspace-info-card">
         <mat-card-header>
-          <mat-card-title>Informations du workspace</mat-card-title>
+          <mat-card-title>Informations de l'espace</mat-card-title>
           <mat-card-subtitle>
-            Modifiez le nom du workspace courant. Le backend applique ces changements en fonction du
-            workspace sélectionné (header X-Workspace-Id).
+            Modifiez le nom de l'espace courant. Le backend applique ces changements en fonction du
+            espace sélectionné (header X-Espace-Id).
           </mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
           <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()" *ngIf="canManage">
             <div class="form-row">
               <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Nom du workspace</mat-label>
+                <mat-label>Nom de l'espace</mat-label>
                 <input matInput formControlName="name" [disabled]="!canMutate" />
               </mat-form-field>
             </div>
@@ -55,15 +55,15 @@
           <div mat-card-avatar class="manager-info-card__avatar">
             <mat-icon>security</mat-icon>
           </div>
-          <mat-card-title>Vous êtes MANAGER de ce workspace</mat-card-title>
+          <mat-card-title>Vous êtes gestionnaire de cet espace</mat-card-title>
           <mat-card-subtitle>
-            Vous pouvez gérer les membres et leurs rôles locaux pour ce workspace uniquement.
+            Vous pouvez gérer les membres et leurs rôles locaux pour cet espace uniquement.
           </mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
           <p>
-            Les autres workspaces et la création des comptes utilisateurs sont gérés dans la console d'administration
-            globale (rôle ADMIN). Ici, vous restez concentré sur ce workspace précis.
+            Les autres espaces et la création des comptes utilisateurs sont gérés dans la console d'administration
+            globale (rôle ADMIN). Ici, vous restez concentré sur cet espace précis.
           </p>
         </mat-card-content>
       </mat-card>
@@ -73,9 +73,9 @@
     <div class="members-column">
       <mat-card class="workspace-members-card">
         <mat-card-header>
-          <mat-card-title>Membres du workspace</mat-card-title>
+          <mat-card-title>Membres de l'espace</mat-card-title>
           <mat-card-subtitle>
-            Invitez des membres par email et définissez leur rôle local : MANAGER / MEMBER / VIEWER.
+            Invitez des membres par email et définissez leur rôle dans cet espace : gestionnaire, membre ou lecteur.
           </mat-card-subtitle>
         </mat-card-header>
 
@@ -121,11 +121,11 @@
             </ng-container>
 
             <ng-container matColumnDef="role">
-              <th mat-header-cell *matHeaderCellDef>Rôle local</th>
+              <th mat-header-cell *matHeaderCellDef>Rôle dans cet espace</th>
               <td mat-cell *matCellDef="let m">
                 <div class="role-cell">
                   <span class="role-badge" [class.role-badge--manager]="m.role === 'MANAGER'">
-                    {{ m.role }}
+                    {{ libelleRole(m.role) }}
                   </span>
                   <mat-form-field appearance="outline" class="role-select">
                     <mat-label>Modifier le rôle</mat-label>

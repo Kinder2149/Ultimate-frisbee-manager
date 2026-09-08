@@ -22,32 +22,39 @@ import { WorkspaceSwitcherComponent } from './shared/components/workspace-switch
 import { AuthGuard } from './core/guards/auth.guard';
 import { WorkspaceSelectedGuard } from './core/guards/workspace-selected.guard';
 import { MobileGuard } from './core/guards/mobile.guard';
+import { TitleStrategy } from '@angular/router';
+import { PageTitleStrategy } from './core/services/page-title.strategy';
 
 // Définition des routes de l'application
 const routes: Routes = [
   // Routes publiques pour l'authentification
   {
     path: 'forgot-password',
+    title: 'Mot de passe oublié',
     loadComponent: () => import('./features/auth/pages/forgot-password/forgot-password-page.component').then(c => c.ForgotPasswordPageComponent)
   },
   {
     path: 'reset-password',
+    title: 'Réinitialiser le mot de passe',
     loadComponent: () => import('./features/auth/pages/reset-password/reset-password-page.component').then(c => c.ResetPasswordPageComponent)
   },
   {
     path: 'auth/confirm',
+    title: 'Confirmation du compte',
     loadComponent: () => import('./features/auth/pages/confirm-email/confirm-email-page.component').then(c => c.ConfirmEmailPageComponent)
   },
 
   // Route de connexion (publique)
   { 
     path: 'login', 
+    title: 'Connexion',
     loadChildren: () => import('./features/auth/auth.module').then(m => m.AuthModule)
   },
   
   // Sélection de la base de travail (protégée par auth mais sans exigence de workspace déjà choisi)
   {
     path: 'select-workspace',
+    title: 'Choix de l’espace',
     loadComponent: () => import('./features/workspaces/select-workspace/select-workspace.component')
       .then(c => c.SelectWorkspaceComponent),
     canActivate: [AuthGuard]
@@ -56,6 +63,7 @@ const routes: Routes = [
   // Administration du workspace courant (MANAGER)
   {
     path: 'workspace/admin',
+    title: 'Administration de l’espace',
     loadComponent: () => import('./features/workspaces/workspace-admin/workspace-admin.component')
       .then(c => c.WorkspaceAdminComponent),
     canActivate: [AuthGuard, WorkspaceSelectedGuard]
@@ -64,6 +72,7 @@ const routes: Routes = [
   // Route mobile (protégée)
   {
     path: 'mobile',
+    title: 'Accueil',
     loadChildren: () => import('./features/mobile/mobile.routes').then(r => r.MOBILE_ROUTES),
     canActivate: [AuthGuard, WorkspaceSelectedGuard]
   },
@@ -79,6 +88,7 @@ const routes: Routes = [
   // Dashboard accessible via route explicite (protégée)
   { 
     path: 'dashboard', 
+    title: 'Tableau de bord',
     component: DashboardComponent,
     canActivate: [AuthGuard, WorkspaceSelectedGuard, MobileGuard]
   },
@@ -91,39 +101,51 @@ const routes: Routes = [
   },
   {
     path: 'admin',
+    title: 'Administration',
     loadChildren: () => import('./features/admin/admin.module').then(m => m.AdminModule),
     canActivate: [AuthGuard, WorkspaceSelectedGuard, MobileGuard]
   },
   { 
     path: 'parametres', 
+    title: 'Paramètres',
     loadChildren: () => import('./features/settings/settings.module').then(m => m.SettingsModule),
     canActivate: [AuthGuard, WorkspaceSelectedGuard, MobileGuard]
   },
   { 
     path: 'exercices', 
+    title: 'Exercices',
     loadChildren: () => import('./features/exercices/exercices.module').then(m => m.ExercicesModule),
     canActivate: [AuthGuard, WorkspaceSelectedGuard, MobileGuard],
     data: { preload: true } // Précharger le module
   },
   { 
     path: 'entrainements', 
+    title: 'Entraînements',
     loadChildren: () => import('./features/entrainements/entrainements.module').then(m => m.EntrainementsModule),
     canActivate: [AuthGuard, WorkspaceSelectedGuard, MobileGuard]
   },
   { 
     path: 'echauffements', 
+    title: 'Échauffements',
     loadChildren: () => import('./features/echauffements/echauffements.module').then(m => m.EchauffenementsModule),
     canActivate: [AuthGuard, WorkspaceSelectedGuard, MobileGuard]
   },
   { 
     path: 'situations-matchs', 
+    title: 'Situations & matchs',
     loadChildren: () => import('./features/situations-matchs/situations-matchs.module').then(m => m.SituationsMatchsModule),
     canActivate: [AuthGuard, WorkspaceSelectedGuard, MobileGuard]
   },
   // Route de debug export/import supprimée (ancien système)
   
   // Route de fallback
-  { path: '**', redirectTo: '/login' }
+  // Adresse inconnue : afficher une page dediee plutot que rediriger en silence
+  {
+    path: '**',
+    title: 'Page introuvable',
+    loadComponent: () => import('./features/errors/not-found/not-found.component')
+      .then(c => c.NotFoundComponent)
+  }
 ];
 
 @NgModule({
@@ -147,6 +169,7 @@ const routes: Routes = [
     // Tous les modules (ExercicesModule, TagsModule, TrainingsModule) sont chargés en lazy loading
   ],
   providers: [
+    { provide: TitleStrategy, useClass: PageTitleStrategy },
     { provide: LOCALE_ID, useValue: 'fr-FR' },
     // Fournisseur pour le gestionnaire d'erreurs global
     { provide: ErrorHandler, useClass: GlobalErrorHandler }

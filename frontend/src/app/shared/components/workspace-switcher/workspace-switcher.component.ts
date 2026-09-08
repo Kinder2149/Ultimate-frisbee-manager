@@ -9,6 +9,7 @@ import { takeUntil, filter, distinctUntilChanged } from 'rxjs/operators';
 import { WorkspaceService, WorkspaceSummary } from '../../../core/services/workspace.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { environment } from '../../../../environments/environment';
+import { PermissionsService } from '../../../core/services/permissions.service';
 
 @Component({
   selector: 'app-workspace-switcher',
@@ -28,6 +29,7 @@ export class WorkspaceSwitcherComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   constructor(
+    private permissionsService: PermissionsService,
     private workspaceService: WorkspaceService,
     private authService: AuthService,
     private http: HttpClient,
@@ -118,4 +120,12 @@ export class WorkspaceSwitcherComponent implements OnInit, OnDestroy {
     this.isMenuOpen = false;
     this.menuOpenChange.emit(false);
   }
+
+  /**
+   * Libelle francais du role, via le service central de permissions.
+   */
+  libelleRole(role?: string | null): string {
+    return this.permissionsService.getRoleLabel((role || null) as any);
+  }
+
 }

@@ -25,6 +25,11 @@ export class AuthService {
   private authReadySubject = new BehaviorSubject<boolean>(false);
   public authReady$ = this.authReadySubject.asObservable();
 
+  // Erreur bloquante survenue APRES l'identification (chargement du profil ou de l'espace).
+  // Permet a l'ecran de connexion de sortir de son etat d'attente et d'expliquer la panne.
+  private authErrorSubject = new BehaviorSubject<string | null>(null);
+  public authError$ = this.authErrorSubject.asObservable();
+
   private _initDone = false;
   private _isLoggingOut = false;
 
@@ -201,7 +206,8 @@ export class AuthService {
     console.log('[Auth] Connexion réussie:', session.user.email);
     this.isAuthenticatedSubject.next(true);
     this.authReadySubject.next(false);
-    
+    this.authErrorSubject.next(null);
+
     // Chaîner syncUserProfile → ensureWorkspaceSelected
     this.syncUserProfile().pipe(
       switchMap(() => this.ensureWorkspaceSelected()),
@@ -216,16 +222,38 @@ export class AuthService {
       error: (err) => {
         this.authReadySubject.next(false);
         console.error('[Auth] Erreur sync profil après connexion:', err);
-        // Si l'utilisateur n'existe pas en backend, rediriger vers signup
-        if (err.status === 403) {
+
+        // Cas connu : l'utilisateur n'existe pas côté backend -> inscription
+        if (err?.status === 403) {
           console.error('[Auth] Profil utilisateur non trouvé en base');
           this.supabaseService.supabase.auth.signOut();
           this.router.navigate(['/login/signup'], {
             queryParams: { reason: 'profile-not-found' }
           });
+          return;
         }
+
+        // Tous les autres cas : ne jamais laisser l'écran figé sans explication.
+        this.authErrorSubject.next(this.messageErreurProfil(err));
       }
     });
+  }
+
+
+  /**
+   * Traduit une panne de chargement de profil en message comprehensible.
+   */
+  private messageErreurProfil(err: any): string {
+    if (err?.status === 0) {
+      return 'Impossible de contacter le serveur. Vérifiez votre connexion internet, puis réessayez.';
+    }
+    if (err?.status === 401) {
+      return 'Votre session n’a pas pu être validée par le serveur. Reconnectez-vous.';
+    }
+    if (err?.status >= 500) {
+      return 'Le serveur est momentanément indisponible. Réessayez dans quelques instants.';
+    }
+    return 'Votre profil n’a pas pu être chargé. Réessayez, et contactez un responsable si le problème persiste.';
   }
 
   /**
