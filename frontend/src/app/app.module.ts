@@ -15,7 +15,11 @@ import { StartupLoaderComponent } from './core/components/startup-loader/startup
 // Core module qui regroupe les services et composants partagés
 import { CoreModule } from './core/core.module';
 
-import { MaterialModule } from './core/material/material.module';
+// Seuls les modules Material reellement utilises au demarrage sont charges ici.
+// Les ecrans charges a la demande passent par MaterialModule via SharedModule.
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { WorkspaceSwitcherComponent } from './shared/components/workspace-switcher/workspace-switcher.component';
 
 // Import du guard d'authentification
@@ -162,9 +166,11 @@ const routes: Routes = [
     ReactiveFormsModule,
     FormsModule,  // Ajouté pour les formulaires template-driven
     CommonModule, // Ajout de CommonModule pour *ngIf
-    MaterialModule,
+    MatIconModule,
+    MatProgressBarModule,
+    MatTooltipModule,
     RouterModule.forRoot(routes),
-    CoreModule, // Module core qui inclut MaterialModule et HttpClientModule
+    CoreModule, // Services, intercepteurs et HttpClientModule
     WorkspaceSwitcherComponent
     // Tous les modules (ExercicesModule, TagsModule, TrainingsModule) sont chargés en lazy loading
   ],

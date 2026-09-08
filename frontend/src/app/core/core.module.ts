@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 
 // Import du module Material
-import { MaterialModule } from './material/material.module';
 
 // Import des services
 import { ExerciceService } from './services/exercice.service';
