@@ -193,6 +193,11 @@ Tout autre fichier .md va dans `_archives/`.
 - Audit complet du workspace SPORT : 123 exercices / 56 séances / 49 phases / 42 termes de lexique.
 - Dédoublonnage de la banque d'exercices : 49 paires fusionnées (123→73 fiches), 0 doublon de nom restant, 0 exercice sans type, 10 lignes de vérification traitées.
 
+**Côté UFM (prod, Supabase) — vérifié le 2026-09-09, ne pas se fier à un statut non revérifié :**
+- Workspace **"Ulti Coach" créé en prod** (`id e133fed1-ab18-4e1f-8e10-eb9124645fa6`, 2026-09-08 19:20).
+- **Le workspace est vide** : 0 Tag, 0 Exercice, 0 Entrainement, 0 Echauffement, 0 SituationMatch (vérifié par requête SQL directe). Aucun import n'a encore abouti côté UFM, y compris le lexique — malgré une annonce en ce sens dans une session précédente. Rien à faire confiance là-dessus sans revérifier en base.
+- Aucun commit git lié à un script d'import Notion→UFM n'existe dans ce dépôt (toutes branches confondues).
+
 **Décisions déjà arbitrées par le pilote (à respecter dans le script de migration) :**
 - N'importer que les séances avec « Phase visée » renseignée (39/56) — les 17 « séances journal » sans phase restent hors périmètre pour cette première vague.
 - Phases/Thèmes Notion → aplatis en `Tag` UFM (`category="Phase"` / `category="Thème"`), pas de nouveau modèle Prisma.
@@ -205,7 +210,7 @@ Tout autre fichier .md va dans `_archives/`.
 4. 39 séances curriculum encore marquées « À valider Kinder » — relecture pédagogique requise avant import comme `Entrainement` UFM.
 5. 17 séances "journal" (dates réelles, bilans, plans de coaching) — décider : exclure de cette vague, ou historiser à part.
 
-**Prochaine étape une fois 1-5 tranchés :** écrire le script d'extraction Notion → mapping UFM → import Prisma (scopé au workspace UFM `Ulti_coach`).
+**Prochaine étape une fois 1-5 tranchés :** premier import réel dans UFM (le workspace `Ulti Coach` est créé mais vide — aucune donnée n'y a encore été migrée, lexique compris). Écrire le script d'extraction Notion → mapping UFM → import Prisma, scopé à ce workspace. Une mission à la fois (ex. Lexique d'abord, ou Exercices — à cadrer avec le pilote), testée manuellement avant la suivante.
 
 ---
 
