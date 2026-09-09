@@ -1,0 +1,7 @@
+<mat-form-field appearance="fill" class="full-width">
+  <mat-label *ngIf="label">{{ label }}</mat-label>
+
+  <mat-select [formControl]="ctrl" multiple [compareWith]="compareTermes" [disabled]="disabled">
+    <mat-option *ngFor="let terme of termes" [value]="terme">{{ terme.terme }}</mat-option>
+  </mat-select>
+</mat-form-field>

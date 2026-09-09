@@ -75,6 +75,17 @@
       </div>
     </div>
     
+    <!-- Parent (hiérarchie Thème -> Phase -> Sous-phase) - uniquement pour "phase_entrainement" -->
+    <div class="form-group" *ngIf="isPhaseCategory">
+      <label for="tag-parent">Rattaché à (thème ou phase parente) :</label>
+      <select id="tag-parent" formControlName="parentId" class="form-select">
+        <option [value]="null">— Aucun (transverse) —</option>
+        <option *ngFor="let parent of parentCandidates" [value]="parent.id">
+          {{ getCategoryDisplayName(parent.category) }} · {{ parent.label }}
+        </option>
+      </select>
+    </div>
+
     <!-- Actions -->
     <div class="form-actions">
       <button type="submit" [disabled]="tagForm.invalid">

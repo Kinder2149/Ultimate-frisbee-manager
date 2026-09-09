@@ -16,12 +16,62 @@ import { NIVEAU_LABELS } from '../../constants/tag.constants';
 export class TagListComponent {
   @Input() tags: Tag[] = [];
   @Input() category: string = '';
+  /** Pour la catégorie 'phase_entrainement' : le libellé du thème parent quand il n'est pas dans `tags` (relation externe) */
+  @Input() themeLabelsById: { [id: string]: string } = {};
   @Output() editTag = new EventEmitter<Tag>();
   @Output() deleteTag = new EventEmitter<Tag>();
-  
+
   // Référence aux énums pour le template
     niveauLabels = NIVEAU_LABELS;
-  
+
+  /**
+   * Pour 'phase_entrainement' uniquement : ordonne les tags en arbre (parents avant enfants)
+   * et calcule la profondeur de chacun pour l'indentation. Les autres catégories restent en liste plate.
+   */
+  get orderedTagsWithDepth(): { tag: Tag; depth: number }[] {
+    if (this.category !== 'phase_entrainement') {
+      return (this.tags || []).map(tag => ({ tag, depth: 0 }));
+    }
+
+    const byId = new Map((this.tags || []).map(t => [t.id, t]));
+    const childrenOf = new Map<string, Tag[]>();
+    const roots: Tag[] = [];
+
+    for (const tag of this.tags || []) {
+      const parentInList = tag.parentId && byId.has(tag.parentId);
+      if (parentInList) {
+        const list = childrenOf.get(tag.parentId!) || [];
+        list.push(tag);
+        childrenOf.set(tag.parentId!, list);
+      } else {
+        // Pas de parent, ou parent hors liste (un thème, catégorie différente)
+        roots.push(tag);
+      }
+    }
+
+    const sortByLabel = (a: Tag, b: Tag) => a.label.localeCompare(b.label);
+    roots.sort(sortByLabel);
+    for (const list of childrenOf.values()) list.sort(sortByLabel);
+
+    const result: { tag: Tag; depth: number }[] = [];
+    const walk = (tag: Tag, depth: number) => {
+      result.push({ tag, depth });
+      const children = childrenOf.get(tag.id!) || [];
+      children.forEach(child => walk(child, depth + 1));
+    };
+    roots.forEach(root => walk(root, 0));
+
+    return result;
+  }
+
+  /**
+   * Libellé du thème parent d'une phase racine (quand son parent n'est pas dans `tags`)
+   */
+  getExternalParentLabel(tag: Tag): string | null {
+    if (!tag.parentId) return null;
+    return this.themeLabelsById[tag.parentId] || null;
+  }
+
   /**
    * Renvoie le texte à afficher pour un niveau
    * @param level Le niveau (1-5)

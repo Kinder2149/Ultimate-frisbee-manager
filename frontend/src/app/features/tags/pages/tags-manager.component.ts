@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TagService } from '../../../core/services/tag.service';
 import { Tag, TagCategory } from '../../../core/models/tag.model';
-import { TAG_CATEGORIES } from '@ufm/shared/constants/tag-categories';
+import { TAG_CATEGORIES, TAG_CATEGORY_LABELS } from '@ufm/shared/constants/tag-categories';
 import { TagFormComponent } from '../components/tag-form/tag-form.component';
 import { TagListComponent } from '../components/tag-list/tag-list.component';
 import { RouterModule } from '@angular/router';
@@ -25,7 +25,7 @@ export class TagsManagerComponent implements OnInit {
   // Tolérance: si l'export partagé n'est pas résolu au runtime, utiliser un fallback
   tagCategories: TagCategory[] = Array.isArray((TAG_CATEGORIES as any))
     ? ([...TAG_CATEGORIES] as unknown as TagCategory[])
-    : ['objectif', 'travail_specifique', 'niveau', 'temps', 'format', 'theme_entrainement'] as TagCategory[];
+    : ['objectif', 'travail_specifique', 'niveau', 'temps', 'format', 'theme_entrainement', 'phase_entrainement', 'public_seance'] as TagCategory[];
 
   successMessage: string = '';
   errorMessage: string = '';
@@ -102,19 +102,32 @@ export class TagsManagerComponent implements OnInit {
   }
 
   getCategoryDisplayName(category: string): string {
-    const displayNames: { [key: string]: string } = {
-      'objectif': 'Objectifs',
-      'travail_specifique': 'Travail Spécifique',
-      'niveau': 'Niveaux',
-      'temps': 'Temps',
-      'format': 'Format',
-      'theme_entrainement': 'Thèmes Entraînements'
-    };
-    return displayNames[category] || category;
+    return (TAG_CATEGORY_LABELS as { [key: string]: string })[category] || category;
   }
 
   // Helper pour obtenir les clés de l'objet groupedTags dans le template
   getGroupedTagKeys(): string[] {
     return Object.keys(this.groupedTags);
+  }
+
+  /**
+   * Tous les tags candidats comme parent dans la hiérarchie Thème -> Phase -> Sous-phase,
+   * transmis au formulaire pour peupler le sélecteur de parent.
+   */
+  get hierarchyTags(): Tag[] {
+    return [
+      ...(this.groupedTags['theme_entrainement'] || []),
+      ...(this.groupedTags['phase_entrainement'] || [])
+    ];
+  }
+
+  /**
+   * Libellés des thèmes par ID, pour afficher "(dans « Le Cut »)" sous une phase racine.
+   */
+  get themeLabelsById(): { [id: string]: string } {
+    return (this.groupedTags['theme_entrainement'] || []).reduce((acc: { [id: string]: string }, t) => {
+      if (t.id) acc[t.id] = t.label;
+      return acc;
+    }, {});
   }
 }

@@ -56,7 +56,16 @@ async function getTagById(id, workspaceId) {
  * @throws {Error} Si le tag existe déjà (code P2002)
  */
 async function createTag(data, workspaceId) {
-  const { label, category, color, level } = data;
+  const { label, category, color, level, parentId } = data;
+
+  if (parentId) {
+    const parent = await prisma.tag.findFirst({ where: { id: parentId, workspaceId } });
+    if (!parent) {
+      const error = new Error('Le tag parent est introuvable dans ce workspace.');
+      error.statusCode = 400;
+      throw error;
+    }
+  }
 
   try {
     const nouveauTag = await prisma.tag.create({
@@ -65,6 +74,7 @@ async function createTag(data, workspaceId) {
         category,
         color: color || null,
         level: level !== undefined ? level : null,
+        parentId: parentId || null,
         workspaceId
       }
     });
@@ -89,7 +99,7 @@ async function createTag(data, workspaceId) {
  * @throws {Error} Si le tag n'existe pas (404) ou si le libellé existe déjà (409)
  */
 async function updateTag(id, data, workspaceId) {
-  const { label, color, level } = data;
+  const { label, color, level, parentId } = data;
 
   // Vérifier que le tag existe
   const tag = await prisma.tag.findFirst({ where: { id, workspaceId } });
@@ -104,6 +114,22 @@ async function updateTag(id, data, workspaceId) {
   const updateData = { label, color };
   if (tag.category === 'niveau' && level !== undefined) {
     updateData.level = level;
+  }
+  if (tag.category === 'phase_entrainement' && parentId !== undefined) {
+    if (parentId === id) {
+      const error = new Error('Un tag ne peut pas être son propre parent.');
+      error.statusCode = 400;
+      throw error;
+    }
+    if (parentId) {
+      const parent = await prisma.tag.findFirst({ where: { id: parentId, workspaceId } });
+      if (!parent) {
+        const error = new Error('Le tag parent est introuvable dans ce workspace.');
+        error.statusCode = 400;
+        throw error;
+      }
+    }
+    updateData.parentId = parentId || null;
   }
 
   try {

@@ -19,6 +19,9 @@ const tagSchema = z.object({
   level: z.number().int().min(1).max(5, {
     message: 'Le niveau doit être un entier entre 1 et 5.'
   }).optional().nullable(),
+
+  // Tag parent (hiérarchie Thème -> Phase -> Sous-phase), uniquement pour 'phase_entrainement'
+  parentId: z.string().uuid({ message: "L'ID du tag parent est invalide." }).optional().nullable(),
 });
 
 // Schéma pour la création d'un tag, avec une logique de validation conditionnelle
@@ -31,6 +34,15 @@ const createTagSchema = tagSchema.refine(data => {
 }, {
   message: 'Le champ "level" ne peut être défini que pour la catégorie "niveau".',
   path: ['level'], // L'erreur sera associée au champ 'level'
+}).refine(data => {
+  // `parentId` ne doit être présent QUE si `category` est 'phase_entrainement'
+  if (data.category !== 'phase_entrainement' && data.parentId !== null && data.parentId !== undefined) {
+    return false;
+  }
+  return true;
+}, {
+  message: 'Le champ "parentId" ne peut être défini que pour la catégorie "phase_entrainement".',
+  path: ['parentId'],
 });
 
 // Schéma pour la mise à jour (la catégorie ne peut pas être modifiée)
@@ -43,6 +55,7 @@ const updateTagSchema = z.object({
   level: z.number().int().min(1).max(5, {
     message: 'Le niveau doit être un entier entre 1 et 5.'
   }).optional().nullable(),
+  parentId: z.string().uuid({ message: "L'ID du tag parent est invalide." }).optional().nullable(),
 });
 
 module.exports = {

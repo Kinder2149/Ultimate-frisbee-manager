@@ -9,24 +9,27 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { EntrainementService } from '../../../../core/services/entrainement.service';
 import { ExerciceService } from '../../../../core/services/exercice.service';
 import { TagService } from '../../../../core/services/tag.service';
+import { LexiqueService } from '../../../../core/services/lexique.service';
 import { Entrainement, EntrainementExercice } from '../../../../core/models/entrainement.model';
 import { Echauffement, BlocEchauffement } from '../../../../core/models/echauffement.model';
 import { SituationMatch } from '../../../../core/models/situationmatch.model';
 import { Exercice } from '../../../../core/models/exercice.model';
 import { Tag } from '../../../../core/models/tag.model';
+import { Lexique } from '../../../../core/models/lexique.model';
 import { ExerciceSelectorComponent } from '../../../../shared/components/exercice-selector/exercice-selector.component';
 import { ExerciceFormModalComponent } from '../../../../shared/components/exercice-form-modal/exercice-form-modal.component';
 import { EchauffementModalComponent } from '../../../../shared/components/echauffement-modal/echauffement-modal.component';
 import { SituationMatchModalComponent } from '../../../../shared/components/situationmatch-modal/situationmatch-modal.component';
 import { ImagePickerFieldComponent } from '../../../../shared/components/form-fields/image-picker-field/image-picker-field.component';
 import { TagSelectMultiComponent } from '../../../../shared/components/form-fields/tag-select-multi/tag-select-multi.component';
+import { LexiqueSelectMultiComponent } from '../../../../shared/components/form-fields/lexique-select-multi/lexique-select-multi.component';
 
 @Component({
   selector: 'app-entrainement-form',
   templateUrl: './entrainement-form.component.html',
   styleUrls: ['./entrainement-form.component.css'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ExerciceSelectorComponent, ExerciceFormModalComponent, ImagePickerFieldComponent, TagSelectMultiComponent]
+  imports: [CommonModule, ReactiveFormsModule, ExerciceSelectorComponent, ExerciceFormModalComponent, ImagePickerFieldComponent, TagSelectMultiComponent, LexiqueSelectMultiComponent]
 })
 export class EntrainementFormComponent implements OnInit {
   entrainementForm!: FormGroup;
@@ -45,6 +48,9 @@ export class EntrainementFormComponent implements OnInit {
   // Gestion des tags thème
   availableThemeTags: Tag[] = [];
 
+  // Lexique du jour
+  availableLexique: Lexique[] = [];
+
   // Gestion des nouvelles relations
   selectedEchauffement: Echauffement | null = null;
   selectedSituationMatch: SituationMatch | null = null;
@@ -55,6 +61,7 @@ export class EntrainementFormComponent implements OnInit {
     private entrainementService: EntrainementService,
     private exerciceService: ExerciceService,
     private tagService: TagService,
+    private lexiqueService: LexiqueService,
     private router: Router,
     private route: ActivatedRoute,
     private dialog: MatDialog,
@@ -67,6 +74,7 @@ export class EntrainementFormComponent implements OnInit {
     this.checkEditMode();
     this.loadAvailableExercices();
     this.loadThemeTags();
+    this.loadLexique();
   }
 
   /**
@@ -76,11 +84,16 @@ export class EntrainementFormComponent implements OnInit {
     this.entrainementForm = this.fb.group({
       titre: ['', [Validators.required, Validators.minLength(3)]],
       date: [''],
+      // Position dans une progression Thème x Niveau, utile quand la date est absente/peu fiable
+      rang: [null],
       exercices: this.fb.array([]),
       imageUrl: [''],
 
       // Tags thème (standardisé)
-      themeTags: [[]]
+      themeTags: [[]],
+
+      // Lexique du jour (vocabulaire introduit pendant cette séance)
+      lexiqueDuJour: [[]]
     });
   }
 
@@ -145,6 +158,7 @@ export class EntrainementFormComponent implements OnInit {
     this.entrainementForm.patchValue({
       titre: entrainement.titre,
       date: entrainement.date ? new Date(entrainement.date).toISOString().split('T')[0] : '',
+      rang: entrainement.rang ?? null,
       imageUrl: entrainement.imageUrl || ''
     });
 
@@ -166,7 +180,14 @@ export class EntrainementFormComponent implements OnInit {
         themeTags: entrainement.tags
       });
     }
-    
+
+    // Lexique du jour: patcher la sélection si déjà fournie
+    if (entrainement.lexique && entrainement.lexique.length > 0) {
+      this.entrainementForm.patchValue({
+        lexiqueDuJour: entrainement.lexique
+      });
+    }
+
     // Charger les exercices de l'entraînement
     if (entrainement.exercices && entrainement.exercices.length > 0) {
       const exercicesFormArray = this.exercicesFormArray;
@@ -191,6 +212,9 @@ export class EntrainementFormComponent implements OnInit {
       fd.append('titre', formValue.titre);
       if (formValue.date) {
         fd.append('date', new Date(formValue.date).toISOString());
+      }
+      if (formValue.rang !== null && formValue.rang !== undefined && formValue.rang !== '') {
+        fd.append('rang', String(formValue.rang));
       }
 
       // Exercices: sérialiser uniquement les champs pertinents, en normalisant les types attendus par le backend
@@ -230,6 +254,11 @@ export class EntrainementFormComponent implements OnInit {
       const themeTags = (formValue.themeTags || []) as Tag[];
       const tagIds = themeTags.map(tag => tag.id).filter((id): id is string => !!id);
       fd.append('tagIds', JSON.stringify(tagIds));
+
+      // Lexique du jour (ids)
+      const lexiqueDuJour = (formValue.lexiqueDuJour || []) as Lexique[];
+      const lexiqueIds = lexiqueDuJour.map(l => l.id).filter((id): id is string => !!id);
+      fd.append('lexiqueIds', JSON.stringify(lexiqueIds));
 
       // Gestion suppression image (édition uniquement): forcer imageUrl vide si supprimée
       if (!this.selectedImageFile && this.isEditMode && !this.imagePreview) {
@@ -513,6 +542,20 @@ export class EntrainementFormComponent implements OnInit {
       },
       error: (err: any) => {
         console.error('Erreur lors du chargement des tags thème entraînement:', err);
+      }
+    });
+  }
+
+  /**
+   * Charge les termes de lexique disponibles pour le sélecteur "Lexique du jour"
+   */
+  private loadLexique(): void {
+    this.lexiqueService.getAll().subscribe({
+      next: (termes: Lexique[]) => {
+        this.availableLexique = termes;
+      },
+      error: (err: any) => {
+        console.error('Erreur lors du chargement du lexique:', err);
       }
     });
   }

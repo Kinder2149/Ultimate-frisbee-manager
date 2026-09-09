@@ -3,7 +3,8 @@ const {
   validateTagsInWorkspace,
   validateExerciceInWorkspace,
   validateSituationMatchInWorkspace,
-  validateEchauffementInWorkspace
+  validateEchauffementInWorkspace,
+  validateLexiqueInWorkspace
 } = require('../../utils/workspace-validation');
 
 /**
@@ -36,6 +37,7 @@ async function getAllEntrainements(workspaceId, pagination = {}) {
     include: {
       exercices: { orderBy: { ordre: 'asc' }, include: { exercice: { include: { tags: true } } } },
       tags: true,
+      lexique: true,
       echauffement: { include: { blocs: { orderBy: { ordre: 'asc' } } } },
       situationMatch: { include: { tags: true } }
     },
@@ -64,6 +66,7 @@ async function getEntrainementById(id, workspaceId) {
     include: {
       exercices: { orderBy: { ordre: 'asc' }, include: { exercice: { include: { tags: true } } } },
       tags: true,
+      lexique: true,
       echauffement: { include: { blocs: { orderBy: { ordre: 'asc' } } } },
       situationMatch: { include: { tags: true } }
     }
@@ -80,7 +83,7 @@ async function getEntrainementById(id, workspaceId) {
  * Créer un nouvel entraînement
  */
 async function createEntrainement(data, workspaceId, file = null) {
-  const { titre, date, exercices, echauffementId, situationMatchId, tagIds, imageUrl } = data;
+  const { titre, date, exercices, echauffementId, situationMatchId, tagIds, imageUrl, lexiqueIds, rang } = data;
 
   if (process.env.NODE_ENV !== 'production') {
     console.log('[createEntrainement] payload reçu', {
@@ -101,6 +104,18 @@ async function createEntrainement(data, workspaceId, file = null) {
       error.statusCode = 400;
       error.code = 'INVALID_TAGS';
       error.invalidIds = tagValidation.invalidIds;
+      throw error;
+    }
+  }
+
+  // SÉCURITÉ: Valider le lexique du jour
+  if (lexiqueIds && lexiqueIds.length > 0) {
+    const lexiqueValidation = await validateLexiqueInWorkspace(lexiqueIds, workspaceId);
+    if (!lexiqueValidation.valid) {
+      const error = new Error('Certains termes de lexique n\'appartiennent pas à ce workspace');
+      error.statusCode = 400;
+      error.code = 'INVALID_LEXIQUE';
+      error.invalidIds = lexiqueValidation.invalidIds;
       throw error;
     }
   }
@@ -158,11 +173,13 @@ async function createEntrainement(data, workspaceId, file = null) {
     data: {
       titre,
       date: finalDate,
+      rang: rang || null,
       imageUrl: file ? file.cloudinaryUrl : (imageUrl || null),
       echauffementId: echauffementId || null,
       situationMatchId: situationMatchId || null,
       workspaceId,
       tags: { connect: (tagIds || []).map(id => ({ id })) },
+      lexique: { connect: (lexiqueIds || []).map(id => ({ id })) },
       exercices: {
         create: (Array.isArray(exercices) ? exercices : [])
           .filter((ex) => ex && typeof ex.exerciceId === 'string' && ex.exerciceId.trim().length > 0)
@@ -174,7 +191,7 @@ async function createEntrainement(data, workspaceId, file = null) {
           }))
       }
     },
-    include: { exercices: { include: { exercice: true } }, tags: true, echauffement: true, situationMatch: true }
+    include: { exercices: { include: { exercice: true } }, tags: true, lexique: true, echauffement: true, situationMatch: true }
   });
 
   return nouvelEntrainement;
@@ -184,7 +201,7 @@ async function createEntrainement(data, workspaceId, file = null) {
  * Mettre à jour un entraînement
  */
 async function updateEntrainement(id, data, workspaceId, file = null) {
-  const { titre, date, exercices, echauffementId, situationMatchId, tagIds, imageUrl } = data;
+  const { titre, date, exercices, echauffementId, situationMatchId, tagIds, imageUrl, lexiqueIds, rang } = data;
 
   // SÉCURITÉ: Valider les tags
   if (tagIds && tagIds.length > 0) {
@@ -194,6 +211,18 @@ async function updateEntrainement(id, data, workspaceId, file = null) {
       error.statusCode = 400;
       error.code = 'INVALID_TAGS';
       error.invalidIds = tagValidation.invalidIds;
+      throw error;
+    }
+  }
+
+  // SÉCURITÉ: Valider le lexique du jour
+  if (lexiqueIds && lexiqueIds.length > 0) {
+    const lexiqueValidation = await validateLexiqueInWorkspace(lexiqueIds, workspaceId);
+    if (!lexiqueValidation.valid) {
+      const error = new Error('Certains termes de lexique n\'appartiennent pas à ce workspace');
+      error.statusCode = 400;
+      error.code = 'INVALID_LEXIQUE';
+      error.invalidIds = lexiqueValidation.invalidIds;
       throw error;
     }
   }
@@ -246,6 +275,7 @@ async function updateEntrainement(id, data, workspaceId, file = null) {
       data: {
         titre,
         date: date ? new Date(date) : undefined,
+        rang: rang !== undefined ? (rang || null) : undefined,
         imageUrl: file
           ? file.cloudinaryUrl
           : (imageUrl !== undefined
@@ -254,6 +284,7 @@ async function updateEntrainement(id, data, workspaceId, file = null) {
         echauffementId: echauffementId,
         situationMatchId: situationMatchId,
         tags: { set: (tagIds || []).map(tagId => ({ id: tagId })) },
+        lexique: { set: (lexiqueIds || []).map(lexiqueId => ({ id: lexiqueId })) },
         exercices: {
           create: (exercices || []).map(exo => ({
             ordre: exo.ordre,
@@ -268,7 +299,7 @@ async function updateEntrainement(id, data, workspaceId, file = null) {
 
   const entrainementMisAJour = await prisma.entrainement.findFirst({
     where: { id, workspaceId },
-    include: { exercices: { include: { exercice: true } }, tags: true, echauffement: true, situationMatch: true }
+    include: { exercices: { include: { exercice: true } }, tags: true, lexique: true, echauffement: true, situationMatch: true }
   });
 
   return entrainementMisAJour;
@@ -295,7 +326,7 @@ async function deleteEntrainement(id, workspaceId) {
 async function duplicateEntrainement(id, workspaceId) {
   const original = await prisma.entrainement.findFirst({
     where: { id, workspaceId },
-    include: { exercices: true, tags: true }
+    include: { exercices: true, tags: true, lexique: true }
   });
 
   if (!original) {
@@ -308,11 +339,13 @@ async function duplicateEntrainement(id, workspaceId) {
     data: {
       titre: `${original.titre} (Copie)`,
       date: original.date,
+      rang: original.rang,
       imageUrl: original.imageUrl,
       echauffementId: original.echauffementId,
       situationMatchId: original.situationMatchId,
       workspaceId,
       tags: { connect: original.tags.map(t => ({ id: t.id })) },
+      lexique: { connect: original.lexique.map(l => ({ id: l.id })) },
       exercices: {
         create: original.exercices.map(ex => ({
           exerciceId: ex.exerciceId,
@@ -322,7 +355,7 @@ async function duplicateEntrainement(id, workspaceId) {
         }))
       }
     },
-    include: { exercices: { include: { exercice: true } }, tags: true, echauffement: true, situationMatch: true }
+    include: { exercices: { include: { exercice: true } }, tags: true, lexique: true, echauffement: true, situationMatch: true }
   });
 
   return entrainementDuplique;

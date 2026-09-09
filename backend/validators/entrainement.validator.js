@@ -29,6 +29,11 @@ const createEntrainementSchema = z.object({
 
   tagIds: z.array(z.string().uuid({ message: "L'un des IDs de tag est invalide." })).optional().default([]),
   exercices: z.array(exerciceInEntrainementSchema).optional().default([]),
+
+  // Lexique du jour : termes de vocabulaire introduits pendant cette séance
+  lexiqueIds: z.array(z.string().uuid({ message: "L'un des IDs de lexique est invalide." })).optional().default([]),
+  // Position dans une progression Thème x Niveau, utilisée quand la date est absente ou peu fiable
+  rang: z.coerce.number().int().positive().optional().nullable(),
 });
 
 // Schéma pour la mise à jour (tous les champs sont optionnels)

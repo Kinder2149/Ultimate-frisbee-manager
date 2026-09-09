@@ -39,10 +39,21 @@
 
         <div class="form-group">
           <label for="date">Date (optionnelle)</label>
-          <input 
-            type="date" 
-            id="date" 
+          <input
+            type="date"
+            id="date"
             formControlName="date">
+        </div>
+
+        <div class="form-group">
+          <label for="rang">Rang dans la progression (optionnel)</label>
+          <input
+            type="number"
+            id="rang"
+            min="1"
+            formControlName="rang"
+            placeholder="ex: 3">
+          <small class="hint">Utilisé pour trier la séance quand la date est absente ou peu fiable (ex: séance n°3 d'un thème).</small>
         </div>
       </div>
 
@@ -75,6 +86,26 @@
 
       <div *ngIf="availableThemeTags.length === 0" class="no-tags" style="margin-top:12px;">
         <p>Aucun tag thème entraînement disponible. <a routerLink="/tags">Créer des tags thème entraînement</a></p>
+      </div>
+    </div>
+
+    <!-- Section Lexique du jour -->
+    <div class="section section--lexique">
+      <div class="section-header">
+        <h2><i class="material-icons">translate</i>Lexique du jour (optionnel)</h2>
+        <div class="section-actions">
+          <a routerLink="/lexique" class="link-action">Voir le lexique</a>
+        </div>
+      </div>
+
+      <app-lexique-select-multi
+        formControlName="lexiqueDuJour"
+        [label]="'Termes introduits pendant cette séance'"
+        [termes]="availableLexique"
+      ></app-lexique-select-multi>
+
+      <div *ngIf="availableLexique.length === 0" class="no-tags" style="margin-top:12px;">
+        <p>Aucun terme de lexique disponible.</p>
       </div>
     </div>
 

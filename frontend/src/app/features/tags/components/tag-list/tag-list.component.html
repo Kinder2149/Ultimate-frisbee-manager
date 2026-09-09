@@ -4,22 +4,31 @@
   </div>
   
   <ul *ngIf="tags && tags.length > 0">
-    <li *ngFor="let tag of tags" class="tag-item" [ngStyle]="getTagStyle(tag)">
+    <li *ngFor="let entry of orderedTagsWithDepth" class="tag-item" [ngStyle]="getTagStyle(entry.tag)" [style.marginLeft.px]="entry.depth * 24">
       <div class="tag-content">
-        <span class="tag-label">{{ tag.label }}</span>
-        
+        <span class="tag-tree-marker" *ngIf="category === 'phase_entrainement' && entry.depth > 0">↳</span>
+        <span class="tag-label">{{ entry.tag.label }}</span>
+
+        <!-- Afficher le thème parent externe pour une phase racine -->
+        <span class="tag-parent-hint" *ngIf="category === 'phase_entrainement' && entry.depth === 0 && getExternalParentLabel(entry.tag) as parentLabel">
+          (dans « {{ parentLabel }} »)
+        </span>
+        <span class="tag-parent-hint" *ngIf="category === 'phase_entrainement' && entry.depth === 0 && !getExternalParentLabel(entry.tag)">
+          (transverse)
+        </span>
+
         <!-- Afficher les étoiles pour les tags de niveau -->
-                <span class="tag-stars" *ngIf="tag.category === 'niveau' && tag.level">
+                <span class="tag-stars" *ngIf="entry.tag.category === 'niveau' && entry.tag.level">
           <span class="star" *ngFor="let i of [1, 2, 3, 4, 5]">
-            {{ i <= tag.level! ? '★' : '☆' }}
+            {{ i <= entry.tag.level! ? '★' : '☆' }}
           </span>
-          <span class="niveau-label">({{ getNiveauLabel(tag.level) }})</span>
+          <span class="niveau-label">({{ getNiveauLabel(entry.tag.level) }})</span>
         </span>
       </div>
-      
+
       <div class="tag-actions">
-        <button class="edit-btn" (click)="editTag.emit(tag)" title="Modifier">✏️</button>
-        <button class="delete-btn" (click)="deleteTag.emit(tag)" title="Supprimer">🗑️</button>
+        <button class="edit-btn" (click)="editTag.emit(entry.tag)" title="Modifier">✏️</button>
+        <button class="delete-btn" (click)="deleteTag.emit(entry.tag)" title="Supprimer">🗑️</button>
       </div>
     </li>
   </ul>

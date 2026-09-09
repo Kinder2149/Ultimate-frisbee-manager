@@ -9,7 +9,9 @@ export const TAG_CATEGORIES = [
   'niveau',
   'temps',
   'format',
-  'theme_entrainement'
+  'theme_entrainement',
+  'phase_entrainement',
+  'public_seance'
 ] as const;
 
 export type TagCategory = typeof TAG_CATEGORIES[number];
@@ -23,7 +25,9 @@ export const TAG_CATEGORY_LABELS: { [key in TagCategory]: string } = {
   'niveau': 'Niveaux',
   'temps': 'Temps moyen',
   'format': 'Format',
-  'theme_entrainement': 'Thèmes Entraînements'
+  'theme_entrainement': 'Thèmes Entraînements',
+  'phase_entrainement': 'Phases',
+  'public_seance': 'Public de la séance'
 };
 
 /**
@@ -35,7 +39,9 @@ export const DEFAULT_TAG_COLORS: { [key in TagCategory]?: string } = {
   'niveau': '#9C27B0',          // Violet
   'temps': '#607D8B',           // Bleu-gris
   'format': '#795548',          // Marron
-  'theme_entrainement': '#FF5722'  // Orange
+  'theme_entrainement': '#FF5722',  // Orange
+  'phase_entrainement': '#FF9800',  // Orange clair (sous Thème)
+  'public_seance': '#009688'    // Teal (distinct de "niveau")
 };
 
 /**

@@ -21,6 +21,10 @@ export interface Tag {
   color?: string;
   /** Niveau de difficulté (1-5) - uniquement pour les tags de catégorie 'niveau' */
   level?: number | null;
+  /** Tag parent (hiérarchie Thème -> Phase -> Sous-phase) - uniquement pour 'phase_entrainement' */
+  parentId?: string | null;
+  /** Sous-tags directs, présents uniquement quand l'API les inclut explicitement */
+  children?: Tag[];
   /** Date de création du tag */
   createdAt?: Date;
 }

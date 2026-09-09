@@ -17,7 +17,7 @@
 | Statut | En production |
 | Utilisateurs actuels | ~10 personnes actives |
 | URL production | https://ultimate-frisbee-manager.vercel.app |
-| Dernière mise à jour de ce fichier | 2026-09-08 |
+| Dernière mise à jour de ce fichier | 2026-09-09 |
 
 ---
 
@@ -145,6 +145,7 @@ Ultimate-frisbee-manager/
 | (depuis origine) | WorkspaceGuard obligatoire sur toutes les routes de données | Vérifié dans `routes/index.js` |
 | 2026-04-10 | Tags simples uniquement (module `tags` dans parametres) | ✅ EXÉCUTÉE le 2026-09-06 : module `tags-advanced` (composants, route, service) supprimé du code. |
 | 2026-04-14 | graphify initialisé | Réduction tokens, carte persistante entre sessions |
+| 2026-09-09 | **Modèle Ulti Coach validé** — `Tag` gagne un `parentId` auto-référencé (Thème → Phase → Sous-phase, 3 niveaux dans une seule table) ; nouvelle catégorie de tag `public_seance` (Débutant/Hétérogène/Confirmé) distincte de `niveau` (échelle de difficulté 1-5 existante) ; `Entrainement` gagne une relation `lexique Lexique[]` (many-to-many, Lexique du jour) et un champ `rang Int?` (tri Thème×Niveau×Rang quand la date manque) ; `SituationMatch` ne change pas (`description` texte riche suffit pour contrainte + système de points). Détail complet et justification en section 11. | Cadrage demandé par Kinder avant tout import : le modèle devait "coller" à un exemple réel de séance de coach. Écarté : réutiliser la catégorie `niveau` existante pour le public de séance (collision de sens avec la difficulté d'exercice) ; créer une base séparée pour la hiérarchie Thème/Phase (redondant avec `Tag`, contredit "modifier l'existant avant d'en créer du nouveau"). |
 
 ---
 
@@ -260,18 +261,77 @@ un workspace dédié de cette appli, en réutilisant l'existant plutôt qu'en cr
 - Données : les **41 termes** du Lexique Notion importés dans le workspace Ulti Coach (les relations Notion "Introduit dans" (Phase) et "Séances" n'ont **pas** été importées — elles pointent vers des entités pas encore transposées).
 - Vérifié manuellement par Kinder dans le navigateur (workspace "Ulti Coach", écran Lexique, filtre par catégorie) — **validé**.
 
+**✅ Fait le 2026-09-09 — Découverte + nettoyage Notion (option A : Notion propre avant import) :**
+- Découverte : `Ulti_Coach/PLAN_MISSION_2A.md` a révélé que Kinder avait déjà mené la Mission 2a (E1 à E6 sur 7) bien avant cette reprise — la base Notion "Training" contient **39 séances complètes** (ossature + intégral + scan attaché), croisées avec les 63 pages manuscrites (`2025 Training Scan.pdf`) et le Google Doc de saison. Ce n'est donc plus 4 data sources brutes à exploiter, mais une base déjà largement construite à finir de nettoyer (E7, jamais lancée).
+- **E7 exécutée en 5 lots** (pages 1-63 du PDF croisées une à une avec les 39 séances) : dates manquantes complétées sur ~9 séances, une coquille corrigée ("Conti de Rayan" → "Conti Royan"), deux séances mélangées à tort sur une même page séparées (02/10 vs 30/10/25), une séance manquante créée (Le Cut n°9, p.19), tableaux résiduels vides nettoyés. Toutes les séances vérifiées marquées `Saisie = Intégral vérifié (scan relu)`.
+- **✅ 6e lot (nettoyage transversal) terminé le 2026-09-09** — E7 est maintenant bouclée. Plusieurs tentatives ont buté sur un quota Notion ("usage limit for Query Data Source") avant d'aboutir ; espacer les tentatives a suffi, aucune donnée perdue entre-temps.
+  - ✅ Doublons d'exercices : le §8ter du plan (`Ulti_Coach/PLAN_MISSION_2A.md`) annonçait ~55 doublons réels sur 109 exercices — diagnostic obsolète, la banque n'a que **73 entrées, aucun doublon de nom exact**. Rien à faire. Seul cas réel trouvé hors de cette liste : "Fléche" et "La flèche" étaient bien le même exercice → "Fléche" marquée `[DOUBLON — voir "La flèche"]`. "La flèche— Cut" est un exercice distinct, non touché.
+  - ✅ Phases orphelines : 3 sur 4 rattachées ("La passe en courbe" et "La passe en mouvement" → thème Continuité et prise de décision ; "Libérer l'espace" → thème Le Cut). **"Le jeu long" reste orpheline** — aucune séance ne la référence et aucun des 10 thèmes ne correspond (pas de thème "Transverse" générique ; "Travail d'équipe", le seul thème Face=Transverse, est un thème de fin de saison sans nouveau contenu) — **décision Kinder en attente** : créer un thème dédié, laisser hors arborescence, ou fusionner ailleurs.
+  - ⚠️ Plays : Split Stack a eu sa fiche exercice créée (contenu suffisant dans Contenu). **7 plays (Spain, Diago, Iso, Fou, La Q, Braise, Attaque des Handler) et L'Émeraude n'ont qu'un schéma image, aucun texte** dans leur fiche Notion — impossible de les rattacher sans deviner, laissés en l'état. **Décision Kinder en attente** : compléter le texte à la main, ou exclure ces fiches de l'import tant qu'elles ne sont qu'une image. Bonus : "Torero" dans la banque est une fiche d'étirement (collision de nom), pas le play — aucune fiche du play "Torero" n'existe.
+  - ✅ Fiche manquante "Pense-bête échauffement" reconstruite depuis le PDF (p.4), marquée "à compléter".
+  - ✅ Séance résiduelle "🥏 Training - Défense Clam - 01/02/2024" confirmée doublon (son propre texte dit "reprendre les bases vues aux deux derniers entraînements") → renommée `[DOUBLON — voir séances 18/01/2024 et 25/01/2024]`.
+- Points théorie (p.12/13/19/20/29/32/37 du PDF) vérifiés conformes aux pages Phase de Contenu, sauf **Toupies et Cavalier : aucune page Contenu dédiée trouvée** — à créer si besoin.
+
+**État final Notion :** base considérée comme **source propre pour l'import**, sous réserve des 2 décisions Kinder ci-dessus (Le jeu long ; les 8 fiches sans texte). Ces deux points n'empêchent pas de démarrer l'import des Exercices et des Séances — ils concernent un sous-ensemble limité de contenu (1 phase, 8 exercices sur 73).
+
+**✅ Tranché le 2026-09-09 — Modélisation Thème/Phase/Sous-phase + trous du modèle séance :**
+
+Challenge fait en confrontant le modèle actuel à une vraie séance de coach ("Le Cut — n°5 — Le temps zéro"). Résultat : `Exercice`, l'échauffement en blocs et `SituationMatch.type='Match'` collent déjà bien. Quatre trous identifiés et résolus :
+
+| Trou identifié | Décision |
+|---|---|
+| Hiérarchie Thème→Phase→Sous-phase (3 niveaux) ne rentre pas dans `Tag` (plat) | `Tag` gagne un `parentId` auto-référencé (nullable, `onDelete: SetNull`). Une Phase = un `Tag` (nouvelle catégorie `phase_entrainement`) dont le `parentId` pointe vers le Thème parent. Une Sous-phase pointe vers sa Phase. Une seule table, comme la base "Contenu" de Notion. |
+| Le Lexique du jour n'a aucune case dans une séance (catalogue isolé depuis la Mission 1) | `Entrainement` gagne une relation many-to-many `lexique Lexique[]` (même pattern que `tags`). |
+| La catégorie `niveau` existante (échelle de difficulté d'exercice 1-5, `NIVEAU_LABELS`) collisionne avec le "Niveau" de Kinder (Débutant/Hétérogène/Confirmé = public d'une séance, pas une difficulté) | Nouvelle catégorie de tag dédiée `public_seance`, distincte de `niveau`. Ne pas réutiliser `niveau` pour ça. |
+| Les séances Notion s'ordonnent par `Thème × Niveau × Rang`, pas par date (souvent inconnue/approximative) — `Entrainement` n'a que `date` (optionnelle) | `Entrainement` gagne un champ optionnel `rang Int?`, utilisé pour trier quand la date manque ou n'est pas fiable. |
+
+Écarté explicitement : réutiliser `niveau` pour le public de séance (collision de sens) ; créer une base séparée pour Thème/Phase (redondant, contredit "modifier l'existant avant d'en créer du nouveau") ; structurer `SituationMatch` davantage (le texte riche de `description` suffit pour "contrainte + système de points", trop variable d'un match à l'autre pour figer des champs).
+
+Décision reportée en section 6.
+
+**✅ Fait le 2026-09-09 — Migration Prisma + code du modèle tranché ci-dessus :**
+- Migration `20260909175400_add_tag_hierarchy_lexique_rang` écrite (via `prisma migrate diff` + `migrate deploy`, additive uniquement) et appliquée en prod : `Tag.parentId` (auto-référencé, `onDelete: SetNull`), `Entrainement.rang`, relation many-to-many `Entrainement.lexique`.
+- **`backend/.env` → `DIRECT_URL` corrigé** (mot de passe périmé remplacé par celui de `DATABASE_URL`, juste le port changé pour bypasser pgbouncer) — `npx prisma migrate deploy` refonctionne en local, plus besoin du contournement Supabase MCP utilisé pour la Mission 1.
+- Catégories `phase_entrainement` et `public_seance` ajoutées à `shared/constants/tag-categories.ts` (source de vérité unique, aussi corrigé une duplication obsolète du même mapping dans `tags-manager.component.ts` et `tag.constants.ts` qui ne connaissaient pas les nouvelles catégories).
+- Backend : `tag.validator.js`/`tag.service.js` gèrent `parentId` (validation anti-cycle, appartenance au workspace) ; `entrainement.validator.js`/`entrainement.service.js` gèrent `lexiqueIds`/`rang` ; nouvelle fonction `validateLexiqueInWorkspace` dans `utils/workspace-validation.js`.
+- **Bug trouvé et corrigé pendant le test manuel** : `backend/middleware/transform.middleware.js` savait re-parser `tagIds` (JSON stringifié dans le FormData) mais pas `lexiqueIds` → 400 Bad Request systématique à la création d'un entraînement avec lexique. Généralisé le parsing à un tableau `idArrayFields = ['tagIds', 'lexiqueIds']`.
+- Frontend : nouveau composant `lexique-select-multi` (même pattern que `tag-select-multi`, adapté au modèle Lexique) ; formulaire Entraînement (champ Rang + sélecteur Lexique du jour) ; formulaire Tag (sélecteur de parent, visible seulement pour `phase_entrainement`) ; `tag-list` rend désormais un arbre indenté (`↳`) pour cette catégorie, avec le thème parent affiché en clair pour les phases racines.
+- **Testé manuellement dans le navigateur** (Kinder connecté, workspace Ulti Coach) : création Thème "Le Cut" → Phase "Cut 1" (rattachée) → Sous-phase "Le Classique" (rattachée à Cut 1) → arbre à 2 niveaux affiché correctement. Entraînement créé avec `rang=5` et 2 termes de lexique → persisté et rechargé correctement en édition. Données de test nettoyées après vérification.
+
+**⏳ En cours au moment de la pause du 2026-09-09 — Import Thèmes/Phases + Exercices :**
+Un agent en tâche de fond a été lancé pour : (A) importer les ~49 Thèmes/Phases/Sous-phases de Notion comme `Tag` (catégorie `theme_entrainement` pour les thèmes, `phase_entrainement` avec `parentId` pour les phases/sous-phases — "Le jeu long" importée avec `parentId: null`, décision Kinder toujours en attente) ; (B) importer les 73 Exercices vers le modèle `Exercice`, avec parsing du corps de chaque fiche Notion (sections Objectif/Déroulement → `description`, Critère de réussite, Variable +/-, Matériel, Durée, Effectif) et tags (`travail_specifique` depuis la propriété du même nom, `objectif` depuis Type d'exercice + Éléments Travaillés, `phase_entrainement` depuis la relation Phases). Script one-off : `backend/scripts/import-ulti-coach-exercices.js` (peut être supprimé après coup, ce n'est pas un fichier de doc). Images Notion **non importées** (URLs signées, expirent en 5 min — nécessiterait un re-upload Cloudinary, hors scope). **Statut exact au moment de la pause : à vérifier en premier à la reprise** — le rapport de l'agent n'était pas encore revenu.
+
 **❌ Pas fait — reste à faire, dans l'ordre suggéré :**
-1. Formulaire d'édition du Lexique (si Kinder le souhaite au clavier plutôt qu'en réimportant depuis Notion).
-2. Import des **Exercices** (base Notion `🏃 Banque de données - Ultimate Training`, ~schéma : Nom, Type d'exercice, Niveau, Travail spécifique, Zone du corps, Durée, Effectif min/max) vers le modèle `Exercice` existant, dans le workspace Ulti Coach.
-3. Les **Thèmes/Phases** (base Notion `🧭 Contenu - Thèmes & Phases`, hiérarchie Thème→Phase→Sous-phase via Parent/Ordre) → à mapper sur des `Tag` (catégorie à créer/choisir). Point d'attention déjà identifié : `Tag` n'a pas de relation parent-enfant, donc la hiérarchie à 3 niveaux ne peut pas être reproduite telle quelle — a nécessité une décision de Kinder qui n'a pas encore été prise.
-4. Les **séances réelles** (base Notion `Training`) → vers `Entrainement` (+ `EntrainementExercice`), datées, taguées par thème.
-5. L'écran "déroulement sur une année" (liste des `Entrainement` du workspace groupés par mois/tag-thème).
-6. Recroiser avec les fichiers `.md` déjà dépouillés dans `Ulti_Coach/` (`CATALOGUE_EXERCICES.md`, `LE_CUT.md`, `METHODE_KINDER.md`) — Kinder a demandé de croiser Notion **et** ces fichiers, seul Notion a été exploité jusqu'ici.
+1. **Vérifier le résultat de l'import Thèmes/Phases + Exercices** ci-dessus (a-t-il fini ? combien d'Exercices créés ? erreurs ?) — premier réflexe à la reprise.
+2. Les **séances réelles** (39, vérifiées) → vers `Entrainement` (+ `EntrainementExercice` + `lexique` + `rang`), datées, taguées par thème/phase/public.
+3. Formulaire d'édition du Lexique (si Kinder le souhaite au clavier plutôt qu'en réimportant depuis Notion).
+4. L'écran "déroulement sur une année" (liste des `Entrainement` du workspace groupés par mois/tag-thème, ordonnée par `date` puis `rang`).
+5. Deux micro-décisions Kinder toujours en attente (section précédente) : la phase "Le jeu long" sans thème d'accueil ; 8 fiches d'exercices/plays Notion qui n'ont qu'un schéma image sans texte (Spain, Diago, Iso, Fou, La Q, Braise, Attaque des Handler, L'Émeraude).
+
+---
+
+## 12. REPRISE SUR UNE AUTRE MACHINE (pause du 2026-09-09)
+
+**État git au moment de la pause :**
+- Branche `master`, **5 commits locaux non poussés** avant cette session + les changements de cette session (migration Prisma, code Tag hiérarchique/Lexique/rang, corrections diverses) — à committer et pousser avant de changer de machine (voir commande ci-dessous, faite dans la foulée de cette note).
+- Fichiers non trackés à ajouter : `backend/prisma/migrations/20260909175400_add_tag_hierarchy_lexique_rang/`, `frontend/src/app/shared/components/form-fields/lexique-select-multi/`.
+
+**Base de données : PAS un problème de synchro.**
+La migration Prisma (`20260909175400_add_tag_hierarchy_lexique_rang`) a été appliquée avec `prisma migrate deploy` **directement sur la base Supabase de production** (projet `rnreaaeiccqkwgwxwxeg`, la même que Vercel utilise) — pas sur une base locale isolée. Une autre machine qui se connecte à ce même projet Supabase voit donc **déjà** le nouveau schéma. Il n'y a rien à "rejouer" côté base : juste besoin que le code (schéma Prisma + reste) soit à jour via `git pull`, puis `npx prisma generate` pour régénérer le client localement.
+
+**Sur l'autre machine, après `git pull` :**
+1. `npm install` (racine + workspaces) si les node_modules ne sont pas partagés.
+2. `npm -w shared run build` (le package `@ufm/shared` doit être rebuild après le `git pull`, comme d'habitude).
+3. `npx prisma generate` dans `backend/` pour régénérer le client Prisma avec le nouveau schéma.
+4. **Vérifier `backend/.env` → `DIRECT_URL`** : ce fichier n'est jamais commité (secrets), donc l'autre machine a sa propre copie. Si `npx prisma migrate deploy` échoue avec une erreur d'authentification, c'est le même problème que celui corrigé ici le 2026-09-09 : le mot de passe dans `DIRECT_URL` était périmé. Correctif : recopier le mot de passe de `DATABASE_URL` dans `DIRECT_URL`, en ne changeant que le port (`6543` → `5432`) et en retirant `?pgbouncer=true&connection_limit=1`. (`DATABASE_URL` reste inchangé, c'est lui qui a le mot de passe à jour.)
+5. `npx prisma migrate deploy` (sans risque — la migration est déjà marquée appliquée dans `_prisma_migrations`, côté base, donc c'est un no-op ; utile seulement si jamais l'autre machine pointe vers une base qui ne l'a pas encore).
+
+**Statut du travail Notion/import au moment de la pause :** voir section 11 ci-dessus ("En cours au moment de la pause"). L'agent d'import tourne en tâche de fond côté session Claude Code — son résultat n'est pas lié à la machine (il écrit directement dans Supabase prod via le script Node), donc **pas besoin d'être sur la même machine pour voir le résultat**, juste relire son rapport ou vérifier directement dans l'appli/la base à la reprise.
 
 **Accès Notion :** connecteur Notion actif dans les sessions Claude Code de ce projet (page **SPORT**). IDs utiles :
 - Data source Exercices : `collection://05666cc3-ea31-497b-b51d-181feb3cbcda`
 - Data source Contenu - Thèmes & Phases : `collection://023055ea-eac9-42dd-9e0c-79c5e4eddb49`
 - Data source Lexique : `collection://e4e371e9-140e-4263-814c-542d94c7f8e5` (déjà importée)
-- Data source Training (séances) : `collection://2c9bf6a5-ae94-471a-b652-04175d586400`
+- Data source Training (séances) : `collection://2c9bf6a5-ae94-471a-b652-04175d586400` (39 séances vérifiées via E7 + 18 anciennes entrées 2023-2024 hors périmètre scan)
 
 **Projet Supabase :** `rnreaaeiccqkwgwxwxeg` (accessible via le connecteur MCP Supabase, utilisé pour appliquer la migration et importer les données en direct — plus fiable que `.env` tant que `DIRECT_URL` n'est pas corrigé).

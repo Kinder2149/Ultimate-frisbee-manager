@@ -73,9 +73,38 @@ async function validateEchauffementInWorkspace(echauffementId, workspaceId) {
   return !!echauffement;
 }
 
+/**
+ * Vérifie que tous les termes de lexique appartiennent au workspace spécifié
+ * @param {string[]} lexiqueIds - IDs des termes de lexique à vérifier
+ * @param {string} workspaceId - ID du workspace
+ * @returns {Promise<{valid: boolean, invalidIds: string[]}>}
+ */
+async function validateLexiqueInWorkspace(lexiqueIds, workspaceId) {
+  if (!lexiqueIds || lexiqueIds.length === 0) {
+    return { valid: true, invalidIds: [] };
+  }
+
+  const termes = await prisma.lexique.findMany({
+    where: {
+      id: { in: lexiqueIds },
+      workspaceId
+    },
+    select: { id: true }
+  });
+
+  const foundIds = termes.map(t => t.id);
+  const invalidIds = lexiqueIds.filter(id => !foundIds.includes(id));
+
+  return {
+    valid: invalidIds.length === 0,
+    invalidIds
+  };
+}
+
 module.exports = {
   validateTagsInWorkspace,
   validateExerciceInWorkspace,
   validateSituationMatchInWorkspace,
-  validateEchauffementInWorkspace
+  validateEchauffementInWorkspace,
+  validateLexiqueInWorkspace
 };

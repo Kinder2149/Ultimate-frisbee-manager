@@ -31,9 +31,10 @@
         <div class="tag-form-section">
           <h3>{{ editingTag ? 'Modifier le tag' : 'Nouveau tag ' + getCategoryDisplayName(category).toLowerCase() }}</h3>
           
-          <app-tag-form 
+          <app-tag-form
             [category]="category"
             [editTag]="editingTag"
+            [availableParents]="hierarchyTags"
             (tagSaved)="onTagSaved($event)"
             (cancel)="cancelEdit()">
           </app-tag-form>
@@ -46,6 +47,7 @@
           <app-tag-list
             [tags]="groupedTags[category] || []"
             [category]="category"
+            [themeLabelsById]="themeLabelsById"
             (editTag)="editTag($event)"
             (deleteTag)="deleteTag($event)">
           </app-tag-list>

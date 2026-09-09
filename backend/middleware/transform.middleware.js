@@ -119,41 +119,45 @@ const transformFormData = (req, res, next) => {
     }
   }
 
-  // Traitement spécifique pour tagIds
-  // Important: ne pas forcer à [] si absent pour éviter d'effacer les tags à la mise à jour
-  if (Object.prototype.hasOwnProperty.call(req.body, 'tagIds')) {
-    let tagIds = req.body.tagIds;
-    if (typeof tagIds === 'string') {
-      const trimmed = tagIds.trim();
+  // Traitement spécifique pour les champs de type "tableau d'IDs" envoyés en FormData
+  // (tagIds, lexiqueIds) : JSON.stringify côté frontend, à re-parser ici.
+  // Important: ne pas forcer à [] si absent pour éviter d'effacer les relations à la mise à jour
+  const idArrayFields = ['tagIds', 'lexiqueIds'];
+  idArrayFields.forEach((field) => {
+    if (!Object.prototype.hasOwnProperty.call(req.body, field)) return;
+
+    let ids = req.body[field];
+    if (typeof ids === 'string') {
+      const trimmed = ids.trim();
       // Essayer d'abord de parser un tableau JSON (cas FormData avec JSON.stringify)
       if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
         try {
           const parsed = JSON.parse(trimmed);
-          tagIds = Array.isArray(parsed) ? parsed : [];
+          ids = Array.isArray(parsed) ? parsed : [];
         } catch (_) {
           // Fallback si JSON invalide: split par virgule
-          tagIds = trimmed.split(',');
+          ids = trimmed.split(',');
         }
       } else {
         // Cas chaîne simple: CSV
-        tagIds = trimmed.split(',');
+        ids = trimmed.split(',');
       }
     }
-    if (Array.isArray(tagIds)) {
-      const normalized = tagIds
+    if (Array.isArray(ids)) {
+      const normalized = ids
         .map(id => (id == null ? '' : String(id).trim().replace(/^"|"$/g, ''))) // retirer guillemets éventuels
         .filter(isUuid);
       if (normalized.length === 0) {
-        // Si vide après normalisation, supprimer la clé pour ne pas réinitialiser les tags
-        delete req.body.tagIds;
+        // Si vide après normalisation, supprimer la clé pour ne pas réinitialiser la relation
+        delete req.body[field];
       } else {
-        req.body.tagIds = normalized;
+        req.body[field] = normalized;
       }
     } else {
       // Si fourni mais invalide, supprimer la clé
-      delete req.body.tagIds;
+      delete req.body[field];
     }
-  }
+  });
 
   // Normalisation des champs string simples
   const stringFields = ['nom', 'description', 'materiel', 'notes', 'critereReussite'];

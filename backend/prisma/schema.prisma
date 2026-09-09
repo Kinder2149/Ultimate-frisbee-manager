@@ -56,18 +56,24 @@ model Tag {
   exercices        Exercice[]       @relation("ExerciseTags")
   situationsMatchs SituationMatch[] @relation("SituationMatchTags")
 
+  parentId String?
+  parent   Tag?    @relation("TagHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children Tag[]   @relation("TagHierarchy")
+
   workspaceId String?
   workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@unique([workspaceId, label, category])
   @@index([createdAt])
   @@index([workspaceId])
+  @@index([parentId])
 }
 
 model Entrainement {
   id               String                 @id @default(uuid())
   titre            String
   date             DateTime?
+  rang             Int?
   imageUrl         String?
   createdAt        DateTime               @default(now())
   updatedAt        DateTime               @updatedAt
@@ -77,6 +83,7 @@ model Entrainement {
   situationMatch   SituationMatch?        @relation(fields: [situationMatchId], references: [id])
   exercices        EntrainementExercice[]
   tags             Tag[]                  @relation("EntrainementTags")
+  lexique          Lexique[]              @relation("EntrainementLexique")
 
   workspaceId String?
   workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -175,6 +182,8 @@ model Lexique {
   motImage    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  entrainements Entrainement[] @relation("EntrainementLexique")
 
   workspaceId String?
   workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)

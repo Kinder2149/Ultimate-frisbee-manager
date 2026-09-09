@@ -25,6 +25,8 @@ export class TagFormComponent implements OnInit, OnChanges {
 
     @Input() category: TagCategory = 'objectif';
   @Input() editTag: Tag | null = null;
+  /** Tags candidats comme parent (mêmes+autres catégories de la hiérarchie Thème -> Phase -> Sous-phase) */
+  @Input() availableParents: Tag[] = [];
   @Output() tagSaved = new EventEmitter<Tag>();
   @Output() cancel = new EventEmitter<void>();
 
@@ -32,7 +34,8 @@ export class TagFormComponent implements OnInit, OnChanges {
     label: ['', [Validators.required, this.conditionalLabelLengthValidator()]],
     category: ['', Validators.required],
     color: [''],
-    level: [null]
+    level: [null],
+    parentId: [null]
   });
 
   // Référence aux énums pour le template
@@ -82,9 +85,10 @@ export class TagFormComponent implements OnInit, OnChanges {
         label: this.editTag.label,
         category: this.editTag.category,
         color: this.editTag.color || DEFAULT_TAG_COLORS[this.editTag.category],
-        level: this.editTag.level || null
+        level: this.editTag.level || null,
+        parentId: this.editTag.parentId || null
       });
-      
+
       // Désactiver le champ de catégorie en mode édition
       this.tagForm.get('category')?.disable();
     } else {
@@ -93,9 +97,10 @@ export class TagFormComponent implements OnInit, OnChanges {
         label: '',
         category: this.category,
         color: DEFAULT_TAG_COLORS[this.category],
-                level: this.category === 'niveau' ? 1 : null
+                level: this.category === 'niveau' ? 1 : null,
+        parentId: null
       });
-      
+
       this.tagForm.get('category')?.enable();
     }
     
@@ -137,6 +142,25 @@ export class TagFormComponent implements OnInit, OnChanges {
   }
 
   /**
+   * true si la catégorie sélectionnée est "phase_entrainement" (hiérarchie Thème -> Phase -> Sous-phase)
+   */
+  get isPhaseCategory(): boolean {
+    return this.tagForm.get('category')?.value === 'phase_entrainement';
+  }
+
+  /**
+   * Tags proposables comme parent : mêmes catégories concernées par la hiérarchie
+   * (theme_entrainement au sommet, phase_entrainement pour les niveaux suivants),
+   * en excluant le tag lui-même pour éviter un cycle direct.
+   */
+  get parentCandidates(): Tag[] {
+    return this.availableParents.filter(t =>
+      (t.category === 'theme_entrainement' || t.category === 'phase_entrainement') &&
+      t.id !== this.editTag?.id
+    );
+  }
+
+  /**
    * Gère le changement de catégorie
    */
   onCategoryChange(): void {
@@ -168,7 +192,9 @@ export class TagFormComponent implements OnInit, OnChanges {
       category: formValue.category,
       color: formValue.color || DEFAULT_TAG_COLORS[formValue.category as string],
       // Inclure le level si c'est un tag de niveau (convertir en number car le select renvoie une string)
-      level: formValue.category === 'niveau' ? Number(formValue.level) : null
+      level: formValue.category === 'niveau' ? Number(formValue.level) : null,
+      // Inclure le parent uniquement pour la hiérarchie Thème -> Phase -> Sous-phase
+      parentId: formValue.category === 'phase_entrainement' ? (formValue.parentId || null) : null
     };
     
     // Ajouter ou mettre à jour le tag

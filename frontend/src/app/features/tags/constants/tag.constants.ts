@@ -20,5 +20,7 @@ export const DEFAULT_TAG_COLORS: { [key: string]: string } = {
   'niveau': '#9C27B0',   // Violet
   'temps': '#607D8B',    // Bleu-gris
   'format': '#795548',   // Marron
-  'theme_entrainement': '#FF5722'     // Orange
+  'theme_entrainement': '#FF5722',    // Orange
+  'phase_entrainement': '#FF9800',    // Orange clair (sous Thème)
+  'public_seance': '#009688'          // Teal (distinct de "niveau")
 };
