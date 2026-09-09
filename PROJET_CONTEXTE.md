@@ -17,7 +17,7 @@
 | Statut | En production |
 | Utilisateurs actuels | ~10 personnes actives |
 | URL production | https://ultimate-frisbee-manager.vercel.app |
-| Dernière mise à jour de ce fichier | 2026-09-06 |
+| Dernière mise à jour de ce fichier | 2026-09-09 |
 
 ---
 
@@ -183,7 +183,33 @@ Tout autre fichier .md va dans `_archives/`.
 
 > Ordonné par priorité. Ne jamais commencer la suivante sans que la précédente soit testée.
 
-> État au 2026-09-06 après exécution des corrections. Détail : `_archives/AUDIT_2026-09-06.md`.
+### 🔜 EN COURS — Migration Notion (workspace Ulti_coach) → UFM
+
+> Démarré le 2026-09-09. Reprise prévue le soir même avec le dossier local **Ulti_coach** du pilote.
+> Détail complet (audit, chiffres exacts, plan de correction) : artifact **« Cadrage Ulti_coach »** — https://claude.ai/code/artifact/6c229ec2-145c-4d04-a9f7-de38ac0c7ab9
+> Aucun code ni schéma Prisma touché pour l'instant — tout le travail fait à ce jour est côté Notion (source), pas UFM (cible).
+
+**Fait (2026-09-09, côté Notion uniquement) :**
+- Audit complet du workspace SPORT : 123 exercices / 56 séances / 49 phases / 42 termes de lexique.
+- Dédoublonnage de la banque d'exercices : 49 paires fusionnées (123→73 fiches), 0 doublon de nom restant, 0 exercice sans type, 10 lignes de vérification traitées.
+
+**Décisions déjà arbitrées par le pilote (à respecter dans le script de migration) :**
+- N'importer que les séances avec « Phase visée » renseignée (39/56) — les 17 « séances journal » sans phase restent hors périmètre pour cette première vague.
+- Phases/Thèmes Notion → aplatis en `Tag` UFM (`category="Phase"` / `category="Thème"`), pas de nouveau modèle Prisma.
+- Les exercices Notion typés Echauffement/Etirements/Play → convertis en vrais `Echauffement`+`BlocEchauffement` / `SituationMatch` UFM (pas de simples `Exercice` tagués).
+
+**Bloqué — nécessite le pilote, pas exécutable en solo :**
+1. 7 fiches "Play" vides dans Notion (Braise, Diago, Iso, Spain, Fou, La Q, Attaque des Handler — image sans description) : à compléter ou clarifier avant de pouvoir les rattacher aux 2 phases Play orphelines (Le Split Stack, L'Émeraude).
+2. Fiche "Réveil musculaire" à éclater : mélange 5 exercices différents + blocs de test jamais nettoyés.
+3. 17 phases sur 39 sans exercice attaché — dont 7 sont un vrai trou de contenu (exercice à écrire), le reste est théorique (pas besoin d'exercice).
+4. 39 séances curriculum encore marquées « À valider Kinder » — relecture pédagogique requise avant import comme `Entrainement` UFM.
+5. 17 séances "journal" (dates réelles, bilans, plans de coaching) — décider : exclure de cette vague, ou historiser à part.
+
+**Prochaine étape une fois 1-5 tranchés :** écrire le script d'extraction Notion → mapping UFM → import Prisma (scopé au workspace UFM `Ulti_coach`).
+
+---
+
+> État au 2026-09-06 après exécution des corrections (mission code précédente, sans lien avec la migration Notion ci-dessus). Détail : `_archives/AUDIT_2026-09-06.md`.
 
 ### ✅ Fait le 2026-09-06
 - ~~[🔴] `git rm --cached backend/.env.CLEAN`~~ — retiré du suivi git.
