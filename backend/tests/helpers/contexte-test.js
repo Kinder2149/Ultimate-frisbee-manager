@@ -1,0 +1,75 @@
+/**
+ * Outils communs aux tests d'API.
+ *
+ * Depuis le 2026-09-06, le serveur n'accepte plus que des jetons signes par
+ * Supabase (ES256/RS256, verifies via JWKS). Les tests ne peuvent donc plus
+ * fabriquer de jetons eux-memes : ils simulent le middleware
+ * d'authentification et testent ce qui compte — les routes, les droits par
+ * espace et les regles metier.
+ *
+ * Utilisation dans un fichier de test (jest.mock doit rester en tete) :
+ *
+ *   jest.mock('../middleware/auth.middleware', () =>
+ *     require('../tests/helpers/contexte-test').authentificationSimulee());
+ *
+ *   const ctx = await creerContexte({ roleEspace: 'MANAGER' });
+ *   await request(app).get('/api/tags').set(ctx.entetes);
+ */
+const { prisma } = require('../../services/prisma');
+
+/**
+ * Remplace le middleware d'authentification reel.
+ * Comportement calque sur le vrai : sans en-tete Authorization -> 401.
+ * Le « jeton » attendu est simplement l'identifiant de l'utilisateur de test.
+ */
+function authentificationSimulee() {
+  const reel = jest.requireActual('../../middleware/auth.middleware');
+  return {
+    ...reel,
+    authenticateToken: async (req, res, next) => {
+      const entete = req.headers.authorization || '';
+      const id = entete.startsWith('Bearer ') ? entete.slice(7).trim() : '';
+      if (!id) {
+        return res.status(401).json({ error: 'Token manquant', code: 'NO_TOKEN' });
+      }
+      const utilisateur = await prisma.user.findUnique({ where: { id } });
+      if (!utilisateur || !utilisateur.isActive) {
+        return res.status(401).json({ error: 'Token invalide', code: 'INVALID_TOKEN' });
+      }
+      req.user = utilisateur;
+      return next();
+    },
+  };
+}
+
+/**
+ * Cree un utilisateur, un espace et le lien entre les deux.
+ * Renvoie les en-tetes prets a l'emploi pour supertest.
+ */
+async function creerContexte({ roleEspace = 'MANAGER', rolePlateforme = 'USER', espaceDeBase = false } = {}) {
+  const suffixe = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const user = await prisma.user.create({
+    data: { email: `test-${suffixe}@ufm.test`, nom: 'Test', prenom: 'Utilisateur', role: rolePlateforme },
+  });
+  const workspace = await prisma.workspace.create({
+    data: { name: `Espace de test ${suffixe}`, isBase: espaceDeBase },
+  });
+  await prisma.workspaceUser.create({
+    data: { userId: user.id, workspaceId: workspace.id, role: roleEspace },
+  });
+  return {
+    user,
+    workspace,
+    entetes: { Authorization: `Bearer ${user.id}`, 'X-Workspace-Id': workspace.id },
+  };
+}
+
+/** Vide les tables touchees par les tests, dans l'ordre des dependances. */
+async function viderBase() {
+  await prisma.tag.deleteMany({});
+  await prisma.workspaceUser.deleteMany({});
+  await prisma.workspace.deleteMany({});
+  await prisma.user.deleteMany({});
+}
+
+module.exports = { authentificationSimulee, creerContexte, viderBase };
