@@ -71,6 +71,12 @@ async function creerContexte({ roleEspace = 'MANAGER', rolePlateforme = 'USER', 
  * ne l'emporterait pas par cascade.
  */
 async function viderBase() {
+  // Garde-fou ultime : ne jamais rien effacer ailleurs que dans la base de test.
+  const [{ base }] = await prisma.$queryRawUnsafe('SELECT current_database() AS base');
+  const hote = (process.env.DATABASE_URL || '').split('@')[1] || '';
+  if (base !== 'ufm_test' || !/^(localhost|127\.0\.0\.1):5433\//.test(hote)) {
+    throw new Error(`viderBase REFUSE : base "${base}" sur "${hote}" n'est pas la base de test locale`);
+  }
   await prisma.entrainementExercice.deleteMany({});
   await prisma.entrainement.deleteMany({});
   await prisma.blocEchauffement.deleteMany({});

@@ -7,10 +7,13 @@ const envPath = path.resolve(__dirname, '..', '.env');
 // Charge les variables d'environnement depuis le fichier .env à la racine du backend
 // En production, ne pas override les variables fournies par Vercel
 const isProdRuntime = String(process.env.NODE_ENV || '').toLowerCase() === 'production';
-const result = dotenv.config({
-  path: envPath,
-  override: !isProdRuntime
-});
+// ⚠️ En test, NE JAMAIS ecraser l'environnement : backend/.env pointe sur la
+// base de PRODUCTION. Le 2026-09-10, cet ecrasement a fait tourner les tests
+// automatises sur la production et l'a videe.
+const isTestRuntime = String(process.env.NODE_ENV || '').toLowerCase() === 'test';
+const result = isTestRuntime
+  ? { parsed: {} }
+  : dotenv.config({ path: envPath, override: !isProdRuntime });
 
 if (result.error) {
   // En production, les variables sont généralement définies directement sur le serveur
