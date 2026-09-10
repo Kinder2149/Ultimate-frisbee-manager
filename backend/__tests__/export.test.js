@@ -1,102 +1,72 @@
+jest.mock('../middleware/auth.middleware', () =>
+  require('../tests/helpers/contexte-test').authentificationSimulee());
+
 const request = require('supertest');
 const app = require('../app');
 const { prisma } = require('../services/prisma');
-const jwt = require('jsonwebtoken');
+const { creerContexte, creerContenus, viderBase } = require('../tests/helpers/contexte-test');
 
-const makeToken = async (role = 'ADMIN') => {
-  await prisma.user.deleteMany({});
-  const user = await prisma.user.create({
-    data: {
-      email: `export-admin-${Date.now()}@ultimate.com`,
-      nom: 'Admin', prenom: 'Export',
-      role,
-    },
-  });
-  return jwt.sign({ sub: user.id, email: user.email, role: user.role }, process.env.JWT_SECRET, { expiresIn: '15m' });
-};
-
-const createFixtures = async () => {
-  // Nettoyage ciblé
-  await prisma.entrainementExercice.deleteMany({});
-  await prisma.entrainement.deleteMany({});
-  await prisma.exercice.deleteMany({});
-  await prisma.echauffement.deleteMany({});
-  await prisma.blocEchauffement.deleteMany({});
-  await prisma.situationMatch.deleteMany({});
-  await prisma.tag.deleteMany({});
-
-  const tag = await prisma.tag.create({ data: { label: '10min', category: 'temps' } });
-
-  const exo = await prisma.exercice.create({
-    data: {
-      nom: 'Exo Export', description: 'Desc', variablesPlus: '[]', variablesMinus: '[]',
-      tags: { connect: [{ id: tag.id }] },
-    },
-  });
-
-  const ech = await prisma.echauffement.create({ data: { nom: 'Warmup', description: 'W', blocs: { create: [{ ordre: 1, titre: 'Bloc 1' }] } } });
-
-  const sit = await prisma.situationMatch.create({ data: { type: 'Match', description: 'S', tags: { connect: [{ id: tag.id }] } } });
-
-  const ent = await prisma.entrainement.create({
-    data: {
-      titre: 'Entrainement Export', date: new Date(), echauffementId: ech.id, situationMatchId: sit.id,
-      tags: { connect: [{ id: tag.id }] },
-      exercices: { create: [{ exerciceId: exo.id, ordre: 1, duree: 10 }] },
-    },
-  });
-
-  return { tag, exo, ech, sit, ent };
-};
+beforeEach(async () => {
+  await viderBase();
+});
 
 afterAll(async () => {
+  await viderBase();
   await prisma.$disconnect();
 });
 
-describe('API - Export UFM', () => {
-  it('GET /api/admin/export-ufm (exercice) renvoie un .ufm.json avec headers', async () => {
-    const token = await makeToken('ADMIN');
-    const { exo } = await createFixtures();
+async function admin() {
+  const ctx = await creerContexte({ rolePlateforme: 'ADMIN' });
+  return { ...ctx, auth: { Authorization: `Bearer ${ctx.user.id}` } };
+}
 
-    const res = await request(app)
-      .get(`/api/admin/export-ufm?type=exercice&id=${exo.id}`)
-      .set('Authorization', `Bearer ${token}`);
+describe('Administration — export au format UFM', () => {
+  it("exporte un exercice en fichier telechargeable", async () => {
+    const a = await admin();
+    const { exo } = await creerContenus(a.workspace.id);
+
+    const res = await request(app).get(`/api/admin/export-ufm?type=exercice&id=${exo.id}`).set(a.auth);
 
     expect(res.statusCode).toBe(200);
     expect(res.headers['content-type']).toMatch(/application\/json/);
     expect(String(res.headers['content-disposition'] || '')).toMatch(/attachment;\s*filename=/i);
-    const body = JSON.parse(res.text);
-    expect(body).toHaveProperty('version', '1.0');
-    expect(body).toHaveProperty('type', 'exercice');
-    expect(body).toHaveProperty('data');
-    expect(body.data).toHaveProperty('id', exo.id);
+    const corps = JSON.parse(res.text);
+    expect(corps).toMatchObject({ version: '1.0', type: 'exercice' });
+    expect(corps.data.id).toBe(exo.id);
   });
 
-  it('GET /api/admin/export-ufm (entrainement) renvoie 200 avec structure data.exercices', async () => {
-    const token = await makeToken('ADMIN');
-    const { ent } = await createFixtures();
-    const res = await request(app)
-      .get(`/api/admin/export-ufm?type=entrainement&id=${ent.id}`)
-      .set('Authorization', `Bearer ${token}`);
+  it('exporte un entrainement avec ses exercices', async () => {
+    const a = await admin();
+    const { ent, exo } = await creerContenus(a.workspace.id);
+
+    const res = await request(app).get(`/api/admin/export-ufm?type=entrainement&id=${ent.id}`).set(a.auth);
+
     expect(res.statusCode).toBe(200);
-    const body = JSON.parse(res.text);
-    expect(body.type).toBe('entrainement');
-    expect(Array.isArray(body.data.exercices)).toBe(true);
+    const corps = JSON.parse(res.text);
+    expect(corps.type).toBe('entrainement');
+    expect(Array.isArray(corps.data.exercices)).toBe(true);
+    expect(corps.data.exercices.length).toBe(1);
+    expect(JSON.stringify(corps.data.exercices)).toContain(exo.id);
   });
 
-  it('GET /api/admin/export-ufm 404 quand entité absente', async () => {
-    const token = await makeToken('ADMIN');
+  it('renvoie 404 pour un element inexistant', async () => {
+    const a = await admin();
     const res = await request(app)
-      .get(`/api/admin/export-ufm?type=exercice&id=00000000-0000-4000-8000-000000000000`)
-      .set('Authorization', `Bearer ${token}`);
+      .get('/api/admin/export-ufm?type=exercice&id=00000000-0000-4000-8000-000000000000').set(a.auth);
     expect(res.statusCode).toBe(404);
   });
 
-  it('GET /api/admin/export-ufm 400 paramètres manquants', async () => {
-    const token = await makeToken('ADMIN');
-    const res = await request(app)
-      .get(`/api/admin/export-ufm`)
-      .set('Authorization', `Bearer ${token}`);
+  it('renvoie 400 si le type ou l\'identifiant manque', async () => {
+    const a = await admin();
+    const res = await request(app).get('/api/admin/export-ufm').set(a.auth);
     expect(res.statusCode).toBe(400);
+  });
+
+  it('interdit l\'export a un utilisateur standard (403)', async () => {
+    const ctx = await creerContexte({ rolePlateforme: 'USER' });
+    const { exo } = await creerContenus(ctx.workspace.id);
+    const res = await request(app).get(`/api/admin/export-ufm?type=exercice&id=${exo.id}`)
+      .set('Authorization', `Bearer ${ctx.user.id}`);
+    expect(res.statusCode).toBe(403);
   });
 });

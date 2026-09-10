@@ -10,6 +10,11 @@ module.exports = {
   // Indique à Jest de rechercher les fichiers de test dans tout le projet
   testEnvironment: 'node',
 
+  // Tous les tests partagent UNE base PostgreSQL (docker-compose.test.yml) et
+  // la nettoient entre eux. En parallele, le nettoyage d'un fichier effacerait
+  // les donnees d'un autre en plein test : execution en serie obligatoire.
+  maxWorkers: 1,
+
   // Dossiers à ignorer lors de la recherche de tests
   testPathIgnorePatterns: [
     '/node_modules/',

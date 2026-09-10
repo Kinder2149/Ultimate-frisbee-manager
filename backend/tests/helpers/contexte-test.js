@@ -72,4 +72,23 @@ async function viderBase() {
   await prisma.user.deleteMany({});
 }
 
-module.exports = { authentificationSimulee, creerContexte, viderBase };
+
+/** Un contenu de chaque type (exercice, echauffement, situation, entrainement), rattache a l'espace. */
+async function creerContenus(workspaceId) {
+  const tag = await prisma.tag.create({ data: { label: `tag-${Date.now()}`, category: 'objectif', workspaceId } });
+  const exo = await prisma.exercice.create({
+    data: { nom: 'Exo de test', description: 'Desc', variablesPlus: '[]', variablesMinus: '[]', workspaceId,
+      tags: { connect: [{ id: tag.id }] } },
+  });
+  const ech = await prisma.echauffement.create({
+    data: { nom: 'Echauffement de test', workspaceId, blocs: { create: [{ ordre: 1, titre: 'Bloc 1', workspaceId }] } },
+  });
+  const sit = await prisma.situationMatch.create({ data: { type: 'Match', nom: 'Situation de test', workspaceId } });
+  const ent = await prisma.entrainement.create({
+    data: { titre: 'Entrainement de test', date: new Date(), echauffementId: ech.id, situationMatchId: sit.id, workspaceId,
+      exercices: { create: [{ exerciceId: exo.id, ordre: 1, duree: 10, workspaceId }] } },
+  });
+  return { tag, exo, ech, sit, ent };
+}
+
+module.exports = { authentificationSimulee, creerContexte, creerContenus, viderBase };
