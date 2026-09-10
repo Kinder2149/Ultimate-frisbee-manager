@@ -88,6 +88,12 @@ module.exports = {
       });
 
       if (existing) {
+        // Route publique : ne jamais renvoyer le profil d'un compte existant a
+        // quelqu'un qui ne connait pas son email. Le parcours normal (renvoi de
+        // l'identifiant ET de l'email de la session Supabase) n'est pas affecte.
+        if (String(existing.email || '').toLowerCase() !== normalizedEmail) {
+          return res.status(409).json({ error: 'Ce compte existe déjà', code: 'USER_EXISTS' });
+        }
         if (process.env.NODE_ENV !== 'production') {
           console.log('[register] Utilisateur déjà existant:', supabaseUserId);
         }
@@ -106,8 +112,18 @@ module.exports = {
         });
       }
 
+      // Email deja pris par un autre compte : refus propre (etait une erreur 500).
+      const emailPris = await prisma.user.findUnique({ where: { email: normalizedEmail }, select: { id: true } });
+      if (emailPris) {
+        return res.status(409).json({ error: 'Un compte existe déjà avec cet email', code: 'EMAIL_TAKEN' });
+      }
+
       // Créer l'utilisateur en base
       // L'authentification est entièrement gérée par Supabase
+      // ⚠️ LIMITE CONNUE : l'identifiant et l'email recus ne sont pas verifies
+      // aupres de Supabase. Un anonyme peut donc creer une fiche pour un email
+      // qui n'est pas le sien. Correction prevue : verifier l'utilisateur via
+      // l'API d'administration Supabase (necessite SUPABASE_SERVICE_ROLE_KEY).
       const userData = {
         id: supabaseUserId,
         email: normalizedEmail,

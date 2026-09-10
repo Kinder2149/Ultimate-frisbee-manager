@@ -16,7 +16,9 @@ const registerLimiter = rateLimit({
   max: 3, // 3 tentatives max
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Trop de tentatives d\'inscription. Réessayez plus tard.', code: 'RATE_LIMIT' }
+  message: { error: 'Trop de tentatives d\'inscription. Réessayez plus tard.', code: 'RATE_LIMIT' },
+  // Desactive uniquement pour les tests automatises (NODE_ENV=test, pose par le lanceur de tests)
+  skip: () => process.env.NODE_ENV === 'test',
 });
 
 /**
