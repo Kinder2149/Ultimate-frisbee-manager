@@ -1,111 +1,103 @@
+jest.mock('../middleware/auth.middleware', () =>
+  require('../tests/helpers/contexte-test').authentificationSimulee());
+
+// Aucun fichier ne part vers Cloudinary pendant les tests : l'envoi est simule.
+jest.mock('../services/upload.service', () => ({
+  uploadBuffer: jest.fn(async (_buffer, folder) => ({
+    secure_url: `https://res.cloudinary.com/test/image/upload/${folder}/image-test.png`,
+    public_id: `${folder}/image-test`,
+  })),
+  deleteByPublicId: jest.fn(async () => ({ result: 'ok' })),
+  getUrl: jest.fn((id) => `https://res.cloudinary.com/test/${id}`),
+}));
+
 const request = require('supertest');
-const jwt = require('jsonwebtoken');
 const app = require('../app');
 const { prisma } = require('../services/prisma');
+const { uploadBuffer } = require('../services/upload.service');
+const { creerContexte, viderBase } = require('../tests/helpers/contexte-test');
 
-/**
- * Helper: crée un utilisateur ADMIN et retourne un token JWT utilisable
- * pour appeler les routes protégées (même logique que dans export.test.js).
- */
-const makeAdminToken = async () => {
-  await prisma.user.deleteMany({});
-  const user = await prisma.user.create({
-    data: {
-      email: `ex-upload-admin-${Date.now()}@ultimate.com`,
-      nom: 'Admin',
-      prenom: 'Upload',
-      role: 'ADMIN',
-    },
-  });
+const imageFactice = Buffer.from('contenu image factice');
 
-  return jwt.sign(
-    { sub: user.id, email: user.email, role: user.role },
-    process.env.JWT_SECRET,
-    { expiresIn: '15m' }
-  );
-};
+function envoyerExercice(ctx, fichier = { nom: 'photo.png' }) {
+  const req = request(app)
+    .post('/api/exercises')
+    .set(ctx.entetes)
+    .field('nom', 'Exercice avec image')
+    .field('description', 'Cree par le test d\'envoi d\'image.');
+  return fichier ? req.attach('image', imageFactice, fichier.nom) : req;
+}
 
-/**
- * Prépare les tags minimaux requis pour créer un exercice
- * - 1 tag de catégorie "objectif"
- * - >=1 tag de catégorie "travail_specifique"
- */
-const createExerciseTags = async () => {
-  await prisma.tag.deleteMany({});
-
-  const objectif = await prisma.tag.create({
-    data: {
-      label: 'Objectif Test',
-      category: 'objectif',
-      color: '#FF0000',
-    },
-  });
-
-  const travailSpecifique = await prisma.tag.create({
-    data: {
-      label: 'Travail Spécifique Test',
-      category: 'travail_specifique',
-      color: '#0000FF',
-    },
-  });
-
-  return { objectif, travailSpecifique };
-};
+beforeEach(async () => {
+  await viderBase();
+  uploadBuffer.mockClear();
+});
 
 afterAll(async () => {
+  await viderBase();
   await prisma.$disconnect();
 });
 
-/**
- * Ce test crée un exercice avec upload d'image et permet de suivre
- * tout le flux via les logs déjà présents :
- * - logBody (req.body avant validation)
- * - logs dans createExercice (résumé des champs + données envoyées à Prisma)
- */
-describe('API - Création exercice avec upload d\'image', () => {
-  it('POST /api/exercices crée un exercice avec imageUrl renseigné', async () => {
-    const token = await makeAdminToken();
-    const { objectif, travailSpecifique } = await createExerciseTags();
+describe("Exercice — envoi d'image avec la creation", () => {
+  it("cree l'exercice et enregistre l'adresse de l'image", async () => {
+    const ctx = await creerContexte({ roleEspace: 'MEMBER' });
 
-    // Préparer un tableau de tagIds conforme aux règles métier
-    const tagIds = [objectif.id, travailSpecifique.id];
+    const res = await envoyerExercice(ctx);
 
-    // Faux contenu d'image (le middleware ne vérifie que l'extension du nom de fichier)
-    const fakeImageBuffer = Buffer.from('fake image content');
-
-    const res = await request(app)
-      .post('/api/exercices')
-      .set('Authorization', `Bearer ${token}`)
-      .field('nom', 'Exercice Upload Test')
-      .field('description', 'Exercice créé par le test d\'upload.')
-      // On envoie tagIds sous forme de JSON string pour coller au comportement du transformFormData
-      .field('tagIds', JSON.stringify(tagIds))
-      // Variables et points vides pour simplifier
-      .field('variablesPlus', JSON.stringify([]))
-      .field('variablesMinus', JSON.stringify([]))
-      .field('points', JSON.stringify([]))
-      .field('schemaUrls', JSON.stringify([]))
-      // Champ fichier: doit s'appeler 'image' pour matcher createUploader('image', 'exercices')
-      .attach('image', fakeImageBuffer, 'test-upload.png');
-
-    // Vérifications de base
     expect(res.statusCode).toBe(201);
-    expect(res.body).toHaveProperty('id');
-    expect(res.body).toHaveProperty('nom', 'Exercice Upload Test');
+    expect(res.body.nom).toBe('Exercice avec image');
+    expect(res.body.imageUrl).toMatch(/^https:\/\/res\.cloudinary\.com\//);
 
-    // Le contrôleur renvoie l'exercice avec imageUrl déjà renseigné (URL Cloudinary complète)
-    // ou, en cas de mock Cloudinary, au moins une chaîne non vide.
-    expect(res.body).toHaveProperty('imageUrl');
-    expect(typeof res.body.imageUrl).toBe('string');
-    expect(res.body.imageUrl.length).toBeGreaterThan(0);
+    expect(uploadBuffer).toHaveBeenCalledTimes(1);
+    expect(uploadBuffer.mock.calls[0][1]).toBe('ultimate-frisbee-manager/exercices');
 
-    // Pour aider au débogage manuel, on logue l\'imageUrl et l\'ID de l\'exercice créé
-    // (s'ajoute aux logs déjà présents dans les middlewares / contrôleur).
-    // eslint-disable-next-line no-console
-    console.log('[TEST-UPLOAD] Exercice créé:', {
-      id: res.body.id,
-      imageUrl: res.body.imageUrl,
-      tags: res.body.tags?.map(t => ({ id: t.id, category: t.category })),
-    });
+    const enBase = await prisma.exercice.findUnique({ where: { id: res.body.id } });
+    expect(enBase.imageUrl).toBe(res.body.imageUrl);
+    expect(enBase.workspaceId).toBe(ctx.workspace.id);
+  });
+
+  it("cree l'exercice sans image quand aucun fichier n'est joint", async () => {
+    const ctx = await creerContexte();
+    const res = await envoyerExercice(ctx, null);
+    expect(res.statusCode).toBe(201);
+    expect(uploadBuffer).not.toHaveBeenCalled();
+  });
+
+  it("refuse un fichier qui n'est pas une image, sans rien creer", async () => {
+    const ctx = await creerContexte();
+    const res = await envoyerExercice(ctx, { nom: 'document.pdf' });
+    // erreur de l'utilisateur : 400, et non une erreur serveur 500
+    expect(res.statusCode).toBe(400);
+    expect(uploadBuffer).not.toHaveBeenCalled();
+    expect(await prisma.exercice.count()).toBe(0);
+  });
+
+  it("ne cree rien si l'envoi vers Cloudinary echoue", async () => {
+    const ctx = await creerContexte();
+    uploadBuffer.mockRejectedValueOnce(new Error('Cloudinary indisponible'));
+    const res = await envoyerExercice(ctx);
+    expect(res.statusCode).toBeGreaterThanOrEqual(400);
+    expect(await prisma.exercice.count()).toBe(0);
+  });
+
+  it("refuse un lecteur AVANT tout envoi vers Cloudinary (403)", async () => {
+    const ctx = await creerContexte({ roleEspace: 'VIEWER' });
+    const res = await envoyerExercice(ctx);
+    expect(res.statusCode).toBe(403);
+    // le fichier ne doit jamais atteindre le stockage d'images
+    expect(uploadBuffer).not.toHaveBeenCalled();
+    expect(await prisma.exercice.count()).toBe(0);
+  });
+
+  it.each([
+    ['/api/trainings', 'titre'],
+    ['/api/warmups', 'nom'],
+    ['/api/matches', 'type'],
+  ])("refuse un lecteur avant tout envoi d'image sur %s", async (route, champ) => {
+    const ctx = await creerContexte({ roleEspace: 'VIEWER' });
+    const res = await request(app).post(route).set(ctx.entetes)
+      .field(champ, 'Contenu de test').attach('image', imageFactice, 'photo.png');
+    expect(res.statusCode).toBe(403);
+    expect(uploadBuffer).not.toHaveBeenCalled();
   });
 });

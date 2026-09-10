@@ -49,10 +49,26 @@ const uploadToCloudinary = (subfolder) => async (req, res, next) => {
  * @param {string} fieldName - Le nom du champ du formulaire contenant le fichier.
  * @param {string} subfolder - Le sous-dossier de destination sur Cloudinary.
  */
+/**
+ * Reception du fichier par Multer. Un fichier refuse (extension non image,
+ * taille depassee) est une erreur de l'utilisateur : on la signale en 400
+ * au lieu de la laisser remonter en erreur serveur 500.
+ */
+const recevoirFichier = (fieldName) => (req, res, next) => {
+  memoryUploader.single(fieldName)(req, res, (err) => {
+    if (err) {
+      if (!err.statusCode) err.statusCode = 400;
+      if (err.code === 'LIMIT_FILE_SIZE') err.message = 'Image trop volumineuse (5 Mo maximum).';
+      return next(err);
+    }
+    return next();
+  });
+};
+
 const createUploader = (fieldName, subfolder) => {
   return [
-    memoryUploader.single(fieldName), // 1. Multer
-    uploadToCloudinary(subfolder),    // 2. Cloudinary
+    recevoirFichier(fieldName),    // 1. Multer (erreurs utilisateur -> 400)
+    uploadToCloudinary(subfolder), // 2. Cloudinary
   ];
 };
 

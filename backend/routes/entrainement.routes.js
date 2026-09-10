@@ -16,18 +16,18 @@ router.get('/', entrainementController.getAllEntrainements);
 router.get('/:id', entrainementController.getEntrainementById);
 
 router.post('/', 
+  requireWorkspaceWrite, 
   ...createUploader('image', 'entrainements'), 
   transformFormData, 
-  validate(createEntrainementSchema), 
-  requireWorkspaceWrite,
+  validate(createEntrainementSchema),
   entrainementController.createEntrainement
 );
 
 router.put('/:id', 
+  requireWorkspaceWrite, 
   ...createUploader('image', 'entrainements'), 
   transformFormData, 
-  validate(updateEntrainementSchema), 
-  requireWorkspaceWrite,
+  validate(updateEntrainementSchema),
   entrainementController.updateEntrainement
 );
 router.post('/:id/duplicate', requireWorkspaceWrite, entrainementController.duplicateEntrainement);

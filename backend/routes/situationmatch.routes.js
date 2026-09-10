@@ -16,18 +16,18 @@ router.get('/', situationMatchController.getAllSituationsMatchs);
 router.get('/:id', situationMatchController.getSituationMatchById);
 
 router.post('/', 
+  requireWorkspaceWrite, 
   createUploader('image', 'situations-matchs'), 
   transformFormData, 
-  validate(createSituationMatchSchema), 
-  requireWorkspaceWrite,
+  validate(createSituationMatchSchema),
   situationMatchController.createSituationMatch
 );
 
 router.put('/:id', 
+  requireWorkspaceWrite, 
   createUploader('image', 'situations-matchs'), 
   transformFormData, 
-  validate(updateSituationMatchSchema), 
-  requireWorkspaceWrite,
+  validate(updateSituationMatchSchema),
   situationMatchController.updateSituationMatch
 );
 router.post('/:id/duplicate', requireWorkspaceWrite, situationMatchController.duplicateSituationMatch);

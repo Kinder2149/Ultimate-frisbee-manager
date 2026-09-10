@@ -138,10 +138,10 @@ router.get('/:id', exerciceController.getExerciceById);
  *         $ref: '#/components/responses/ValidationError'
  */
 router.post('/', 
+  requireWorkspaceWrite, 
   createUploader('image', 'exercices'), 
   transformFormData, 
   validate(createExerciceSchema),
-  requireWorkspaceWrite,
   exerciceController.createExercice
 );
 
@@ -199,7 +199,7 @@ router.post('/',
  *       422:
  *         $ref: '#/components/responses/ValidationError'
  */
-router.put('/:id', createUploader('image', 'exercices'), transformFormData, validate(updateExerciceSchema), requireWorkspaceWrite, exerciceController.updateExercice);
+router.put('/:id', requireWorkspaceWrite, createUploader('image', 'exercices'), transformFormData, validate(updateExerciceSchema), exerciceController.updateExercice);
 
 /**
  * @swagger

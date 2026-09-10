@@ -12,18 +12,18 @@ router.get('/', echauffementController.getAllEchauffements);
 router.get('/:id', echauffementController.getEchauffementById);
 
 router.post('/', 
+  requireWorkspaceWrite, 
   createUploader('image', 'echauffements'), 
   transformFormData, 
-  validate(createEchauffementSchema), 
-  requireWorkspaceWrite,
+  validate(createEchauffementSchema),
   echauffementController.createEchauffement
 );
 
 router.put('/:id', 
+  requireWorkspaceWrite, 
   createUploader('image', 'echauffements'), 
   transformFormData, 
-  validate(updateEchauffementSchema), 
-  requireWorkspaceWrite,
+  validate(updateEchauffementSchema),
   echauffementController.updateEchauffement
 );
 router.delete('/:id', requireWorkspaceWrite, echauffementController.deleteEchauffement);
