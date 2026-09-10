@@ -64,8 +64,20 @@ async function creerContexte({ roleEspace = 'MANAGER', rolePlateforme = 'USER', 
   };
 }
 
-/** Vide les tables touchees par les tests, dans l'ordre des dependances. */
+/**
+ * Vide toute la base de test, dans l'ordre des dependances.
+ * Tout le contenu est supprime explicitement, y compris celui sans espace
+ * (le script d'amorcage de Prisma en cree) : la suppression des espaces
+ * ne l'emporterait pas par cascade.
+ */
 async function viderBase() {
+  await prisma.entrainementExercice.deleteMany({});
+  await prisma.entrainement.deleteMany({});
+  await prisma.blocEchauffement.deleteMany({});
+  await prisma.echauffement.deleteMany({});
+  await prisma.situationMatch.deleteMany({});
+  await prisma.exercice.deleteMany({});
+  await prisma.lexique.deleteMany({});
   await prisma.tag.deleteMany({});
   await prisma.workspaceUser.deleteMany({});
   await prisma.workspace.deleteMany({});
