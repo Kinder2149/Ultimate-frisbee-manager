@@ -104,6 +104,14 @@ async function createSituationMatch(data, workspaceId, file = null) {
  * @throws {Error} Si les tags n'appartiennent pas au workspace
  */
 async function updateSituationMatch(id, data, workspaceId, file = null) {
+  // SECURITE: l'element doit appartenir a l'espace courant (404 plutot qu'une erreur 500).
+  const existant = await prisma.situationMatch.findFirst({ where: { id, workspaceId }, select: { id: true } });
+  if (!existant) {
+    const error = new Error('Situation/Match non trouvé');
+    error.statusCode = 404;
+    error.code = 'NOT_FOUND';
+    throw error;
+  }
   const { nom, type, description, temps, tagIds, imageUrl } = data;
 
   // SÉCURITÉ: Valider que tous les tags appartiennent au workspace

@@ -106,6 +106,18 @@ function nettoyerLiens(exercices, workspaceId) {
     }));
 }
 
+/**
+ * Message d'erreur montrable dans le rapport d'import : nos propres
+ * controles sont explicites ; une erreur de la base, elle, contient des
+ * chemins de fichiers et du code du serveur, on la resume.
+ */
+function messageLisible(err) {
+  if (err && typeof err.name === 'string' && err.name.startsWith('PrismaClient')) {
+    return 'Erreur lors de l’enregistrement en base';
+  }
+  return (err && err.message) || 'Erreur inconnue';
+}
+
 /** Traite un element dans sa propre transaction ; renvoie son compte-rendu. */
 async function traiterElement(fn) {
   return prisma.$transaction(fn);
@@ -124,7 +136,7 @@ exports.importExercicesFromMarkdown = async (req, res) => {
     return exports.importExercices(req, res);
   } catch (error) {
     console.error('Erreur import depuis Markdown:', error);
-    return res.status(500).json({ error: 'Erreur serveur durant import Markdown', details: error.message });
+    return res.status(500).json({ error: 'Erreur serveur durant import Markdown' });
   }
 };
 
@@ -211,13 +223,13 @@ exports.importEntrainements = async (req, res) => {
         report.entrainements.push(ligne);
       } catch (e) {
         report.totals.skipped += 1;
-        report.entrainements.push({ titre: ent.titre || '(sans titre)', action: 'skip', error: e.message });
+        report.entrainements.push({ titre: ent.titre || '(sans titre)', action: 'skip', error: messageLisible(e) });
       }
     }
     return res.json(report);
   } catch (error) {
     console.error('Erreur import entrainements:', error);
-    return res.status(500).json({ error: 'Erreur serveur durant import entrainements', details: error.message });
+    return res.status(500).json({ error: 'Erreur serveur durant import entrainements' });
   }
 };
 
@@ -285,13 +297,13 @@ exports.importEchauffements = async (req, res) => {
         report.echauffements.push(ligne);
       } catch (err) {
         report.totals.skipped += 1;
-        report.echauffements.push({ nom: e.nom || '(sans nom)', action: 'skip', error: err.message });
+        report.echauffements.push({ nom: e.nom || '(sans nom)', action: 'skip', error: messageLisible(err) });
       }
     }
     return res.json(report);
   } catch (error) {
     console.error('Erreur import echauffements:', error);
-    return res.status(500).json({ error: 'Erreur serveur durant import echauffements', details: error.message });
+    return res.status(500).json({ error: 'Erreur serveur durant import echauffements' });
   }
 };
 
@@ -363,13 +375,13 @@ exports.importSituationsMatchs = async (req, res) => {
         report.situations.push(ligne);
       } catch (err) {
         report.totals.skipped += 1;
-        report.situations.push({ nom: s.nom || null, type: s.type || '(sans type)', action: 'skip', error: err.message });
+        report.situations.push({ nom: s.nom || null, type: s.type || '(sans type)', action: 'skip', error: messageLisible(err) });
       }
     }
     return res.json(report);
   } catch (error) {
     console.error('Erreur import situations:', error);
-    return res.status(500).json({ error: 'Erreur serveur durant import situations', details: error.message });
+    return res.status(500).json({ error: 'Erreur serveur durant import situations' });
   }
 };
 
@@ -452,12 +464,12 @@ exports.importExercices = async (req, res) => {
         report.exercices.push(ligne);
       } catch (e) {
         report.totals.skipped += 1;
-        report.exercices.push({ nom: exo.nom || '(sans nom)', action: 'skip', error: e.message });
+        report.exercices.push({ nom: exo.nom || '(sans nom)', action: 'skip', error: messageLisible(e) });
       }
     }
     return res.json(report);
   } catch (error) {
     console.error('Erreur import:', error);
-    return res.status(500).json({ error: 'Erreur serveur durant import', details: error.message });
+    return res.status(500).json({ error: 'Erreur serveur durant import' });
   }
 };

@@ -95,6 +95,16 @@ async function createEchauffement(data, workspaceId, file = null) {
  * @returns {Promise<Object>} Échauffement mis à jour
  */
 async function updateEchauffement(id, data, workspaceId, file = null) {
+  // SECURITE: l'element doit appartenir a l'espace courant, et ce AVANT toute
+  // suppression de ses sous-elements (sinon on ne comptait que sur l'annulation
+  // de la transaction, et l'appelant recevait une erreur 500).
+  const existant = await prisma.echauffement.findFirst({ where: { id, workspaceId }, select: { id: true } });
+  if (!existant) {
+    const error = new Error('Échauffement non trouvé');
+    error.statusCode = 404;
+    error.code = 'NOT_FOUND';
+    throw error;
+  }
   const { nom, description, blocs, imageUrl } = data;
 
   const echauffementMisAJour = await prisma.$transaction(async (tx) => {

@@ -201,6 +201,16 @@ async function createEntrainement(data, workspaceId, file = null) {
  * Mettre à jour un entraînement
  */
 async function updateEntrainement(id, data, workspaceId, file = null) {
+  // SECURITE: l'element doit appartenir a l'espace courant, et ce AVANT toute
+  // suppression de ses sous-elements (sinon on ne comptait que sur l'annulation
+  // de la transaction, et l'appelant recevait une erreur 500).
+  const existant = await prisma.entrainement.findFirst({ where: { id, workspaceId }, select: { id: true } });
+  if (!existant) {
+    const error = new Error('Entraînement non trouvé');
+    error.statusCode = 404;
+    error.code = 'NOT_FOUND';
+    throw error;
+  }
   const { titre, date, exercices, echauffementId, situationMatchId, tagIds, imageUrl, lexiqueIds, rang } = data;
 
   // SÉCURITÉ: Valider les tags
