@@ -20,7 +20,17 @@ import { TagService } from '../../../../core/services/tag.service';
 export class TagFormComponent implements OnInit, OnChanges {
 
   getCategoryDisplayName(category: string): string {
-    return category.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase());
+    const libelles: Record<string, string> = {
+      objectif: 'Objectif',
+      travail_specifique: 'Travail spécifique',
+      niveau: 'Niveau',
+      temps: 'Temps',
+      format: 'Format',
+      theme_entrainement: 'Thème d’entraînement',
+      phase_entrainement: 'Phase',
+      public_seance: 'Public de la séance',
+    };
+    return libelles[category] ?? category.replace(/_/g, ' ');
   }
 
     @Input() category: TagCategory = 'objectif';

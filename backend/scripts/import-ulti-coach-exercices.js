@@ -814,6 +814,10 @@ function buildNotes(ex) {
   return dedup.length ? dedup.join('\n') : null;
 }
 
+function enListe(texte) {
+  return JSON.stringify(String(texte || '').split(/\r?\n/).map(l => l.trim()).filter(Boolean));
+}
+
 async function main() {
   console.log('=== PARTIE A — Tags Thème/Phase/Sous-phase ===');
   const contenuTagId = new Map(); // notion url -> Tag.id
@@ -932,8 +936,9 @@ async function main() {
           nom: ex.nom,
           description,
           critereReussite: ex.critereReussite || null,
-          variablesPlus: ex.variablesPlus || '',
-          variablesMinus: ex.variablesMinus || '',
+          // Format attendu par l'application : liste JSON, une variable par ligne du texte source
+          variablesPlus: enListe(ex.variablesPlus),
+          variablesMinus: enListe(ex.variablesMinus),
           materiel: ex.materiel || null,
           notes,
           imageUrl: null,

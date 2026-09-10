@@ -56,10 +56,25 @@ function normalizeStringArray(value) {
 function parseExerciceJsonFields(exercice) {
   return {
     ...exercice,
-    variablesPlus: JSON.parse(exercice.variablesPlus || '[]'),
-    variablesMinus: JSON.parse(exercice.variablesMinus || '[]'),
-    points: JSON.parse(exercice.points || '[]')
+    variablesPlus: lireListe(exercice.variablesPlus),
+    variablesMinus: lireListe(exercice.variablesMinus),
+    points: lireListe(exercice.points)
   };
+}
+
+/**
+ * Lit un champ liste stocke en JSON. Tolere l'ancien format texte (une
+ * valeur par ligne) : un seul exercice mal forme faisait echouer TOUTE la
+ * liste en erreur 500 (constate le 2026-09-10 apres l'import Ulti Coach).
+ */
+function lireListe(valeur) {
+  if (!valeur) return [];
+  try {
+    const parse = JSON.parse(valeur);
+    return Array.isArray(parse) ? parse : [String(parse)];
+  } catch {
+    return String(valeur).split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  }
 }
 
 /**
