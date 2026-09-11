@@ -311,7 +311,7 @@ Exercices: 74 (38 avec description complète, 36 avec fiche Notion incomplète �
 **⚠️ Quel workspace ?** Tout est créé dans **"Ulti Coach"**, `workspaceId = "e133fed1-ab18-4e1f-8e10-eb9124645fa6"` — jamais dans "BASE" (workspace protégé, réservé aux admins plateforme). Pour vérifier à l'écran : se connecter, "Changer d'espace" → choisir **Ulti Coach** (rôle Gestionnaire pour Kinder) avant de regarder `/tags` ou `/exercices` — si on reste sur "BASE" par défaut, tout paraîtra vide alors que les données sont bien là.
 
 **❌ Pas fait — reste à faire, dans l'ordre suggéré :**
-1. **QA visuelle de l'import** (pas encore faite) : ouvrir `/tags` (arbre Thèmes/Phases cohérent ?) et `/exercices` (fiches lisibles, tags corrects, pas de description bidon en masse) dans le workspace Ulti Coach — premier réflexe à la reprise, avant d'aller plus loin.
+1. ~~**QA visuelle de l'import**~~ ✅ **faite le 2026-09-10** (Kinder connecté) : 74 fiches lisibles (retours à la ligne corrigés, variables en liste), arbre 10 thèmes / 39 phases correct, lexique 42 termes fidèle à Notion. À nettoyer par Kinder dans l'appli : tags objectifs « Echauffemen avec disc » (doublon) et « Middel » (faute) ; définition Notion de « Compte à 5 » à revoir.
 2. Les **séances réelles** (39, vérifiées) → vers `Entrainement` (+ `EntrainementExercice` + `lexique` + `rang`), datées, taguées par thème/phase/public. Dépend des Exercices déjà importés (étape 1) pour les relier via `EntrainementExercice`.
 3. Formulaire d'édition du Lexique (si Kinder le souhaite au clavier plutôt qu'en réimportant depuis Notion).
 4. L'écran "déroulement sur une année" (liste des `Entrainement` du workspace groupés par mois/tag-thème, ordonnée par `date` puis `rang`).
