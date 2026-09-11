@@ -1,0 +1,2232 @@
+[
+ {
+  "notionId": "3ce9cc08fab8810b8862c45bf4602cff",
+  "titre": "Le Cut — n°4 — Du stack au cut (Débutant)",
+  "date": null,
+  "rang": 4,
+  "niveau": "Débutant",
+  "theme": "Le Cut",
+  "phases": [
+   "Le stack",
+   "La zone de réception"
+  ],
+  "lexique": [
+   "Appel",
+   "Stack = zone de repos + prise d'info",
+   "Fermé / Ouvert",
+   "Cut du rugbyman"
+  ],
+  "ech": [
+   [
+    "Physique",
+    ""
+   ],
+   [
+    "Circuit",
+    "de gamme de passe"
+   ],
+   [
+    "La courbe qui épouse",
+    ""
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "La Flèche classique",
+    "nb": "Colonne, 1 entrée",
+    "mat": "Plots\nDisques",
+    "duree": "[?] non notée",
+    "obj": "Installer la forme du cut par paliers, en partant de rien.",
+    "crit": "Le joueur ne se contente plus de courir : il plante et repart.",
+    "der": "Démo, puis pas de consigne. Ensuite :\n1. Le cut du rugbyman\n2. Petit pas + contre grand\n3. Le défenseur qui m'attend au plot",
+    "notes": "Trois images pour un seul geste : le « cut du rugbyman », le « petit pas », le « défenseur qui attend » — trois entrées différentes vers le même changement de direction. Un joueur qui ne comprend pas la première comprendra la deuxième."
+   },
+   {
+    "nom": "Situation de stack",
+    "nb": "X personnes · tout le monde part sur le même",
+    "mat": "X disques pour X personnes · formes de stack différentes",
+    "duree": "[?] non notée",
+    "obj": "Produire les différentes formes de bon cut depuis le stack.",
+    "crit": "La forme demandée est produite sur les deux axes : profondeur et côté.",
+    "der": "1. Bon cut ouvert : Derrière → Devant // Fermé → Ouvert\n2. En long : Devant → Derrière // Fermé → Ouvert (B)\n3. Fermé : Derrière → Devant // Ouvert → Fermé (A)\n4. Début / Fin : (A) et (B)",
+    "notes": "C'est la même grille que chez les joueurs hétérogènes : même contenu, même vocabulaire — seule la profondeur du travail change."
+   },
+   {
+    "nom": "Exercice bonus — si on a le temps",
+    "nb": "Par groupes de 3 / 4 / 5",
+    "mat": "Disques sur le porteur",
+    "duree": "Pas de compte",
+    "obj": "La stratégie du stack doit entraîner les appels — c'est le placement qui déclenche, pas l'inverse.",
+    "crit": "Disque précieux : 100 %. Pas de compte, pas de pression de temps — mais aucune perte tolérée.",
+    "der": ""
+   }
+  ],
+  "match": null
+ },
+ {
+  "notionId": "3ce9cc08fab8810f9b7aead1b9f4830a",
+  "titre": "Défense — n°3 — Individuelle : de à plat à orientée (Hétérogène)",
+  "date": null,
+  "rang": 3,
+  "niveau": "Hétérogène",
+  "theme": "Défense — les bases",
+  "phases": [
+   "La force (ouvert / fermé)",
+   "Le triangle de vision"
+  ],
+  "lexique": [
+   "Fermé / Ouvert",
+   "Switch",
+   "Deep"
+  ],
+  "ech": [],
+  "ex": [
+   {
+    "nom": "Organisation défensive à plat",
+    "nb": "1 handler + un stack de X personnes",
+    "mat": "Une pile de disques au handler",
+    "duree": "[?] non notée",
+    "obj": "Interdire une zone donnée. Se placer entre le disque et le joueur.",
+    "crit": "« Je ne veux pas qu'il l'ait devant. »",
+    "der": "- Organisation défensive à plat, fond détaché\n- Position entre le disque et le joueur\n- À chaque passage, le stack se donne un ordre et entraîne le cut → deep",
+    "notes": "« La défense est un exploit » — les 3 critères notés en marge : 1. Position 2. Prévision 3. Prise [?] (mot coupé sur la feuille)"
+   },
+   {
+    "nom": "Organisation défensive orientée",
+    "nb": "",
+    "mat": "",
+    "duree": "",
+    "obj": "Être avant mon joueur dans la zone de réception — pas à côté, avant.",
+    "crit": "Regard sur le joueur + périphérie avec le disque — c'est ce qui différencie l'orientée du à plat.",
+    "der": "- Intérêt handler droit / handler gauche — pour l'instant, en profondeur\n- Bloquer à fond ouvert\n- Le handler reprend la situation de l'exercice 1, mais dans le fermé"
+   }
+  ],
+  "match": "Noté sans détail sur la feuille : [?]"
+ },
+ {
+  "notionId": "3ce9cc08fab88116b6cace72c80e9022",
+  "titre": "Le Cut — n°4 — De l'information à la décision (Hétérogène)",
+  "date": null,
+  "rang": 4,
+  "niveau": "Hétérogène",
+  "theme": "Le Cut",
+  "phases": [
+   "La prise d'info",
+   "La zone de réception"
+  ],
+  "lexique": [
+   "PPA",
+   "Appel",
+   "Zone de réception",
+   "Fermé / Ouvert"
+  ],
+  "ech": [
+   [
+    "Gamme de passe",
+    ""
+   ],
+   [
+    "Échauffement dynamique",
+    ""
+   ],
+   [
+    "Jeu des 4 zones",
+    "comment varier les prises d'infos ?"
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "L'information",
+    "nb": "Chaîne × 2, par 2 ou 3 · puis 2 équipes + défense",
+    "mat": "Disques",
+    "duree": "[?] non notée",
+    "obj": "Transformer l'information en décision : le côté d'où vient l'info détermine le côté de l'appel.",
+    "crit": "- Je ne me trompe pas de côté\n- Si besoin, je prends ce temps\n- Puis je réduis mon temps",
+    "der": "Enchaînement classique, J1 et J2 de dos.\n1. Au signal, un par un, je prends du côté de l'info\n2. Le côté appelé = la zone de réception\n3. Le passeur passe en défense et on recommence\n4. Étapes 1 et 2 : ouvert puis fermé\n5. J1 + J2 partent ensemble → proposent la continuité\n6. 2 équipes (+ défense) : si J1 reçoit → continuité de J2 ; si J1 est bloqué → J2 s'oppose",
+    "vp": [
+     "Ouvert puis fermé",
+     "Les deux joueurs partent ensemble",
+     "Ajouter la défense",
+     "2 équipes en opposition"
+    ],
+    "vm": [
+     "Un joueur à la fois",
+     "Ouvert uniquement",
+     "Sans défense",
+     "Laisser le temps de la prise d'info"
+    ],
+    "notes": "Ces trois critères sont un modèle : d'abord la justesse, puis le droit de prendre son temps, puis la vitesse. Dans cet ordre."
+   },
+   {
+    "nom": "Le cut",
+    "nb": "1 attaquant + 1 défenseur + 1 handler avec défense · puis 5v5, 2 déf par équipe",
+    "mat": "4 plots\nDisques",
+    "duree": "5 passages par équipe",
+    "obj": "Enchaîner les passes dans l'aire de jeu.",
+    "crit": "L'équipe respecte l'ordre de cut qu'elle a fixé avant de commencer.",
+    "der": "- 4 plots délimitent l'aire\n- L'équipe en attaque détermine son ordre : cut 1 puis cut 2, pas plus\n- La défense a interdiction de poacher\n- Puis 5v5, 2 défenseurs par équipe",
+    "vp": [
+     "Passer en 5v5",
+     "Autoriser le poach"
+    ],
+    "vm": [
+     "Rester à 1 contre 1",
+     "Agrandir l'aire de jeu"
+    ]
+   }
+  ],
+  "match": "Situation arrêtée. Base : stack classique avec un H2.\n- On traverse avec J1 + J2 (ouvert / fermé) : 2 pts\n- Déblocage par l'Ace : 1 pt\n- Remise au H2 : 0 pt\n- Stall out : −1 pt"
+ },
+ {
+  "notionId": "3ce9cc08fab88121ae30ec1f0daa0e24",
+  "titre": "Le Cut — n°7 — Gain de temps et formes de cut (Hétérogène)",
+  "date": null,
+  "rang": 7,
+  "niveau": "Hétérogène",
+  "theme": "Le Cut",
+  "phases": [
+   "Le changement de direction",
+   "La zone de réception"
+  ],
+  "lexique": [
+   "Fermé / Ouvert",
+   "La passe qui déclenche l'appel",
+   "Courbe qui s'épouse"
+  ],
+  "ech": [
+   [
+    "Physique",
+    ""
+   ],
+   [
+    "Circuit de passe",
+    "→ on épouse"
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "Gain de temps",
+    "nb": "[?] non noté",
+    "mat": "Plots",
+    "duree": "[?] non notée",
+    "obj": "Gagner du temps sur le défenseur entre le cut 1 et le cut 2 — par le rythme et l'ancrage, pas par la vitesse pure.",
+    "crit": "Le défenseur ne peut plus attendre au plot : il est obligé de réagir.",
+    "der": "Théorie — la lenteur, puis progression :\n1. Pas de consigne\n2. Cut rythmé\n3. Petit pas et contre direct\n4. Défenseur qui m'attend au plot — combien de cuts faut-il alors ?",
+    "vp": [
+     "Le défenseur attend au plot",
+     "Contre direct imposé"
+    ],
+    "vm": [
+     "Pas de consigne, on laisse faire",
+     "Sans défenseur"
+    ],
+    "notes": "Le cue à sortir ici : « J'arrive, petit pas, je plante, je tourne et pousse ! » — l'étape 3 (« petit pas et contre direct ») en est la traduction terrain."
+   },
+   {
+    "nom": "Forme de cut",
+    "nb": "1 handler + 1 défenseur + 1 stack de X personnes",
+    "mat": "1 disque pour X personnes",
+    "duree": "[?] non notée",
+    "obj": "Nommer et distinguer les formes de cut — ce n'est pas « un cut », il y en a cinq.",
+    "crit": "Le joueur produit la forme demandée, sur les deux axes : profondeur et côté.",
+    "der": "1. Pas de consigne : on observe\n2. Un bon cut ouvert : Derrière → Devant // Fermé → Ouvert\n3. Un bon cut en long : Devant → Derrière // Fermé → Ouvert\n4. Un bon cut fermé : Derrière → Devant // Ouvert → Fermé\n5. Un bon cut temps début → Rocco\n6. Un bon cut temps fin\n7. Avec défense",
+    "notes": "La grille d'observation du coach : chaque cut se lit sur deux axes — la profondeur (devant / derrière) et le côté (ouvert / fermé) — plus le moment dans le compte."
+   }
+  ],
+  "match": null
+ },
+ {
+  "notionId": "3ce9cc08fab8814c8fd5ceb15d053a0f",
+  "titre": "Le Cut — n°5 — Le stack et le recyclage (Débutant)",
+  "date": null,
+  "rang": 5,
+  "niveau": "Débutant",
+  "theme": "Le Cut",
+  "phases": [
+   "Le stack",
+   "Le recyclage"
+  ],
+  "lexique": [
+   "PPA",
+   "Restack / Recyclage",
+   "Stack = zone de repos + prise d'info",
+   "Zone de réception"
+  ],
+  "ech": [
+   [
+    "Mise en gamme — fontaine",
+    ""
+   ],
+   [
+    "Rythme",
+    "avec une couleur de préférence → (+) recyclage"
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "Le rythme en 3 temps",
+    "nb": "En fonction du monde présent",
+    "mat": "Zones de réception matérialisées\nDisques",
+    "duree": "[?] non notée",
+    "obj": "Installer le rythme en 3 temps : cut 1, cut 2, recycle.",
+    "crit": "Le 3e temps existe : le joueur repart vers le stack au lieu de rester.",
+    "der": "Zones de réception matérialisées. Le cycle :\n1. Cut 1\n2. Cut 2\n3. Recycle"
+   },
+   {
+    "nom": "La pile de disques",
+    "nb": "Stack complet + 1 handler",
+    "mat": "Une pile de disques au handler · zones de réception · zone de dépôt",
+    "duree": "En continu",
+    "obj": "Le handler enchaîne sans temps mort — le recyclage devient la condition du flux.",
+    "crit": "Le stack ne se vide jamais : quelqu'un est toujours replacé.",
+    "der": "Le handler possède une pile de disques et enchaîne. Dépôt des disques → recyclage."
+   }
+  ],
+  "match": "La contrainte : pas de compte → impossible de lancer si quelqu'un ne recycle pas.\nPersonne n'a besoin de crier « replacez-vous » : le jeu s'arrête tout seul. La règle enseigne à la place du coach."
+ },
+ {
+  "notionId": "3ce9cc08fab88150bcf8f4e773dfc6dc",
+  "titre": "Défense — n°2 — La base à plat (Hétérogène)",
+  "date": null,
+  "rang": 2,
+  "niveau": "Hétérogène",
+  "theme": "Défense — les bases",
+  "phases": [
+   "La position de base (à plat)",
+   "Le découpage du compte"
+  ],
+  "lexique": [
+   "Disque = lumière",
+   "Position de crabe"
+  ],
+  "ech": [
+   [
+    "Partie physique",
+    ""
+   ],
+   [
+    "Demo BOISS",
+    ""
+   ],
+   [
+    "Jeu à 3",
+    "→ position défensive"
+   ],
+   [
+    "Frisbee lumière",
+    ""
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "3 par 3",
+    "nb": "3 par 3",
+    "mat": "Zone matérialisée\nDisques",
+    "duree": "10 secondes [?]",
+    "obj": "Interdire une zone. Un objectif défensif unique et lisible.",
+    "crit": "Le disque n'entre pas dans la zone interdite.",
+    "der": ""
+   },
+   {
+    "nom": "Avant / Après",
+    "nb": "",
+    "mat": "",
+    "duree": "",
+    "obj": "Le défenseur prévoit la passe d'après — il ne subit pas l'action en cours.",
+    "crit": "Le défenseur est déjà orienté vers la suite quand le disque part.",
+    "der": "Démo : −5 sec → 10 → +5 sec\nPosition → position complète → position.\nRepères : moi vs ma défense · Qui ? Regard ? · mise en difficulté · le lancé d'après.\nPuis jeu de give and go → zone de réception.",
+    "vp": [
+     "Zone de réception = la périphérie de la défense — le défenseur doit couvrir plus large"
+    ],
+    "vm": [
+     "Les joueurs choisissent leur départ"
+    ]
+   }
+  ],
+  "match": "- On ne lance qu'après 2 secondes\n- Pas de compte\nDeux contraintes minuscules qui changent tout : sans compte et avec 2 secondes imposées, le lanceur ne peut plus se débarrasser du disque. La défense a le temps d'exister."
+ },
+ {
+  "notionId": "3ce9cc08fab88156b6d3df25f68cd1e0",
+  "titre": "Le Cut — n°1 — Base passe et démarquation (Débutant)",
+  "date": null,
+  "rang": 1,
+  "niveau": "Débutant",
+  "theme": "Le Cut",
+  "phases": [
+   "Le cut 1",
+   "Le cut 2"
+  ],
+  "lexique": [
+   "Appel",
+   "Fermé / Ouvert"
+  ],
+  "ech": [
+   [
+    "Gamme de passes",
+    "Classique : revers // coup droit — base avec positionnement\nDemo BOISS — pied de pivot : revers / coup droit de plus en plus loin (proche / moyen / loin)\nPar-dessus les épaules — tout peut voler…"
+   ],
+   [
+    "Partie dynamique",
+    ""
+   ],
+   [
+    "Jeu des 4 zones",
+    "Règle classique, en 4 paliers :\n1. Si besoin : touché / catché\n2. Si ça tombe = retour à la base\n3. Ajouter un défenseur\n4. Compétition\nLa règle de progression : pas de consigne → une consigne → avec défense → en compétition."
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "Passe à 10",
+    "nb": "Variable — on adapte le nombre de terrains",
+    "mat": "Disques\nPlots pour délimiter",
+    "duree": "[?] non notée",
+    "obj": "Conserver le disque et se démarquer — le plus simple des exercices collectifs.",
+    "crit": "10 passes enchaînées.",
+    "der": "",
+    "vp": [
+     "Passes à X (plus que 10)",
+     "Compétition au record",
+     "Terrain plus petit"
+    ],
+    "vm": [
+     "Moins de passes à enchaîner",
+     "Terrain plus grand",
+     "Sans défense"
+    ],
+    "notes": "Adapter le nombre de terrains // faire des terrains de tailles différentes. Des terrains de tailles différentes, c'est aussi de l'hétérogénéité gérée sans trier les joueurs : le petit terrain est plus dur."
+   },
+   {
+    "nom": "La Flèche",
+    "nb": "Colonne + 1 lanceur",
+    "mat": "Plots pour matérialiser cut 1 / cut 2 / appel\nDisques",
+    "duree": "[?] non notée",
+    "obj": "Rendre l'appel visible : les plots donnent une forme à ce qui est abstrait pour un débutant.",
+    "crit": "Le joueur passe par les plots — il fait bien cut 1 + cut 2, pas une course droite.",
+    "der": "Flèche à 1 entrée. Installer les plots pour le visuel (cf. cut 1 / cut 2 / appel).",
+    "vp": [
+     "Varier les plots → appels différents",
+     "2 entrées"
+    ],
+    "vm": [
+     "Une seule forme d'appel",
+     "Garder tous les plots"
+    ]
+   }
+  ],
+  "match": "- Si besoin : demi-terrain\n- + 2 zones plus centrales (sans limite)"
+ },
+ {
+  "notionId": "3ce9cc08fab8815fb6edf289dbef1979",
+  "titre": "Continuité — n°1 — Prise de décision dans le flow (Hétérogène)",
+  "date": null,
+  "rang": 1,
+  "niveau": "Hétérogène",
+  "theme": "Continuité et prise de décision",
+  "phases": [
+   "Le swing",
+   "Le recentrage"
+  ],
+  "lexique": [
+   "Swing",
+   "Recentrage"
+  ],
+  "ech": [
+   [
+    "Gamme de passe",
+    ""
+   ],
+   [
+    "Physique",
+    ""
+   ],
+   [
+    "1 contre 1 avec un annonceur",
+    "Les deux passeurs s'avancent au centre, l'annonceur annonce une couleur. Les passeurs doivent passer par le centre et récupérer le plot en premier.\nObjectif : 6 points au joueur de mon choix."
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "L'enchaînement swing / continuité",
+    "nb": "2 handlers + 1 milieu · puis 2 équipes",
+    "mat": "Disques",
+    "duree": "[?] non notée",
+    "obj": "Enchaîner recentrage → swing → continuité sans temps mort.",
+    "crit": "Précision et timing. La continuité est réussie, et H1 se replace pour le swing de l'autre côté.",
+    "der": "1. H1 recentre du swing\n2. H2 recentre de son handler (swing)\n3. M1 propose la continuité\n4. Puis on alterne : H1–H1 / H2–M1…",
+    "vp": [
+     "H1 se replace pour le swing de l'autre côté",
+     "Deux équipes s'affrontent"
+    ],
+    "vm": [
+     "Sans replacement",
+     "Sans opposition"
+    ]
+   },
+   {
+    "nom": "Décider dans le flow",
+    "nb": "",
+    "mat": "",
+    "duree": "",
+    "obj": "Prendre une décision dans le flux — pas s'arrêter pour réfléchir.",
+    "crit": "Le joueur se pose les bonnes questions : le timing ? est-ce utile ?",
+    "der": "Atelier avec critère de réussite :\n1. Signal — tout le monde est ok\n2. Si turnover, on stoppe\n3. Progression intelligente :\n- si l'équipe est assez élargie → toujours faire avancer\n- si le timing est court → reculer"
+   }
+  ],
+  "match": "Contrainte : tant que le disque ne monte pas, 1 point par passe au bout de 2 secondes [?]"
+ },
+ {
+  "notionId": "3ce9cc08fab88163bf1fc6df358789c3",
+  "titre": "Continuité — n°3 — Les solutions du handler (Hétérogène)",
+  "date": null,
+  "rang": 3,
+  "niveau": "Hétérogène",
+  "theme": "Continuité et prise de décision",
+  "phases": [
+   "Le recentrage",
+   "La passe qui déclenche"
+  ],
+  "lexique": [
+   "Recentrage",
+   "Bise à Mathilde",
+   "La passe qui déclenche l'appel"
+  ],
+  "ech": [],
+  "ex": [
+   {
+    "nom": "Les solutions du handler",
+    "nb": "",
+    "mat": "",
+    "duree": "",
+    "obj": "Le recentrage du handler — les solutions selon la position du défenseur.",
+    "crit": "",
+    "der": "Recentrage — côté fermé, 90° :\nFaire une passe dans le [?], fermé à 90°.\n- (+) Ace — tentative déjà engagée\n- (+) Stack\n- (+) Soutien — demi-appels déjà faits\n\nSolution — côté ouvert, 45° :\n45° ouvert, ventre poach. 3 zones de réception.\n- (+) Ace\n- (+) (−1) fermé",
+    "notes": "Feuille de notes, pas une trame complète (pas de structure Exo 1 / Exo 2 / Match)."
+   }
+  ],
+  "match": null
+ },
+ {
+  "notionId": "3ce9cc08fab88167a7bbef85f64542b2",
+  "titre": "Le Cut — n°5 — Le temps zéro (Hétérogène)",
+  "date": null,
+  "rang": 5,
+  "niveau": "Hétérogène",
+  "theme": "Le Cut",
+  "phases": [
+   "Le cut 1"
+  ],
+  "lexique": [
+   "Temps zéro",
+   "Compte à 10",
+   "Fermé / Ouvert",
+   "Zone de réception"
+  ],
+  "ech": [
+   [
+    "Gamme de passes",
+    ""
+   ],
+   [
+    "Échauffement dynamique",
+    ""
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "L'appel entier",
+    "nb": "Groupes de 5 · attaque / défense",
+    "mat": "Disques",
+    "duree": "5 passages par équipe",
+    "obj": "Faire l'appel entier dans la zone de jeu — marquer un maximum de points.",
+    "crit": "L'ordre défini en amont est tenu.",
+    "der": "- Groupe de 5, attaque contre défense, avec disque\n- Ordre défini en amont\n- 1 joueur passe × 2"
+   },
+   {
+    "nom": "Les 4 zones, départ de dos",
+    "nb": "× 5, par 2",
+    "mat": "4 zones matérialisées (A, B, C, D)\nDisques",
+    "duree": "3 passages par équipe",
+    "obj": "Travailler l'instant de déclenchement : deux joueurs partent en même temps, chacun avec son ordre.",
+    "crit": "Le système de points valorise le côté fermé et sanctionne l'erreur d'appel.",
+    "der": "- Départ de dos\n- × 2 départs en même temps\n- Attribuer un ordre : (1) fermé → (3) · (2) ouvert → (4)\nPoints : passage validé fermé 2 pts · passage validé ouvert 1 pt · erreur d'appel −1 pt · turnover −2 pts",
+    "vp": [
+     "Deux départs simultanés",
+     "Départ de dos",
+     "Ordre imposé"
+    ],
+    "vm": [
+     "Un seul joueur à la fois",
+     "Départ face au jeu",
+     "Ordre libre"
+    ]
+   }
+  ],
+  "match": "- Contre-attaque interdite\n- On reprend quand tout le monde est ok\n- Favoriser le centre"
+ },
+ {
+  "notionId": "3ce9cc08fab88169954aee9ee4f86fcd",
+  "titre": "Le Cut — n°6 — La prise d'info pour cutter (Hétérogène)",
+  "date": null,
+  "rang": 6,
+  "niveau": "Hétérogène",
+  "theme": "Le Cut",
+  "phases": [
+   "La prise d'info"
+  ],
+  "lexique": [
+   "Compte à 10",
+   "PPA",
+   "Zone de réception"
+  ],
+  "ech": [
+   [
+    "Gamme de passe",
+    ""
+   ],
+   [
+    "Échauffement dynamique",
+    ""
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "Info Handler",
+    "nb": "2 handlers + 2 milieux · puis 2 groupes réunis",
+    "mat": "Disques",
+    "duree": "3 passages par poste",
+    "obj": "Travailler l'information que prend le handler — c'est lui qui cherche la continuité.",
+    "crit": "La continuité est trouvée dans le compte à 6. Sinon, on recommence.",
+    "der": "1. H1 et H2 jouent ensemble (compte à 6). H1 cherche la continuité. Rotation des postes, 3 passages par poste\n2. Le handler relance si c'est mauvais — on recommence pour le handler\n3. Rassembler les 2 groupes pour ajouter une défense",
+    "vp": [
+     "Ajouter une défense (2 groupes réunis)",
+     "Compte réduit"
+    ],
+    "vm": [
+     "Sans défense",
+     "Relancer autant que nécessaire"
+    ]
+   },
+   {
+    "nom": "Info Middle",
+    "nb": "5v5 · 1 handler + 4 milieux",
+    "mat": "Disques",
+    "duree": "4 tentatives par équipe",
+    "obj": "Le joueur appelé doit libérer sa zone de réception, puis enchaîner cut 1 + cut 2.",
+    "crit": "- Zone de réception = libre\n- Copain = pas de collision\n- Handler = libre pour la passe\n- Les autres milieux doivent y croire — c'est ce qui crée le mouvement",
+    "der": "Situation de match 5v5, problématique break.\n- Chaque milieu a un numéro = une position différente dans le stack\n- Au top, le handler annonce un chiffre → c'est le joueur ciblé\n- Tous les milieux font un appel dans l'ordre annoncé, mais seul le numéro annoncé est servi\n- Puis on déroule pour marquer",
+    "vp": [
+     "Annonce tardive du numéro",
+     "Ordre d'appel imposé"
+    ],
+    "vm": [
+     "Annonce avant le top",
+     "Moins de milieux"
+    ],
+    "notes": "Pourquoi tout le monde appelle alors qu'un seul est servi : les autres milieux doivent y croire, c'est leur engagement qui crée le mouvement et libère la zone. Un appel mou ne trompe personne — le principe du cut 1 qui déséquilibre sans recevoir, transposé au collectif."
+   }
+  ],
+  "match": null
+ },
+ {
+  "notionId": "3ce9cc08fab8818a902dec5b273231aa",
+  "titre": "Défense — n°4 — La défense orientée (Hétérogène)",
+  "date": null,
+  "rang": 4,
+  "niveau": "Hétérogène",
+  "theme": "Défense — les bases",
+  "phases": [
+   "La force (ouvert / fermé)",
+   "La position de base (à plat)"
+  ],
+  "lexique": [
+   "Porte placard",
+   "Position de crabe",
+   "Switch"
+  ],
+  "ech": [
+   [
+    "Physique",
+    ""
+   ],
+   [
+    "Zig-Zag",
+    "Déplacement sur le terrain. Défenseur en position de la force, tout le long, en crabe, avec rotation des hanches."
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "Défense du stack",
+    "nb": "Stack complet + défenseurs",
+    "mat": "Disques",
+    "duree": "[?] non notée",
+    "obj": "Défense orientée sur le stack — le fond est poché par le dernier, parce qu'un disque qui part au fond est dangereux.",
+    "crit": "Être avant mon joueur, côté ouvert. Sinon → switch avec le premier.",
+    "der": "1. Le 1er du stack forme la courbe\n2. Le n° 2 poache…\nMise en situation :\n1. Être avant mon joueur, ouvert\n2. (sinon) switch avec le n° 1"
+   },
+   {
+    "nom": "Placement défensif sur le handler",
+    "nb": "",
+    "mat": "",
+    "duree": "",
+    "obj": "« Ça ne passe pas dans mon dos. » Puis : servir dans le fermé, sinon ouvert.",
+    "crit": "Le défenseur ne tourne pas autour du joueur. Son épaule reste au niveau de mon thorax.",
+    "der": "- Ne pas tourner autour\n- Son épaule au niveau de mon thorax\n- Position dite « porte placard »\n- Pas de rotation sur le handler — la rotation se fait entre défenseur et milieu"
+   }
+  ],
+  "match": null
+ },
+ {
+  "notionId": "3ce9cc08fab8818b9291e44e8f56446e",
+  "titre": "Passer devant — n°1 — Le pied de pivot défensif (Hétérogène)",
+  "date": null,
+  "rang": 1,
+  "niveau": "Hétérogène",
+  "theme": "Passer devant l'attaque",
+  "phases": [
+   "Le pied de pivot défensif",
+   "Couper la trajectoire"
+  ],
+  "lexique": [
+   "Pied de pivot défensif",
+   "Passer devant, pas courir derrière"
+  ],
+  "ech": [
+   [
+    "Gamme de passe dynamique",
+    ""
+   ],
+   [
+    "Gamme dynamique",
+    "Zone de plots, évolution dans l'espace"
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "Le duel sur petits terrains",
+    "nb": "3 par terrain : 1 handler, 1 attaquant, 1 défenseur",
+    "mat": "Plusieurs petits terrains\n4 disques (2 offensifs chacun)",
+    "duree": "Duel pour 4 disques",
+    "obj": "Gagner son duel : couper la trajectoire plutôt que courir derrière.",
+    "crit": "1 cut = 1 réussite · 1 défense → 2 échecs → 3 défenses",
+    "der": "La règle de circulation entre terrains :\n- Je gagne → je monte pour être handler\n- J'ai le handler → je joue\n- J'ai perdu → je reste",
+    "notes": "Le brassage automatique : les joueurs se répartissent d'eux-mêmes par niveau, terrain par terrain, sans que le coach ait à trier qui que ce soit. C'est la règle du jeu qui fait le travail."
+   },
+   {
+    "nom": "Le duel annoncé en situation de match",
+    "nb": "Équipes de 4 à 5 joueurs",
+    "mat": "Disques",
+    "duree": "4 à 6 tentatives pour la défense",
+    "obj": "Mettre la défense en position de marquer des points — elle n'est plus celle qui subit.",
+    "crit": "Barème : on dissuade +1 pt · on intercepte +2 pts · l'attaque marque dans l'ouvert −1 pt",
+    "der": "- Chaque milieu attaquant a un numéro\n- Le handler annonce un numéro → duel attaque / défense\nMontantes / descendantes sur les scores de défense.",
+    "notes": "Ce barème récompense la dissuasion — pas seulement l'interception. Un défenseur qui ferme bien sans jamais toucher le disque marque quand même."
+   }
+  ],
+  "match": null
+ },
+ {
+  "notionId": "3ce9cc08fab881a881a6d7ca5548d075",
+  "titre": "Le Cut — n°2 — La passe en mouvement et la prise d'info (Débutant)",
+  "date": null,
+  "rang": 2,
+  "niveau": "Débutant",
+  "theme": "Le Cut",
+  "phases": [
+   "La passe en mouvement",
+   "La prise d'info"
+  ],
+  "lexique": [
+   "Courbe qui s'épouse",
+   "Zone de réception"
+  ],
+  "ech": [
+   [
+    "Gamme de passes",
+    "5 m / 10 m / 15 m"
+   ],
+   [
+    "Échauffement physique",
+    ""
+   ],
+   [
+    "Master Mind",
+    ""
+   ],
+   [
+    "Course",
+    "zig-zag · jump × 3 · T1 / T2 / T3"
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "Remonter le terrain en courbe",
+    "nb": "Par groupes de 3",
+    "mat": "Disques",
+    "duree": "[?] non notée",
+    "obj": "Traverser le terrain en se suivant — objectif de base, volontairement simple.",
+    "crit": "Ça ne tombe pas. Le disque arrive dans la course.",
+    "der": "- Courbe rotation → je donne, je change\n- Interdit d'envoyer dans le même couloir",
+    "vp": [
+     "Maximum ou minimum de passes imposé",
+     "Devant / Devant / Derrière",
+     "Courbe rotation obligatoire"
+    ],
+    "vm": [
+     "Nombre de passes libre",
+     "Même couloir autorisé"
+    ]
+   },
+   {
+    "nom": "Prise d'information à 3",
+    "nb": "À 3 : 1 coureur · 1 faux handler · 1 en attente",
+    "mat": "Pas de frisbee · plots de couleur",
+    "duree": "Rotation des rôles",
+    "obj": "Valider la zone de réception — sans disque, pour que rien ne détourne l'attention de la lecture.",
+    "crit": "Le coureur va dans la zone que l'information désigne.",
+    "der": "Le code des informations :\n- Rouge / Bleu : côté de l'appel\n- Vert / Noir : sens de l'appel",
+    "vp": [
+     "Progression 1 / 2 / 3 puis 1+2 // 1+3 // 1+2+3",
+     "C'est le joueur en attente qui choisit l'info",
+     "Associer zone de couleur et information"
+    ],
+    "vm": [
+     "Une seule couleur, d'un seul côté",
+     "Une seule information à la fois"
+    ],
+    "notes": "Pas de frisbee — et c'est volontaire. Pour un débutant, le disque monopolise toute l'attention. En le retirant, il ne reste que ce qu'on veut travailler : regarder, comprendre, choisir."
+   }
+  ],
+  "match": "Situation type match. Couper le terrain en 4 parties. 1 défenseur par zone.\nObjectif offensif : les équipes enchaînent les passages et marquent un maximum de points (E1 – E2 – E3).\nVariante — info visuelle de la couleur : concours entre 2 équipes (ou plus), annonce de la couleur à récupérer, départ dos au jeu."
+ },
+ {
+  "notionId": "3ce9cc08fab881b48987fe8e01702e6c",
+  "titre": "Le Cut — n°2 — La prise d'info (Hétérogène)",
+  "date": null,
+  "rang": 2,
+  "niveau": "Hétérogène",
+  "theme": "Le Cut",
+  "phases": [
+   "La prise d'info"
+  ],
+  "lexique": [
+   "PPA",
+   "Appel",
+   "Zone de réception"
+  ],
+  "ech": [
+   [
+    "Gamme de passe",
+    ""
+   ],
+   [
+    "Partie physique",
+    ""
+   ],
+   [
+    "Mini-jeu — Master Mind",
+    "Course : zig-zag → jump × 3 → T1 / T2 / T3\nRelais en équipe — les joueurs enchaînent les gammes avant de passer derrière le Master Mind.\nAdaptations : ne mettre qu'un plot par tour · adapter au nombre de joueurs · (+) feinter et changer l'ordre au T2"
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "La couleur annoncée",
+    "nb": "Par 3 (+ 1 déf en phase 1/2)",
+    "mat": "Plots de couleur\nDisques (après la 1re boucle)",
+    "duree": "[?] non notée",
+    "obj": "Prendre l'information avant de partir : le joueur démarre de dos, il doit se retourner, lire, puis choisir son cut.",
+    "crit": "Le coureur reçoit dans la zone annoncée — donc il a bien lu l'information, il ne s'est pas trompé de côté.",
+    "der": "Rôles : 1 coureur · 1 lanceur · 1 informateur\nLe coureur part de dos et fait un cut. Le lanceur montre une couleur → c'est la zone de réception. Des plots de zone sont positionnés pour aider.\n- Au début : sans disque\n- Rotation des rôles\n- Puis enlever les plots · départ de dos · la force se met en place · le cutter part et fait ouvert → fermé\n\nPhase 1/2 : commencer classique à 3 avec 1 défenseur. Le coureur commence de dos et doit faire fermé / ouvert ; la défense se place au dernier moment. Puis prise d'info des compétences du trio — se mettre d'accord pour chacun : Side = long / court · Back = long / court. Passage avec plot.\n\nPhase 2/2 : départ de dos. Positionner des plots G / D / Derrière, de couleurs différentes. Le « lanceur » choisit un plot à lever (cerveau actif) :\n- T1 : on passe du côté annoncé\n- T2 : c'est notre zone de réception",
+    "vp": [
+     "× 2 plots : sens et côté de l'appel",
+     "L'informateur montre une 2e indication",
+     "Feinter et changer l'ordre au T2"
+    ],
+    "vm": [
+     "Sans disque au début",
+     "Garder les plots de zone pour guider",
+     "Un seul plot par tour",
+     "Sans défenseur"
+    ],
+    "notes": "« Dans la vraie vie » : le lanceur = la force // la position du handler // la passe −1 ; l'informateur = ce que fait le stack. Chaque rôle correspond à une information réelle du jeu — c'est ce qui fait comprendre aux joueurs pourquoi ils regardent."
+   },
+   {
+    "nom": "Passe à 10 spécial",
+    "nb": "4 contre 4",
+    "mat": "Plots de couleur\nDisques",
+    "duree": "[?] non notée",
+    "obj": "Forcer la prise d'info périphérique pendant le jeu : il faut réussir ses passes et lire ce qui se passe autour du terrain.",
+    "crit": "L'équipe redonne la combinaison exacte des plots levés.",
+    "der": "Base — sans défense, à tour de rôle, les équipes enchaînent 10 passes minimum.\nMais l'équipe 2 est autour du terrain et lève un plot différent à chaque passe. L'équipe 1 ne valide son point que si elle redonne la combinaison.",
+    "vp": [
+     "2 défenseurs",
+     "2 couleurs à mémoriser"
+    ],
+    "vm": [
+     "Sans défense",
+     "Une seule couleur",
+     "Moins de passes à enchaîner"
+    ],
+    "notes": "L'astuce, notée telle quelle : « Quand je reçois, je regarde. »"
+   }
+  ],
+  "match": "Match à thème. Chaque personne en pause s'attribue un joueur. Elle bouge autour du terrain et montre des plots.\nSi la combinaison est donnée : +1 point.\nLes joueurs en pause ne sont pas spectateurs : ils deviennent la source d'information."
+ },
+ {
+  "notionId": "3ce9cc08fab881c0a403d08140f925c6",
+  "titre": "Le Cut — n°3 — Le Stack (Débutant)",
+  "date": null,
+  "rang": 3,
+  "niveau": "Débutant",
+  "theme": "Le Cut",
+  "phases": [
+   "Le stack"
+  ],
+  "lexique": [
+   "Appel",
+   "Courbe qui s'épouse"
+  ],
+  "ech": [
+   [
+    "Partie physique",
+    ""
+   ],
+   [
+    "Circuit de passe",
+    "Uniquement en cut / en side.\nCritère de réussite : choix du bon côté de passe = les courbes qui s'épousent avec la course."
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "Le Sapin",
+    "nb": "Une colonne, divisible en deux (D / G)",
+    "mat": "5 ou 6 plots maximum sur la longueur",
+    "duree": "1 passage par personne",
+    "obj": "Capter derrière / devant sur toute la longueur du terrain.",
+    "crit": "Timing de départ : cut 1 × cut 2 du milieu −1. On ne part pas quand on veut : on part par rapport à celui d'avant.",
+    "der": "Sur la longueur complète.\n1. 5 ou 6 plots max sur la longueur · 1 passage par personne pour capter derrière / devant\n2. Diviser la colonne avec un côté droite / gauche. Chaque passage, je monte de +1 ; au fond, je change",
+    "vp": [
+     "Colonne divisée D / G",
+     "Montée d'un cran à chaque passage",
+     "Timing imposé par le milieu −1"
+    ],
+    "vm": [
+     "Colonne unique",
+     "Départ libre",
+     "Moins de plots"
+    ]
+   },
+   {
+    "nom": "La Flèche",
+    "nb": "",
+    "mat": "",
+    "duree": "",
+    "obj": "Enchaîner T1 puis T2 — le changement de direction devient systématique.",
+    "crit": "Le joueur plante à chaque passage, il ne fait pas de courbe.",
+    "der": "Deux temps : T1 puis T2. Le joueur plante — changement systématique."
+   }
+  ],
+  "match": null
+ },
+ {
+  "notionId": "3ce9cc08fab881cbb876cdf78314f8f5",
+  "titre": "Le Cut — n°1 — La prise de décision (Hétérogène)",
+  "date": null,
+  "rang": 1,
+  "niveau": "Hétérogène",
+  "theme": "Le Cut",
+  "phases": [
+   "La prise d'info",
+   "Le cut 2"
+  ],
+  "lexique": [
+   "PPA",
+   "Zone de réception",
+   "Restack / Recyclage"
+  ],
+  "ech": [
+   [
+    "Gamme de passes progressive",
+    ""
+   ],
+   [
+    "Échauffement physique",
+    ""
+   ],
+   [
+    "[?]",
+    "Troisième item non renseigné sur la feuille"
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "Flèches",
+    "nb": "[?] non noté",
+    "mat": "Plots de 3 couleurs (jaune, vert, bleu)\nDisques",
+    "duree": "[?] non notée",
+    "obj": "Faire décider le joueur avant l'action : le plot annoncé impose le cut, il ne choisit pas en courant.",
+    "crit": "Le cut correspond à la couleur appelée.",
+    "der": "Flèche à 1 entrée vers l'avant.\nDes plots de couleurs différentes matérialisent les cuts. On les place pour faire évoluer l'exercice :\n- Jaune → V1\n- Vert → V2\n- Bleu → V3",
+    "vp": [
+     "Appel de la couleur du cut — la couleur est annoncée, le joueur doit s'y conformer"
+    ],
+    "vm": [
+     "Une seule couleur en jeu",
+     "Garder tous les plots visibles"
+    ],
+    "notes": "Format du jour — l'auto-positionnement : pour chaque exercice, X ateliers de niveaux et d'intensités différents. Chacun évalue le niveau global puis se positionne lui-même. Le coach ne trie personne, et personne n'est étiqueté."
+   },
+   {
+    "nom": "L'Arbre",
+    "nb": "Minimum 2 milieux + 1 base",
+    "mat": "Disques",
+    "duree": "[?] non notée",
+    "obj": "Enchaîner l'appel complet et le passer au suivant — la décision du milieu 1 conditionne celle du milieu 2.",
+    "crit": "L'enchaînement se fait sans temps mort entre le milieu 1 et le milieu 2.",
+    "der": "Le disque est à la base.\n1. Le milieu 1 prend l'info\n2. Le milieu 1 fait cut 1 + cut 2\n3. Passe + enchaînement du milieu 2",
+    "vp": [
+     "Cut derrière / devant distinct",
+     "Timing : M2 part quand M1 a fini son cut 1",
+     "Longue à la fin",
+     "Le handler suit le disque"
+    ],
+    "vm": [
+     "Sans contrainte de timing",
+     "Un seul milieu"
+    ]
+   }
+  ],
+  "match": "Match à thèmes.\n(+) « Banane » — le défenseur (et le coach) a un pouvoir sur l'attaquant. Si mauvais appel : « Banane » → −1, et il revient chercher le stack.\n(+) « Œuf du diable » — le défenseur peut attraper la chasuble sur le cut 1 et le cut 2. Pas de chasuble = pas de passe.\nFormat débutants : 2v2 // 3v3 · 2 petites zones sans limite de terrain · mini-match · peu fléché par le coach."
+ },
+ {
+  "notionId": "3ce9cc08fab881cebbd1ec2c59018a6f",
+  "titre": "Le Cut — n°6 — Libérer l'espace (Débutant)",
+  "date": null,
+  "rang": 6,
+  "niveau": "Débutant",
+  "theme": "Le Cut",
+  "phases": [
+   "Libérer l'espace",
+   "Le stack"
+  ],
+  "lexique": [
+   "PPA",
+   "Stack = zone de repos + prise d'info",
+   "Restack / Recyclage"
+  ],
+  "ech": [
+   [
+    "Le jeu, en 4 paliers",
+    "1 ou 2 lanceurs, 1 ramasseur. 45 secondes d'appels en continu. Disque catché ou non : retour. Base obligatoire = le Stack !\n1. Pas de consigne\n2. Cut obligatoire\n3. Prise d'info → le copain, le handler\n4. Organisation = flow\n5 à 6 manches."
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "L'Arbre",
+    "nb": "1 colonne · 2 colonnes si besoin",
+    "mat": "Plusieurs disques · chrono pour la V2",
+    "duree": "Au chrono en V2",
+    "obj": "Faire remonter le disque — mais surtout revenir au stack !",
+    "crit": "Relais du stack // pas d'attente. Le stack se recharge aussi vite qu'il se vide.",
+    "der": "",
+    "vp": [
+     "V2 : on met un chrono, objectif faire remonter le plus de fois possible",
+     "Deux colonnes en parallèle"
+    ],
+    "vm": [
+     "V1 classique, sans chrono",
+     "Un seul disque"
+    ]
+   },
+   {
+    "nom": "Libérer l'espace",
+    "nb": "Équipes, sur petits terrains",
+    "mat": "Petits terrains délimités\nDisques",
+    "duree": "3 à 4 min · 2 tentatives par équipe puis pause évolution",
+    "obj": "Peu d'espace = dégager un maximum. Le terrain réduit crée le problème au lieu qu'on ait à l'expliquer.",
+    "crit": "L'espace se libère avant l'appel, pas pendant.",
+    "der": "4 paliers :\n1. Rien — sauf l'organisation (terrain petit = peu d'espace)\n2. Libérer l'espace pour l'appel\n3. Stack le plus loin possible du disque\n4. Astuce : stack au fond · stack diagonal · stack long de ligne",
+    "notes": "« Laisser plus de réflexion » — noté en marge avant le match : du temps de réflexion collectif, le moment où les joueurs trouvent eux-mêmes."
+   }
+  ],
+  "match": null
+ },
+ {
+  "notionId": "3ce9cc08fab881d393e7c38812b6afef",
+  "titre": "Défense — n°1 — L'état basique (Hétérogène)",
+  "date": null,
+  "rang": 1,
+  "niveau": "Hétérogène",
+  "theme": "Défense — les bases",
+  "phases": [
+   "La position de base (à plat)",
+   "Le découpage du compte"
+  ],
+  "lexique": [
+   "Disque = lumière",
+   "Position de crabe"
+  ],
+  "ech": [
+   [
+    "Gamme de passe statique",
+    ""
+   ],
+   [
+    "Échauffement physique",
+    ""
+   ],
+   [
+    "Jeux",
+    "Disque lumière — jeu cardio\nJeu à 3\nJeu à trois avec priorité défense → position sur le porteur + le regard"
+   ],
+   [
+    "La Demo BOISS",
+    "La défense n'est pas statique → la position, c'est le centre de gravité qui facilite le déplacement."
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "Les 5 secondes avant",
+    "nb": "En binôme",
+    "mat": "Disques",
+    "duree": "On change au bout",
+    "obj": "Travailler ce qui se passe avant que le disque arrive — la prise d'info « moi vs mon joueur ».",
+    "crit": "Si je n'ai pas fait ma défense → mise en position rapide. Le retard se rattrape par le placement.",
+    "der": "Moi contre mon défenseur. Binôme, avec deux niveaux de variante V1 / V2. Au bout, on change.",
+    "notes": "Contenu théorique de la séance — une bonne défense, 7 repères : le compte · la position · moi vs mon joueur · la mise en difficulté de l'attaquant · qui ? · le regard · prévoir l'après-lancé.\nDécoupage du compte : 5 sec avant (position · moi vs ma défense) / le compte (pression du compte · position · mise en difficulté · qui ? · regard) / 5 sec après (position · le lancé d'après).\nPoint technique : pointe de pied en position × de talon — gérer le spacing.\nQuestions posées aux joueurs : quel est l'objectif de ma défense ? quelle position en fonction du poste ? en fonction de la position du disque ?"
+   },
+   {
+    "nom": "Les 5 secondes d'après",
+    "nb": "",
+    "mat": "",
+    "duree": "",
+    "obj": "La passe d'après — le défenseur ne s'arrête pas quand le disque est parti.",
+    "crit": "Le défenseur est déjà replacé quand le receveur prend le disque.",
+    "der": "Pause de 2 secondes entre les répétitions."
+   }
+  ],
+  "match": "Noté sur la feuille sans détail : [?]"
+ },
+ {
+  "notionId": "3ce9cc08fab881d7996df70c9de606bb",
+  "titre": "Continuité — n°2 — Swing, priorité et communication (Hétérogène)",
+  "date": null,
+  "rang": 2,
+  "niveau": "Hétérogène",
+  "theme": "Continuité et prise de décision",
+  "phases": [
+   "Le swing",
+   "La communication"
+  ],
+  "lexique": [
+   "Swing",
+   "Priorité H / M",
+   "Restack / Recyclage",
+   "Compte à 10"
+  ],
+  "ech": [
+   [
+    "Échauffement physique",
+    ""
+   ],
+   [
+    "Jeu par groupes de 3",
+    "Match en 3 manches → centre → appel d'une couleur au départ des passes"
+   ],
+   [
+    "Circuit",
+    "1 début / 1 cut / 1 fin (travail par capacités différentes). Règle : quantité totale de joueurs ÷ 2 = nombre d'ateliers."
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "La routine de traversée",
+    "nb": "Groupes de 4 (sinon 2 groupes de 4)",
+    "mat": "Disques\nTerrain coupé en 2 sur la longueur",
+    "duree": "[?] non notée",
+    "obj": "Réussir à enchaîner — traverser le terrain avec une routine fixe, chacun tenant son rôle.",
+    "crit": "CR milieu : cut 1 + cut 2 + restack sans gêner\nCR 1 — Milieu : max 2 secondes dans les mains du swing\nCR 2 — Handler : cut au signal soutien",
+    "der": "La routine, en boucle :\n1. H1 swing sur H2\n2. M1 continuité puis remet à H2\n3. H2 swing sur H1\n4. M2 continuité puis remet à H1",
+    "vp": [
+     "Limiter à 2 secondes dans les mains",
+     "Cut uniquement au signal soutien",
+     "Restack sans gêner"
+    ],
+    "vm": [
+     "Pas de limite de temps",
+     "Rôles fixes",
+     "Terrain plus large"
+    ],
+    "notes": "Groupe hétérogène — la parade : à chaque traversée, changement de rôle. Personne ne reste handler ou milieu, les écarts de niveau se lissent sans séparer le groupe."
+   },
+   {
+    "nom": "La notion de priorité",
+    "nb": "5 contre 5",
+    "mat": "Disques",
+    "duree": "Montantes / descendantes si assez de monde",
+    "obj": "Introduire la priorité : un mot annoncé décide qui joue.",
+    "crit": "Ceux qui ne sont pas prioritaires acceptent de ne pas bouger.",
+    "der": "- Priorité H = Swing\n- Priorité M = Continuité\nRappel de la base : 1 sec · Milieu → 6 · Handler → 10 sec"
+   }
+  ],
+  "match": null
+ },
+ {
+  "notionId": "3ce9cc08fab881e8a20fcbcc4a436d4b",
+  "titre": "Continuité — n°4 — La passe en courbe (Hétérogène)",
+  "date": null,
+  "rang": 4,
+  "niveau": "Hétérogène",
+  "theme": "Continuité et prise de décision",
+  "phases": [
+   "La passe en courbe",
+   "La passe qui déclenche"
+  ],
+  "lexique": [
+   "Courbe qui s'épouse",
+   "Bise à Mathilde",
+   "La passe qui déclenche l'appel"
+  ],
+  "ech": [
+   [
+    "Physique",
+    ""
+   ],
+   [
+    "Gamme de passe à 3",
+    "Je donne, je défends (l'un subit le compte, l'autre compte à 6). Objectif : la passe"
+   ],
+   [
+    "La courbe extérieure",
+    "Je donne, je reçois, je redonne, longue"
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "2 contre 2 — les solutions du soutien",
+    "nb": "2 contre 2",
+    "mat": "Disques",
+    "duree": "[?] non notée",
+    "obj": "Travailler les deux solutions du soutien, et surtout l'instant du déclenchement.",
+    "crit": "« Je me retourne, faire face = déclenchement. » Le déclenchement est visible : on voit le joueur faire face.",
+    "der": "Position initiale : handler + soutiens.\n- S1 — la passe qui déclenche\n- S2 — la Bise à Mathilde\nDémo + pratique de se tourner.",
+    "vp": [
+     "Compte à 6"
+    ],
+    "vm": [
+     "Compte complet",
+     "Une seule solution à la fois"
+    ]
+   },
+   {
+    "nom": "4 contre 4, montantes / descendantes",
+    "nb": "4 contre 4",
+    "mat": "Terrain en carré\nDisques",
+    "duree": "1 essai par équipe · rotation au temps",
+    "obj": "Mettre en place une stratégie d'équipe à partir du cut du milieu.",
+    "crit": "+1 pt si on dépasse. Si turnover au moment des points → retour position 0.",
+    "der": "Situation de match, départ en position type break.\nRappel du cut milieu → stratégie globale · différents cuts → direction et comment.\nSwitch de cut possible.",
+    "vp": [
+     "Compte diminué",
+     "Switch de cut imposé"
+    ],
+    "vm": [
+     "Compte complet",
+     "Départ en position neutre"
+    ]
+   }
+  ],
+  "match": null
+ },
+ {
+  "notionId": "3ce9cc08fab881ed896dce22cdd7562a",
+  "titre": "Le Cut — n°3 — La routine d'appel (Hétérogène)",
+  "date": null,
+  "rang": 3,
+  "niveau": "Hétérogène",
+  "theme": "Le Cut",
+  "phases": [
+   "La prise d'info",
+   "La zone de réception"
+  ],
+  "lexique": [
+   "PPA",
+   "Zone de réception"
+  ],
+  "ech": [
+   [
+    "Gamme de passes",
+    "Varier le pied de pivot et la hauteur"
+   ],
+   [
+    "Échauffement dynamique",
+    ""
+   ],
+   [
+    "Morpion",
+    "Chaque joueur a une couleur. Le coach (ou le catch) lève la couleur qui part. Le joueur ne décide pas de son départ : il réagit à un signal. Le jeu force la prise d'info.\nContinuité de la séance −1 — (+) ajout de la continuité pour jouer en match."
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "La couleur annoncée — routine d'appel",
+    "nb": "2 milieux + 1 annonceur · jusqu'à 4v4",
+    "mat": "Plots de couleur\nDisques",
+    "duree": "[?] non notée",
+    "obj": "Installer une routine d'appel : si le −1 fait ça, qu'est-ce que je fais ? Un objectif simple et commun à tous.",
+    "crit": "Les deux milieux se complètent au lieu de se gêner — l'un donne l'info, l'autre fait l'inverse.",
+    "der": "La routine :\n- Avec un plot, le milieu fait ses appels\n- (V1) l'annonceur donne le côté du cut 1, le cut 2 est opposé\n- (V1) l'annonceur donne l'info pour le milieu 1, le milieu 2 fait l'inverse\n- (V1) commencer de dos\n- Puis on enlève les plots, même chose avec défense — se mettre d'accord en amont\n\nLa couleur annoncée — 2 milieux font les appels, 1 annonceur :\n1. La couleur annoncée définit le côté du cut (+ feinte de corps)\n2. La couleur annoncée définit le côté de la zone de réception\n3. (V+) on ajoute la continuité : le milieu 1 fait pareil, le 2 propose du même côté\n4. On enlève les plots, l'annonceur se positionne en force et les milieux s'adaptent\nPetit (+) : les joueurs partent de dos, l'annonceur compte le temps statique des milieux.",
+    "vp": [
+     "Commencer de dos",
+     "Enlever les plots, l'annonceur se met en force",
+     "Ajouter la continuité",
+     "4v4 avec 3 milieux en défense",
+     "Chronométrer le temps statique",
+     "Pour les expérimentés"
+    ],
+    "vm": [
+     "Garder les plots",
+     "Un seul milieu",
+     "Sans défense",
+     "Ne pas partir de dos"
+    ]
+   },
+   {
+    "nom": "Situation arrêtée — continuité milieu",
+    "nb": "2 milieux + 1 ace (stack) + 1 handler (+ 1 H2 si besoin)",
+    "mat": "Disques",
+    "duree": "4 tentatives par équipe",
+    "obj": "Faire monter le disque avec la solution de continuité milieu — pas par le handler de secours.",
+    "crit": "Le système de points le dit à la place du coach.",
+    "der": "Situation arrêtée, 4 tentatives par équipe (attaque / défense).\nPoints : Handler → M1 → M2 : 2 pts · Handler → Ace → M1 → M2 : 1 pt · Handler → H2 : 0 pt · Stall out : −1 pt",
+    "notes": "Le score enseigne à la place du coach : la solution milieu rapporte le double, le repli sur le handler ne rapporte rien."
+   }
+  ],
+  "match": null
+ },
+ {
+  "notionId": "3cf9cc08fab8816ba918dac65b74d151",
+  "titre": "Continuité — n°1 — Recentrage et long de ligne (Confirmé)",
+  "date": null,
+  "rang": 1,
+  "niveau": "Confirmé",
+  "theme": "Continuité et prise de décision",
+  "phases": [
+   "Le recentrage",
+   "La passe qui déclenche"
+  ],
+  "lexique": [
+   "Recentrage",
+   "Bise à Mathilde",
+   "La passe qui déclenche l'appel",
+   "Cavalier"
+  ],
+  "ech": [],
+  "ex": [
+   {
+    "nom": "Recentrage et long de ligne — feuille de préparation",
+    "nb": "",
+    "mat": "",
+    "duree": "Format journée (10h–18h)",
+    "obj": "Séance commandée par l'équipe. Objectifs demandés : recentrage handler / milieu · dynamiser le handling · pied de pivot avec marque (on s'applique, on prend son temps) · passe de soutien puis longue · break · forcé long de ligne — comment faire ? · tips",
+    "crit": "",
+    "der": "Les 5 solutions de recentrage :\n1. Cut dans l'ouvert à fond, quand la défense est sur les talons en demi-tour\n2. Bise au défenseur puis swing — défense loin, soutien (moins dangereux)\n3. Passe dans le dos du défenseur du soutien — la passe déclenche l'appel\n4. Jeu à 3 handlers — on vient chercher derrière puis swing\n5. Cut dans le dos de la défense\nLe repère transversal : fixer sa défense.\n\nLes 3 solutions long de ligne :\n1. Cut dans l'ouvert à fond — quand la défense tourne ses hanches, je vais chercher la profondeur\n2. (−1) dans le fermé = toujours une joueuse attentive · nom de code global (jeu de cartes)\n3. 2 / 3 / 4 partent du stack à fond, derrière puis devant — pas de courbe long de ligne (en diagonale !)\n\nLes 4 chantiers de la journée :\n- Forcé long de ligne : jouer sur les 3 niveaux de passe\n- Pied de pivot / Break : (−1) fermé\n- Recentrage : fixer à 4 secondes\n- Tips : crêpe · la passe les aide · main gauche proche · montée de terrain",
+    "notes": "Tips : épaule orientée vers son défenseur (handler) · chercher la courbe qui évite la défense (handler) · prévoir la courbe longue (handler) · « Regarde les hanches du défenseur : elles se décident = c'est le moment du cut. » · jouer avec ses épaules pour feinter sa défense · « Le mettre sur les talons ! »\nVivier d'idées : Démo BOISS sur le pied de pivot · Jeu de la Boussole (3 niveaux de passe side/back) · Conti de Rayan · mettre les épaules face au soutien · appel long de ligne soutiens (= pied du porteur au déclenchement). Mini-jeux : Bac Man · Cavalier · Passe outside.\nFeuille de préparation, pas une trame de séance (pas d'échauffement / exo 1 / exo 2 / match)."
+   }
+  ],
+  "match": null
+ },
+ {
+  "notionId": "3cf9cc08fab881b6a42fd453e1084681",
+  "titre": "Défense — n°5 — Le ressenti et la triangulation (Hétérogène)",
+  "date": null,
+  "rang": 5,
+  "niveau": "Hétérogène",
+  "theme": "Défense — les bases",
+  "phases": [
+   "Le triangle de vision",
+   "La force (ouvert / fermé)"
+  ],
+  "lexique": [
+   "Triangle de vision",
+   "Fermé / Ouvert"
+  ],
+  "ech": [
+   [
+    "Tours de terrain + gammes",
+    "15 min"
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "Ressenti",
+    "nb": "En binôme · changer de binôme",
+    "mat": "Aucun au départ",
+    "duree": "20-30 min",
+    "obj": "Suivre un cut offensif pour ressentir comment se placer. Puis : apprendre à lire son opposant.",
+    "crit": "Le défenseur peut dire ce qu'il a senti : où étaient les hanches, quand l'attaquant s'est engagé.",
+    "der": "En marchant → puis en vraie course.\nSur quoi se concentrer pour ressentir ?\n- Le placement des hanches\n- Le regard\n- Ta position\n- Le moment du cut\n- Quand est-ce que je m'engage ?\n- Ma position physique (position forte)",
+    "vp": [
+     "Ressenti (+) — une zone de plots pour ne pas anticiper. Cut avec changements de direction aléatoires pour faire travailler le défenseur."
+    ],
+    "vm": [
+     "En marchant",
+     "Cut annoncé à l'avance",
+     "Sans disque"
+    ],
+    "notes": "Rappel théorique (15-20 min) — la triangulation, trois paramètres : la zone à défendre · ton joueur · la position du disque. Toujours avoir en vision directe 2 des 3 paramètres (souvent, il y a « ton joueur »).\nLa force — « Je ne veux pas me faire aspirer dans le fermé. » 4 questions : quel est le principe de la force ? comment on se place, qu'est-ce que l'on regarde (la zone à défendre) ? comment se placer en conséquence ? qu'est-ce que tu cherches à faire (défense passive ou agressive) ?\nRepères : milieu et côtés du terrain → force side · force back.\nFaire ressentir avant d'expliquer : on commence en marchant, le défenseur n'a rien à réussir, il doit sentir."
+   },
+   {
+    "nom": "Mise en situation — les 3 clés",
+    "nb": "[?] non noté",
+    "mat": "Clap des mains comme déclencheur",
+    "duree": "20-30 min",
+    "obj": "Passer du ressenti à l'exécution, sur 3 clés.",
+    "crit": "1. Être en permanence bien placé (par rapport à quoi ?)\n2. Ne pas se faire absorber dans le fermé\n3. Effectuer la rotation lors du changement de direction",
+    "der": "",
+    "vp": [
+     "« Salade » — situation de match où on appelle des ordres de cut"
+    ],
+    "vm": [
+     "Une seule clé à la fois",
+     "Déclencheur annoncé"
+    ],
+    "notes": "Valider la 3e clé : se mettre à l'endroit du cut et valider ou invalider cette rotation. Le coach se place physiquement au point de rupture."
+   }
+  ],
+  "match": null
+ },
+ {
+  "notionId": "3cf9cc08fab881f8b3c2d624f973f68b",
+  "titre": "Continuité — n°2 — Dynamiser le handling (Confirmé)",
+  "date": null,
+  "rang": 2,
+  "niveau": "Confirmé",
+  "theme": "Continuité et prise de décision",
+  "phases": [
+   "Le recentrage",
+   "La passe qui déclenche"
+  ],
+  "lexique": [
+   "Recentrage",
+   "Triangle de vision",
+   "Cavalier",
+   "La passe qui déclenche l'appel"
+  ],
+  "ech": [
+   [
+    "Réveil musculaire — au sol",
+    "En mode prière · dos creux / dos rond · assis, une jambe au-dessus × 2 côtés (je vais chercher derrière) · craquage du dos · papillon · on marche pointe de pied"
+   ],
+   [
+    "Réveil musculaire — debout",
+    "Crabe au sol (l'araignée) · escargot puis pompe · une jambe devant : droite / gauche / derrière"
+   ],
+   [
+    "Jeux avec disque — Demo BOISS",
+    "À 2 : boussole · 3 niveaux de lancer (haut / milieu / bas) · 3 distances (proche / moyen / loin)\nÀ 3 : je lance → gamme → reçois → remise · je lance → cut devant → ouvert → reçois → remise · (+) le lanceur va en face et défend → lance. Fermé / Devant / Derrière"
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "Le recentrage sur la ligne de cut",
+    "nb": "",
+    "mat": "",
+    "duree": "",
+    "obj": "Recentrer en s'appuyant sur la ligne de cut (zone de choix).",
+    "crit": "× 5 step — repère de course noté en marge.",
+    "der": "Puis Conti de Rayan — dynamiser le handling / give and go."
+   },
+   {
+    "nom": "Match 2v2 grand terrain — un seul receveur",
+    "nb": "2 contre 2",
+    "mat": "Grand terrain",
+    "duree": "",
+    "obj": "Lien face guard + triangulation.",
+    "crit": "Le joueur sait répondre : « Comment est ma défense ? Quel choix je fais ? »",
+    "der": "Une seule personne peut recevoir le disque. Tout le reste découle de cette contrainte.",
+    "notes": "En supprimant les autres options, la contrainte force le porteur à lire sa défense au lieu de chercher une solution de facilité. Un 2v2 devient un exercice de prise de décision."
+   },
+   {
+    "nom": "Bloqué long de ligne — remontée en Cavalier",
+    "nb": "",
+    "mat": "",
+    "duree": "",
+    "obj": "Débloquer le long de ligne par la remontée de terrain en Cavalier.",
+    "crit": "",
+    "der": "1. Par l'extérieur à chaque fois\n2. Passage est intérieur-intérieur\n3. La passe qui déclenche"
+   }
+  ],
+  "match": "Match à thème — quelle stratégie on met en place ?\n- −1 dans le fermé : +3\n- Priorité handler → cavalier : +3\n- Décalage via swing : +2\n- La passe qui déclenche : +2\nLe barème récapitule la séance : le match est le contrôle des acquis. Ou match 2v2 d'abord."
+ },
+ {
+  "notionId": "3d69cc08fab881c0ac50da399db6994a",
+  "titre": "Séance 30/10 — Situations 5v5 / Iron Man / 4v4 (Hétérogène)",
+  "date": null,
+  "rang": null,
+  "niveau": "Hétérogène",
+  "theme": null,
+  "phases": [],
+  "lexique": [],
+  "ech": [
+   [
+    "Échauffement",
+    "19h50 – 20h20"
+   ],
+   [
+    "Jeux — solution longue",
+    "20h20 – 20h45 (20 min)"
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "Situation 1 — 5v5 (compte à 6 // compte à 8)",
+    "nb": "5 contre 5",
+    "mat": "",
+    "duree": "20h45 – 21h15",
+    "obj": "Situation de match 5v5 avec compte réduit.",
+    "crit": "",
+    "der": "Compte à 6 // compte à 8.",
+    "vp": [
+     "Turnover → reprise sur la ligne",
+     "[?] « Hiboux / Manchine » (mots peu lisibles)",
+     "Binôme Handler / Milieu"
+    ],
+    "vm": [
+     "Soutien comme au ouvert / fermé (contrainte connexe à la force)"
+    ]
+   },
+   {
+    "ref": "Passe à 10",
+    "seanceNote": "21h15 — Passe à 10 // Iron Man"
+   },
+   {
+    "ref": "Iron Man",
+    "seanceNote": "21h15 — Passe à 10 // Iron Man"
+   }
+  ],
+  "match": "Situation 4v4 — 22h00.\nPlan minuté : 19h50 échauffement · 20h20 jeux (solution longue) · 20h45 situation 1 5v5 · 21h15 passe à 10 // Iron Man · 21h35 (repère sans bloc) · 22h00 situation 4v4."
+ },
+ {
+  "notionId": "3d69cc08fab881c1979dd79e37006b5a",
+  "titre": "Le Cut — n°9 — Rappel théorique et mise en application (Hétérogène)",
+  "date": null,
+  "rang": 9,
+  "niveau": "Hétérogène",
+  "theme": "Le Cut",
+  "phases": [
+   "Le changement de direction"
+  ],
+  "lexique": [],
+  "ech": [
+   [
+    "× 2 tours",
+    ""
+   ],
+   [
+    "Game",
+    ""
+   ],
+   [
+    "Game passe",
+    ""
+   ],
+   [
+    "Physique",
+    ""
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "Changement de direction — application des étapes",
+    "nb": "Deux joueurs de part et d'autre d'un couloir de plots : un lanceur (D) et un coureur (A)",
+    "mat": "Plots (couloir)",
+    "duree": "",
+    "obj": "Créer un déséquilibre — mise en application du changement de direction (séance construite sur l'historique, entraînement n-1).",
+    "crit": "",
+    "der": "Rappel théorique — changement de direction :\n- Je plante mes deux pieds\n- Je me baisse sur mes appuis (centre de gravité) — dos droit\n- Je lance ma jambe opposée au côté où je veux aller\n- → mon pied intérieur pivote\n- → ma hanche pivote et entraîne mon corps (les membres libres accompagnent le mouvement)\n- Je pousse avec mon pied intérieur pour me propulser\n→ Exercices d'application des étapes\n→ Exercice vis-à-vis de situation (le coureur traverse le dispositif — voir le scan PDF p.19)"
+   }
+  ],
+  "match": "Règles partiellement illisibles sur le scan — transcription prudente :\n1. Chaque joueur compte ses points : +1 s'il casse sa défense (uniquement quand il y parvient réellement) ; il l'annonce quand il le fait.\n2. [?] Si des points sont marqués lors d'un duel en zone 2v2, ils comptent double."
+ },
+ {
+  "notionId": "b34b4b1392de478aafa64e441f443848",
+  "titre": "Défense de zone — n°3 — Défense sur le porteur + Clam (Hétérogène)",
+  "date": "2024-01-18",
+  "rang": 3,
+  "niveau": "Hétérogène",
+  "theme": "Défense de zone",
+  "phases": [
+   "La Clam",
+   "La position de base (à plat)"
+  ],
+  "lexique": [
+   "Grand goéland",
+   "Déplacement en banane"
+  ],
+  "ech": [
+   [
+    "Course",
+    ""
+   ],
+   [
+    "Échauffement",
+    ""
+   ],
+   [
+    "Passe en mouvement progressif",
+    ""
+   ],
+   [
+    "Terminer par un Iron Man",
+    "Prendre conscience que défendre à 360° c'est impossible"
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "Le porteur — relais de lancer avec un stack qui enchaîne",
+    "nb": "Groupes de 14-16 maximum. 1 duo lance, les autres en stack perpétuel",
+    "mat": "X disques à lâcher // droit de refus",
+    "duree": "Rotation sur lanceur ouvert et fermé",
+    "obj": "Pour le défenseur du porteur : empêcher tous les breaks mais surtout ne pas se faire attirer par le côté ouvert.",
+    "crit": "Débutant : arrivée gênante · positionnement ok · on ne se fait pas happer par l'ouvert · décalage au swing, sans arrondi ni fautes. ↓ Rotation sur lanceur ouvert + fermé\nExpert : baisser son centre de gravité · les bras suivent le disque · pression défensive (voix / m² / intensité) · pas de perte de temps quand le disque est lâché · amplitude avec les jambes. ↓ Doubler l'objectif : défense + break · mise en compétition du ratio de chacun",
+    "der": "Les attaquants vont chacun leur tour faire un appel dans le fermé ou l'ouvert. Le duo avec les disques a une petite pile pour pouvoir enchaîner. Le lanceur a le droit au refus.\nLes plus expérimentés font la même chose de leur côté, avec un petit challenge de ratio : break réussi // défense faite.",
+    "notes": "La séance clé du classeur pour l'hétérogénéité : un seul exercice, deux colonnes d'exigences côte à côte. Tout le monde tourne ensemble — personne ne s'ennuie, personne n'est largué, et le groupe reste entier.\nVocabulaire commun (défense porteur) : positionnement épaule–épaule · goéland (stable et grand) · touche le disc · déplacement en banane autour du porteur.\nIdées notées avant la séance : débutant = ne pas se jeter · expert = chercher à faire tomber (+ pied) · doubler avec le break · introduction du soutien."
+   },
+   {
+    "nom": "La Clam — défends ta zone",
+    "nb": "Stack + défenseurs par zone",
+    "mat": "Pas de disque · zones délimitées",
+    "duree": "[?] non notée",
+    "obj": "Comprendre le relais entre défenseurs : on accompagne, on gêne, puis on passe au suivant.",
+    "crit": "Le joueur qui traverse est pris en charge sans trou d'une zone à l'autre.",
+    "der": "Petit jeu de chat par zones. Quand un joueur fait un appel, le stack se regroupe et décide qui part à t+1. Au top, je choisis un joueur en le pointant.\n1. Chacun son tour, les joueurs du stack font un « appel » en traversant au moins 2 zones. Les défenseurs interceptent celui qui arrive / suit / relaie\n2. 2 joueurs partent en 2 temps, puis en même temps. Si possible on passe à 3 puis 4\n3. Situation plutôt jeu : 2 joueurs max font un appel ; le joueur de la zone 2 conserve l'attaquant, les autres pointent et forcent sur les autres attaquants",
+    "vp": [
+     "2 puis 3 puis 4 joueurs simultanés",
+     "Passage en situation de jeu"
+    ],
+    "vm": [
+     "Un joueur à la fois",
+     "Sans disque",
+     "Zones plus larges"
+    ]
+   }
+  ],
+  "match": "Situation. En fonction du nombre de joueurs → faire des petits groupes de 4/5 joueurs. Si possible faire sortir 2 lanceurs pour faire rouler l'exercice.\nChaque équipe doit mettre en place une défense sur un stack vertical arrêté. 1re équipe à X points — chaque situation démarre en stack.\nContraintes de la défense : entourer le stack au début · max après 2 passes, on revient sur de l'individuel."
+ },
+ {
+  "notionId": "8241f05ee9bc4621ad45516faf107ed0",
+  "titre": "Défense de zone — n°4 — Clam et Iron Man (Hétérogène)",
+  "date": "2024-01-25",
+  "rang": 4,
+  "niveau": "Hétérogène",
+  "theme": "Défense de zone",
+  "phases": [
+   "La Clam"
+  ],
+  "lexique": [
+   "Fermé / Ouvert"
+  ],
+  "ech": [
+   [
+    "Échauffement avec disque — défense du porteur",
+    "Trois paliers (ordre de difficulté renuméroté en marge) :\n1. Mise en mouvement → défense à plat (ordre réel 2)\n2. Ne pas se faire avoir dans l'ouvert (ordre réel 1)\n3. Break (ordre réel 3)\n« Ça doit être dur pour le porteur. »"
+   ]
+  ],
+  "ex": [
+   {
+    "ref": "Iron Man",
+    "seanceNote": "Iron Man spé — jeu de cardio. 1 équipe attaque · 3 ou 4 zones défendues autour. Zones délimitées · disques.\nObjectif : spécialité des défenseurs, rester fixe dans une zone — appréhender la Clam, défense de zone.\nCritère : le défenseur tient sa zone au lieu de suivre le porteur.\nDéroulement : 1. une équipe attaque une zone, 3 ou 4 zones défendues autour 2. 2 équipes en même temps.\nVariable (+) : on multiplie les équipes attaquantes · 2 équipes simultanées.\nVariable (−) : si c'est trop dur, on agrandit la zone · réduire la zone pour la défense · une seule équipe attaquante.\nRetour sur la séance n−1 et règle météo : beaucoup d'intempéries → les gens viennent moins ; contre le froid → peu de temps d'arrêt, peu d'explication → faire des choses que les gens connaissent !"
+   }
+  ],
+  "match": "Situation de match. En fonction du nombre de joueurs → faire des petits groupes de défense à 4 ou 5. Si possible, sortir 2 lanceurs pour faire tourner.\nChaque groupe doit mettre en place une stratégie sur un stack arrêté.\n- Première équipe à X points\n- Chaque situation démarre en stack\n- Objectif : marquer le plus vite possible\nContraintes défensives : encercler la défense au début · maximum après 2 passes, on revient en individuelle !"
+ },
+ {
+  "notionId": "136693789374484ab0d1a4b4070ffd69",
+  "titre": "Continuité — n°5 — Comprendre le timing (Hétérogène)",
+  "date": "2024-05-02",
+  "rang": 5,
+  "niveau": "Hétérogène",
+  "theme": "Continuité et prise de décision",
+  "phases": [
+   "Le timing",
+   "Le swing"
+  ],
+  "lexique": [
+   "Swing",
+   "Patate chaude"
+  ],
+  "ech": [
+   [
+    "Carré de couleurs — le stimulus visuel",
+    "On évolue à l'intérieur.\n1. Réveil musculaire (en marchant)\n2. Cardio\n3. Départ spontané sur stimulus — une couleur s'allume et il part"
+   ],
+   [
+    "Jeu avec disque",
+    "Tu donnes au suivant · même chose en repassant derrière."
+   ]
+  ],
+  "ex": [
+   {
+    "ref": "Conti de Royan",
+    "seanceNote": "Conti de Rayan. Matériel : Plots de couleur · disques.\nObjectif : Enchaîner sans rupture — dynamiser le handling et le give and go.\nCritère : Le disque ne s'arrête pas entre deux joueurs."
+   },
+   {
+    "nom": "En pratique, la situation — le timing",
+    "nb": "",
+    "mat": "",
+    "duree": "",
+    "obj": "Faire émerger les solutions : A et B sont faciles, C est une question de timing.",
+    "crit": "Les joueurs proposent eux-mêmes les solutions avant qu'on ajoute la contrainte suivante.",
+    "der": "1. A et B en défense facile · C = le timing → proposition des solutions\n2. Ajouter D et C [?]\n3. Rotation des postes : A devient C · C devient B · B devient C [?]",
+    "notes": "Notes de marge : dans la course, pas d'arrêt · s'adapter au lanceur.\nMot clé de la séance : on prend pour acquis le swing du handler."
+   }
+  ],
+  "match": "Match à thème.\n- Quand le disque est lancé, compte à 4.\n- +2 si patate chaude.\nLe compte raccourci et le bonus « patate chaude » forcent la circulation rapide."
+ },
+ {
+  "notionId": "11f9cc08fab88018a291eb132d9a5058",
+  "titre": "Le Cut — n°8 — Les bases (Hétérogène)",
+  "date": "2024-09-05",
+  "rang": 8,
+  "niveau": "Hétérogène",
+  "theme": "Le Cut",
+  "phases": [
+   "La prise d'info",
+   "Le cut 1"
+  ],
+  "lexique": [
+   "Swing",
+   "Appel"
+  ],
+  "ech": [
+   [
+    "Jeu de plots de couleur",
+    "Évolution en gamme dans la zone : montée de genoux, talons-fesses, porte-de-pied, escargot, fleur, prière… Au top, rejoindre un plot. Si beaucoup de monde : 2 zones."
+   ],
+   [
+    "Gamme de passe",
+    "1. Jeu libre pour se bouger — on pousse de plus en plus loin, on fait flotter\n2. Classique : back / side / courbe / au-dessus"
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "Les bases",
+    "nb": "Colonnes par 2 · minimum 2 à chaque poste",
+    "mat": "Disques",
+    "duree": "[?] non notée",
+    "obj": "Poser les fondamentaux : défense du porteur · side/back · longue au fond · le handler part en give and go.",
+    "crit": "Signal « prêt » donné par le premier du stack avant chaque départ.",
+    "der": "",
+    "notes": "Le signal « prêt » : rien ne part tant que le premier du stack n'a pas signalé. C'est minuscule, et ça supprime la moitié du désordre d'un exercice avec des débutants."
+   },
+   {
+    "nom": "Strike et Swing",
+    "nb": "",
+    "mat": "",
+    "duree": "",
+    "obj": "Enchaîner strike, swing, puis strike + swing.",
+    "crit": "Les deux solutions s'enchaînent sans temps mort.",
+    "der": "- Strike\n- Swing\n- Strike + Swing → les positions 2 et 3 enchaînent\n- Défense sur le 2\n- Vraie défense",
+    "vp": [
+     "Enchaîner strike et swing",
+     "Ajouter la défense, puis la vraie défense"
+    ],
+    "vm": [
+     "Une solution à la fois",
+     "Sans défense"
+    ]
+   }
+  ],
+  "match": null
+ },
+ {
+  "notionId": "3ce9cc08fab88103ad0fc253d4a974c3",
+  "titre": "Continuité — n°1 — La passe en mouvement (Débutant)",
+  "date": "2024-10-08",
+  "rang": 1,
+  "niveau": "Débutant",
+  "theme": "Continuité et prise de décision",
+  "phases": [
+   "La passe en mouvement",
+   "La zone de réception"
+  ],
+  "lexique": [
+   "Courbe qui s'épouse",
+   "Recentrage",
+   "Priorité H / M"
+  ],
+  "ech": [
+   [
+    "Gamme de passe",
+    "La courbe — 21h20"
+   ],
+   [
+    "Fontaine sur 4 temps",
+    "50 % // 75 % // 95 %"
+   ],
+   [
+    "Jeu des 3 zones",
+    "« Corrige ton pote ! » — correction en binôme sur 3 points : pied de pivot · dos droit · courbe. Réussi si : reçu au buste · le receveur ne bouge pas."
+   ]
+  ],
+  "ex": [
+   {
+    "ref": "Conti de Royan",
+    "seanceNote": "Conti Royan — 21h45 → 22h10 (~25 min). Disques.\nObjectif : enchaîner sans jamais s'arrêter — la passe arrive dans la course.\nCritère : jamais de dos. La courbe opposée épouse la course.\nRepères à chaque jeu : ne pas perdre de temps [?] · si besoin : feinte · jamais de dos · passe dans la course · courbe opposée → on épouse ! · choix du passage : rebase ou changement · changement de sens."
+   },
+   {
+    "nom": "Flèches — repeindre les zones de réception",
+    "nb": "",
+    "mat": "",
+    "duree": "22h10",
+    "obj": "Repeindre les zones de réception — puis redonner au handler pour créer du mouvement.",
+    "crit": "Le mouvement ne s'arrête pas à la réception : ça repart.",
+    "der": "",
+    "vp": [
+     "Feinte de course puis / ou de passe",
+     "Varier le cut",
+     "Passer à 2 entrées"
+    ],
+    "vm": [
+     "Ajouter les plots pour guider",
+     "Une seule entrée",
+     "Sans feinte"
+    ]
+   }
+  ],
+  "match": "22h30 — 1 enchaînement = 1 point."
+ },
+ {
+  "notionId": "3ce9cc08fab8814d874efda2d76a3350",
+  "titre": "Défense — n°1 — Parlons force : ouvert / fermé (Débutant)",
+  "date": "2024-10-15",
+  "rang": 1,
+  "niveau": "Débutant",
+  "theme": "Défense — les bases",
+  "phases": [
+   "La force (ouvert / fermé)"
+  ],
+  "lexique": [
+   "Fermé / Ouvert",
+   "No in / No out / No dump / No break",
+   "Priorité H / M"
+  ],
+  "ech": [
+   [
+    "Gamme de passe",
+    "21h25"
+   ],
+   [
+    "Fontaine",
+    "50 % / 70 % / 90 % / tipping"
+   ],
+   [
+    "Exercice du carré",
+    "// jeu Master Mind ou Petits Chevaux. Si besoin, révision : le recentrage · les flèches adaptées."
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "La force — force collective",
+    "nb": "[?] non noté",
+    "mat": "Disques",
+    "duree": "~30 min (21h45 → 22h15)",
+    "obj": "Comprendre que la force est collective : « Importance de la défense collective !! » Un seul défenseur ne force rien tout seul.",
+    "crit": "No in // No out est respecté par tout le monde, pas seulement par le marqueur.",
+    "der": "Force OUT · défense pour le joueur −1. 3 tours :\n- Tour 1 : sans défense\n- Tour 2 : avec défense\n- Tour 3 : dans le fermé",
+    "vp": [
+     "Avec défense",
+     "Dans le fermé"
+    ],
+    "vm": [
+     "Sans défense",
+     "Côté ouvert uniquement"
+    ],
+    "notes": "Une séance qui commence par du vocabulaire : « Parlons force = ouvert / fermé. Vocabulaire ≠. » Les mots ne sont pas les mêmes selon les gens — on commence par les aligner."
+   }
+  ],
+  "match": "22h15 — Vrai match de 25 min, avec 10 min de préparation d'équipe et 2 temps morts.\n10 minutes de préparation avant de jouer : c'est là que les joueurs s'approprient la force collective."
+ },
+ {
+  "notionId": "3ce9cc08fab8819085b8c218a60e662d",
+  "titre": "Défense individuelle — n°1 — Adapter le format à l'effectif (Débutant)",
+  "date": "2025-03-18",
+  "rang": 1,
+  "niveau": "Débutant",
+  "theme": "Défense individuelle — perfectionnement",
+  "phases": [
+   "La force (ouvert / fermé)",
+   "Le switch"
+  ],
+  "lexique": [
+   "Switch",
+   "Fermé / Ouvert"
+  ],
+  "ech": [],
+  "ex": [
+   {
+    "nom": "Circuit d'ateliers (≈ 10 présents)",
+    "nb": "≈ 10 présents · par 2, on tourne toutes les X minutes",
+    "mat": "",
+    "duree": "",
+    "obj": "Format de séance adapté à un petit effectif.",
+    "crit": "",
+    "der": "- Iron Man\n- Remonter le terrain (fixe, 3 groupes) — dégager\n- Jouer avec son pied de pivot\n- Passe petit à l'infini\n- Handler fixe → de plus en plus loin",
+    "notes": "Question en tête de feuille : « Du nombre de présents / objectif compétition ? » Le contenu n'est pas décidé avant de savoir combien de joueurs sont là — les deux formats sont préparés à l'avance.\nStructure : échauffement + circuit d'ateliers + circuit de contraintes. Si besoin → ajout cardio. Puis : Iron Man ou 2 contre 2."
+   },
+   {
+    "nom": "Circuit de contraintes (≈ 15 présents)",
+    "nb": "≈ 15 présents · par 2 // 2 équipes A et D",
+    "mat": "",
+    "duree": "",
+    "obj": "Format de séance adapté à un effectif plus large.",
+    "crit": "",
+    "der": "- Défense entre l'individuel et la zone\n- Provoquer plus de fautes (1 par équipe)\n- Stratégie par équipe\n- Défense en zone — approcher l'autre binôme de la zone\n- Provoquer des switchs // forcer vers l'extérieur"
+   }
+  ],
+  "match": "Les contraintes :\n- Annonce d'enclenchement : +1\n- Tactique réussie : +3\n- Tactique non réussie mais point marqué : +2\nEnchaînement ≠ Tactique : l'enchaînement = départ, aide à la structure ; la tactique = fixe, peut s'arrêter. Le barème récompense l'essai."
+ },
+ {
+  "notionId": "3ce9cc08fab8814d8597d0a3d17c33fc",
+  "titre": "Techniques d'attaque — n°2 — Le Back : ateliers et wall (Confirmé)",
+  "date": "2025-03-20",
+  "rang": 2,
+  "niveau": "Confirmé",
+  "theme": "Techniques d'attaque",
+  "phases": [
+   "Le recentrage",
+   "Le 2e rideau (le phare)"
+  ],
+  "lexique": [
+   "Recentrage",
+   "Pistons",
+   "Crash",
+   "Priorité H / M"
+  ],
+  "ech": [
+   [
+    "Routine de mise en train",
+    ""
+   ],
+   [
+    "Atelier 1",
+    "2 handlers, bras ou strike [fermé] • 1 passe"
+   ],
+   [
+    "Atelier 2",
+    "Give & Go sur zone"
+   ],
+   [
+    "Atelier 3",
+    "2 handlers, stack ou terre [ouvert] • 1 passe"
+   ],
+   [
+    "Atelier 4",
+    "Atelier de pivot, de plus en plus loin : plat, courbe 1/2, 2 côtés — × 2. Pivot en binôme × 2 : [fermé] puis [ouvert]."
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "Le Back — contenu par poste",
+    "nb": "Handler · Middle · Mixte",
+    "mat": "",
+    "duree": "",
+    "obj": "Séance organisée par poste.",
+    "crit": "",
+    "der": "Handler : recentrage 1 / 2 / 3 · long de ligne : 1. soutiens strict 2. H3\nMiddle : derrière avant le cut · continuité\nMixte : plays Taupe · Spain (schéma au tableau, voir scan) · Rocco (−1 dans le fermé) · Praline → Chave Sa[?] · suivre la règle · défense : wall classique, wall assassin · attaque de zone : pistons / crash 1 / 2 / 3",
+    "notes": "Consigne de début de point — ce qui s'annonce avant chaque point : quelle défense ? · 2 handlers : enclenchement / priorité · 2 milieux : devant ou continuité ? Personne n'entre sur le terrain sans savoir ce qu'il y fait."
+   },
+   {
+    "nom": "Le Wall — traverser la zone en triangle",
+    "nb": "",
+    "mat": "",
+    "duree": "",
+    "obj": "Le triangle doit marquer en faisant passer le disque à travers la zone.",
+    "crit": "V2 → passage par les assassins possible : +2 pts.",
+    "der": "Schéma du wall non retranscrit — voir le scan (PDF p.18)."
+   }
+  ],
+  "match": "Jeu arrêté sur grand terrain, 2 équipes. Mise en place d'un système tactique : 1 minute.\nPause : enchaînement 3 offensifs / 3 défensifs."
+ },
+ {
+  "notionId": "3cf9cc08fab881aba604e5f1fc95eb72",
+  "titre": "Défense individuelle — n°2 — Bac à sable : le déplacement dans l'espace (Débutant)",
+  "date": "2025-03-25",
+  "rang": 2,
+  "niveau": "Débutant",
+  "theme": "Défense individuelle — perfectionnement",
+  "phases": [
+   "Libérer l'espace",
+   "La zone de réception"
+  ],
+  "lexique": [
+   "Zone de réception"
+  ],
+  "ech": [
+   [
+    "Face à face avec un disque",
+    "Un de chaque, en alternant :\n(R) étirement, pointe de pied, fausses passes\n(P) side et back / courbe / up\n(S) talon-fesse, montée de genoux, jumping jack, petit saut\n(D) je donne je cut · je donne je viens chercher · je redonne et dégage"
+   ],
+   [
+    "Jeu des 4 zones",
+    "Pour conclure. Rajouter X plots de couleurs pour X joueurs : plus la zone a de plots, moins il y a d'attente. Les joueurs ramènent un plot de couleur une fois le disque catché ; si besoin, ils replacent le plot et reviennent. Tour par tour — objectif : analyser le terrain."
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "Le cut encadré",
+    "nb": "",
+    "mat": "Zone de réception matérialisée",
+    "duree": "",
+    "obj": "Assimiler le principe, puis jouer autour. Les propositions de cut sont d'abord encadrées.",
+    "crit": "Le joueur atteint la zone de réception matérialisée.",
+    "der": "- Propositions de cut encadrées\n- Assimiler le principe puis jouer autour\n- Stack + ouvert pour les expérimentés",
+    "notes": "« Bac à sable » — 4 séances avant les vacances, sur une thématique volontairement large : le déplacement dans l'espace."
+   },
+   {
+    "ref": "Conti de Royan",
+    "seanceNote": "Conti de Rayan.\nVariable (+) : ajouter un joueur au milieu, qui se met dans la ligne droite.\nVariable (−) : ajouter un plot pour aller chercher le cut."
+   }
+  ],
+  "match": "- Pas de contre-attaque\n- Départ uniquement sur un décompte"
+ },
+ {
+  "notionId": "3cf9cc08fab881df85f4e86ca1b74269",
+  "titre": "Attaque collective — n°1 — Le mouvement des joueurs (Débutant)",
+  "date": "2025-04-08",
+  "rang": 1,
+  "niveau": "Débutant",
+  "theme": "Attaque collective — perfectionnement",
+  "phases": [
+   "Le stack",
+   "La zone de réception"
+  ],
+  "lexique": [
+   "Appel"
+  ],
+  "ech": [
+   [
+    "Classique + Fontaine",
+    "Toucher du disque"
+   ],
+   [
+    "Petit jeu — le « call »",
+    "Le joueur court jusqu'au « call », puis on annonce une couleur de plot. L'information n'arrive qu'en cours de course : il doit lire en mouvement."
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "Le Sapin",
+    "nb": "Colonne · rotation vers le haut",
+    "mat": "Plots · disques",
+    "duree": "[?] non notée",
+    "obj": "Travailler le déplacement sur toute la longueur, en suivant le disque.",
+    "crit": "La rotation se fait sans temps mort.",
+    "der": "",
+    "vp": [
+     "Je suis le disque",
+     "En binôme avec défenseur",
+     "Deux côtés"
+    ],
+    "vm": [
+     "Mettre les plots pour guider",
+     "Un seul côté",
+     "Sans défenseur"
+    ]
+   },
+   {
+    "nom": "Situation sur jeu arrêté — un appel par joueur",
+    "nb": "Groupe coupé en 2",
+    "mat": "Disques",
+    "duree": "Enchaînement 4 offensifs / 4 défensifs",
+    "obj": "Sur jeu arrêté, position de base choisie par l'offense → définir un seul type d'appel par joueur.",
+    "crit": "Chaque joueur tient son appel — celui qu'il a annoncé.",
+    "der": "",
+    "vp": [
+     "Compétition / nombre de points",
+     "Position de départ définie"
+    ],
+    "vm": [
+     "Moins de défense",
+     "Réduire le nombre de joueurs par équipe"
+    ],
+    "notes": "Un seul type d'appel par joueur : pour un débutant, avoir « le choix » est paralysant. En lui assignant un seul appel, on supprime la décision et on ne garde que l'exécution. La décision reviendra plus tard."
+   }
+  ],
+  "match": null
+ },
+ {
+  "notionId": "3cf9cc08fab8815eab1dfb295e58e6cf",
+  "titre": "Attaque collective — n°2 — Circuit par postes (Débutant)",
+  "date": "2025-05-06",
+  "rang": 2,
+  "niveau": "Débutant",
+  "theme": "Attaque collective — perfectionnement",
+  "phases": [
+   "Le recentrage",
+   "La zone de réception"
+  ],
+  "lexique": [
+   "Fermé / Ouvert"
+  ],
+  "ech": [
+   [
+    "Gamme de passe classique",
+    ""
+   ],
+   [
+    "Petit footing",
+    "Pendant l'installation du circuit : les joueurs bougent au lieu d'attendre."
+   ],
+   [
+    "Fontaine et gamme",
+    ""
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "Circuit par postes — 5 ateliers",
+    "nb": "Minimum 2 par poste (+ −1)",
+    "mat": "Plots pour les 5 postes · disques",
+    "duree": "Rotation entre postes",
+    "obj": "Faire tourner tout le monde sur 5 gestes différents, en autonomie.",
+    "crit": "Minimum 2 joueurs par poste — c'est la condition pour que le circuit tourne sans le coach.",
+    "der": "1. Upside ouvert\n2. Feinte + ouvert → cut\n3. Upside fermé\n4. Give and Go — × 2 en même temps\n5. Feinte ouvert → cut",
+    "notes": "La suite — deux formats au choix le jour J (fatigue, météo, humeur du groupe) :\n- Entraînement classique : rappel de l'objectif, exercice 1, exercice 2 (contenu laissé vide sur la feuille [?])\n- Fun : double disque · montantes / descendantes · Iron Man"
+   }
+  ],
+  "match": "Noté sans détail : [?]"
+ },
+ {
+  "notionId": "3ce9cc08fab881cb8718e90f80cad3db",
+  "titre": "Défense de zone — n°1 — Le jeu long (Hétérogène)",
+  "date": "2026-01-05",
+  "rang": 1,
+  "niveau": "Hétérogène",
+  "theme": "Défense de zone",
+  "phases": [
+   "Le switch",
+   "La Clam"
+  ],
+  "lexique": [
+   "Courbe qui s'épouse",
+   "Poche du fond",
+   "Switch"
+  ],
+  "ech": [
+   [
+    "Gamme de passe",
+    "(+) 2 appels en long, puis 1 fait pareil."
+   ],
+   [
+    "Les trois organisations défensives à présenter",
+    "1. Individuelle classique\n2. Switch utile (fond)\n3. Clam du stack"
+   ]
+  ],
+  "ex": [
+   {
+    "nom": "3 contre 3 en couloir long",
+    "nb": "3 contre 3 · groupe coupé en 2",
+    "mat": "Terrain long mais pas large",
+    "duree": "4 essais par équipe · temps coupé en 2 pour faire tourner les groupes en défense",
+    "obj": "Attaque autonome : la stratégie est au choix de l'équipe. Défense : regroupement, switch long ou clam.",
+    "crit": "2 passes maximum pour marquer. La contrainte impose le jeu long.",
+    "der": "Côté défense : 1. individuelle 2. switch long 3. clam du stack 4. défense du milieu, poach\nCôté attaque : 1. contre-cut court → long 2. × 2 appels 3. positionnement initial pour casser la stratégie adverse\nDéfense souple sur le porteur.",
+    "notes": "Une séance à deux faces : le même thème traité des deux côtés en même temps — ce que l'attaque cherche, ce que la défense empêche."
+   },
+   {
+    "nom": "5 contre 5, le pari",
+    "nb": "5 contre 5",
+    "mat": "Terrain complet\nDisques",
+    "duree": "Par tours",
+    "obj": "Marquer un maximum de points — mais seule la longue rapporte.",
+    "crit": "Marque sur une longue (avant le milieu) : le pari est validé · marque sans longue : rien ne se passe · turnover : les points vont à l'adversaire.",
+    "der": "Chaque équipe attaque toujours dans le même sens. Au début du tour, l'équipe en attaque parie un nombre de points.",
+    "notes": "Le pari : les joueurs annoncent eux-mêmes leur ambition, et le turnover la donne à l'adversaire. Le dosage du risque devient leur décision."
+   }
+  ],
+  "match": null
+ },
+ {
+  "notionId": "3ce9cc08fab881d3bb87efc8efeb0a4f",
+  "titre": "Défense de zone — n°2 — Communication et zones (Hétérogène)",
+  "date": "2026-01-19",
+  "rang": 2,
+  "niveau": "Hétérogène",
+  "theme": "Défense de zone",
+  "phases": [
+   "Le switch",
+   "La communication"
+  ],
+  "lexique": [
+   "Switch"
+  ],
+  "ech": [],
+  "ex": [
+   {
+    "nom": "Traverser les zones en binôme",
+    "nb": "En binôme",
+    "mat": "Zones de formes différentes, disposées en cascade",
+    "duree": "[?] non notée",
+    "obj": "La communication défensive. « Pas d'attaquant seul chez moi. »",
+    "crit": "La phrase se dit à voix haute : « Je donne le joueur que j'ai. » Et : pas d'arrêt entre les zones.",
+    "der": "Des zones de formes différentes sont placées. En binôme, les joueurs doivent les traverser. La défense passe le joueur d'une zone à l'autre, en l'annonçant.",
+    "notes": "Une phrase exacte à faire dire — pas « communiquez », mais une formule précise. Les joueurs savent quoi dire, pas seulement qu'il faut parler.\nFeuille très incomplète : objectif et lexique vides, exercice 2 sans contenu, pas de match."
+   }
+  ],
+  "match": null
+ },
+ {
+  "notionId": "3ce9cc08fab881439fe4ffa026e95df3",
+  "titre": "Techniques d'attaque — n°1 — Middle, Handler, Défense et tactique (Confirmé)",
+  "date": "2026-02-09",
+  "rang": 1,
+  "niveau": "Confirmé",
+  "theme": "Techniques d'attaque",
+  "phases": [
+   "La prise d'info",
+   "Le recentrage",
+   "Le triangle de vision"
+  ],
+  "lexique": [
+   "PPA",
+   "Appel",
+   "Bise à Mathilde",
+   "Triangle de vision",
+   "Pouvoir du Freeze"
+  ],
+  "ech": [],
+  "ex": [
+   {
+    "nom": "Bloc Middle — prise d'info collective",
+    "nb": "",
+    "mat": "",
+    "duree": "",
+    "obj": "Prise d'info collective · feinter sa défense.",
+    "crit": "Le joueur se retourne pour prendre l'info avant de partir — c'est visible.",
+    "der": "Les joueurs en attente sont de dos. Au départ, se retourner pour prendre l'info → puis l'appel.\n- Droite / Gauche : le côté de l'appel\n- Bas / Haut : le sens",
+    "notes": "La formule de l'appel écrite en entier : P.Info — P.Décision — Action // [ Cut 1 — (changement de direction) — Cut 2 — Zone de réception ] = Appel."
+   },
+   {
+    "nom": "Bloc Handler — disque coincé et continuité",
+    "nb": "Par groupes de 4 ou 5",
+    "mat": "Disques",
+    "duree": "[?] non notée",
+    "obj": "Travail du disque coincé et de la continuité. Solutions : Bise à Mathilde / Swing / Conti.",
+    "crit": "Une solution est trouvée alors que la défense s'adapte en même temps.",
+    "der": ""
+   },
+   {
+    "nom": "Bloc Défense — triangle et Pouvoir du Freeze",
+    "nb": "Jeu des zones si plus de 8, sinon passe à 10",
+    "mat": "",
+    "duree": "",
+    "obj": "Triangle de défense — au minimum 2 éléments sur 3.",
+    "crit": "1 passage complet : +1 pt · Pouvoir du Freeze — la défense ne voit pas 1 élément du triangle : −1 pt",
+    "der": "Adapté à l'effectif : jeu des zones si plus de 8 — sinon passe à 10 (sur un terrain différent). Dans les deux cas : système de points.",
+    "notes": "Rendre le regard observable : le Freeze arrête le jeu et vérifie — il rend le placement du regard chiffrable."
+   }
+  ],
+  "match": "Tactique : Praline · Petit Train · Rocco (−1 F)"
+ }
+]
