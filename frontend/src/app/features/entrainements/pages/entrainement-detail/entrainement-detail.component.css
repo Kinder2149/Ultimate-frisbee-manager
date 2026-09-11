@@ -163,3 +163,38 @@ mat-list-item:last-child {
   font-size: 16px;
   color: rgba(0,0,0,0.7);
 }
+.lexique-jour {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 16px;
+}
+
+.lexique-titre {
+  font-weight: 600;
+  color: #333;
+}
+
+.lexique-terme {
+  background: #fff3e0;
+  color: #5d4037;
+  border-radius: 12px;
+  padding: 2px 10px;
+  font-size: 0.9rem;
+  cursor: help;
+}
+
+.consignes-seance {
+  background: #f5f7fb;
+  border-left: 3px solid #3f51b5;
+  padding: 8px 12px;
+  margin: 6px 0 10px;
+  color: #333;
+}
+
+.consignes-seance p {
+  margin: 4px 0 0;
+  white-space: pre-line;
+  line-height: 1.5;
+}

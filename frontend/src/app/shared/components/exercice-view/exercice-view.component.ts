@@ -60,7 +60,12 @@ export class ExerciceViewComponent implements OnInit {
 
   ngOnInit(): void {
     // Si les données viennent d'un dialogue, on les utilise. Sinon, on s'attend à ce qu'elles soient passées via @Input()
-    if (this.data) {
+    // Affiché dans la fenêtre d'un autre élément (ex. une séance) : l'exercice arrive par @Input,
+    // et les données / la fenêtre injectées sont celles du parent, pas les nôtres.
+    const integre = !!this.dialogRef && this.dialogRef.componentInstance !== this;
+    if (integre) {
+      this.dialogRef = null as any;
+    } else if (this.data) {
       this.exercice = (this.data?.customData?.exercice || this.data?.exercice || {}) as ExerciceViewData['exercice'];
     }
 

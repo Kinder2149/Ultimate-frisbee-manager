@@ -1,4 +1,4 @@
-import { Component, Inject, Input, Optional } from '@angular/core';
+import { Component, Inject, Input, Optional, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -27,7 +27,7 @@ export interface EchauffementViewData {
   templateUrl: './echauffement-view.component.html',
   styleUrls: ['./echauffement-view.component.scss']
 })
-export class EchauffementViewComponent {
+export class EchauffementViewComponent implements OnInit {
   @Input() echauffement: EchauffementViewData['echauffement'] = {};
   @Input() isSummary: boolean = false;
   // Normalisation pour supporter DialogService (data: { dialogConfig, customData })
@@ -44,6 +44,13 @@ export class EchauffementViewComponent {
     }
     // Sinon, on s'attend à ce que les données soient passées via @Input()
   
+  }
+
+  ngOnInit(): void {
+    // Affiché dans la fenêtre d'un autre élément (ex. une séance) : la fenêtre injectée est celle du parent.
+    if (this.dialogRef && this.dialogRef.componentInstance !== this) {
+      this.dialogRef = null as any;
+    }
   }
 
   close(): void {

@@ -1,4 +1,4 @@
-import { Component, Inject, Input, Optional } from '@angular/core';
+import { Component, Inject, Input, Optional, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -21,7 +21,7 @@ export interface SituationMatchViewData {
   templateUrl: './situationmatch-view.component.html',
   styleUrls: ['./situationmatch-view.component.scss']
 })
-export class SituationMatchViewComponent {
+export class SituationMatchViewComponent implements OnInit {
   @Input() situationMatch!: SituationMatch;
   @Input() isSummary: boolean = false;
   constructor(
@@ -32,6 +32,13 @@ export class SituationMatchViewComponent {
   ) {
     if (data) {
       this.situationMatch = (data?.customData?.situationMatch || data?.situationMatch) as SituationMatch;
+    }
+  }
+
+  ngOnInit(): void {
+    // Affiché dans la fenêtre d'un autre élément (ex. une séance) : la fenêtre injectée est celle du parent.
+    if (this.dialogRef && this.dialogRef.componentInstance !== this) {
+      this.dialogRef = null as any;
     }
   }
 

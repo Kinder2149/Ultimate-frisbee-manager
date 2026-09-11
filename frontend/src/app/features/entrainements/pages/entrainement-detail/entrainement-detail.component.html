@@ -22,6 +22,10 @@
             <span class="block-chip exercices" *ngIf="entrainement.exercices && entrainement.exercices.length > 0">Exercices</span>
             <span class="block-chip situation" *ngIf="entrainement.situationMatch">Match</span>
           </div>
+          <div class="meta-item" *ngIf="entrainement.rang">
+            <mat-icon>format_list_numbered</mat-icon>
+            <span>Séance n°{{ entrainement.rang }} du thème</span>
+          </div>
           <div class="meta-item duration-highlight">
             <mat-icon>timer</mat-icon>
             <span>{{ calculateTotalDuration() }}</span>
@@ -32,6 +36,12 @@
               <mat-chip *ngFor="let tag of entrainement.tags" [style.background-color]="tag.color || '#e0e0e0'" selected>{{ tag.label }}</mat-chip>
             </mat-chip-listbox>
           </div>
+        </div>
+
+        <div class="lexique-jour" *ngIf="entrainement.lexique && entrainement.lexique.length > 0">
+          <mat-icon>menu_book</mat-icon>
+          <span class="lexique-titre">Lexique du jour :</span>
+          <span class="lexique-terme" *ngFor="let terme of entrainement.lexique" [matTooltip]="terme.definition || ''">{{ terme.terme }}</span>
         </div>
 
         <mat-accordion multi="true">
@@ -64,6 +74,10 @@
                     <div class="exercice-title">{{ i + 1 }}. {{ exerciceEntrainement.exercice.nom }}</div>
                     <div class="exercice-meta">
                       <mat-icon>schedule</mat-icon> {{ formatDuree(exerciceEntrainement.duree) }}
+                    </div>
+                    <div class="consignes-seance" *ngIf="exerciceEntrainement.notes">
+                      <strong>Dans cette séance :</strong>
+                      <p>{{ exerciceEntrainement.notes }}</p>
                     </div>
                     <app-exercice-view [exercice]="exerciceEntrainement.exercice" [isSummary]="true"></app-exercice-view>
                   </div>
