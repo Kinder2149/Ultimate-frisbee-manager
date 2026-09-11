@@ -63,3 +63,124 @@
   color: #666;
   font-style: italic;
 }
+
+.lexique-entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn-ajouter,
+.btn-principal {
+  background: #3f51b5;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.btn-secondaire {
+  background: #fff;
+  color: #37474f;
+  border: 1px solid #cfd8dc;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.btn-principal:disabled,
+.btn-secondaire:disabled,
+.btn-lien:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.actions {
+  margin-left: auto;
+  display: flex;
+  gap: 0.25rem;
+}
+
+.btn-lien {
+  background: none;
+  border: none;
+  color: #3f51b5;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+}
+
+.btn-lien.danger {
+  color: #c62828;
+}
+
+.lexique-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  border: 1px solid #c5cae9;
+  background: #f8f9ff;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.lexique-form h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+}
+
+.lexique-form label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.lexique-form input:not([type='checkbox']),
+.lexique-form textarea,
+.lexique-form select {
+  font: inherit;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid #cfd8dc;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.form-ligne {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+}
+
+.form-ligne > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.lexique-form .case {
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding-bottom: 0.4rem;
+}
+
+.aide {
+  color: #78909c;
+  font-size: 0.85rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}

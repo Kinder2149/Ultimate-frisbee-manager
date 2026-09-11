@@ -1,5 +1,8 @@
 <div class="lexique-container">
-  <h1>Lexique — vocabulaire commun du club</h1>
+  <div class="lexique-entete">
+    <h1>Lexique — vocabulaire commun du club</h1>
+    <button type="button" class="btn-ajouter" *ngIf="peutEcrire && !brouillon" (click)="ajouter()">+ Ajouter un terme</button>
+  </div>
 
   <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
 
@@ -11,16 +14,63 @@
     </select>
   </div>
 
+  <!-- Formulaire (ajout, ou modification affichée à la place du terme) -->
+  <ng-template #formulaire>
+    <form class="lexique-form" (ngSubmit)="enregistrer()" *ngIf="brouillon as b">
+      <h2>{{ b.id ? 'Modifier le terme' : 'Nouveau terme' }}</h2>
+
+      <label for="lx-terme">Terme</label>
+      <input id="lx-terme" name="terme" [(ngModel)]="b.terme" maxlength="120" required autocomplete="off">
+
+      <label for="lx-definition">Définition</label>
+      <textarea id="lx-definition" name="definition" [(ngModel)]="b.definition" rows="3" required></textarea>
+
+      <div class="form-ligne">
+        <div>
+          <label for="lx-categorie">Catégorie</label>
+          <select id="lx-categorie" name="categorie" [(ngModel)]="b.categorie" required>
+            <option value="" disabled>Choisir…</option>
+            <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+          </select>
+        </div>
+        <label class="case">
+          <input type="checkbox" name="motImage" [(ngModel)]="b.motImage">
+          Mot imagé 🗣️ <span class="aide">(à crier depuis le bord du terrain)</span>
+        </label>
+      </div>
+
+      <p class="error-message" *ngIf="erreurFormulaire">{{ erreurFormulaire }}</p>
+
+      <div class="form-actions">
+        <button type="button" class="btn-secondaire" (click)="annuler()" [disabled]="enregistrement">Annuler</button>
+        <button type="submit" class="btn-principal" [disabled]="enregistrement">{{ enregistrement ? 'Enregistrement…' : 'Enregistrer' }}</button>
+      </div>
+    </form>
+  </ng-template>
+
+  <ng-container *ngIf="brouillon && !brouillon.id">
+    <ng-container *ngTemplateOutlet="formulaire"></ng-container>
+  </ng-container>
+
   <div *ngIf="lexiques.length === 0" class="no-data">Aucun terme trouvé.</div>
 
   <ul class="lexique-list">
     <li *ngFor="let mot of lexiques" class="lexique-item" [class.mot-image]="mot.motImage">
-      <div class="lexique-header">
-        <span class="terme">{{ mot.terme }}</span>
-        <span class="categorie-badge">{{ mot.categorie }}</span>
-        <span *ngIf="mot.motImage" class="badge-image" title="Mot imagé, à crier depuis le bord du terrain">🗣️</span>
-      </div>
-      <p class="definition">{{ mot.definition }}</p>
+      <ng-container *ngIf="enCours(mot); else lecture">
+        <ng-container *ngTemplateOutlet="formulaire"></ng-container>
+      </ng-container>
+      <ng-template #lecture>
+        <div class="lexique-header">
+          <span class="terme">{{ mot.terme }}</span>
+          <span class="categorie-badge">{{ mot.categorie }}</span>
+          <span *ngIf="mot.motImage" class="badge-image" title="Mot imagé, à crier depuis le bord du terrain">🗣️</span>
+          <span class="actions" *ngIf="peutEcrire">
+            <button type="button" class="btn-lien" (click)="modifier(mot)" [disabled]="!!brouillon">Modifier</button>
+            <button type="button" class="btn-lien danger" (click)="supprimer(mot)" [disabled]="!!brouillon">Supprimer</button>
+          </span>
+        </div>
+        <p class="definition">{{ mot.definition }}</p>
+      </ng-template>
     </li>
   </ul>
 </div>

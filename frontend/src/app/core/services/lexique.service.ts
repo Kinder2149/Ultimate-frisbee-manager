@@ -18,4 +18,16 @@ export class LexiqueService {
     }
     return this.http.get<Lexique[]>(this.apiUrl);
   }
+
+  create(terme: Omit<Lexique, 'id' | 'createdAt'>): Observable<Lexique> {
+    return this.http.post<Lexique>(this.apiUrl, terme);
+  }
+
+  update(id: string, terme: Partial<Lexique>): Observable<Lexique> {
+    return this.http.put<Lexique>(`${this.apiUrl}/${id}`, terme);
+  }
+
+  delete(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
 }
