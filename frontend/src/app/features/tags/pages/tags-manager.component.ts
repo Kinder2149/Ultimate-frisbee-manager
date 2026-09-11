@@ -25,7 +25,7 @@ export class TagsManagerComponent implements OnInit {
   // Tolérance: si l'export partagé n'est pas résolu au runtime, utiliser un fallback
   tagCategories: TagCategory[] = Array.isArray((TAG_CATEGORIES as any))
     ? ([...TAG_CATEGORIES] as unknown as TagCategory[])
-    : ['objectif', 'travail_specifique', 'niveau', 'temps', 'format', 'theme_entrainement', 'phase_entrainement', 'public_seance'] as TagCategory[];
+    : ['objectif', 'travail_specifique', 'niveau', 'temps', 'format', 'theme_entrainement', 'phase_entrainement', 'public_seance', 'statut_seance'] as TagCategory[];
 
   successMessage: string = '';
   errorMessage: string = '';

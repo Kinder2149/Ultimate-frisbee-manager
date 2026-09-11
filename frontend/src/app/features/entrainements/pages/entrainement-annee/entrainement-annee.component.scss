@@ -169,9 +169,16 @@
 
 .seance-theme,
 .seance-phase,
-.seance-public {
+.seance-public,
+.seance-statut {
   border-radius: 10px;
   padding: 1px 8px;
+}
+
+.seance-statut {
+  background: #eceff1;
+  color: #455a64;
+  font-style: italic;
 }
 
 .seance-theme {

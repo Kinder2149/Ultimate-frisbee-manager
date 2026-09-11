@@ -44,6 +44,7 @@
               </span>
               <span class="seance-phase" *ngFor="let t of tagsDe(s, 'phase_entrainement')">{{ t.label }}</span>
               <span class="seance-public" *ngFor="let t of tagsDe(s, 'public_seance')">{{ t.label }}</span>
+              <span class="seance-statut" *ngFor="let t of tagsDe(s, 'statut_seance')">{{ t.label }}</span>
             </span>
           </span>
           <mat-icon class="seance-ouvrir">chevron_right</mat-icon>

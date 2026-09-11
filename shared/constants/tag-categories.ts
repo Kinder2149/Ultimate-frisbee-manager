@@ -11,7 +11,8 @@ export const TAG_CATEGORIES = [
   'format',
   'theme_entrainement',
   'phase_entrainement',
-  'public_seance'
+  'public_seance',
+  'statut_seance'
 ] as const;
 
 export type TagCategory = typeof TAG_CATEGORIES[number];
@@ -27,7 +28,8 @@ export const TAG_CATEGORY_LABELS: { [key in TagCategory]: string } = {
   'format': 'Format',
   'theme_entrainement': 'Thèmes Entraînements',
   'phase_entrainement': 'Phases',
-  'public_seance': 'Public de la séance'
+  'public_seance': 'Public de la séance',
+  'statut_seance': 'Statut de la séance'
 };
 
 /**
@@ -41,7 +43,8 @@ export const DEFAULT_TAG_COLORS: { [key in TagCategory]?: string } = {
   'format': '#795548',          // Marron
   'theme_entrainement': '#FF5722',  // Orange
   'phase_entrainement': '#FF9800',  // Orange clair (sous Thème)
-  'public_seance': '#009688'    // Teal (distinct de "niveau")
+  'public_seance': '#009688',   // Teal (distinct de "niveau")
+  'statut_seance': '#9E9E9E'    // Gris (repère : à valider, archive)
 };
 
 /**

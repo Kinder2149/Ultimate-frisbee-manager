@@ -22,5 +22,6 @@ export const DEFAULT_TAG_COLORS: { [key: string]: string } = {
   'format': '#795548',   // Marron
   'theme_entrainement': '#FF5722',    // Orange
   'phase_entrainement': '#FF9800',    // Orange clair (sous Thème)
-  'public_seance': '#009688'          // Teal (distinct de "niveau")
+  'public_seance': '#009688',         // Teal (distinct de "niveau")
+  'statut_seance': '#9E9E9E'          // Gris (repère : à valider, archive)
 };

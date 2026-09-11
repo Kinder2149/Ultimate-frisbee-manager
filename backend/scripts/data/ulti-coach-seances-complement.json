@@ -1,0 +1,265 @@
+[
+  {
+    "notionId": "11f9cc08fab880c99723cb80a7dadaed",
+    "titre": "Training 12/09/2024",
+    "date": "2024-09-12",
+    "statut": "À valider",
+    "theme": null, "niveau": null, "rang": null, "phases": [], "lexique": [],
+    "ech": [
+      ["1 — Gamme de passes", "Variante Derrière / Devant — 30 min"],
+      ["2 — Dynamique", "Fontaine · Ménage à 3 — 30 min"],
+      ["3 — Explication séance", "10 min"]
+    ],
+    "ex": [
+      { "nom": "Recentrage", "notes": "Exercice n°1 — 30 min.\nProgression en 3 temps : 1 défenseur sur le porteur (×1-2 min) → 2 défenseurs Porteur + Soutien (×10 min, attention au soutien) → 1 défenseur Soutien + Ace (×10 min) — règle « 2 chances ».\nObjectif : recentrer le disque sous pression progressive.\nVariable (−) : ×4 répétitions · intensité." }
+    ],
+    "match": "Situation — 30 min — thème « Matth » [?, probablement Handler/Match]\n- Bord de ligne = Swing\n- Tour / pied bord de ligne [?]\n- Regarder l'avant +1\n- Position soutien\n\nRepères de progression notés en marge [?] :\n1. Sortir / marcher [?]\n2. Zone opposée + cut fort\n3. Timing M+1",
+    "contenu": "Reprise de saison — Sept 2024, séance « Base », 2h30 prévues, RDV 19h30. Note en marge : « [?] nouveaux possibles ».\n\nExercice n°2 — Cut Mid (20 min) : « Donnez-vous un ordre » [?] — cut du milieu. Clef : « Stall out = bad cut » (perdre le disque au compte = mauvais cut). Variable (+) : ×2.\n\nSource : scan CamScanner sept. 2024 (hors classeur 63 p.) — image dans la page Notion."
+  },
+  {
+    "notionId": "3d79cc08fab88146bd6fc75d054a3f4d",
+    "titre": "Continuité et prise de décision — n°3 — Connexion handler-middle et recentrage (Confirmé)",
+    "date": "2026-02-02",
+    "statut": "À valider",
+    "theme": "Continuité et prise de décision", "niveau": "Confirmé", "rang": 3,
+    "phases": ["Le recentrage"], "lexique": ["Recentrage"],
+    "ech": [],
+    "ex": [
+      { "nom": "Recentrage 5v5 avec soutien (strike / around)", "notes": "EXO 1. Critère de réussite : [MANQUE]" }
+    ],
+    "match": null,
+    "contenu": "Thème : Continuité et prise de décision — recentrage et connexion handler/middle.\nLexique noté : Recentrage · Strike · Around.\nÉchauffement : non détaillé dans la source [MANQUE].\nEXO 2 — Continuité après le recentrage (non détaillé dans la source) [MANQUE].\nMatch à thème : [MANQUE].\nNote d'origine : « Je dois finir ma réflexion » — séance encore en rodage côté coach.\nSource : notes de coaching « INFO VICO » (GONES 2026.docx, lundi 02/02/26), non présentes dans le classeur papier 2025."
+  },
+  {
+    "notionId": "3d79cc08fab881e9bd68d8c782e827b7",
+    "titre": "Techniques d'attaque — n°3 — Attaque horizontale (Confirmé)",
+    "date": "2026-02-05",
+    "statut": "À valider",
+    "theme": "Techniques d'attaque", "niveau": "Confirmé", "rang": 3,
+    "phases": ["Attaque horizontale"], "lexique": [],
+    "ech": [],
+    "ex": [
+      { "nom": "Cut en T ou L avec continuité", "notes": "EXO 1. Critère de réussite : [MANQUE]" },
+      { "nom": "Split Stack", "notes": "EXO 2 — 3v3 à petit thème, démarrage en split stack avec un handler. Critère de réussite : [MANQUE]" }
+    ],
+    "match": "Situation 5v5 :\n- Attaque horizontale à l'opposé du disque\n- Attaque horizontale du côté du disque\n\nSystème de points : 0 turnover = 3 pts · 1 = 2 pts · 2 = 0 pt · 3 ou plus = 2 pts pour l'équipe adverse.",
+    "contenu": "Lexique : [MANQUE]. Échauffement : non détaillé dans la source [MANQUE].\nSource : notes de coaching « INFO LUNA » (GONES 2026.docx, jeudi 05/02/26), non présentes dans le classeur papier 2025."
+  },
+  {
+    "notionId": "3d79cc08fab8811eb118e23d396f652a",
+    "titre": "Techniques d'attaque — n°4 — Attaque verticale (Confirmé)",
+    "date": "2026-02-19",
+    "statut": "À valider",
+    "theme": "Techniques d'attaque", "niveau": "Confirmé", "rang": 4,
+    "phases": ["Attaque verticale"], "lexique": [],
+    "ech": [],
+    "ex": [
+      { "nom": "Attaque du disque — devant / derrière", "notes": "EXO 1. Critère de réussite : [MANQUE]" },
+      { "nom": "La Fleur", "notes": "EXO 2. Critère de réussite : [MANQUE]" }
+    ],
+    "match": "5v5 à thème : une équipe fait partir le dernier du stack en premier, l'autre fait partir le deuxième du stack en premier. L'équipe qui marque conserve l'attaque.\n[EN COURS DE RÉFLEXION — Kinder] : contrainte notée comme non stabilisée dans la source.",
+    "contenu": "Lexique : [MANQUE]. Échauffement : non détaillé dans la source [MANQUE].\nSource : notes de coaching « INFO LUNA » (GONES 2026.docx, jeudi 19/02/26), non présentes dans le classeur papier 2025."
+  },
+  {
+    "notionId": "11f9cc08fab88052b6addb3602bdabf4",
+    "titre": "Training 10/10/2024",
+    "date": "2024-10-10",
+    "statut": "Archive 2023-2024",
+    "theme": null, "niveau": null, "rang": null, "phases": [], "lexique": [],
+    "ech": [["Course", ""], ["Passe", ""], ["Passe en mouvement", ""]],
+    "ex": [], "match": null,
+    "contenu": "Gabarit non rempli (exercices « ??? », situation vide). Le contenu réel est dans le scan CamScanner du 10/10/2024 (image dans la page Notion, non transcrite). Date absente dans Notion : reprise du titre."
+  },
+  {
+    "notionId": "a2af325e77914b4e929f7b93d8c697dd",
+    "titre": "Thématique - End Zone",
+    "date": null,
+    "statut": "Archive 2023-2024",
+    "theme": null, "niveau": null, "rang": null, "phases": [], "lexique": [],
+    "ech": [], "ex": [], "match": null,
+    "contenu": "Page composée uniquement de schémas (images dans Notion, non transcrits) : Base · Le Standard · Situation · Situation 2.\nThème Notion : End Zone. Étiquettes : Coaching Mixte, Training."
+  },
+  {
+    "notionId": "c806564ebacd4dd78b176c1bd0d6a3fb",
+    "titre": "Play Gones",
+    "date": null,
+    "statut": "Archive 2023-2024",
+    "theme": null, "niveau": null, "rang": null, "phases": [], "lexique": [],
+    "ech": [],
+    "ex": [
+      { "nom": "Roco", "notes": "Play du club — schéma : https://www.ultiplays.com/shares/deymk2ENP8FEvD4yllvq" },
+      { "nom": "Toupi", "notes": "Play du club (« Toupie ») — schéma : https://www.ultiplays.com/shares/NebVn4o9OYFy0wa6dd0m" },
+      { "nom": "Fou", "notes": "Play du club — schéma : https://www.ultiplays.com/shares/jO1m4o460dU21WwgOO1o" }
+    ],
+    "match": null,
+    "contenu": "1. Nos PLAYS : Roco, Toupie, Fou. Un play, c'est un déroulé de jeu que l'on connaît par cœur — il faut tous les connaître. Astuce : mini interro entre vous (par exemple avec ceux qui ne les ont pas vus à l'Indoor).\n\n2. L'attaque de zone : 2 façons de l'attaquer — par les PISTONS, par les CRASH. Dans tous les cas, la clé du succès c'est le SWING.\n- Handler au milieu : swing très rapide (avec 1/2 seconde pour regarder si un crash est dispo)\n- Handlers des côtés : chercher le piston et swing si pas de solution\n- Pistons & Crash : appel au bon moment pour être synchro avec les handlers\nTips : s'il y a beaucoup de vent, faire la passe au 2e handler qui vient derrière le handler qui a le disc, puis SWING.\nQuand c'est lancé, rythme en 4 temps : 1 handler côté, 2 handler milieu, 3 handler côté, 4 piston…\n\nSchémas : 4 images dans la page Notion."
+  },
+  {
+    "notionId": "403472ea0f8e4300a7ded29af8d8c2b4",
+    "titre": "Training 02/10/2023",
+    "date": "2023-10-02",
+    "statut": "Archive 2023-2024",
+    "theme": null, "niveau": null, "rang": null, "phases": [], "lexique": [],
+    "ech": [["Course", "ou éveil musculaire ?"], ["Passe", "Routine"], ["Passe en mouvement", "Dynamisation"]],
+    "ex": [], "match": null,
+    "contenu": "Thème Notion : Recyclage.\nExercice n°1 — ??? : exercice débutant spécifique recyclage. Objectifs : travail du recyclage ? Trouver le timing dans la zone de repos.\nExercice n°2 — 3V3 : match en montante-descendante avec un bonus si on marque en suivant un principe (+2). Objectif : continuer de rechercher le bon timing dans son recyclage en essayant de marquer avec un swing + un piston."
+  },
+  {
+    "notionId": "a45121de00374b919530aa5ab166c031",
+    "titre": "Training Fenotte 15/10/2023",
+    "date": "2023-10-15",
+    "statut": "Archive 2023-2024",
+    "theme": null, "niveau": null, "rang": null, "phases": [], "lexique": [],
+    "ech": [
+      ["Réveil musculaire", "Au sol en mode prière · dos creux, dos rond · étirement allongé en basculant le genou au-dessus de la hanche, épaules au sol · papillon · une jambe allongée, pied opposé à l'extérieur du genou, épaules loin derrière · un genou, un pied au sol : regarder à droite, à gauche, en haut · crabe au sol · escargot puis relevé puis pompe"],
+      ["Jeux avec disc", "Démo Boiss. Jeux à 2 : Boussole · 3 niveaux de lancer (×10 à chaque niveau, back et side) : proche, moyen, loin. Jeux à 3 : je lance, je fais des gammes, je reçois et je renvoie · je lance, cut devant / ouvert, je reçois et je renvoie · je lance, cut devant / fond, je reçois et je renvoie"],
+      ["Mini jeux", "Garçon de café ?"]
+    ],
+    "ex": [
+      { "nom": "Recentrage", "notes": "Matin — Point n°1 « Recentrage » (rappel Nick — ligne de cut) :\n1. Cut dans l'ouvert à fond quand la déf est sur les talons → demi-tour\n2. Jeu à 3 handleur → on vient chercher derrière puis swing (level 1)\n3. Passe dans le dos du défenseur soutien = passe qui déclenche l'appel (level 2 — la déf est proche du soutien)\n4. Bise au défenseur puis swing (level 3, moins dangereux si la passe est assurée — la déf est loin du soutien)\n5. Passe dans le dos de son défenseur, en posant son pied lors du cut derrière lui (level 4)\n⛔ Cut derrière puis je reviens vers le stack → autres défenseurs possibles.\nTips : fixer sa déf." },
+      { "nom": "Conti de Royan", "notes": "Matin. Objectif : dynamiser le handling / give and go." },
+      { "nom": "Remontée de terrain", "notes": "Après-midi. Objectif : cavalière. Levels 1, 2 et 3 (vidéos dans la page Notion)." }
+    ],
+    "match": "Matin — Match en 2v2 grand terrain : pour se démarquer de votre joueuse il va falloir être intelligent. En attaque il n'y a qu'une joueuse qui peut recevoir le disc et les terrains sont grands. Si ma joueuse est plus physique elle risque de me rattraper même si je cut bien : utiliser l'une des stratégies vues précédemment pour semer sa défense. Lien défense face guard + triangulation.\n\nAprès-midi — Match à thème :\n- +2 si remontée de handler (cavalier)\n- +3 si ouverture grâce à un swing\n- +4 si (−1) ou passe qui déclenche l'appel",
+    "contenu": "Objectif demandé par l'équipe : savoir recentrer pour les middles ou les handleuses ; dynamisme des handleuses et savoir se retrouver entre elles ; exercices sur le pied de pivot (s'appliquer toujours, comme dans les conditions les plus dures) ; une passe au soutien qui balance une longue ; au moins 3 filles à l'aise en handling pour l'indoor. Au beach, beaucoup de turns sur les premières passes : bosser le break (recentrage quand forcées long de ligne) ?\n\nThématique (tableau) : Forcé long de ligne (épaules face au soutien, déf soutien ne voit pas le disc, passe qui déclenche l'appel sur le soutien) · Pied pivot (démo de BOISS, jeu de la boussole, 3 niveaux de passes) · Recentrage (épaules face au soutien, passe outside, cavalière, fixé à 4 s) · Dynamiser le handling (cavalière, crêpes, la passe là où elle va, main gauche proche ?) · Break (−1 dans le fermé) · Passe de soutien puis longue (continuité de Royan).\n\nAprès-midi — Point n°2 « Bloqué long de ligne » (cas où le recentrage ne fonctionne pas) :\n1. Handler de soutien : cut dans l'ouvert à fond quand la défense tourne ses hanches → je vais chercher la profondeur.\nPuis avec un stack : (−1) dans le fermé = toujours une joueuse attentive (nom de code global, ex. jeux de cartes → Roco) ; J2, J3 ou J4 part du stack à fond derrière pour revenir devant — pas de course qui revient le long de la ligne, toujours en diago par rapport au stack.\nTips handler : épaule orientée vers son soutien · chercher la courbe outside · prévoir la course du soutien dans la largeur. Tips middle : regarder les hanches du défenseur (elle se décale = moment du cut), le faire dans la zone de choix du cut · jouer avec les épaules pour feinter · mettre sa défense sur les talons."
+  },
+  {
+    "notionId": "89f589306f744caf9ad566acfb1d2499",
+    "titre": "Evénement - Initiation Ultimate",
+    "date": "2023-10-28",
+    "statut": "Archive 2023-2024",
+    "theme": null, "niveau": null, "rang": null, "phases": [], "lexique": [],
+    "ech": [
+      ["Petit réveil musculaire (10h20)", "Au sol jambes croisées · au sol on lève les mains au ciel · scorpion · marcher sur la pointe des pieds · tirer vers le ciel · marcher sur les talons · articulations de bas en haut"],
+      ["Mini jeux", "Jeu du serveur, avec deux disc par personne (ou en duel) · petit jeu cardio pour faire monter la température (Morpion)"]
+    ],
+    "ex": [
+      { "nom": "Morpion", "notes": "Mini jeu cardio de l'échauffement." },
+      { "nom": "La Boussole", "notes": "Lancer session n°1 (10h45) : jeux à 2, une quinzaine de lancers par personne puis concours de rapidité — back à plat, side à plat, démarre vers le haut, démarre vers le bas, upside, freestyle, boussole." },
+      { "nom": "La Fontaine", "notes": "Fontaine avec gammes (11h20) — introduction du cut, changement de direction." },
+      { "nom": "Conti de Royan", "notes": "Groupe club (11h40, avec Pierre + Minou) : 1 exo de Pierre, Conti de Royan ? adapté en fonction du niveau et de l'attente." },
+      { "nom": "La flèche", "notes": "Groupe St-Priest + nouveaux (avec Val) : une entrée puis deux." },
+      { "nom": "Iron Man", "notes": "Homme de Fer — 12h30, tous ensemble." },
+      { "nom": "Demo BOISS", "notes": "Lancer session n°2 (14h30) : démo Boiss, introduction des courbes. Jeux à 2 : back outside, back inside, side outside, side inside, démarre vers le haut, démarre vers le bas." }
+    ],
+    "match": "Match — 15h30. Ronde d'après match — 16h30. Jeu d'ulti : Ninja.",
+    "contenu": "MDQ Farrère, 28/10/23 — thème Initiation, étiquette Jeunesse.\nMatin 10h : présentation rapide. Collation. Séparation en deux groupes (en fonction du niveau ?) à 11h40.\nGroupe St-Priest + nouveaux : auto-arbitrage, fair-play. Jeux à 3 : je lance et je vais en face · je lance le disc, je reçois et je renvoie. Règles rapides : pied de pivot, contact, turn, que faire quand j'ai le disc, que faire quand je n'ai pas le disc, la ligne c'est out.\nPause repas 13h. Après-midi 14h : jeux Volley ou Costume de Bellay."
+  },
+  {
+    "notionId": "bc9bb2617c8245e9b0ab026553ba2efb",
+    "titre": "Training - Cut - 13/11/2023",
+    "date": "2023-11-13",
+    "statut": "Archive 2023-2024",
+    "theme": null, "niveau": null, "rang": null, "phases": [], "lexique": [],
+    "ech": [["Course", "Tour de terrain"], ["Gamme", "Cf Marwane"], ["Petits jeux", "En duo"]],
+    "ex": [],
+    "match": "Match à thème :\n- Si le point est marqué, 2 champions par équipe pour un duel en zone (permet de doubler le point)\n- Chaque joueur compte ses points : si j'arrive à battre ma défense sur un des appels vus, je l'annonce et gagne 1 point. Quand une équipe marque, elle marque le cumul des points pris.",
+    "contenu": "3 types d'appels : classique · talons (+ bises) · opportuniste.\n\nChangement de direction :\n1. Je plante mes deux pieds\n2. Je me baisse sur mes appuis (centre de gravité) — dos droit !\n3. Je lance ma jambe opposée au côté où je veux aller (extérieur) : mon pied intérieur pivote, ma hanche pivote et entraîne mon corps, mon membre libre accompagne le mouvement\n4. Je pousse avec mon pied intérieur pour me propulser\n→ Je crée un déséquilibre.\n\nJeu — Le Classique : toucher le plot avant le défenseur. Chaque joueur doit toucher les 8 plots ; une fois validé, je ne peux plus le toucher. Réussite : changement de rythme, je plante pour changer de direction, je balance mon corps vers mon objectif.\n\nExercice n°1 — Mettre sur les talons (« Fais mumuse avec moi ») : un tour par personne pour rappel du Classique (×4 plots) ; long de ligne uniquement (l'attaquant doit dépasser le plot n°2, le défenseur ne peut toucher avant le premier plot). Petit jeu de duel sur l'explosivité. Objectif : comprendre et apprendre à changer de direction de façon optimale. Critères : changement de rythme, planter pour partir. Variable (+) : L1 attraper la chasuble, L2 toucher le dos.\n\nExercice n°2 — La Bise (« Exercice Routine Nick ») : ajouter la notion de choix. Objectif : réussir à se débarrasser de son défenseur. Critères : rencontre, grigri, 2/3 cuts max, si refusé c'est le soutien qui vient. Variable (−) : une seule zone, pas de soutien. Variable (+) : zone arrière — indoor.\nComment choisir le bon appel ? Il ouvre ses hanches d'un côté (le Classique) · je réussis à le faire basculer ou à jouer dans son dos · j'arrive à le faire reculer.\n\nSchémas et scans : images dans la page Notion."
+  },
+  {
+    "notionId": "3d4259621d764de9a8bc1369b27bf374",
+    "titre": "Plan coaching - Fenotte 2023",
+    "date": "2023-11-19",
+    "statut": "Archive 2023-2024",
+    "theme": null, "niveau": null, "rang": null, "phases": [], "lexique": [],
+    "ech": [],
+    "ex": [
+      { "nom": "Praline", "notes": "« La Praline » — départ avec stack à plat et deux handlers. Tout le stack part à fond au fond en même temps (signal « top ») et un seul joueur revient dans l'espace avant, priorité appelée en début de point. Les deux autres replacent ensuite le stack, à bonne distance." },
+      { "nom": "Braise", "notes": "« Braise » — celle qui est à l'opposé du disque vient chercher. Celle du milieu propose une conti (en revenant)." },
+      { "nom": "Diago", "notes": "« La Diago » — reprise de disc long de ligne." }
+    ],
+    "match": null,
+    "contenu": "Duo : 5 binômes, une seule joueuse du binôme sur le terrain à chaque fois ; le binôme se gère selon la durée du point précédent, la fatigue, attaque ou défense. Luna/Capu (handling + middle) · Yullia/Mélissa (handling + middle) · Audrey/Jenny (handling) · Agathe/Constance (middle) · Paloma/Camille (middle).\n\nLes 9 commandements — Cutter :\n1. Quand je change de direction, je plante pour repartir à fond dans l'autre sens (changement de rythme). Le cut banane est interdit !\n2. Si le porteur me feinte une première fois je change de direction ; une deuxième fois je dégage et me replace dans le stack (vite, sans gêner).\n3. Mon premier cut sert à emmener mon adversaire (là où je ne veux pas aller), le second à le semer (là où je veux recevoir). Le premier cut est utile même si on ne s'est pas démarqué.\n4. Les zones importantes : une zone de repos (le stack) et une zone dangereuse, de plus en plus importante quand le compte monte : la zone devant le handleur. Au-delà de 6, le cercle autour du porteur est dégagé pour le soutien.\nHandler (tout joueur avec le disc) :\n1. Poser le jeu = celui qui est le plus loin ramasse le disque (sans se mettre en difficulté).\n2. Les 3-4 premières secondes je regarde mon stack ; si pas de solution, mon handler de soutien (cercle dégagé, le soutien vient chercher dans le strike ou sur un dump facile).\n3. Je signale au soutien que je veux jouer avec lui en tournant mes hanches (le stack arrête de bouger).\n4. Communiquer entre handlers quand un cutter vient d'avoir le disque : « je reste » ou « je dégage » ; le plus loin s'en va.\n5. Le handler qui reste se place correctement (même ligne dans le fermé, un peu derrière dans l'ouvert).\n\nRôles sur la ligne : 2 handlers (principal, soutien) · 3 middles (Ace + fermé, continuité, M1). Ace et fermé : disponible pour faire avancer le disc et attentif au fermé pour un break facile. Continuité : prévoir l'appel +1. M1 : premier joueur du stack à partir pour enclencher le jeu.\n\nAppels et vocabulaire : appel dans le strike = le long de la ligne · appel en dump = vers l'arrière du porteur · dump and swing = après la passe au dump, le premier du stack propose un appel dans le fermé.\n\nTactique / enclenchement — Prio : priorité appelée en cours de point par un mot commençant par H (handler + ace) ou M (middle), ex. Hibou, Mandarine ; si je ne suis pas la priorité, je ne vais pas bloquer les espaces.\n\nSchémas : images dans la page Notion."
+  },
+  {
+    "notionId": "bfc4bbd8b914410abb4a7e6c33114413",
+    "titre": "Bilan championnat féminin 2023/24",
+    "date": "2024-01-14",
+    "statut": "Archive 2023-2024",
+    "theme": null, "niveau": null, "rang": null, "phases": [], "lexique": [],
+    "ech": [], "ex": [], "match": null,
+    "contenu": "Phase retour : bilan global très positif, beaucoup de progression tout au long du week-end ; l'équipe de l'aller n'a rien à voir avec celle du retour. Chacune trouve sa place, le jeu ne tourne pas autour d'un duo. Utilisation des tactiques plus diffuse ; le flow fonctionne, la difficulté arrive plutôt sur le lancement de l'action ou devant la zone.\nIl faut accentuer la prise de décision des meneuses, notamment dans les moments cruciaux comme devant la zone.\n\nGros points d'amélioration :\n- La conclusion devant la zone : on panique\n- Lancer le flow, notamment depuis les zones les plus compliquées\n- Trouver la bonne courbe pour catcher une longue : on ne suit pas la courbe du disc, on vient l'embrasser\n\nNouveautés :\n- « Cheval » : les deux middles devant la zone se mettent à cheval de la ligne, on roule avec 3 handleuses, pour dégager l'espace de la zone.\n- Contrat avec Yulia sur la ligne « défensive » : de base Luna + Audrey en handling, Yulia ace, Paloma et Sophie en middle ; proposition de tourner à 3 handleuses avec Audrey fixe et Yulia/Luna qui switchent sur l'ace. Le contrat : tu continues si tu fais briller l'équipe plutôt que toi."
+  },
+  {
+    "notionId": "8c310e8f599a40c7b296048089a03c30",
+    "titre": "[DOUBLON — voir séances 18/01/2024 et 25/01/2024] Training - Défense Clam - 01/02/2024",
+    "date": "2024-02-01",
+    "statut": "Archive 2023-2024",
+    "theme": null, "niveau": null, "rang": null, "phases": [], "lexique": [],
+    "ech": [["Course", ""], ["Passe", ""], ["Passe en mouvement", ""]],
+    "ex": [
+      { "nom": "Iron Man", "notes": "Exercice n°1 — Iron Man spé (jeu cardio) : des défenseurs spécifiques dans une zone fixe. Objectif : appréhender la clam — défense de zone. Variable (−) : réduire la zone pour la déf, agrandir la zone finale si l'attaque galère. Variable (+) : 2 équipes attaquent en même temps. Bien marquer un temps d'arrêt entre chaque point pour que la défense se repositionne ; l'objectif est de travailler la défense, donc si l'attaque est en difficulté tant mieux !" }
+    ],
+    "match": "Situation : en fonction du nombre de joueurs, petits groupes de 4/5 ; si possible faire sortir 2 lanceurs pour faire rouler l'exercice. Chaque équipe met en place une défense sur un stack vertical arrêté. 1re équipe à X points — chaque situation démarre en stack.\nContraintes de la défense : entourer le stack au début ; au maximum après 2 passes, on revient sur de l'individuel.",
+    "contenu": "⚠️ Doublon confirmé dans Notion — contenu déjà présent dans les séances « Défense de zone — n°3 » (18/01/2024) et « Défense de zone — n°4 » (25/01/2024). Conservée pour traçabilité.\nReprendre les bases vues aux deux derniers entraînements pour confirmer les compétences de chacun et la base commune.\n\nExercice n°2 — Relais de lancer avec un stack qui enchaîne les appels. Vocabulaire commun (déf porteur) : 1. positionnement épaule contre épaule, 2. goéland (stable et grand), 3. touche le disc, 4. déplacement en banane autour du porteur.\nDébutant : arrivée gênante, positionnement ok, on ne se fait pas happer par l'ouvert, je me décale quand le porteur swing sans around ni faute.\n« La classique » : les attaquants font chacun leur tour un appel dans le fermé ou l'ouvert ; le duo avec les disc a une petite pile pour enchaîner. Objectif du défenseur du porteur : empêcher tous les breaks, surtout ne pas se faire attirer par l'ouvert. Critère : je ne me suis pas jeté dans l'ouvert. Aide : le lanceur a droit au refus.\nExpérimentés : même chose avec un challenge de ratio break réussi / défense faite — baisser son centre de gravité, les mains et les bras suivent le disc, pression défensive (voix, mouvement, intensité), anticiper le moment où la passe part, amplitude avec les jambes."
+  },
+  {
+    "notionId": "beefb43beccb49c9a2fe200270c8030e",
+    "titre": "Plan coaching Mixte 2024",
+    "date": "2024-03-23",
+    "statut": "Archive 2023-2024",
+    "theme": null, "niveau": null, "rang": null, "phases": [], "lexique": [],
+    "ech": [],
+    "ex": [
+      { "nom": "Praline", "notes": "Stack à plat « la praline » : tout le stack part à fond au fond en même temps (signal « top ») et un seul joueur revient dans l'espace avant ; priorité appelée en début de point ; les trois autres replacent le stack." },
+      { "nom": "Le Train", "notes": "Stack sur le côté « le train » : tout le monde part côté opposé au disque et le joueur prioritaire sort du stack et cut pour avoir le disque (cut contre cut)." },
+      { "nom": "Iso", "notes": "Stack vertical « ISO X » : priorité appelée en début de point (ex. ISO Agathe : Agathe sort du stack et a droit à 2 ou 3 cuts avec tout l'espace libre)." },
+      { "nom": "Attaque des Handler", "notes": "Jeu entre handlers — priorité Handler (Hibou, Horloge…) : on laisse l'espace aux handlers (le stack recule un peu) et ce sont eux qui font avancer le disque à 3 sur quelques passes." }
+    ],
+    "match": null,
+    "contenu": "Dates : 23-24 mars et 6-7 avril. Mixte 1 — N3 : objectif montée.\n\nLe tableau (14 joueurs, super-pouvoir, poste, placement en zone) : Agathe (défense, middle, wings/rideau) · Capu (défense, middle, wings) · Charlotte (défense, handler, wings/rideau) · Jenny (attaque, handler, wings/rideau) · Luna (attaque, middle/handler, wings/rideau) · Yulia (attaque, middle, wings) · Ben (attaque, handler, mid middle) · Cyril (attaque, middle, wings) · Marwane (attaque, middle, deep) · Nick (défense, middle/handler, deep/rideau) · Pierre (défense, middle, rideau) · Sam (défense, middle, wings/rideau) · Tata (défense, handler, mid middle/rideau) · Val (attaque, handler, deep/mid middle).\n\nLes duos sur le terrain : Cyril-Pierre · Sam-Marwane · Nick-Tata · Ben-Val · Agathe-Yulia · Capu-Luna · Jenny-Cha. Lignes 4 filles / 3 mecs : doublettes Cha/Jenny et Luna/Capu prioritaires ; une doublette de mecs tourne hors du terrain. Lignes 3 filles / 4 mecs : les binômes s'auto-organisent. Round robin : pas le droit à l'erreur, des lignes peuvent être appelées plusieurs fois.\nTon body du week-end (ange gardien) : Yulia-Pierre · Luna-Tata · Jenny-Marwane · Agathe-Val · Cyril-Capu-Sam · Cha-Ben-Nick.\nÀ chaque nouvelle ligne : noms des 3 handlers · 1er cut, type de stack ou tactique de lancement (en attaque) · ace · défense (individuelle ou rôles en zone).\n\nOffense : attaque de zone (brancher le cerveau une fois percée) · obligatoirement une fille en handling · aller au bout de son cut (saison indoor terminée) · compte à +5 → look handler · 2-3 petits pas derrière avant l'appel · gagner du terrain dès le pull.\nDéfense : défendre collectivement (joueur coincé sur la ligne : la marque empêche le strike, le défenseur du soutien bloque le dump facile) · rôle de la sideline qui communique · attention au cut dans le strike et au handler qui fait la passe au soutien puis cut direct derrière. Individuel : force, no in, no around. Collective : zone wall, zone cup. De base no in, mais dès que le joueur est coincé vers la ligne, pas de dump facile.\n\nBasic Handler (compte à 5) : disque coincé sur la ligne (H1 a le disque) → H2 part dans le strike puis revient dans le dump, H3 légèrement avancé part dans le strike : 3 options. Disque au milieu (H2 a le disque) → celui dans le fermé appelle dans le strike (non servi : il dégage dans le stack), celui dans l'ouvert cut derrière dans le dump puis contre-cut ; c'est le porteur qui déclenche par un regard ; le stack ne vient pas dans l'espace des handlers mais peut proposer une continuité.\n\nSchémas : images dans la page Notion. Sous-page « Retour Coach » non reprise."
+  },
+  {
+    "notionId": "6bb0cdad733a4f7b97a01047638137b8",
+    "titre": "Training - Timing - 09/05/2024",
+    "date": "2024-05-09",
+    "statut": "Archive 2023-2024",
+    "theme": null, "niveau": null, "rang": null, "phases": [], "lexique": [],
+    "ech": [["Course", ""], ["Passe", ""], ["Passe en mouvement", ""]],
+    "ex": [], "match": null,
+    "contenu": "Gabarit non rempli (exercices « ??? », situation vide). Le contenu réel est dans les 2 scans de la séance du 09/05 (images dans la page Notion, non transcrites). Thème Notion : Timing."
+  },
+  {
+    "notionId": "64bc8816352140a9a0b03dddc7f0a594",
+    "titre": "Training - Timing - 23/05/2024",
+    "date": "2024-05-23",
+    "statut": "Archive 2023-2024",
+    "theme": null, "niveau": null, "rang": null, "phases": [], "lexique": [],
+    "ech": [["Passe", ""], ["Passe en mouvement", ""], ["Course", ""], ["Zone Carré", "Jeu d'échauffement (schéma dans Notion)"], ["Avant de passer à la suite", "Évolution du carré (schéma dans Notion)"]],
+    "ex": [
+      { "nom": "Timing Middle", "notes": "Exercice n°1 — Jeu de continuité : par groupe de 3, enchaîner les rotations. Objectif : communiquer à chaque cycle sur le timing de chacun pour perdre le moins de temps possible au fil des tours. Critère : pas de perte de temps au moment du timing. Variable (−) : réduire la distance de longue et/ou swing. Variable (+) : ajouter une défense sur chaque joueur." }
+    ],
+    "match": "Match à thème — on compte les points. Si on a le temps, situation arrêtée le long de la ligne (2 points par essai à aller chercher). Les équipes se rassemblent et se mettent d'accord sur au moins 2 stratégies de lancement (continuité du disc).\n- Si swing + continuité dans le point validé, le point vaut 2\n- Si stratégie annoncée et qui fonctionne, le point vaut 3",
+    "contenu": "Exercice n°2 — Montée / descente en 3V3 : temps spécifique de communication entre chaque point + 1 temps mort rapide par équipe à utiliser sur une position stratégique. Afficher assez de terrain pour qu'un maximum de trinômes jouent ; équipes équilibrées pour que tout le monde touche du disc. Objectifs : orienter les trinômes vers un positionnement qui favorise la place et les appels ; comprendre que la fluidité du jeu dissout la défense. Critère : nous avons communiqué dans l'équipe pour nous organiser. Variable (−) : terrains plus larges, astuces de positionnement. Variable (+) : forcer les thèmes, valider les points, critères de réussite."
+  },
+  {
+    "notionId": "11f9cc08fab880e49fbce1636e335717",
+    "titre": "Training 19/09/2024",
+    "date": "2024-09-19",
+    "statut": "Archive 2023-2024",
+    "theme": null, "niveau": null, "rang": null, "phases": [], "lexique": [],
+    "ech": [["Course", ""], ["Passe", ""], ["Passe en mouvement", ""]],
+    "ex": [], "match": null,
+    "contenu": "Gabarit non rempli (exercices « ??? », situation vide). Le contenu réel est dans le scan du 19/09/2024 (image dans la page Notion, non transcrite). Thèmes Notion : Recentrage, Cut."
+  },
+  {
+    "notionId": "11f9cc08fab880f49b25d23e983a3286",
+    "titre": "Training 26/09/2024",
+    "date": "2024-09-26",
+    "statut": "Archive 2023-2024",
+    "theme": null, "niveau": null, "rang": null, "phases": [], "lexique": [],
+    "ech": [["Course", ""], ["Passe", ""], ["Passe en mouvement", ""]],
+    "ex": [], "match": null,
+    "contenu": "Gabarit non rempli (exercices « ??? », situation vide). Le contenu réel est dans les 2 scans du 26/09/2024 (images dans la page Notion, non transcrites). Thèmes Notion : Timing, Cut."
+  },
+  {
+    "notionId": "11f9cc08fab88006b09cc48990e9bf10",
+    "titre": "Training 03/10/2024",
+    "date": "2024-10-03",
+    "statut": "Archive 2023-2024",
+    "theme": null, "niveau": null, "rang": null, "phases": [], "lexique": [],
+    "ech": [["Course", ""], ["Passe", ""], ["Passe en mouvement", ""]],
+    "ex": [], "match": null,
+    "contenu": "Gabarit non rempli (exercices « ??? », situation vide). Le contenu réel est dans le scan du 03/10/2024 (image dans la page Notion, non transcrite). Thèmes Notion : Timing, Défense."
+  }
+]

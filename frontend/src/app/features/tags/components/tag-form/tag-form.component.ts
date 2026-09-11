@@ -29,6 +29,7 @@ export class TagFormComponent implements OnInit, OnChanges {
       theme_entrainement: 'Thème d’entraînement',
       phase_entrainement: 'Phase',
       public_seance: 'Public de la séance',
+      statut_seance: 'Statut de la séance',
     };
     return libelles[category] ?? category.replace(/_/g, ' ');
   }
