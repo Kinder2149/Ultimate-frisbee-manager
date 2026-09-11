@@ -50,7 +50,7 @@
             <mat-expansion-panel-header class="echauffement-header">
               <mat-panel-title>
                 <mat-icon>whatshot</mat-icon>
-                Échauffement: {{ entrainement.echauffement.nom }}
+                Échauffement{{ libelleBloc(entrainement.echauffement.nom, 'Échauffement') }}
               </mat-panel-title>
               <mat-panel-description>
                 {{ getTotalEchauffementLabel() }}
@@ -94,7 +94,7 @@
             <mat-expansion-panel-header class="situation-header">
               <mat-panel-title>
                 <mat-icon>sports_soccer</mat-icon>
-                Match: {{ entrainement.situationMatch.nom || entrainement.situationMatch.type }}
+                Match{{ libelleBloc(entrainement.situationMatch.nom, 'Match') }}
               </mat-panel-title>
               <mat-panel-description>
                 {{ entrainement.situationMatch.temps }}

@@ -38,7 +38,7 @@ export class ExerciceService {
     return this.cache.get<Exercice[]>(
       'exercices-list',
       'exercices',
-      () => this.http.get<any>(this.apiUrl).pipe(
+      () => this.http.get<any>(this.apiUrl, { params: { limit: '1000' } }).pipe(
         map(response => {
           // Gérer la réponse paginée du backend
           const list = Array.isArray(response) ? response : (response.data || []);

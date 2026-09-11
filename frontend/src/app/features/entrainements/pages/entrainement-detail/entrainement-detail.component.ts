@@ -385,4 +385,10 @@ export class EntrainementDetailComponent implements OnInit {
       return `${minutes}min`;
     }
   }
+
+  /** Nom d'un bloc à afficher après son type, sauf s'il ne fait que répéter « Type — titre de la séance ». */
+  libelleBloc(nom: string | null | undefined, type: string): string {
+    if (!nom || nom === type || nom === `${type} — ${this.entrainement?.titre}`) return '';
+    return ` : ${nom}`;
+  }
 }

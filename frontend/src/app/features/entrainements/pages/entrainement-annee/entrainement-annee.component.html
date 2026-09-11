@@ -1,0 +1,54 @@
+<div class="annee">
+  <header class="annee-entete">
+    <h1>Déroulement de l’année</h1>
+    <p class="annee-sous-titre">Toutes les séances de l’espace, regroupées par thème ou par mois.</p>
+  </header>
+
+  <div class="annee-commandes">
+    <div class="bascule" role="group" aria-label="Présentation">
+      <button type="button" [class.actif]="presentation === 'theme'" (click)="choisirPresentation('theme')">
+        <mat-icon>account_tree</mat-icon> Par thème
+      </button>
+      <button type="button" [class.actif]="presentation === 'mois'" (click)="choisirPresentation('mois')">
+        <mat-icon>calendar_month</mat-icon> Par mois
+      </button>
+    </div>
+
+    <div class="publics" *ngIf="publics.length > 0" role="group" aria-label="Public">
+      <span class="publics-label">Public :</span>
+      <button type="button" [class.actif]="!publicChoisi" (click)="choisirPublic(null)">Tous</button>
+      <button type="button" *ngFor="let p of publics" [class.actif]="publicChoisi === p" (click)="choisirPublic(p)">{{ p }}</button>
+    </div>
+  </div>
+
+  <p class="annee-etat" *ngIf="chargement">Chargement des séances…</p>
+  <p class="annee-etat erreur" *ngIf="erreur">{{ erreur }}</p>
+  <p class="annee-etat" *ngIf="!chargement && !erreur && total === 0">Aucune séance à afficher.</p>
+
+  <section class="groupe" *ngFor="let groupe of groupes">
+    <h2 class="groupe-titre">
+      {{ groupe.titre }}
+      <span class="groupe-compte">{{ groupe.seances.length }} séance{{ groupe.seances.length > 1 ? 's' : '' }}</span>
+    </h2>
+
+    <ol class="seances">
+      <li *ngFor="let s of groupe.seances">
+        <button type="button" class="seance" (click)="voir(s)">
+          <span class="seance-rang" [class.vide]="!s.rang">{{ s.rang ? 'n°' + s.rang : '—' }}</span>
+          <span class="seance-corps">
+            <span class="seance-titre">{{ s.titre }}</span>
+            <span class="seance-infos">
+              <span class="seance-date">{{ s.date ? (s.date | date:'dd/MM/yyyy') : 'Sans date' }}</span>
+              <span class="seance-theme" *ngIf="presentation === 'mois' && tagsDe(s, 'theme_entrainement').length">
+                {{ tagsDe(s, 'theme_entrainement')[0].label }}
+              </span>
+              <span class="seance-phase" *ngFor="let t of tagsDe(s, 'phase_entrainement')">{{ t.label }}</span>
+              <span class="seance-public" *ngFor="let t of tagsDe(s, 'public_seance')">{{ t.label }}</span>
+            </span>
+          </span>
+          <mat-icon class="seance-ouvrir">chevron_right</mat-icon>
+        </button>
+      </li>
+    </ol>
+  </section>
+</div>

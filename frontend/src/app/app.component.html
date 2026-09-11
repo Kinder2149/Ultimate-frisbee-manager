@@ -42,6 +42,7 @@
             </a>
             <ul class="dropdown-menu" *ngIf="isDropdownOpen.entrainements">
               <li><a routerLink="/entrainements" routerLinkActive="active">Tous les entraînements</a></li>
+              <li><a routerLink="/entrainements/annee" routerLinkActive="active">Déroulement de l’année</a></li>
               <li *ngIf="permissionsService.canWrite()"><a routerLink="/entrainements/nouveau" routerLinkActive="active">Nouvel entraînement</a></li>
             </ul>
           </li>

@@ -29,7 +29,7 @@ export class EchauffementService {
     return this.cache.get<Echauffement[]>(
       'echauffements-list',
       'echauffements',
-      () => this.http.get<any>(this.apiUrl).pipe(
+      () => this.http.get<any>(this.apiUrl, { params: { limit: '1000' } }).pipe(
         map((response: any) => {
           // Gérer la réponse paginée du backend
           return Array.isArray(response) ? response : (response.data || []);

@@ -9,12 +9,18 @@ import { WriteGuard } from '../../core/guards/write.guard';
 import { EntrainementListComponent } from './pages/entrainement-list/entrainement-list.component';
 import { EntrainementFormComponent } from './pages/entrainement-form/entrainement-form.component';
 import { EntrainementDetailComponent } from './pages/entrainement-detail/entrainement-detail.component';
+import { EntrainementAnneeComponent } from './pages/entrainement-annee/entrainement-annee.component';
 
 // Routes du module
 const routes: Routes = [
   {
     path: '',
     component: EntrainementListComponent
+  },
+  {
+    path: 'annee',
+    title: 'Déroulement de l’année',
+    component: EntrainementAnneeComponent
   },
   {
     path: 'nouveau',
@@ -38,7 +44,8 @@ const routes: Routes = [
     // Composants standalone
     EntrainementListComponent,
     EntrainementFormComponent,
-    EntrainementDetailComponent
+    EntrainementDetailComponent,
+    EntrainementAnneeComponent
   ]
 })
 export class EntrainementsModule { }

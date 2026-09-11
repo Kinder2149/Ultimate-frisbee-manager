@@ -113,7 +113,7 @@ async function validateExerciceTags(tagIds, workspaceId) {
  */
 async function getAllExercices(workspaceId, pagination = {}) {
   const page = parseInt(pagination.page) || 1;
-  const limit = parseInt(pagination.limit) || 50;
+  const limit = Math.min(parseInt(pagination.limit) || 50, 1000);
   const skip = (page - 1) * limit;
 
   const total = await prisma.exercice.count({

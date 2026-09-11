@@ -29,7 +29,7 @@ export class EntrainementService {
     return this.cache.get<Entrainement[]>(
       'entrainements-list',
       'entrainements',
-      () => this.http.get<any>(this.apiUrl).pipe(
+      () => this.http.get<any>(this.apiUrl, { params: { limit: '1000' } }).pipe(
         map(response => {
           // Gérer la réponse paginée du backend
           return Array.isArray(response) ? response : (response.data || []);

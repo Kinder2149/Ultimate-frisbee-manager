@@ -14,7 +14,7 @@ const { validateTagsInWorkspace } = require('../../utils/workspace-validation');
  */
 async function getAllSituationsMatchs(workspaceId, pagination = {}) {
   const page = parseInt(pagination.page) || 1;
-  const limit = parseInt(pagination.limit) || 50;
+  const limit = Math.min(parseInt(pagination.limit) || 50, 1000);
   const skip = (page - 1) * limit;
 
   // Compter le total de situations/matchs

@@ -1,0 +1,195 @@
+.annee {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  color: #263238;
+}
+
+.annee-entete h1 {
+  margin: 0 0 4px;
+  font-size: 1.8rem;
+}
+
+.annee-sous-titre {
+  margin: 0 0 20px;
+  color: #546e7a;
+}
+
+.annee-commandes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.bascule,
+.publics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid #cfd8dc;
+    background: #fff;
+    color: #37474f;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font: inherit;
+    cursor: pointer;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+
+    &.actif {
+      background: #3f51b5;
+      border-color: #3f51b5;
+      color: #fff;
+    }
+
+    &:focus-visible {
+      outline: 2px solid #3f51b5;
+      outline-offset: 2px;
+    }
+  }
+}
+
+.publics-label {
+  color: #546e7a;
+  margin-right: 2px;
+}
+
+.annee-etat {
+  color: #546e7a;
+
+  &.erreur {
+    color: #c62828;
+  }
+}
+
+.groupe {
+  margin-bottom: 28px;
+}
+
+.groupe-titre {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 1.25rem;
+  margin: 0 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #e8eaf6;
+}
+
+.groupe-compte {
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: #78909c;
+}
+
+.seances {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.seance {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:hover,
+  &:focus-visible {
+    border-color: #3f51b5;
+    box-shadow: 0 1px 4px rgba(63, 81, 181, 0.15);
+    outline: none;
+  }
+}
+
+.seance-rang {
+  flex: 0 0 auto;
+  min-width: 44px;
+  text-align: center;
+  font-weight: 700;
+  color: #3f51b5;
+  background: #e8eaf6;
+  border-radius: 6px;
+  padding: 4px 6px;
+
+  &.vide {
+    color: #90a4ae;
+    background: #eceff1;
+  }
+}
+
+.seance-corps {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.seance-titre {
+  font-weight: 600;
+}
+
+.seance-infos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 0.82rem;
+}
+
+.seance-date {
+  color: #546e7a;
+  margin-right: 4px;
+}
+
+.seance-theme,
+.seance-phase,
+.seance-public {
+  border-radius: 10px;
+  padding: 1px 8px;
+}
+
+.seance-theme {
+  background: #fce4ec;
+  color: #880e4f;
+}
+
+.seance-phase {
+  background: #fff3e0;
+  color: #6d4c41;
+}
+
+.seance-public {
+  background: #e0f2f1;
+  color: #00695c;
+}
+
+.seance-ouvrir {
+  flex: 0 0 auto;
+  color: #90a4ae;
+}
