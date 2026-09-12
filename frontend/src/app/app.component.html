@@ -10,6 +10,7 @@
               <mat-icon>lock</mat-icon>
               BASE
             </span>
+            <app-envois-cloche *ngIf="isAuthenticated$ | async"></app-envois-cloche>
           </div>
         </div>
         <div class="appbar__row appbar__row--nav">

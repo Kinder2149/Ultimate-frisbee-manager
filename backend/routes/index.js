@@ -34,6 +34,7 @@ const syncRoutes = require('./sync.routes');
 
 // Routes du lexique (vocabulaire commun)
 const lexiqueRoutes = require('./lexique.routes');
+const envoiRoutes = require('./envoi.routes');
 
 // Middleware d'authentification
 const { authenticateToken } = require('../middleware/auth.middleware');
@@ -59,6 +60,7 @@ module.exports = (app) => {
   app.use('/api/import', authenticateToken, workspaceGuard, baseMutationGuard, importRoutes);
   app.use('/api/sync', authenticateToken, workspaceGuard, syncRoutes);
   app.use('/api/lexique', authenticateToken, workspaceGuard, baseMutationGuard, lexiqueRoutes);
+  app.use('/api/envois', authenticateToken, envoiRoutes);
 
   app.use('/api/admin', adminRoutes);
 

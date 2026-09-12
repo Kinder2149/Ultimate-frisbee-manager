@@ -24,6 +24,7 @@ import { PermissionsService } from '../../../../core/services/permissions.servic
 import { WorkspaceService } from '../../../../core/services/workspace.service';
 import { TagService } from '../../../../core/services/tag.service';
 import { CopierVersEspaceComponent } from '../../../../shared/components/copier-vers-espace/copier-vers-espace.component';
+import { EnvoyerACoachComponent } from '../../../../shared/components/envoyer-a-coach/envoyer-a-coach.component';
 import { Tag } from '../../../../core/models/tag.model';
 
 @Component({
@@ -40,6 +41,7 @@ import { Tag } from '../../../../core/models/tag.model';
     MatTooltipModule,
     ExerciceFiltersComponent,
     CopierVersEspaceComponent,
+    EnvoyerACoachComponent,
     RichTextViewComponent
   ],
   templateUrl: './echauffement-list.component.html',

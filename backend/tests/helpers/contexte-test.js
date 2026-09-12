@@ -77,6 +77,7 @@ async function viderBase() {
   if (base !== 'ufm_test' || !/^(localhost|127\.0\.0\.1):5433\//.test(hote)) {
     throw new Error(`viderBase REFUSE : base "${base}" sur "${hote}" n'est pas la base de test locale`);
   }
+  await prisma.envoi.deleteMany({});
   await prisma.entrainementExercice.deleteMany({});
   await prisma.entrainement.deleteMany({});
   await prisma.blocEchauffement.deleteMany({});

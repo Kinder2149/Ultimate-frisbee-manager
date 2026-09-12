@@ -211,6 +211,8 @@ model User {
 
   workspaces      WorkspaceUser[]
   espacePersonnel Workspace[]     @relation("EspacePersonnel")
+  envoisEmis      Envoi[]         @relation("EnvoisEmis")
+  envoisRecus     Envoi[]         @relation("EnvoisRecus")
 
   @@index([createdAt])
 }
@@ -249,4 +251,36 @@ model WorkspaceUser {
   @@unique([workspaceId, userId])
   @@index([workspaceId])
   @@index([userId])
+}
+
+enum StatutEnvoi {
+  EN_ATTENTE
+  ACCEPTE
+  REFUSE
+}
+
+/// Envoi d'un element (exercice, echauffement, situation) d'un utilisateur a un autre.
+/// Le contenu est une photo de la fiche au moment de l'envoi : l'element recu ne change pas
+/// si l'expediteur modifie ou supprime son original ensuite.
+model Envoi {
+  id            String      @id @default(uuid())
+  famille       String
+  nom           String
+  contenu       Json
+  message       String?
+  statut        StatutEnvoi @default(EN_ATTENTE)
+  createdAt     DateTime    @default(now())
+  decideAt      DateTime?
+  resultatVu    Boolean     @default(false)
+  elementCreeId String?
+  espaceCibleId String?
+
+  expediteurId   String
+  expediteur     User   @relation("EnvoisEmis", fields: [expediteurId], references: [id], onDelete: Cascade)
+  destinataireId String
+  destinataire   User   @relation("EnvoisRecus", fields: [destinataireId], references: [id], onDelete: Cascade)
+
+  @@index([destinataireId, statut])
+  @@index([expediteurId])
+  @@index([createdAt])
 }

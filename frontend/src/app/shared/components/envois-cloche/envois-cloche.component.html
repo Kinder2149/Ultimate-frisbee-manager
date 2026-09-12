@@ -1,0 +1,65 @@
+<button mat-icon-button class="cloche"
+        [matMenuTriggerFor]="menu"
+        (menuClosed)="fermer()"
+        [matTooltip]="total ? total + ' notification(s)' : 'Aucune notification'"
+        aria-label="Notifications">
+  <mat-icon [matBadge]="total" [matBadgeHidden]="!total" matBadgeColor="warn" matBadgeSize="small">notifications</mat-icon>
+</button>
+
+<mat-menu #menu="matMenu" class="menu-envois">
+  <div class="panneau" (click)="$event.stopPropagation()">
+
+    <div class="vide" *ngIf="!total">
+      <mat-icon>inbox</mat-icon>
+      <span>Rien de nouveau</span>
+    </div>
+
+    <!-- Ce qu'on m'envoie -->
+    <div class="groupe" *ngIf="recus.length">
+      <div class="titre-groupe">On vous envoie</div>
+
+      <div class="envoi" *ngFor="let envoi of recus">
+        <div class="ligne">
+          <mat-icon class="type">{{ icone(envoi) }}</mat-icon>
+          <div class="texte">
+            <div class="quoi"><strong>{{ qui(envoi.expediteur) }}</strong> vous envoie l’{{ famille(envoi) }} « {{ envoi.nom }} »</div>
+            <div class="mot" *ngIf="envoi.message">« {{ envoi.message }} »</div>
+            <div class="ou" *ngIf="envoi.espaceParDefaut">Sera ajouté dans <strong>{{ envoi.espaceParDefaut.name }}</strong></div>
+            <div class="doublon" *ngIf="envoi.doublon">
+              <mat-icon inline>info</mat-icon>
+              Vous avez déjà « {{ envoi.doublon.nom }} »
+            </div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button mat-stroked-button (click)="comparer(envoi)">
+            <mat-icon>visibility</mat-icon>
+            {{ envoi.doublon ? 'Comparer' : 'Voir' }}
+          </button>
+          <button mat-flat-button color="primary" [disabled]="enCours.has(envoi.id)" (click)="accepter(envoi)">
+            <mat-icon>check</mat-icon>
+            {{ envoi.doublon ? 'Garder les deux' : 'Accepter' }}
+          </button>
+          <button mat-button [disabled]="enCours.has(envoi.id)" (click)="refuser(envoi)">Refuser</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Résultat de mes envois -->
+    <div class="groupe" *ngIf="resultats.length">
+      <div class="titre-groupe">Vos envois</div>
+      <div class="resultat" *ngFor="let envoi of resultats">
+        <mat-icon [class.accepte]="envoi.statut === 'ACCEPTE'" [class.refuse]="envoi.statut === 'REFUSE'">
+          {{ envoi.statut === 'ACCEPTE' ? 'check_circle' : 'cancel' }}
+        </mat-icon>
+        <span>
+          <strong>{{ qui(envoi.destinataire) }}</strong>
+          {{ envoi.statut === 'ACCEPTE' ? 'a accepté' : 'a refusé' }}
+          « {{ envoi.nom }} »
+        </span>
+      </div>
+    </div>
+
+  </div>
+</mat-menu>

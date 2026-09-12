@@ -339,7 +339,15 @@ Exercices: 74 (38 avec description complète, 36 avec fiche Notion incomplète �
 Service `backend/services/business/copie-espace.service.js` : copie indépendante, étiquettes recréées dans l'espace d'arrivée (par libellé + catégorie), nom suffixé « (2) » si déjà pris, écriture refusée si l'utilisateur est lecteur dans l'espace d'arrivée ou si la cible est BASE sans être administrateur.
 Bouton « Copier vers un espace » sur les cartes des trois listes (`shared/components/copier-vers-espace`). Tests : `backend/__tests__/copie-espace.test.js`.
 
-**Suite prévue (non faite)** : envoyer un élément à un autre utilisateur, et choix par Kinder des membres d'Ulti Coach.
+**Envoyer un élément à un autre utilisateur** (cadré et fait le 2026-09-12) :
+- modèle `Envoi` (migration `20260912110000_envois_entre_utilisateurs`) : l'envoi contient une **photo de la fiche au moment de l'envoi** (champ `contenu`), donc le destinataire reçoit ce qui lui a été envoyé même si l'original est modifié ou supprimé entre-temps ;
+- statuts `EN_ATTENTE` / `ACCEPTE` / `REFUSE` ; rien n'entre chez le destinataire sans son accord ;
+- à l'acceptation, l'élément est déposé dans **l'espace personnel** du destinataire (ou un autre espace où il peut écrire) ; en cas de nom déjà pris : **garder les deux** (suffixe « (2) »), **remplacer**, ou **comparer** les deux fiches avant de trancher. Pas de fusion automatique (décision Kinder : une machine ne peut pas arbitrer deux versions d'un même paragraphe) ;
+- l'expéditeur est prévenu du résultat (accepté / refusé) dans sa propre cloche ; tout utilisateur actif peut envoyer à tout autre ;
+- API `/api/envois` : `POST /` (envoi, lit l'élément dans l'espace courant), `GET /recus`, `GET /emis`, `GET /destinataires`, `POST /:id/accepter` `{ workspaceId?, surDoublon? }`, `POST /:id/refuser`, `POST /resultats-vus`. Service `backend/services/business/envoi.service.js`, tests `backend/__tests__/envois-entre-utilisateurs.test.js` ;
+- interface : cloche avec pastille dans l'en-tête (`shared/components/envois-cloche`), écran de comparaison (`shared/components/comparaison-envoi`), bouton « Envoyer à un coach » sur les cartes des trois listes (`shared/components/envoyer-a-coach`).
+
+**Suite prévue (non faite)** : choix par Kinder des membres d'Ulti Coach (la page existe déjà : gestionnaire → membres de l'espace) ; envoi d'un entraînement complet (composite, embarquerait ses exercices).
 
 ## 12. REPRISE SUR UNE AUTRE MACHINE (pause du 2026-09-09)
 

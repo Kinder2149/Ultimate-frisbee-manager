@@ -21,6 +21,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { WorkspaceSwitcherComponent } from './shared/components/workspace-switcher/workspace-switcher.component';
+import { EnvoisClocheComponent } from './shared/components/envois-cloche/envois-cloche.component';
 
 // Import du guard d'authentification
 import { AuthGuard } from './core/guards/auth.guard';
@@ -177,7 +178,8 @@ const routes: Routes = [
     MatTooltipModule,
     RouterModule.forRoot(routes),
     CoreModule, // Services, intercepteurs et HttpClientModule
-    WorkspaceSwitcherComponent
+    WorkspaceSwitcherComponent,
+    EnvoisClocheComponent
     // Tous les modules (ExercicesModule, TagsModule, TrainingsModule) sont chargés en lazy loading
   ],
   providers: [

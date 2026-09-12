@@ -19,6 +19,7 @@ import { WorkspaceDataStore } from '../../../../core/services/workspace-data.sto
 import { ConfirmDialogComponent } from '../../../../shared/components/dialog/confirm-dialog.component';
 import { DuplicateButtonComponent } from '../../../../shared/components/duplicate-button/duplicate-button.component';
 import { CopierVersEspaceComponent } from '../../../../shared/components/copier-vers-espace/copier-vers-espace.component';
+import { EnvoyerACoachComponent } from '../../../../shared/components/envoyer-a-coach/envoyer-a-coach.component';
 import { SituationMatchViewComponent } from '../../../../shared/components/situationmatch-view/situationmatch-view.component';
 import { ApiUrlService } from '../../../../core/services/api-url.service';
 import { ImageViewerComponent, ImageViewerData } from '../../../../shared/components/image-viewer/image-viewer.component';
@@ -43,6 +44,7 @@ import { User } from '../../../../core/models/user.model';
     MatChipsModule,
     DuplicateButtonComponent,
     CopierVersEspaceComponent,
+    EnvoyerACoachComponent,
     ExerciceFiltersComponent,
     RichTextViewComponent
   ],

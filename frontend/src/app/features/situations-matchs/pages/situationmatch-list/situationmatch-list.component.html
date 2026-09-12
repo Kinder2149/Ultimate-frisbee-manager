@@ -51,6 +51,7 @@
             (duplicate)="dupliquerSituationMatch($event)">
           </app-duplicate-button>
           <app-copier-vers-espace *ngIf="canEdit" famille="situations" [elementId]="situationMatch.id!" [nom]="situationMatch.nom || situationMatch.type"></app-copier-vers-espace>
+          <app-envoyer-a-coach famille="situation" [elementId]="situationMatch.id!" [nom]="situationMatch.nom || situationMatch.type"></app-envoyer-a-coach>
           <button class="btn-icon danger" (click)="onDeleteSituationMatch(situationMatch)" title="Supprimer" *ngIf="canEdit">
             <i class="material-icons">delete</i>
           </button>

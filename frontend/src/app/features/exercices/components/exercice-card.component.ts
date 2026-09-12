@@ -12,6 +12,7 @@ import { TagService } from '../../../core/services/tag.service';
 import { Tag, TagCategory } from '../../../core/models/tag.model';
 import { DuplicateButtonComponent } from '../../../shared/components/duplicate-button/duplicate-button.component';
 import { CopierVersEspaceComponent } from '../../../shared/components/copier-vers-espace/copier-vers-espace.component';
+import { EnvoyerACoachComponent } from '../../../shared/components/envoyer-a-coach/envoyer-a-coach.component';
 import { RichTextViewComponent } from '../../../shared/components/rich-text-view/rich-text-view.component';
 import { ExerciceDialogService } from '../services/exercice-dialog.service';
 import { ApiUrlService } from '../../../core/services/api-url.service';
@@ -39,7 +40,7 @@ export interface ExerciceInput {
   templateUrl: './exercice-card.component.html',
   styleUrls: ['./exercice-card.component.scss'],
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, MatTooltipModule, DuplicateButtonComponent, CopierVersEspaceComponent, MatChipsModule, RichTextViewComponent]
+  imports: [CommonModule, MatButtonModule, MatIconModule, MatTooltipModule, DuplicateButtonComponent, CopierVersEspaceComponent, EnvoyerACoachComponent, MatChipsModule, RichTextViewComponent]
 })
 export class ExerciceCardComponent implements OnInit {
   @Input() exercice!: ExerciceInput;
