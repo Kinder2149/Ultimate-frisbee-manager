@@ -3,6 +3,7 @@
  * Authentification gérée par Supabase, ce contrôleur gère uniquement le profil local
  */
 const { prisma } = require('../services/prisma');
+const workspaceService = require('../services/business/workspace.service');
 const { clearUserCache } = require('../middleware/auth.middleware');
 const { ensureMinOneAdmin } = require('../services/business/admin-safety.service');
 
@@ -139,27 +140,15 @@ module.exports = {
         console.log('[register] Nouvel utilisateur créé:', user.id, user.email);
       }
 
-      // Créer le workspace BASE pour le nouvel utilisateur
+      // Espaces du nouvel utilisateur : le sien (gestionnaire) + Ulti Coach (lecture)
       try {
-        const baseWorkspace = await prisma.workspace.findFirst({
-          where: { name: 'BASE' }
-        });
-
-        if (baseWorkspace) {
-          await prisma.workspaceUser.create({
-            data: {
-              workspaceId: baseWorkspace.id,
-              userId: user.id,
-              role: 'VIEWER'
-            }
-          });
-          if (process.env.NODE_ENV !== 'production') {
-            console.log('[register] Utilisateur ajouté au workspace BASE');
-          }
+        const espaces = await workspaceService.ensureDefaultWorkspaceAndLink(user.id);
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('[register] Espaces attribués:', (espaces || []).map((e) => `${e.name} (${e.role})`).join(', '));
         }
       } catch (workspaceError) {
-        console.error('[register] Erreur ajout workspace BASE:', workspaceError);
-        // Ne pas bloquer l'inscription si l'ajout au workspace échoue
+        console.error('[register] Erreur attribution des espaces:', workspaceError);
+        // Ne pas bloquer l'inscription si l'attribution échoue
       }
 
       return res.status(201).json({

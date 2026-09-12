@@ -209,7 +209,8 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  workspaces WorkspaceUser[]
+  workspaces      WorkspaceUser[]
+  espacePersonnel Workspace[]     @relation("EspacePersonnel")
 
   @@index([createdAt])
 }
@@ -218,9 +219,12 @@ model Workspace {
   id        String   @id @default(uuid())
   name      String
   isBase    Boolean  @default(false)
+  /// Espace personnel : l'utilisateur qui en est le propriétaire (null = espace collectif)
+  ownerId   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  owner                 User?                  @relation("EspacePersonnel", fields: [ownerId], references: [id], onDelete: SetNull)
   members               WorkspaceUser[]
   exercices             Exercice[]
   tags                  Tag[]

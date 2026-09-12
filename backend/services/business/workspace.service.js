@@ -7,9 +7,29 @@ const { prisma } = require('../prisma');
 
 const DEFAULT_WORKSPACE_NAME = 'BASE';
 const ADMIN_WORKSPACE_NAME = 'TEST';
+const COACH_WORKSPACE_NAME = 'Ulti Coach';
 
 /**
- * Assure qu'un utilisateur est lié aux workspaces appropriés
+ * Nom lisible de l'espace personnel d'un utilisateur.
+ * Faute de nom renseigné, le début de l'adresse e-mail est mis en forme
+ * (« arthur.dessez » devient « Arthur Dessez ») ; l'utilisateur peut renommer son espace.
+ */
+function nomEspacePersonnel(user) {
+  const identite = [user.prenom, user.nom].filter(Boolean).join(' ').trim();
+  const brut = identite || String(user.email || '').split('@')[0];
+  const lisible = brut
+    .split(/[._-]+/)
+    .filter(Boolean)
+    .map((mot) => mot.charAt(0).toUpperCase() + mot.slice(1))
+    .join(' ');
+  return `Espace de ${lisible || user.email}`;
+}
+
+/**
+ * Assure qu'un utilisateur a ses espaces :
+ * - son espace personnel, dont il est gestionnaire (il y fait ce qu'il veut) ;
+ * - l'espace collectif Ulti Coach, en lecture (un rôle déjà accordé n'est jamais rétrogradé).
+ * L'espace BASE n'est plus attribué : il reste réservé aux administrateurs de la plateforme.
  */
 async function ensureDefaultWorkspaceAndLink(userId, options = {}) {
   if (!userId) {
@@ -32,45 +52,35 @@ async function ensureDefaultWorkspaceAndLink(userId, options = {}) {
     orderBy: { createdAt: 'asc' },
   });
 
-  const hasBaseLink = existingLinks.some((l) => l.workspace.name === DEFAULT_WORKSPACE_NAME);
-  const hasTestLink = existingLinks.some((l) => l.workspace.name === ADMIN_WORKSPACE_NAME);
-
-  if (!hasBaseLink && !isTester) {
-    const baseCandidates = await prisma.workspace.findMany({
-      where: {
-        OR: [{ isBase: true }, { name: DEFAULT_WORKSPACE_NAME }],
-      },
-      orderBy: [{ createdAt: 'asc' }],
-    });
-
-    let baseWorkspace = baseCandidates.find((w) => w.isBase === true) || baseCandidates[0] || null;
-
-    if (!baseWorkspace) {
-      baseWorkspace = await prisma.workspace.create({
-        data: { name: DEFAULT_WORKSPACE_NAME, isBase: true },
-      });
-    } else if (baseWorkspace.isBase !== true) {
-      baseWorkspace = await prisma.workspace.update({
-        where: { id: baseWorkspace.id },
-        data: { isBase: true },
+  // 1. Espace personnel (gestionnaire)
+  if (!isTester && !existingLinks.some((l) => l.workspace.ownerId === userId)) {
+    let espace = await prisma.workspace.findFirst({ where: { ownerId: userId } });
+    if (!espace) {
+      espace = await prisma.workspace.create({
+        data: { name: nomEspacePersonnel(user), ownerId: userId },
       });
     }
-
-    await prisma.workspaceUser.create({
-      data: {
-        workspaceId: baseWorkspace.id,
-        userId,
-        role: 'MEMBER',
-      },
+    await prisma.workspaceUser.upsert({
+      where: { workspaceId_userId: { workspaceId: espace.id, userId } },
+      update: { role: 'MANAGER' },
+      create: { workspaceId: espace.id, userId, role: 'MANAGER' },
     });
-
-    existingLinks.push({
-      workspace: baseWorkspace,
-      role: 'MEMBER',
-    });
+    existingLinks.push({ workspace: espace, role: 'MANAGER' });
   }
 
-  if (isAdmin && !hasTestLink) {
+  // 2. Espace collectif Ulti Coach, en lecture
+  if (!isTester && !existingLinks.some((l) => l.workspace.name === COACH_WORKSPACE_NAME)) {
+    const coach = await prisma.workspace.findFirst({ where: { name: COACH_WORKSPACE_NAME } });
+    if (coach) {
+      await prisma.workspaceUser.create({
+        data: { workspaceId: coach.id, userId, role: 'VIEWER' },
+      });
+      existingLinks.push({ workspace: coach, role: 'VIEWER' });
+    }
+  }
+
+  // 3. Espace TEST des administrateurs
+  if (isAdmin && !existingLinks.some((l) => l.workspace.name === ADMIN_WORKSPACE_NAME)) {
     let testWorkspace = await prisma.workspace.findFirst({
       where: { name: ADMIN_WORKSPACE_NAME },
     });
@@ -82,17 +92,10 @@ async function ensureDefaultWorkspaceAndLink(userId, options = {}) {
     }
 
     await prisma.workspaceUser.create({
-      data: {
-        workspaceId: testWorkspace.id,
-        userId,
-        role: 'MANAGER',
-      },
+      data: { workspaceId: testWorkspace.id, userId, role: 'MANAGER' },
     });
 
-    existingLinks.push({
-      workspace: testWorkspace,
-      role: 'MANAGER',
-    });
+    existingLinks.push({ workspace: testWorkspace, role: 'MANAGER' });
   }
 
   return existingLinks.map((l) => ({
@@ -100,6 +103,7 @@ async function ensureDefaultWorkspaceAndLink(userId, options = {}) {
     name: l.workspace.name,
     createdAt: l.workspace.createdAt,
     isBase: l.workspace.isBase,
+    ownerId: l.workspace.ownerId ?? null,
     role: l.role,
   }));
 }
@@ -119,11 +123,13 @@ async function getUserWorkspaces(userId) {
     name: l.workspace.name,
     createdAt: l.workspace.createdAt,
     isBase: l.workspace.isBase,
+    ownerId: l.workspace.ownerId ?? null,
     role: l.role,
   }));
 }
 
 module.exports = {
   ensureDefaultWorkspaceAndLink,
+  nomEspacePersonnel,
   getUserWorkspaces
 };
