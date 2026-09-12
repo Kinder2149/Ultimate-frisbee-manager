@@ -52,6 +52,7 @@
             <button mat-icon-button (click)="onViewEchauffement(echauffement)" matTooltip="Voir"><mat-icon>visibility</mat-icon></button>
             <button mat-icon-button (click)="onEditEchauffement(echauffement)" matTooltip="Modifier" *ngIf="canEdit"><mat-icon>edit</mat-icon></button>
             <button mat-icon-button (click)="onDuplicateEchauffement(echauffement)" matTooltip="Dupliquer" *ngIf="canEdit"><mat-icon>content_copy</mat-icon></button>
+            <app-copier-vers-espace *ngIf="canEdit" famille="echauffements" [elementId]="echauffement.id!" [nom]="echauffement.nom"></app-copier-vers-espace>
             <button mat-icon-button class="delete-btn" (click)="onDeleteEchauffement(echauffement)" matTooltip="Supprimer" *ngIf="canEdit"><mat-icon>delete</mat-icon></button>
           </div>
         </div>

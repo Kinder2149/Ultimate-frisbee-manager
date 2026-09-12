@@ -42,6 +42,7 @@
               [loading]="duplicating"
               (duplicate)="duplicateExercice($event)">
             </app-duplicate-button>
+            <app-copier-vers-espace *ngIf="canEdit" famille="exercices" [elementId]="exercice.id!" [nom]="exercice.nom || ''"></app-copier-vers-espace>
             <button mat-icon-button (click)="deleteExercice($event)" matTooltip="Supprimer" class="delete-btn" *ngIf="canEdit"><mat-icon>delete</mat-icon></button>
             <button mat-icon-button class="chevron" (click)="toggleExpanded($event)" [attr.aria-expanded]="expanded" [matTooltip]="expanded ? 'Replier' : 'Déplier'">
               <mat-icon [ngClass]="{ 'rotated': expanded }">expand_more</mat-icon>

@@ -3,9 +3,12 @@ const router = express.Router();
 const workspaceController = require('../controllers/workspace.controller');
 const { requireAdmin } = require('../middleware/auth.middleware');
 const { workspaceGuard, baseMutationGuard, requireWorkspaceManager } = require('../middleware/workspace.middleware');
+const { listerDestinations } = require('../controllers/copie-espace.controller');
 
 // Routes utilisateur (non admin)
 router.get('/me', workspaceController.getMyWorkspaces);
+// Espaces vers lesquels l'utilisateur peut copier un element depuis l'espace courant
+router.get('/destinations', workspaceGuard, listerDestinations);
 router.get('/:id/preload', workspaceController.preloadWorkspace);
 
 // Routes MANAGER pour la gestion de SON workspace courant (basées sur X-Workspace-Id)

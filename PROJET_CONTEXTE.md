@@ -326,6 +326,21 @@ Exercices: 74 (38 avec description complète, 36 avec fiche Notion incomplète �
 
 ---
 
+## 11 bis. ESPACES DE TRAVAIL (2026-09-12)
+
+**Régime des espaces, décidé par Kinder le 2026-09-12 :**
+- chaque utilisateur a **son espace personnel** (`Workspace.ownerId`, nom « Espace de Prénom Nom »), dont il est **gestionnaire** ;
+- chaque utilisateur est **lecteur de l'espace collectif « Ulti Coach »** (un rôle supérieur déjà accordé n'est jamais rétrogradé) ;
+- **BASE n'est plus attribué** : réservé aux administrateurs de la plateforme. Les 11 comptes existants en ont été retirés (script `backend/scripts/espaces-des-utilisateurs.js`) ;
+- tout est produit par `ensureDefaultWorkspaceAndLink` (service `workspace.service.js`), appelé à l'inscription et à chaque lecture de la liste des espaces. Tests : `backend/__tests__/espaces-utilisateur.test.js`.
+
+**Copier un élément vers un autre espace** (exercice, échauffement, situation/match) :
+`POST /api/{exercises|warmups|matches}/:id/copier-vers-espace` avec `{ workspaceId }`, et `GET /api/workspaces/destinations` pour la liste des espaces possibles.
+Service `backend/services/business/copie-espace.service.js` : copie indépendante, étiquettes recréées dans l'espace d'arrivée (par libellé + catégorie), nom suffixé « (2) » si déjà pris, écriture refusée si l'utilisateur est lecteur dans l'espace d'arrivée ou si la cible est BASE sans être administrateur.
+Bouton « Copier vers un espace » sur les cartes des trois listes (`shared/components/copier-vers-espace`). Tests : `backend/__tests__/copie-espace.test.js`.
+
+**Suite prévue (non faite)** : envoyer un élément à un autre utilisateur, et choix par Kinder des membres d'Ulti Coach.
+
 ## 12. REPRISE SUR UNE AUTRE MACHINE (pause du 2026-09-09)
 
 **État git au moment de la pause :**

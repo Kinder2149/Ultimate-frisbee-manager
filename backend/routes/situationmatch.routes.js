@@ -6,6 +6,7 @@ const express = require('express');
 const router = express.Router();
 const situationMatchController = require('../controllers/situationmatch.controller');
 const { createUploader, renvoyerUrlImage } = require('../middleware/upload.middleware');
+const { copierVersEspace } = require('../controllers/copie-espace.controller');
 const { validate } = require('../middleware/validation.middleware');
 const { createSituationMatchSchema, updateSituationMatchSchema } = require('../validators/situationmatch.validator');
 const { transformFormData } = require('../middleware/transform.middleware');
@@ -35,5 +36,8 @@ router.delete('/:id', requireWorkspaceWrite, situationMatchController.deleteSitu
 
 // Galerie : envoi d'une image supplémentaire, renvoie son adresse
 router.post('/images', requireWorkspaceWrite, createUploader('image', 'situations-matchs'), renvoyerUrlImage);
+
+// Copie de l'element vers un autre espace de travail
+router.post('/:id/copier-vers-espace', copierVersEspace('situation'));
 
 module.exports = router;

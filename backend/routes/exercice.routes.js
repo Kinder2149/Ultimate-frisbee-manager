@@ -5,6 +5,7 @@ const express = require('express');
 const router = express.Router();
 const exerciceController = require('../controllers/exercice.controller');
 const { createUploader, renvoyerUrlImage } = require('../middleware/upload.middleware');
+const { copierVersEspace } = require('../controllers/copie-espace.controller');
 const { validate } = require('../middleware/validation.middleware');
 const { transformFormData } = require('../middleware/transform.middleware');
 const { createExerciceSchema, updateExerciceSchema } = require('../validators/exercice.validator');
@@ -265,5 +266,8 @@ router.delete('/:id', requireWorkspaceWrite, exerciceController.deleteExercice);
 
 // Galerie : envoi d'une image supplémentaire, renvoie son adresse
 router.post('/images', requireWorkspaceWrite, createUploader('image', 'exercices'), renvoyerUrlImage);
+
+// Copie de l'element vers un autre espace de travail
+router.post('/:id/copier-vers-espace', copierVersEspace('exercice'));
 
 module.exports = router;

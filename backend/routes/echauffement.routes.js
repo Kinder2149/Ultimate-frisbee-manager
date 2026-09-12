@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const echauffementController = require('../controllers/echauffement.controller');
 const { createUploader, renvoyerUrlImage } = require('../middleware/upload.middleware');
+const { copierVersEspace } = require('../controllers/copie-espace.controller');
 const { validate } = require('../middleware/validation.middleware');
 const { createEchauffementSchema, updateEchauffementSchema } = require('../validators/echauffement.validator');
 const { transformFormData } = require('../middleware/transform.middleware');
@@ -31,5 +32,8 @@ router.post('/:id/duplicate', requireWorkspaceWrite, echauffementController.dupl
 
 // Galerie : envoi d'une image supplémentaire, renvoie son adresse
 router.post('/images', requireWorkspaceWrite, createUploader('image', 'echauffements'), renvoyerUrlImage);
+
+// Copie de l'element vers un autre espace de travail
+router.post('/:id/copier-vers-espace', copierVersEspace('echauffement'));
 
 module.exports = router;

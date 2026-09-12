@@ -18,6 +18,7 @@ import { SituationMatchService } from '../../../../core/services/situationmatch.
 import { WorkspaceDataStore } from '../../../../core/services/workspace-data.store';
 import { ConfirmDialogComponent } from '../../../../shared/components/dialog/confirm-dialog.component';
 import { DuplicateButtonComponent } from '../../../../shared/components/duplicate-button/duplicate-button.component';
+import { CopierVersEspaceComponent } from '../../../../shared/components/copier-vers-espace/copier-vers-espace.component';
 import { SituationMatchViewComponent } from '../../../../shared/components/situationmatch-view/situationmatch-view.component';
 import { ApiUrlService } from '../../../../core/services/api-url.service';
 import { ImageViewerComponent, ImageViewerData } from '../../../../shared/components/image-viewer/image-viewer.component';
@@ -41,6 +42,7 @@ import { User } from '../../../../core/models/user.model';
     MatIconModule,
     MatChipsModule,
     DuplicateButtonComponent,
+    CopierVersEspaceComponent,
     ExerciceFiltersComponent,
     RichTextViewComponent
   ],

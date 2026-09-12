@@ -23,6 +23,7 @@ import { RichTextViewComponent } from '../../../../shared/components/rich-text-v
 import { PermissionsService } from '../../../../core/services/permissions.service';
 import { WorkspaceService } from '../../../../core/services/workspace.service';
 import { TagService } from '../../../../core/services/tag.service';
+import { CopierVersEspaceComponent } from '../../../../shared/components/copier-vers-espace/copier-vers-espace.component';
 import { Tag } from '../../../../core/models/tag.model';
 
 @Component({
@@ -38,6 +39,7 @@ import { Tag } from '../../../../core/models/tag.model';
     MatProgressSpinnerModule,
     MatTooltipModule,
     ExerciceFiltersComponent,
+    CopierVersEspaceComponent,
     RichTextViewComponent
   ],
   templateUrl: './echauffement-list.component.html',
