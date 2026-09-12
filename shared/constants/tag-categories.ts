@@ -12,7 +12,8 @@ export const TAG_CATEGORIES = [
   'theme_entrainement',
   'phase_entrainement',
   'public_seance',
-  'statut_seance'
+  'statut_seance',
+  'type_echauffement'
 ] as const;
 
 export type TagCategory = typeof TAG_CATEGORIES[number];
@@ -29,7 +30,8 @@ export const TAG_CATEGORY_LABELS: { [key in TagCategory]: string } = {
   'theme_entrainement': 'Thèmes Entraînements',
   'phase_entrainement': 'Phases',
   'public_seance': 'Public de la séance',
-  'statut_seance': 'Statut de la séance'
+  'statut_seance': 'Statut de la séance',
+  'type_echauffement': "Type d'échauffement"
 };
 
 /**
@@ -44,7 +46,8 @@ export const DEFAULT_TAG_COLORS: { [key in TagCategory]?: string } = {
   'theme_entrainement': '#FF5722',  // Orange
   'phase_entrainement': '#FF9800',  // Orange clair (sous Thème)
   'public_seance': '#009688',   // Teal (distinct de "niveau")
-  'statut_seance': '#9E9E9E'    // Gris (repère : à valider, archive)
+  'statut_seance': '#9E9E9E',   // Gris (repère : à valider, archive)
+  'type_echauffement': '#8BC34A' // Vert clair (physique / réveil musculaire)
 };
 
 /**

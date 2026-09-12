@@ -246,29 +246,32 @@ exports.importEchauffements = async (req, res) => {
   const report = {
     dryRun,
     totals: { input: payload.echauffements.length, created: 0, updated: 0, skipped: 0 },
+    tagsCreated: 0,
     echauffements: [],
   };
+  const clesVues = new Set();
 
-  const preparer = async (client, e) => {
+  const preparer = async (client, e, creer) => {
     const nom = String(e.nom || '').trim();
     if (!nom) throw new Error('nom manquant');
     const blocs = nettoyerBlocs(e.blocs, workspaceId);
+    const tagIds = await resoudreTags(client, e.tags, workspaceId, { creer, clesVues, report });
     const existant = await client.echauffement.findFirst({ where: { nom, workspaceId }, select: { id: true } });
-    return { nom, blocs, existant };
+    return { nom, blocs, tagIds, existant };
   };
 
   try {
     for (const e of payload.echauffements) {
       try {
         if (dryRun) {
-          const { nom, blocs, existant } = await preparer(prisma, e);
+          const { nom, blocs, existant } = await preparer(prisma, e, false);
           const action = existant ? 'update' : 'create';
           report.totals[action === 'create' ? 'created' : 'updated'] += 1;
           report.echauffements.push({ nom, action, exists: !!existant, imported: false, missing: [], blocsCount: blocs.length });
           continue;
         }
         const ligne = await traiterElement(async (tx) => {
-          const { nom, blocs, existant } = await preparer(tx, e);
+          const { nom, blocs, tagIds, existant } = await preparer(tx, e, true);
           if (!existant) {
             const cree = await tx.echauffement.create({
               data: {
@@ -277,6 +280,7 @@ exports.importEchauffements = async (req, res) => {
                 imageUrl: e.imageUrl || null,
                 imagesSupplementaires: Array.isArray(e.imagesSupplementaires) ? e.imagesSupplementaires.filter(u => typeof u === 'string') : [],
                 workspaceId,
+                tags: { connect: tagIds.map(id => ({ id })) },
                 blocs: { create: blocs },
               },
             });
@@ -290,6 +294,7 @@ exports.importEchauffements = async (req, res) => {
               description: e.description !== undefined ? e.description : undefined,
               imageUrl: e.imageUrl !== undefined ? e.imageUrl : undefined,
               imagesSupplementaires: Array.isArray(e.imagesSupplementaires) ? e.imagesSupplementaires.filter(u => typeof u === 'string') : undefined,
+              tags: { set: [], connect: tagIds.map(id => ({ id })) },
               blocs: { create: blocs },
             },
           });

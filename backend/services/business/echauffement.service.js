@@ -25,7 +25,8 @@ async function getAllEchauffements(workspaceId, pagination = {}) {
     include: {
       blocs: {
         orderBy: { ordre: 'asc' }
-      }
+      },
+      tags: true
     },
     orderBy: { createdAt: 'desc' },
     skip,
@@ -53,7 +54,8 @@ async function getEchauffementById(id, workspaceId) {
     include: {
       blocs: {
         orderBy: { ordre: 'asc' }
-      }
+      },
+      tags: true
     }
   });
 
@@ -68,7 +70,7 @@ async function getEchauffementById(id, workspaceId) {
  * @returns {Promise<Object>} Échauffement créé
  */
 async function createEchauffement(data, workspaceId, file = null) {
-  const { nom, description, blocs, imageUrl, imagesSupplementaires } = data;
+  const { nom, description, blocs, imageUrl, imagesSupplementaires, tagIds } = data;
 
   const nouvelEchauffement = await prisma.echauffement.create({
     data: {
@@ -77,11 +79,12 @@ async function createEchauffement(data, workspaceId, file = null) {
       imageUrl: file ? file.cloudinaryUrl : (imageUrl || null),
       imagesSupplementaires: imagesSupplementaires || [],
       workspaceId,
+      tags: { connect: (tagIds || []).map(id => ({ id })) },
       blocs: {
         create: (blocs || []).map((bloc, index) => ({ ...bloc, ordre: bloc.ordre || index + 1 }))
       }
     },
-    include: { blocs: { orderBy: { ordre: 'asc' } } }
+    include: { blocs: { orderBy: { ordre: 'asc' } }, tags: true }
   });
 
   return nouvelEchauffement;
@@ -106,7 +109,7 @@ async function updateEchauffement(id, data, workspaceId, file = null) {
     error.code = 'NOT_FOUND';
     throw error;
   }
-  const { nom, description, blocs, imageUrl, imagesSupplementaires } = data;
+  const { nom, description, blocs, imageUrl, imagesSupplementaires, tagIds } = data;
 
   const echauffementMisAJour = await prisma.$transaction(async (tx) => {
     // 1. Supprimer les anciens blocs
@@ -124,11 +127,12 @@ async function updateEchauffement(id, data, workspaceId, file = null) {
               ? (imageUrl === '' ? null : imageUrl)
               : undefined),
         imagesSupplementaires,
+        ...(Array.isArray(tagIds) ? { tags: { set: tagIds.map(id => ({ id })) } } : {}),
         blocs: {
           create: (blocs || []).map((bloc, index) => ({ ...bloc, ordre: bloc.ordre || index + 1 }))
         }
       },
-      include: { blocs: { orderBy: { ordre: 'asc' } } }
+      include: { blocs: { orderBy: { ordre: 'asc' } }, tags: true }
     });
 
     return updated;
@@ -166,7 +170,7 @@ async function deleteEchauffement(id, workspaceId) {
 async function duplicateEchauffement(id, workspaceId) {
   const echauffementOriginal = await prisma.echauffement.findFirst({
     where: { id, workspaceId },
-    include: { blocs: { orderBy: { ordre: 'asc' } } }
+    include: { blocs: { orderBy: { ordre: 'asc' } }, tags: true }
   });
 
   if (!echauffementOriginal) {
@@ -182,6 +186,7 @@ async function duplicateEchauffement(id, workspaceId) {
       imageUrl: echauffementOriginal.imageUrl,
       imagesSupplementaires: echauffementOriginal.imagesSupplementaires,
       workspaceId: echauffementOriginal.workspaceId,
+      tags: { connect: echauffementOriginal.tags.map(tag => ({ id: tag.id })) },
       blocs: {
         create: echauffementOriginal.blocs.map(bloc => ({
           ordre: bloc.ordre,

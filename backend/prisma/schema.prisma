@@ -56,6 +56,7 @@ model Tag {
   entrainements    Entrainement[]   @relation("EntrainementTags")
   exercices        Exercice[]       @relation("ExerciseTags")
   situationsMatchs SituationMatch[] @relation("SituationMatchTags")
+  echauffements    Echauffement[]   @relation("EchauffementTags")
 
   parentId String?
   parent   Tag?    @relation("TagHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
@@ -125,6 +126,7 @@ model Echauffement {
   createdAt             DateTime           @default(now())
   updatedAt             DateTime           @updatedAt
   blocs                 BlocEchauffement[]
+  tags                  Tag[]              @relation("EchauffementTags")
   entrainements         Entrainement[]
 
   workspaceId String?

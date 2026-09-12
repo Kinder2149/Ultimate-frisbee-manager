@@ -147,3 +147,27 @@ h2 {
     gap: 4px;
   }
 }
+
+/* Familles d'échauffement (physique, réveil musculaire, …) */
+.familles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 16px;
+}
+
+.familles .famille {
+  border: 1px solid #cfd8dc;
+  background: #fff;
+  color: #37474f;
+  border-radius: 16px;
+  padding: 4px 14px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.familles .famille.active {
+  background: #8bc34a;
+  border-color: #8bc34a;
+  color: #fff;
+}

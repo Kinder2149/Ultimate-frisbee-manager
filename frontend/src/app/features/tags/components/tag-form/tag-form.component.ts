@@ -30,6 +30,7 @@ export class TagFormComponent implements OnInit, OnChanges {
       phase_entrainement: 'Phase',
       public_seance: 'Public de la séance',
       statut_seance: 'Statut de la séance',
+      type_echauffement: "Type d'échauffement",
     };
     return libelles[category] ?? category.replace(/_/g, ' ');
   }

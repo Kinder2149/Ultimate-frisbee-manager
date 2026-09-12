@@ -16,6 +16,9 @@ import { ApiUrlService } from '../../../../core/services/api-url.service';
 import { ImagePickerFieldComponent } from '../../form-fields/image-picker-field/image-picker-field.component';
 import { GalerieImagesEditeurComponent } from '../../galerie-images/galerie-images-editeur.component';
 import { RichTextEditorComponent } from '../../../components/rich-text-editor/rich-text-editor.component';
+import { TagSelectSingleComponent } from '../../form-fields/tag-select-single/tag-select-single.component';
+import { TagService } from '../../../../core/services/tag.service';
+import { Tag } from '../../../../core/models/tag.model';
 
 export interface EchauffementFormData {
   nom: string;
@@ -23,6 +26,7 @@ export interface EchauffementFormData {
   imageUrl?: string | null;
   image?: File;
   imagesSupplementaires?: string[];
+  tagIds?: string[];
   blocs: BlocEchauffement[];
 }
 
@@ -42,7 +46,8 @@ export interface EchauffementFormData {
     MatProgressSpinnerModule,
     ImagePickerFieldComponent,
     GalerieImagesEditeurComponent,
-    RichTextEditorComponent
+    RichTextEditorComponent,
+    TagSelectSingleComponent
   ],
   templateUrl: './echauffement-form.component.html',
   styleUrls: ['./echauffement-form.component.scss']
@@ -63,13 +68,18 @@ export class EchauffementFormComponent implements OnInit, OnChanges {
   imagePreview: string | null = null;
   /** Galerie : images supplémentaires de la fiche, dans l'ordre */
   imagesSupplementaires: string[] = [];
+  /** Familles d'échauffement (physique, réveil musculaire, …) */
+  typeEchauffementTags: Tag[] = [];
 
-  constructor(private fb: FormBuilder, private echauffementService: EchauffementService, private apiUrl: ApiUrlService) {
+  constructor(private fb: FormBuilder, private echauffementService: EchauffementService, private apiUrl: ApiUrlService, private tagService: TagService) {
     this.echauffementForm = this.createForm();
   }
 
   ngOnInit(): void {
     // Ne pas ajouter de bloc par défaut
+    this.tagService.getTags().subscribe(tags => {
+      this.typeEchauffementTags = tags.filter(t => t.category === 'type_echauffement');
+    });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -84,6 +94,7 @@ export class EchauffementFormComponent implements OnInit, OnChanges {
       // Description optionnelle, pas de contrainte de longueur minimale
       description: [''],
       imageUrl: [''],
+      typeTag: [null as Tag | null],
       blocs: this.fb.array([])
     });
   }
@@ -166,7 +177,8 @@ export class EchauffementFormComponent implements OnInit, OnChanges {
     this.echauffementForm.patchValue({
       nom: echauffement.nom,
       description: echauffement.description,
-      imageUrl: echauffement.imageUrl || ''
+      imageUrl: echauffement.imageUrl || '',
+      typeTag: (echauffement.tags || []).find(tag => tag.category === 'type_echauffement') || null
     });
 
     this.imagesSupplementaires = [...(echauffement.imagesSupplementaires || [])];
@@ -195,6 +207,7 @@ export class EchauffementFormComponent implements OnInit, OnChanges {
         nom: formData.nom,
         description: formData.description,
         imagesSupplementaires: this.imagesSupplementaires,
+        tagIds: formData.typeTag ? [formData.typeTag.id as string] : [],
         blocs: formData.blocs.map((bloc: any, index: number) => {
           const valeur = bloc.tempsValeur;
           const unite = bloc.tempsUnite as ('min'|'sec');

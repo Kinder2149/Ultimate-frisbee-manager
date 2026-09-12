@@ -1,3 +1,5 @@
+import { Tag } from './tag.model';
+
 /**
  * Modèles TypeScript pour les échauffements
  */
@@ -22,6 +24,9 @@ export interface Echauffement {
   imageUrl?: string;
   /** Images supplémentaires (galerie), dans l'ordre */
   imagesSupplementaires?: string[];
+  /** Étiquettes (dont le type d'échauffement : physique, réveil musculaire…) */
+  tags?: Tag[];
+  tagIds?: string[];
   createdAt?: Date;
   blocs?: BlocEchauffement[];
 }

@@ -13,7 +13,7 @@ async function getEntrainementForExport(id) {
     include: {
       exercices: { orderBy: { ordre: 'asc' }, include: { exercice: { include: { tags: true } } } },
       tags: true,
-      echauffement: { include: { blocs: { orderBy: { ordre: 'asc' } } } },
+      echauffement: { include: { blocs: { orderBy: { ordre: 'asc' } }, tags: true } },
       situationMatch: { include: { tags: true } }
     }
   });
@@ -22,7 +22,7 @@ async function getEntrainementForExport(id) {
 async function getEchauffementForExport(id) {
   return prisma.echauffement.findUnique({
     where: { id },
-    include: { blocs: { orderBy: { ordre: 'asc' } } }
+    include: { blocs: { orderBy: { ordre: 'asc' } }, tags: true }
   });
 }
 
@@ -77,6 +77,7 @@ function serializeEchauffement(entity) {
     description: entity.description || null,
     imageUrl: entity.imageUrl || null,
     imagesSupplementaires: entity.imagesSupplementaires || [],
+    tags: (entity.tags || []).map(t => ({ id: t.id, label: t.label, category: t.category, level: t.level ?? null })),
     blocs: (entity.blocs || []).map(b => ({
       ordre: b.ordre,
       titre: b.titre,

@@ -24,6 +24,8 @@ const createEchauffementSchema = z.object({
   imageUrl: z.union([z.string().url({ message: "L'URL de l'image est invalide." }), z.string().length(0)]).optional().nullable(),
   imagesSupplementaires: z.array(z.string().url({ message: "L'URL d'une image est invalide." })).max(20, { message: '20 images supplémentaires maximum.' }).optional(),
 
+  tagIds: z.array(z.string().uuid({ message: "L'ID d'un tag est invalide." })).optional(),
+
   blocs: z.array(blocEchauffementSchema).optional().default([]),
 });
 

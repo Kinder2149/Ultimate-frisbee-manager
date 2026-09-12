@@ -13,6 +13,14 @@
     (filtersChange)="onFiltersChange($event)"
   ></app-exercice-filters>
 
+  <!-- Familles d'échauffement -->
+  <div class="familles" *ngIf="familles.length">
+    <button type="button" class="famille" [class.active]="!familleChoisie" (click)="choisirFamille(null)">Toutes</button>
+    <button type="button" class="famille" *ngFor="let f of familles"
+            [class.active]="familleChoisie === f.label" (click)="choisirFamille(f.label)">{{ f.label }}</button>
+    <button type="button" class="famille" [class.active]="familleChoisie === 'non-classe'" (click)="choisirFamille('non-classe')">Non classés</button>
+  </div>
+
   <!-- Indicateur de chargement -->
   <div *ngIf="isLoading && echauffements.length === 0" class="loading-container">
     <mat-spinner></mat-spinner>
@@ -37,7 +45,7 @@
           <div class="title-section">
             <h3 class="card-title">{{ echauffement.nom }}</h3>
             <div class="header-badge">
-              <span class="badge badge-echauffement">ÉCHAUFFEMENT</span>
+              <span class="badge badge-echauffement">{{ familleDe(echauffement) || 'ÉCHAUFFEMENT' }}</span>
             </div>
           </div>
           <div class="card-actions">

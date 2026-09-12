@@ -23,5 +23,6 @@ export const DEFAULT_TAG_COLORS: { [key: string]: string } = {
   'theme_entrainement': '#FF5722',    // Orange
   'phase_entrainement': '#FF9800',    // Orange clair (sous Thème)
   'public_seance': '#009688',         // Teal (distinct de "niveau")
-  'statut_seance': '#9E9E9E'          // Gris (repère : à valider, archive)
+  'statut_seance': '#9E9E9E',         // Gris (repère : à valider, archive)
+  'type_echauffement': '#8BC34A'      // Vert clair (physique / réveil musculaire)
 };

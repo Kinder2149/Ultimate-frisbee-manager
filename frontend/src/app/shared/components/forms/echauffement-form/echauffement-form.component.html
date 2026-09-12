@@ -27,6 +27,16 @@
           </div>
         </div>
 
+        <!-- Famille d'échauffement -->
+        <div class="section" *ngIf="typeEchauffementTags.length">
+          <app-tag-select-single
+            label="Type d&rsquo;échauffement"
+            [tags]="typeEchauffementTags"
+            noneLabel="Non classé"
+            formControlName="typeTag">
+          </app-tag-select-single>
+        </div>
+
         <!-- Image globale -->
         <mat-divider></mat-divider>
         <div class="section">

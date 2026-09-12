@@ -22,6 +22,8 @@ import { ApiUrlService } from '../../../../core/services/api-url.service';
 import { RichTextViewComponent } from '../../../../shared/components/rich-text-view/rich-text-view.component';
 import { PermissionsService } from '../../../../core/services/permissions.service';
 import { WorkspaceService } from '../../../../core/services/workspace.service';
+import { TagService } from '../../../../core/services/tag.service';
+import { Tag } from '../../../../core/models/tag.model';
 
 @Component({
   selector: 'app-echauffement-list',
@@ -51,6 +53,10 @@ export class EchauffementListComponent implements OnInit, OnDestroy {
   filteredEchauffements: Echauffement[] = [];
   isLoading = false;
   searchTerm = '';
+  /** Familles d'échauffement (physique, réveil musculaire, …) */
+  familles: Tag[] = [];
+  /** Famille sélectionnée : libellé, 'non-classe' ou null pour tout afficher */
+  familleChoisie: string | null = null;
 
   constructor(
     private echauffementService: EchauffementService,
@@ -60,11 +66,18 @@ export class EchauffementListComponent implements OnInit, OnDestroy {
     private dialog: MatDialog,
     private apiUrlService: ApiUrlService,
     private permissionsService: PermissionsService,
-    private workspaceService: WorkspaceService
+    private workspaceService: WorkspaceService,
+    private tagService: TagService
   ) {}
 
   ngOnInit(): void {
     this.updatePermissions();
+
+    this.tagService.getTags()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(tags => {
+        this.familles = tags.filter(t => t.category === 'type_echauffement');
+      });
 
     this.workspaceService.currentWorkspace$
       .pipe(takeUntil(this.destroy$))
@@ -103,8 +116,23 @@ export class EchauffementListComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
+  /** Famille d'un échauffement (libellé), ou null s'il n'est pas classé */
+  familleDe(echauffement: Echauffement): string | null {
+    return (echauffement.tags || []).find(t => t.category === 'type_echauffement')?.label || null;
+  }
+
+  choisirFamille(valeur: string | null): void {
+    this.familleChoisie = valeur;
+    this.applyFilters();
+  }
+
   private applyFilters(): void {
     let list = [...this.echauffements];
+    if (this.familleChoisie === 'non-classe') {
+      list = list.filter(e => !this.familleDe(e));
+    } else if (this.familleChoisie) {
+      list = list.filter(e => this.familleDe(e) === this.familleChoisie);
+    }
     if (this.searchTerm) {
       const s = this.searchTerm.toLowerCase();
       list = list.filter(e =>
