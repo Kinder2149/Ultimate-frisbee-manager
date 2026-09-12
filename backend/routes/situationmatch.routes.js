@@ -5,7 +5,7 @@
 const express = require('express');
 const router = express.Router();
 const situationMatchController = require('../controllers/situationmatch.controller');
-const { createUploader } = require('../middleware/upload.middleware');
+const { createUploader, renvoyerUrlImage } = require('../middleware/upload.middleware');
 const { validate } = require('../middleware/validation.middleware');
 const { createSituationMatchSchema, updateSituationMatchSchema } = require('../validators/situationmatch.validator');
 const { transformFormData } = require('../middleware/transform.middleware');
@@ -32,5 +32,8 @@ router.put('/:id',
 );
 router.post('/:id/duplicate', requireWorkspaceWrite, situationMatchController.duplicateSituationMatch);
 router.delete('/:id', requireWorkspaceWrite, situationMatchController.deleteSituationMatch);
+
+// Galerie : envoi d'une image supplémentaire, renvoie son adresse
+router.post('/images', requireWorkspaceWrite, createUploader('image', 'situations-matchs'), renvoyerUrlImage);
 
 module.exports = router;

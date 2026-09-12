@@ -40,6 +40,7 @@ function serializeExercice(entity) {
     nom: entity.nom,
     description: entity.description,
     imageUrl: entity.imageUrl || null,
+    imagesSupplementaires: entity.imagesSupplementaires || [],
     materiel: entity.materiel || null,
     notes: entity.notes || null,
     critereReussite: entity.critereReussite || null,
@@ -75,6 +76,7 @@ function serializeEchauffement(entity) {
     nom: entity.nom,
     description: entity.description || null,
     imageUrl: entity.imageUrl || null,
+    imagesSupplementaires: entity.imagesSupplementaires || [],
     blocs: (entity.blocs || []).map(b => ({
       ordre: b.ordre,
       titre: b.titre,
@@ -96,6 +98,7 @@ function serializeSituation(entity) {
     description: entity.description || null,
     temps: entity.temps || null,
     imageUrl: entity.imageUrl || null,
+    imagesSupplementaires: entity.imagesSupplementaires || [],
     tags: (entity.tags || []).map(t => ({ id: t.id, label: t.label, category: t.category, level: t.level ?? null }))
   };
 }

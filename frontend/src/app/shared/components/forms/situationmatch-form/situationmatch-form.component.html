@@ -58,6 +58,11 @@
           [context]="'situations-matchs'"
           (imageSelected)="onImageSelected($event)">
         </app-image-upload>
+        <app-galerie-images-editeur
+          [ressource]="'matches'"
+          [images]="imagesSupplementaires"
+          (imagesChange)="imagesSupplementaires = $event">
+        </app-galerie-images-editeur>
       </div>
 
       <!-- Sélection des tags -->

@@ -31,8 +31,8 @@
 
       <div class="dialog-content">
         <!-- Contenu détaillé ici -->
-        <div class="section image-section" *ngIf="echauffement.imageUrl as url" (click)="openImageViewer(url)" title="Agrandir l'image">
-          <img [src]="mediaUrl(url)" alt="Illustration de l'échauffement" class="preview-image" />
+        <div class="section image-section" *ngFor="let url of imagesFiche; let i = index" (click)="openImageViewer(url)" title="Agrandir l'image">
+          <img [src]="mediaUrl(url)" [alt]="'Illustration ' + (i + 1)" class="preview-image" />
         </div>
         <div class="section" *ngIf="echauffement.description as description">
           <h3>Description</h3>

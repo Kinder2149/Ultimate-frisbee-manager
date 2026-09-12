@@ -10,7 +10,7 @@ const isUuid = (str) => {
 
 const transformFormData = (req, res, next) => {
   // Champs attendus comme des objets/tableaux JSON stringifiés
-  const jsonFields = ['blocs', 'exercices'];
+  const jsonFields = ['blocs', 'exercices', 'imagesSupplementaires'];
   for (const field of jsonFields) {
     if (typeof req.body[field] === 'string') {
       try {

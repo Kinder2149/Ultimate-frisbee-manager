@@ -154,7 +154,8 @@ export class SituationMatchModalComponent implements OnInit {
       type: formData.type,
       description: formData.description,
       temps: formData.temps,
-      tagIds: formData.tagIds
+      tagIds: formData.tagIds,
+      imagesSupplementaires: formData.imagesSupplementaires || []
     };
 
     console.log('Création situation/match avec données:', createRequest);

@@ -11,6 +11,7 @@ const createSituationMatchSchema = z.object({
   temps: z.string().optional().nullable(),
   // Autoriser explicitement '' pour signifier suppression/absence d'image
   imageUrl: z.union([z.string().url({ message: "L'URL de l'image est invalide." }), z.string().length(0)]).optional().nullable(),
+  imagesSupplementaires: z.array(z.string().url({ message: "L'URL d'une image est invalide." })).max(20, { message: '20 images supplémentaires maximum.' }).optional(),
 
   tagIds: z.array(z.string().uuid({ message: "L'un des IDs de tag est invalide." })).optional().default([]),
 });

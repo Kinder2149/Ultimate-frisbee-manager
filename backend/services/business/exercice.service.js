@@ -161,7 +161,7 @@ async function getExerciceById(id, workspaceId) {
  * Créer un nouvel exercice
  */
 async function createExercice(data, workspaceId, file = null) {
-  const { nom, description, variablesPlus, variablesMinus, points, tags, tagIds, materiel, notes, critereReussite, imageUrl } = data;
+  const { nom, description, variablesPlus, variablesMinus, points, tags, tagIds, materiel, notes, critereReussite, imageUrl, imagesSupplementaires } = data;
 
   // Déterminer les tagIds finaux
   const finalTagIds = tagIds || (tags && Array.isArray(tags) ? tags.map(t => t.id) : []);
@@ -187,6 +187,7 @@ async function createExercice(data, workspaceId, file = null) {
     nom,
     description: description || '',
     imageUrl: file ? file.cloudinaryUrl : (imageUrl || null),
+    imagesSupplementaires: imagesSupplementaires || [],
     materiel: materiel || null,
     notes: notes || null,
     critereReussite: critereReussite || null,
@@ -219,7 +220,7 @@ async function createExercice(data, workspaceId, file = null) {
  * Mettre à jour un exercice
  */
 async function updateExercice(id, data, workspaceId, file = null) {
-  const { nom, description, variablesPlus, variablesMinus, points, tagIds, materiel, notes, critereReussite, imageUrl } = data;
+  const { nom, description, variablesPlus, variablesMinus, points, tagIds, materiel, notes, critereReussite, imageUrl, imagesSupplementaires } = data;
 
   // Vérifier que l'exercice existe
   const existingExercice = await prisma.exercice.findFirst({ where: { id, workspaceId } });
@@ -248,6 +249,7 @@ async function updateExercice(id, data, workspaceId, file = null) {
   } else if (imageUrl !== undefined) {
     updateData.imageUrl = imageUrl === '' ? null : imageUrl;
   }
+  if (imagesSupplementaires !== undefined) updateData.imagesSupplementaires = imagesSupplementaires;
 
   // Gestion des tags
   if (Array.isArray(tagIds)) {
@@ -296,6 +298,7 @@ async function duplicateExercice(id, workspaceId) {
       nom: `${originalExercice.nom} (Copie)`,
       description: originalExercice.description,
       imageUrl: originalExercice.imageUrl,
+      imagesSupplementaires: originalExercice.imagesSupplementaires,
       materiel: originalExercice.materiel,
       notes: originalExercice.notes,
       workspaceId: originalExercice.workspaceId,

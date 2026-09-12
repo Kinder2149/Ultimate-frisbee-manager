@@ -91,6 +91,11 @@
       <div class="upload-row">
         <app-image-upload [currentImageUrl]="imagePreview" [context]="'exercices'" (imageSelected)="onImageSelected($event)"></app-image-upload>
       </div>
+      <app-galerie-images-editeur
+        [ressource]="'exercises'"
+        [images]="imagesSupplementaires"
+        (imagesChange)="imagesSupplementaires = $event">
+      </app-galerie-images-editeur>
     </section>
 
     <!-- G — Tags (groupes) -->

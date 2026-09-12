@@ -22,6 +22,7 @@ const createEchauffementSchema = z.object({
   description: z.string().optional().nullable(),
   // Autoriser '' pour signifier la suppression d'image en édition
   imageUrl: z.union([z.string().url({ message: "L'URL de l'image est invalide." }), z.string().length(0)]).optional().nullable(),
+  imagesSupplementaires: z.array(z.string().url({ message: "L'URL d'une image est invalide." })).max(20, { message: '20 images supplémentaires maximum.' }).optional(),
 
   blocs: z.array(blocEchauffementSchema).optional().default([]),
 });

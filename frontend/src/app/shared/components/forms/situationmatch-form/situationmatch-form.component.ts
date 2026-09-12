@@ -8,6 +8,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { ImageUploadComponent } from '../../image-upload/image-upload.component';
+import { GalerieImagesEditeurComponent } from '../../galerie-images/galerie-images-editeur.component';
 
 import { TagSelectMultiComponent } from '../../form-fields/tag-select-multi/tag-select-multi.component';
 import { TagSelectSingleComponent } from '../../form-fields/tag-select-single/tag-select-single.component';
@@ -27,6 +28,7 @@ export interface SituationMatchFormData {
   temps?: string;
   imageUrl?: string;
   image?: File;
+  imagesSupplementaires?: string[];
   tagIds: string[];
 }
 
@@ -43,6 +45,7 @@ export interface SituationMatchFormData {
     MatButtonModule,
     MatIconModule,
     ImageUploadComponent,
+    GalerieImagesEditeurComponent,
     TagSelectSingleComponent,
     TagSelectMultiComponent
   ],
@@ -61,6 +64,8 @@ export class SituationMatchFormComponent implements OnInit, OnChanges {
   form: FormGroup;
   selectedImageFile: File | null = null;
   imagePreview: string | null = null;
+  /** Galerie : images supplémentaires de la fiche, dans l'ordre */
+  imagesSupplementaires: string[] = [];
   
   // Options pour le sélecteur de type
   typeOptions = SITUATION_MATCH_TYPES;
@@ -142,6 +147,8 @@ export class SituationMatchFormComponent implements OnInit, OnChanges {
       imageUrl: situationMatch.imageUrl || ''
     });
 
+    this.imagesSupplementaires = [...(situationMatch.imagesSupplementaires || [])];
+
     if (situationMatch.imageUrl) {
       this.imagePreview = situationMatch.imageUrl;
     }
@@ -187,6 +194,7 @@ export class SituationMatchFormComponent implements OnInit, OnChanges {
       temps,
       imageUrl: formData.imageUrl || undefined,
       image: this.selectedImageFile || undefined, // Attach the file for upload
+      imagesSupplementaires: this.imagesSupplementaires,
       tagIds: tags.map(tag => tag.id).filter((id: any) => id !== undefined) as string[]
     };
 

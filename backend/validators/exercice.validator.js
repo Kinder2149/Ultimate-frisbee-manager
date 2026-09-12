@@ -14,6 +14,7 @@ const createExerciceSchema = z.object({
 
   // Autoriser explicitement la chaîne vide pour signifier l'absence/suppression d'image
   imageUrl: z.union([z.string().url({ message: "L'URL de l'image est invalide." }), z.string().length(0)]).optional().nullable(),
+  imagesSupplementaires: z.array(z.string().url({ message: "L'URL d'une image est invalide." })).max(20, { message: '20 images supplémentaires maximum.' }).optional(),
   materiel: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
   critereReussite: z.string().optional().nullable(),
@@ -38,6 +39,7 @@ const updateExerciceSchema = z.object({
   description: z.string().optional(),
   // Même règle en mise à jour: accepter '' pour déclencher la suppression
   imageUrl: z.union([z.string().url(), z.string().length(0)]).optional().nullable(),
+  imagesSupplementaires: z.array(z.string().url({ message: "L'URL d'une image est invalide." })).max(20, { message: '20 images supplémentaires maximum.' }).optional(),
   materiel: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
   critereReussite: z.string().optional().nullable(),

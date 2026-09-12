@@ -13,6 +13,8 @@ export interface Exercice {
   description: string;
   /** URL vers l'image illustrant l'exercice */
   imageUrl?: string;
+  /** Images supplémentaires (galerie), dans l'ordre */
+  imagesSupplementaires?: string[];
 
   /** Points importants - peut être une chaîne JSON (ancien format) ou un tableau */
   points?: string | string[];

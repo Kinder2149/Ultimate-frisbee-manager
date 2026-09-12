@@ -41,7 +41,7 @@
           <h3 class="hl">Description</h3>
           <app-rich-text-view [html]="description"></app-rich-text-view>
         </div>
-        <div class="section" *ngIf="situationMatch.imageUrl as url"><img [src]="mediaUrl(url)" [alt]="'Illustration de ' + situationMatch.nom" class="preview-image clickable" (click)="openImageViewer(url)"></div>
+        <div class="section" *ngFor="let url of imagesFiche"><img [src]="mediaUrl(url)" [alt]="'Illustration de ' + situationMatch.nom" class="preview-image clickable" (click)="openImageViewer(url)"></div>
         <div class="section" *ngIf="situationMatch.tags?.length">
           <h3 class="hl">Tags</h3>
           <mat-chip-set aria-label="Tags">

@@ -91,6 +91,7 @@ export class SituationMatchFormComponent implements OnInit {
     if (formData.description !== undefined && formData.description !== null) fd.append('description', formData.description);
     if (formData.temps !== undefined && formData.temps !== null) fd.append('temps', formData.temps);
     if (formData.tagIds && formData.tagIds.length) fd.append('tagIds', JSON.stringify(formData.tagIds));
+    fd.append('imagesSupplementaires', JSON.stringify(formData.imagesSupplementaires || []));
     // Gestion suppression image: imageUrl vide pour forcer le remplacement
     if (formData.imageUrl === '') {
       fd.append('imageUrl', '');

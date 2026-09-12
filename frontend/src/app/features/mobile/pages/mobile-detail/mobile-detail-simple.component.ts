@@ -322,11 +322,9 @@ export class MobileDetailComponent implements OnInit, OnDestroy {
 
   get itemImages(): string[] {
     if (!this.item) return [];
-    if (this.itemType === 'exercice' && (this.item as Exercice).imageUrl) {
-      return [(this.item as Exercice).imageUrl!];
-    }
-    if (this.itemType === 'situation' && (this.item as SituationMatch).imageUrl) {
-      return [(this.item as SituationMatch).imageUrl!];
+    if (this.itemType === 'exercice' || this.itemType === 'situation' || this.itemType === 'echauffement') {
+      const fiche = this.item as { imageUrl?: string; imagesSupplementaires?: string[] };
+      return [fiche.imageUrl, ...(fiche.imagesSupplementaires || [])].filter((u): u is string => !!u);
     }
     return [];
   }

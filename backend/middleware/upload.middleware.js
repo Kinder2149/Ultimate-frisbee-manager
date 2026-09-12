@@ -72,7 +72,19 @@ const createUploader = (fieldName, subfolder) => {
   ];
 };
 
+/**
+ * Réponse d'un envoi d'image seule (galerie d'une fiche) : renvoie l'adresse Cloudinary.
+ * L'image n'est rattachée à une fiche qu'à l'enregistrement de celle-ci.
+ */
+const renvoyerUrlImage = (req, res) => {
+  if (!req.file || !req.file.cloudinaryUrl) {
+    return res.status(400).json({ error: 'Aucune image reçue.', code: 'NO_FILE' });
+  }
+  return res.status(201).json({ url: req.file.cloudinaryUrl });
+};
+
 module.exports = {
   createUploader,
+  renvoyerUrlImage,
 };
 

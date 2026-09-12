@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const echauffementController = require('../controllers/echauffement.controller');
-const { createUploader } = require('../middleware/upload.middleware');
+const { createUploader, renvoyerUrlImage } = require('../middleware/upload.middleware');
 const { validate } = require('../middleware/validation.middleware');
 const { createEchauffementSchema, updateEchauffementSchema } = require('../validators/echauffement.validator');
 const { transformFormData } = require('../middleware/transform.middleware');
@@ -28,5 +28,8 @@ router.put('/:id',
 );
 router.delete('/:id', requireWorkspaceWrite, echauffementController.deleteEchauffement);
 router.post('/:id/duplicate', requireWorkspaceWrite, echauffementController.duplicateEchauffement);
+
+// Galerie : envoi d'une image supplémentaire, renvoie son adresse
+router.post('/images', requireWorkspaceWrite, createUploader('image', 'echauffements'), renvoyerUrlImage);
 
 module.exports = router;

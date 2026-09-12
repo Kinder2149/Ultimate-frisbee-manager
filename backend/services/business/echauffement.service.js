@@ -68,13 +68,14 @@ async function getEchauffementById(id, workspaceId) {
  * @returns {Promise<Object>} Échauffement créé
  */
 async function createEchauffement(data, workspaceId, file = null) {
-  const { nom, description, blocs, imageUrl } = data;
+  const { nom, description, blocs, imageUrl, imagesSupplementaires } = data;
 
   const nouvelEchauffement = await prisma.echauffement.create({
     data: {
       nom,
       description,
       imageUrl: file ? file.cloudinaryUrl : (imageUrl || null),
+      imagesSupplementaires: imagesSupplementaires || [],
       workspaceId,
       blocs: {
         create: (blocs || []).map((bloc, index) => ({ ...bloc, ordre: bloc.ordre || index + 1 }))
@@ -105,7 +106,7 @@ async function updateEchauffement(id, data, workspaceId, file = null) {
     error.code = 'NOT_FOUND';
     throw error;
   }
-  const { nom, description, blocs, imageUrl } = data;
+  const { nom, description, blocs, imageUrl, imagesSupplementaires } = data;
 
   const echauffementMisAJour = await prisma.$transaction(async (tx) => {
     // 1. Supprimer les anciens blocs
@@ -122,6 +123,7 @@ async function updateEchauffement(id, data, workspaceId, file = null) {
           : (imageUrl !== undefined
               ? (imageUrl === '' ? null : imageUrl)
               : undefined),
+        imagesSupplementaires,
         blocs: {
           create: (blocs || []).map((bloc, index) => ({ ...bloc, ordre: bloc.ordre || index + 1 }))
         }
@@ -178,6 +180,7 @@ async function duplicateEchauffement(id, workspaceId) {
       nom: `${echauffementOriginal.nom} (Copie)`,
       description: echauffementOriginal.description,
       imageUrl: echauffementOriginal.imageUrl,
+      imagesSupplementaires: echauffementOriginal.imagesSupplementaires,
       workspaceId: echauffementOriginal.workspaceId,
       blocs: {
         create: echauffementOriginal.blocs.map(bloc => ({

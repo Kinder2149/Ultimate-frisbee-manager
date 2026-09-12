@@ -37,6 +37,11 @@
             [context]="'echauffements'"
             (imageSelected)="onImageSelected($event)"
           ></app-image-picker-field>
+          <app-galerie-images-editeur
+            [ressource]="'warmups'"
+            [images]="imagesSupplementaires"
+            (imagesChange)="imagesSupplementaires = $event">
+          </app-galerie-images-editeur>
           <div class="form-group" style="margin-top:10px;">
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>URL de l'image</mat-label>

@@ -4,7 +4,7 @@
 const express = require('express');
 const router = express.Router();
 const exerciceController = require('../controllers/exercice.controller');
-const { createUploader } = require('../middleware/upload.middleware');
+const { createUploader, renvoyerUrlImage } = require('../middleware/upload.middleware');
 const { validate } = require('../middleware/validation.middleware');
 const { transformFormData } = require('../middleware/transform.middleware');
 const { createExerciceSchema, updateExerciceSchema } = require('../validators/exercice.validator');
@@ -262,5 +262,8 @@ router.post('/:id/duplicate', requireWorkspaceWrite, exerciceController.duplicat
  *         $ref: '#/components/responses/NotFound'
  */
 router.delete('/:id', requireWorkspaceWrite, exerciceController.deleteExercice);
+
+// Galerie : envoi d'une image supplémentaire, renvoie son adresse
+router.post('/images', requireWorkspaceWrite, createUploader('image', 'exercices'), renvoyerUrlImage);
 
 module.exports = router;

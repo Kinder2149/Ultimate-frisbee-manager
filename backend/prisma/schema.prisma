@@ -20,22 +20,23 @@ enum WorkspaceRole {
 }
 
 model Exercice {
-  id              String                 @id @default(uuid())
-  nom             String
-  description     String
-  imageUrl        String?
-  points          String?
-  materiel        String?
-  notes           String?
-  critereReussite String?
-  variablesPlus   String                 @default("")
-  variablesMinus  String                 @default("")
-  duree_minutes   Int?
-  nombre_joueurs  Int?
-  createdAt       DateTime               @default(now())
-  updatedAt       DateTime               @updatedAt
-  entrainements   EntrainementExercice[]
-  tags            Tag[]                  @relation("ExerciseTags")
+  id                    String                 @id @default(uuid())
+  nom                   String
+  description           String
+  imageUrl              String?
+  imagesSupplementaires String[]               @default([])
+  points                String?
+  materiel              String?
+  notes                 String?
+  critereReussite       String?
+  variablesPlus         String                 @default("")
+  variablesMinus        String                 @default("")
+  duree_minutes         Int?
+  nombre_joueurs        Int?
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  entrainements         EntrainementExercice[]
+  tags                  Tag[]                  @relation("ExerciseTags")
 
   workspaceId String?
   workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -116,14 +117,15 @@ model EntrainementExercice {
 }
 
 model Echauffement {
-  id            String             @id @default(uuid())
-  nom           String
-  description   String?
-  imageUrl      String?
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
-  blocs         BlocEchauffement[]
-  entrainements Entrainement[]
+  id                    String             @id @default(uuid())
+  nom                   String
+  description           String?
+  imageUrl              String?
+  imagesSupplementaires String[]           @default([])
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  blocs                 BlocEchauffement[]
+  entrainements         Entrainement[]
 
   workspaceId String?
   workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -155,17 +157,18 @@ model BlocEchauffement {
 }
 
 model SituationMatch {
-  id            String         @id @default(uuid())
-  nom           String?
-  type          String
-  description   String?
-  temps         String?
-  imageUrl      String?
-  nombre_joueurs Int?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  entrainements Entrainement[]
-  tags          Tag[]          @relation("SituationMatchTags")
+  id                    String         @id @default(uuid())
+  nom                   String?
+  type                  String
+  description           String?
+  temps                 String?
+  imageUrl              String?
+  imagesSupplementaires String[]       @default([])
+  nombre_joueurs        Int?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  entrainements         Entrainement[]
+  tags                  Tag[]          @relation("SituationMatchTags")
 
   workspaceId String?
   workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -175,13 +178,13 @@ model SituationMatch {
 }
 
 model Lexique {
-  id          String   @id @default(uuid())
-  terme       String
-  definition  String
-  categorie   String
-  motImage    Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(uuid())
+  terme      String
+  definition String
+  categorie  String
+  motImage   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   entrainements Entrainement[] @relation("EntrainementLexique")
 
@@ -210,21 +213,21 @@ model User {
 }
 
 model Workspace {
-  id        String           @id @default(uuid())
+  id        String   @id @default(uuid())
   name      String
-  isBase    Boolean          @default(false)
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+  isBase    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  members   WorkspaceUser[]
-  exercices Exercice[]
-  tags      Tag[]
-  entrainements Entrainement[]
+  members               WorkspaceUser[]
+  exercices             Exercice[]
+  tags                  Tag[]
+  entrainements         Entrainement[]
   entrainementExercices EntrainementExercice[]
-  echauffements Echauffement[]
-  blocsEchauffement BlocEchauffement[]
-  situationsMatch SituationMatch[]
-  lexiques Lexique[]
+  echauffements         Echauffement[]
+  blocsEchauffement     BlocEchauffement[]
+  situationsMatch       SituationMatch[]
+  lexiques              Lexique[]
 }
 
 model WorkspaceUser {

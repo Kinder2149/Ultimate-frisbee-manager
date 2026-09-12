@@ -28,11 +28,11 @@
     </header>
 
     <!-- 🖼️ Section 1 : Image principale (si présente) -->
-    <section class="section" *ngIf="mainImageUrl as img">
-      <h3 class="section-title hl-sand">Image de l'exercice</h3>
+    <section class="section" *ngIf="imagesFiche.length">
+      <h3 class="section-title hl-sand">{{ imagesFiche.length > 1 ? 'Images' : 'Image' }} de l&rsquo;exercice</h3>
       <div class="image-gallery">
-        <div class="image-item" (click)="openImageViewer(img)">
-          <img [src]="mediaUrl(img)" alt="Image de l'exercice">
+        <div class="image-item" *ngFor="let img of imagesFiche; let i = index" (click)="openImageViewer(img)">
+          <img [src]="mediaUrl(img)" [alt]="'Image ' + (i + 1)">
         </div>
       </div>
     </section>

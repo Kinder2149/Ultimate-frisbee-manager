@@ -36,6 +36,7 @@ import { ConfirmationDialogComponent, ConfirmationDialogData } from '../../../..
 import { ExerciceVariablesComponent } from '../../../../shared/components/exercice-variables/exercice-variables.component';
 import { RichTextEditorComponent } from '../../../../shared/components/rich-text-editor/rich-text-editor.component';
 import { ImageUploadComponent } from '../../../../shared/components/image-upload/image-upload.component';
+import { GalerieImagesEditeurComponent } from '../../../../shared/components/galerie-images/galerie-images-editeur.component';
 import { ExerciceViewComponent } from '../../../../shared/components/exercice-view/exercice-view.component';
 import { TextChipsFieldComponent } from '../../../../shared/components/form-fields/text-chips-field/text-chips-field.component';
 import { TagSelectSingleComponent } from '../../../../shared/components/form-fields/tag-select-single/tag-select-single.component';
@@ -50,7 +51,7 @@ import { getFormErrors, formErrorsToErrorDetails, validateForm } from '../../../
     CommonModule, ReactiveFormsModule, RouterModule,
     MatButtonModule, MatCardModule, MatChipsModule, MatDialogModule, MatFormFieldModule,
     MatIconModule, MatInputModule, MatProgressSpinnerModule, MatSelectModule, MatTooltipModule,
-    ExerciceVariablesComponent, ImageUploadComponent, RichTextEditorComponent, ExerciceViewComponent,
+    ExerciceVariablesComponent, ImageUploadComponent, GalerieImagesEditeurComponent, RichTextEditorComponent, ExerciceViewComponent,
     TextChipsFieldComponent,
     TagSelectSingleComponent,
     TagSelectMultiComponent
@@ -97,6 +98,8 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
   // --- Gestion des images ---
   selectedImageFile: File | null = null;
   imagePreview: string | null = null;
+  /** Galerie : images supplémentaires de la fiche, dans l'ordre */
+  imagesSupplementaires: string[] = [];
   
   // --- États pour l'UI ---
   readonlyMode = false;
@@ -276,6 +279,8 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
     // Pré-remplir les points importants (rétrocompat: string JSON / string / string[])
     this.exerciceForm.patchValue({ points: normalizeStringList((exercice as any).points) });
 
+    this.imagesSupplementaires = [...((exercice as any).imagesSupplementaires || [])];
+
     if (effectiveImageUrl) {
       this.imagePreview = this.apiUrlService.getMediaUrl(effectiveImageUrl, 'exercices');
     }
@@ -357,6 +362,9 @@ export class ExerciceFormComponent implements OnInit, OnDestroy {
     ].filter((tag): tag is Tag => tag !== null && tag !== undefined);
 
     formData.append('tagIds', JSON.stringify(allSelectedTags.map(tag => tag.id).filter(id => id !== undefined)));
+
+    // Galerie : seules les adresses sont envoyées, les images sont déjà sur le serveur
+    formData.append('imagesSupplementaires', JSON.stringify(this.imagesSupplementaires));
 
     // Si une image est sélectionnée, l'ajouter AU FINAL au FormData (sans dupliquer dans le loop ci-dessus)
     if (this.selectedImageFile) {

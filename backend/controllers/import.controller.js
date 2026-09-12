@@ -275,6 +275,7 @@ exports.importEchauffements = async (req, res) => {
                 nom,
                 description: e.description || null,
                 imageUrl: e.imageUrl || null,
+                imagesSupplementaires: Array.isArray(e.imagesSupplementaires) ? e.imagesSupplementaires.filter(u => typeof u === 'string') : [],
                 workspaceId,
                 blocs: { create: blocs },
               },
@@ -288,6 +289,7 @@ exports.importEchauffements = async (req, res) => {
               nom,
               description: e.description !== undefined ? e.description : undefined,
               imageUrl: e.imageUrl !== undefined ? e.imageUrl : undefined,
+              imagesSupplementaires: Array.isArray(e.imagesSupplementaires) ? e.imagesSupplementaires.filter(u => typeof u === 'string') : undefined,
               blocs: { create: blocs },
             },
           });
@@ -353,6 +355,7 @@ exports.importSituationsMatchs = async (req, res) => {
                 description: s.description || null,
                 temps: s.temps != null ? String(s.temps) : null,
                 imageUrl: s.imageUrl || null,
+                imagesSupplementaires: Array.isArray(s.imagesSupplementaires) ? s.imagesSupplementaires.filter(u => typeof u === 'string') : [],
                 workspaceId,
                 tags: { connect: tagIds.map(id => ({ id })) },
               },
@@ -366,6 +369,7 @@ exports.importSituationsMatchs = async (req, res) => {
               description: s.description !== undefined ? s.description : undefined,
               temps: s.temps !== undefined ? (s.temps != null ? String(s.temps) : null) : undefined,
               imageUrl: s.imageUrl !== undefined ? s.imageUrl : undefined,
+              imagesSupplementaires: Array.isArray(s.imagesSupplementaires) ? s.imagesSupplementaires.filter(u => typeof u === 'string') : undefined,
               tags: { set: [], connect: tagIds.map(id => ({ id })) },
             },
           });
@@ -429,6 +433,7 @@ exports.importExercices = async (req, res) => {
       nom,
       description,
       imageUrl: computeEffectiveImageUrl(exo),
+      imagesSupplementaires: Array.isArray(exo.imagesSupplementaires) ? exo.imagesSupplementaires.filter(u => typeof u === 'string') : [],
       variablesPlus: exo.variablesPlus || '',
       variablesMinus: exo.variablesMinus || '',
     };

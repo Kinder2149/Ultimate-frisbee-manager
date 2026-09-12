@@ -135,6 +135,12 @@ export class ExerciceViewComponent implements OnInit {
     return ex?.imageUrl || null;
   }
 
+  /** Toutes les images de la fiche : l'image principale puis les supplémentaires */
+  get imagesFiche(): string[] {
+    const ex: any = this.exercice;
+    return [ex?.imageUrl, ...((ex?.imagesSupplementaires || []) as string[])].filter((u: string) => !!u);
+  }
+
   get pointsList(): string[] {
     return normalizeStringList((this.exercice as any).points);
   }

@@ -98,6 +98,12 @@ export class EchauffementViewComponent implements OnInit {
     return this.formatSeconds(this.getTotalSeconds());
   }
 
+  /** Toutes les images de la fiche : l'image principale puis les supplémentaires */
+  get imagesFiche(): string[] {
+    const e: any = this.echauffement;
+    return [e?.imageUrl, ...((e?.imagesSupplementaires || []) as string[])].filter((u: string) => !!u);
+  }
+
   mediaUrl(path?: string | null): string | null {
     return this.apiUrl.getMediaUrl(path ?? undefined, 'echauffements');
   }

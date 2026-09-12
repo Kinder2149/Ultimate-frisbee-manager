@@ -14,6 +14,7 @@ export interface SituationMatch {
   description?: string;         // Description optionnelle
   temps?: string;              // Temps/durée optionnel
   imageUrl?: string;             // URL de l'image
+  imagesSupplementaires?: string[]; // Images supplémentaires (galerie), dans l'ordre
   tags?: Tag[];                // Tags associés (format, etc.)
   createdAt?: Date;
 }

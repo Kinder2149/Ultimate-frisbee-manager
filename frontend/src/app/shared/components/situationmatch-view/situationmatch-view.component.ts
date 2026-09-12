@@ -46,6 +46,12 @@ export class SituationMatchViewComponent implements OnInit {
     this.dialogRef.close();
   }
 
+  /** Toutes les images de la fiche : l'image principale puis les supplémentaires */
+  get imagesFiche(): string[] {
+    const s: any = this.situationMatch;
+    return [s?.imageUrl, ...((s?.imagesSupplementaires || []) as string[])].filter((u: string) => !!u);
+  }
+
   mediaUrl(path?: string | null): string | null {
     return this.apiUrl.getMediaUrl(path ?? undefined, 'situations-matchs');
   }

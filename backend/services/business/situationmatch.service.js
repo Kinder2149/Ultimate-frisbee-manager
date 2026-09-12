@@ -64,7 +64,7 @@ async function getSituationMatchById(id, workspaceId) {
  * @throws {Error} Si les tags n'appartiennent pas au workspace
  */
 async function createSituationMatch(data, workspaceId, file = null) {
-  const { nom, type, description, temps, tagIds, imageUrl } = data;
+  const { nom, type, description, temps, tagIds, imageUrl, imagesSupplementaires } = data;
 
   // SÉCURITÉ: Valider que tous les tags appartiennent au workspace
   if (tagIds && tagIds.length > 0) {
@@ -85,6 +85,7 @@ async function createSituationMatch(data, workspaceId, file = null) {
       description,
       temps,
       imageUrl: file ? file.cloudinaryUrl : (imageUrl || null),
+      imagesSupplementaires: imagesSupplementaires || [],
       workspaceId,
       tags: { connect: (tagIds || []).map(id => ({ id })) }
     },
@@ -112,7 +113,7 @@ async function updateSituationMatch(id, data, workspaceId, file = null) {
     error.code = 'NOT_FOUND';
     throw error;
   }
-  const { nom, type, description, temps, tagIds, imageUrl } = data;
+  const { nom, type, description, temps, tagIds, imageUrl, imagesSupplementaires } = data;
 
   // SÉCURITÉ: Valider que tous les tags appartiennent au workspace
   if (tagIds && tagIds.length > 0) {
@@ -136,6 +137,7 @@ async function updateSituationMatch(id, data, workspaceId, file = null) {
       : (imageUrl !== undefined
           ? (imageUrl === '' ? null : imageUrl)
           : undefined),
+    imagesSupplementaires,
     tags: { set: (tagIds || []).map(id => ({ id })) }
   };
 
@@ -193,6 +195,7 @@ async function duplicateSituationMatch(id, workspaceId) {
       description: situationMatchOriginale.description,
       temps: situationMatchOriginale.temps,
       imageUrl: situationMatchOriginale.imageUrl,
+      imagesSupplementaires: situationMatchOriginale.imagesSupplementaires,
       workspaceId: situationMatchOriginale.workspaceId,
       tags: { connect: situationMatchOriginale.tags.map(tag => ({ id: tag.id })) }
     },

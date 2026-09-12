@@ -14,6 +14,7 @@ import { Echauffement, BlocEchauffement } from '../../../../core/models/echauffe
 import { EchauffementService } from '../../../../core/services/echauffement.service';
 import { ApiUrlService } from '../../../../core/services/api-url.service';
 import { ImagePickerFieldComponent } from '../../form-fields/image-picker-field/image-picker-field.component';
+import { GalerieImagesEditeurComponent } from '../../galerie-images/galerie-images-editeur.component';
 import { RichTextEditorComponent } from '../../../components/rich-text-editor/rich-text-editor.component';
 
 export interface EchauffementFormData {
@@ -21,6 +22,7 @@ export interface EchauffementFormData {
   description: string;
   imageUrl?: string | null;
   image?: File;
+  imagesSupplementaires?: string[];
   blocs: BlocEchauffement[];
 }
 
@@ -39,6 +41,7 @@ export interface EchauffementFormData {
     MatSelectModule,
     MatProgressSpinnerModule,
     ImagePickerFieldComponent,
+    GalerieImagesEditeurComponent,
     RichTextEditorComponent
   ],
   templateUrl: './echauffement-form.component.html',
@@ -58,6 +61,8 @@ export class EchauffementFormComponent implements OnInit, OnChanges {
   selectedImageFile: File | null = null;
   uploading = false;
   imagePreview: string | null = null;
+  /** Galerie : images supplémentaires de la fiche, dans l'ordre */
+  imagesSupplementaires: string[] = [];
 
   constructor(private fb: FormBuilder, private echauffementService: EchauffementService, private apiUrl: ApiUrlService) {
     this.echauffementForm = this.createForm();
@@ -164,6 +169,8 @@ export class EchauffementFormComponent implements OnInit, OnChanges {
       imageUrl: echauffement.imageUrl || ''
     });
 
+    this.imagesSupplementaires = [...(echauffement.imagesSupplementaires || [])];
+
     if (echauffement.imageUrl) {
       this.imagePreview = this.mediaUrl(echauffement.imageUrl);
     }
@@ -187,6 +194,7 @@ export class EchauffementFormComponent implements OnInit, OnChanges {
       const echauffementData: EchauffementFormData = {
         nom: formData.nom,
         description: formData.description,
+        imagesSupplementaires: this.imagesSupplementaires,
         blocs: formData.blocs.map((bloc: any, index: number) => {
           const valeur = bloc.tempsValeur;
           const unite = bloc.tempsUnite as ('min'|'sec');

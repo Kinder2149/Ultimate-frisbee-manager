@@ -20,6 +20,8 @@ export interface Echauffement {
   nom: string;
   description?: string;
   imageUrl?: string;
+  /** Images supplémentaires (galerie), dans l'ordre */
+  imagesSupplementaires?: string[];
   createdAt?: Date;
   blocs?: BlocEchauffement[];
 }
